@@ -19,6 +19,7 @@
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\base\DirectXCommon.cpp" />
     <ClCompile Include="engine\camera\DebugCamera.cpp" />
+    <ClCompile Include="engine\game\player\Player.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -155,6 +156,7 @@
     <ClInclude Include="engine\base\BaseScene.h" />
     <ClInclude Include="engine\camera\Camera.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
+    <ClInclude Include="engine\game\player\Player.h" />
     <ClInclude Include="engine\math\CommonStructs.h" />
     <ClInclude Include="engine\base\DirectXCommon.h" />
     <ClInclude Include="engine\camera\DebugCamera.h" />
