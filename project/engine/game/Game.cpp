@@ -1,13 +1,11 @@
 ﻿#include "Game.h"
 
-
-#pragma comment(lib,"Dbghelp.lib")
-#pragma comment(lib,"dxcompiler.lib")
+#pragma comment(lib, "Dbghelp.lib")
+#pragma comment(lib, "dxcompiler.lib")
 
 void Game::Initialize() {
 	// 基底クラスの初期化
 	M_Framework::Initialize();
-
 
 #pragma region 基盤システム
 
@@ -45,6 +43,7 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("ball.obj");
 	ModelManager::GetInstance()->LoadModel("terrain.obj");
 	ModelManager::GetInstance()->LoadModel("emission.obj");
+	ModelManager::GetInstance()->LoadModel("player.obj");
 
 	// サウンド
 	SoundManager::GetInstance()->Initialize();
@@ -54,25 +53,24 @@ void Game::Initialize() {
 	PostEffect::GetInstance()->Initialize(dxCommon, windowAPI.get());
 
 	// ImGui
-	imGuiManager = std::make_unique <ImGuiManager>();
+	imGuiManager = std::make_unique<ImGuiManager>();
 	imGuiManager->Initialize(windowAPI.get(), dxCommon, srvManager.get());
 
 	// シーンマネージャーの生成
 	// 最初のシーン生成
-	sceneFactory_ = std::make_unique <SceneFactory>();
+	sceneFactory_ = std::make_unique<SceneFactory>();
 	SceneManager::GetInstance()->SetSceneFactory(move(sceneFactory_));
 	// シーンマネージャーに最初のシーンをセット
 	SceneManager::GetInstance()->ChangeScene("TITLE");
 
 #pragma endregion
-
 }
 
 void Game::Update() {
 	// ImGui受付開始
 	imGuiManager->Begin();
 
-	//　基底クラス
+	// 　基底クラス
 	M_Framework::Update();
 
 	// シーンマネージャー更新
@@ -105,14 +103,13 @@ void Game::Draw() {
 
 	// 描画後処理
 	M_Framework::EndFrame();
-
 }
 
 void Game::Finalize() {
 	// ImGuiの終了処理
 	imGuiManager->Finalize();
 
-	//　サウンドマネージャー終了
+	// 　サウンドマネージャー終了
 	SoundManager::GetInstance()->Finalize();
 
 	// 基底クラスの終了処理
