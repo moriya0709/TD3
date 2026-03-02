@@ -258,6 +258,7 @@ void GamePlayScene::Draw3D() {
 	// アウトライン描画準備
 	ObjectCommon::GetInstance()->SetOutlinePipelineState();
 
+
 	// アウトライン描画
 	// object->Draw();
 }
