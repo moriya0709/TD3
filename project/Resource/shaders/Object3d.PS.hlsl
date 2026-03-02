@@ -2,9 +2,12 @@
 
 struct Material
 {
-    float32_t4 color;
-    int32_t enableLighting;
-    float32_t4x4 uvTransform;
+    float4 color;
+    int enableLighting;
+    float3 pad1; // バイト合わせ
+    float4x4 uvTransform;
+    float3 emissive;
+    float pad2; // バイト合わせ
 };
     
 struct DirectionalLight
@@ -112,7 +115,8 @@ PixelShaderOutput main(VertexShaderOutput input)
         }
         
         float4 lighting = directional + ambient + pointLight + spot;
-        output.color = gMaterial.color * textureColor * lighting;
+        float4 finalColor = lighting + float4(gMaterial.emissive, 1.0f);
+        output.color = gMaterial.color * textureColor * finalColor;
     }
     else
     {

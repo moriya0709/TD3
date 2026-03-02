@@ -8,6 +8,7 @@
 struct MaterialData {
 	std::string textureFilePath;
 	uint32_t textureIndex = 0;
+	Vector3 emissive;
 };
 // 頂点データ
 struct VertexData {
@@ -27,4 +28,6 @@ struct Material {
 	int32_t enableLighting;
 	float padding[3];
 	Matrix4x4 uvTransform;
+	Vector3 emissive;
+	float padding2; // バイト合わせ
 };
