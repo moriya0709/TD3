@@ -204,6 +204,9 @@
     <ClCompile Include="application\postEffect\PostEffect.cpp">
       <Filter>ソース ファイル\application\postEffect</Filter>
     </ClCompile>
+    <ClCompile Include="engine\game\player\Player.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.PS.hlsl">
@@ -343,6 +346,9 @@
     </ClInclude>
     <ClInclude Include="application\postEffect\PostEffect.h">
       <Filter>ヘッダー ファイル\application\posteffect</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\game\player\Player.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
