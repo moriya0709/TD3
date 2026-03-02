@@ -29,7 +29,7 @@ void Game::Initialize() {
 	// 3Dモデルマネージャの初期化
 	ModelManager::GetInstance()->Initialize(dxCommon);
 	// Particleマネージャ
-	ParticleManager::GetInstance()->Initialize(dxCommon, srvManager.get(), "Resource/plane", "plane.obj");
+	ParticleManager::GetInstance()->Initialize(dxCommon, srvManager.get(), "Resource", "plane.obj");
 
 #pragma endregion
 
@@ -40,10 +40,11 @@ void Game::Initialize() {
 	ParticleManager::GetInstance()->CreateParticleGroup("group2", "Resource/uvChecker.png");
 
 	// .objファイルからモデル読み込み
-	ModelManager::GetInstance()->LoadModel("Resource/plane","plane.obj");
-	ModelManager::GetInstance()->LoadModel("Resource/axis", "axis.obj");
-	ModelManager::GetInstance()->LoadModel("Resource/ball", "ball.obj");
-	ModelManager::GetInstance()->LoadModel("Resource/terrain", "terrain.obj");
+	ModelManager::GetInstance()->LoadModel("plane.obj");
+	ModelManager::GetInstance()->LoadModel("axis.obj");
+	ModelManager::GetInstance()->LoadModel("ball.obj");
+	ModelManager::GetInstance()->LoadModel("terrain.obj");
+	ModelManager::GetInstance()->LoadModel("emission.obj");
 
 	// サウンド
 	SoundManager::GetInstance()->Initialize();

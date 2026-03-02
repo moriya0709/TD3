@@ -27,7 +27,7 @@ void GamePlayScene::Initialize() {
 	particleEmitter->Emit();
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
-	object->SetModel("terrain.obj");
+	object->SetModel("emission.obj");
 }
 
 void GamePlayScene::Update() {

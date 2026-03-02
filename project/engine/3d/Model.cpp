@@ -71,13 +71,21 @@ MaterialData Model::LoadMaterialTemplateFile(const std::string& directoryPath, c
 		std::istringstream s(line);
 		s >> identifier;
 
-		// identifierに大路多処理
+		// 拡散テクスチャ
 		if (identifier == "map_Kd") {
 			std::string textureFilename;
 			s >> textureFilename;
-			// 連結してファイルパスにする
-			materialData.textureFilePath = directoryPath + "/" + textureFilename;
+			materialData.textureFilePath =
+				directoryPath + "/" + textureFilename;
 		}
+
+		// エミッシブカラー
+		else if (identifier == "Ke") {
+			s >> materialData.emissive.x
+				>> materialData.emissive.y
+				>> materialData.emissive.z;
+		}
+
 
 	}
 

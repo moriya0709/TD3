@@ -2,9 +2,12 @@
 
 struct Material
 {
-    float32_t4 color;
-    int32_t enableLighting;
-    float32_t4x4 uvTransform;
+    float4 color;
+    int enableLighting;
+    float3 pad1; // バイト合わせ
+    float4x4 uvTransform;
+    float3 emissive;
+    float pad2; // バイト合わせ
 };
 
 ConstantBuffer<Material> gMaterial : register(b0);
