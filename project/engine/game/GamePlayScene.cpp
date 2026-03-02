@@ -1,33 +1,27 @@
 ﻿#include "GamePlayScene.h"
 #include "ObjectCommon.h"
-#include "SpriteCommon.h"
 #include "SceneManager.h"
+#include "SpriteCommon.h"
 
 void GamePlayScene::Initialize() {
 	// カメラ初期化
-	camera = std::make_unique <Camera>();
-	camera->SetRotate({ cameraTransform.rotate });
-	camera->SetTranslate({ cameraTransform.translate });
+	camera = std::make_unique<Camera>();
+	camera->SetRotate({cameraTransform.rotate});
+	camera->SetTranslate({cameraTransform.translate});
 
 	// カメラマネージャ登録
 	CameraManager::GetInstance()->AddCamera("main", camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
-	// スプライト
-	sprite = std::make_unique <Sprite>();
-	sprite->Initialize("Resource/uvChecker.png");
-
-	// 3Dオブジェクト
-	object = std::make_unique <Object>();
-	object->Initialize(camera.get());
+	player = std::make_unique<Player>();
+	player->Initialize(camera.get());
 
 	// Emitパーティクル発生
-	particleEmitter = std::make_unique <ParticleEmitter>();
+	particleEmitter = std::make_unique<ParticleEmitter>();
 	particleEmitter->Initialize("group1", transformParticle, 5, 1.0f);
 	particleEmitter->Emit();
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
-	object->SetModel("emission.obj");
 }
 
 void GamePlayScene::Update() {
@@ -50,41 +44,36 @@ void GamePlayScene::Update() {
 		particleEmitter->SetActive("group2");
 	}
 
-	// * 3Dオブジェクト* //
-	object->Update();
-
 	// パーティクルエミッタ更新
 	particleEmitter->Update();
 
-
-	// *スプライト* //
-	// sprite更新
-	sprite->Update();
+	// プレイヤー更新
+	player->Update();
 
 #pragma region ライティング
 	// *ライティング* //
-	
+
 	// 平行光
-	object->SetDirectionalLight(isDirectionalLight);
-	object->SetDirectionalLightDirection(DirectionalLightDirection);
-	object->SetDirectionalLightColor(DirectionalLightColor);
-	object->SetDirectionalLightIntensity(DirectionalLightIntensity);
-	// 環境光
-	object->SetAmbientLight(isAmbientLight);
-	object->SetAmbientLightColor(AmbientLightColor);
-	object->SetAmbientLightIntensity(AmbientLightIntensity);
-	// ポイントライト
-	object->SetPointLight(isPointLight);
-	object->SetPointLightColor(PointLightColor);
-	object->SetPointLightPosition(PointLightPosition);
-	object->SetPointLightIntensity(PointLightIntensity);
-	// スポットライト
-	object->SetSpotLight(isSpotLight);
-	object->SetSpotLightColor(SpotLightColor);
-	object->SetSpotLightPosition(SpotLightPosition);
-	object->SetSpotLightDirection(SpotLightDirection);
-	object->SetSpotLightRange(SpotLightRange);
-	object->SetSpotLightIntensity(SpotLightIntensity);
+	// object->SetDirectionalLight(isDirectionalLight);
+	// object->SetDirectionalLightDirection(DirectionalLightDirection);
+	// object->SetDirectionalLightColor(DirectionalLightColor);
+	// object->SetDirectionalLightIntensity(DirectionalLightIntensity);
+	//// 環境光
+	// object->SetAmbientLight(isAmbientLight);
+	// object->SetAmbientLightColor(AmbientLightColor);
+	// object->SetAmbientLightIntensity(AmbientLightIntensity);
+	//// ポイントライト
+	// object->SetPointLight(isPointLight);
+	// object->SetPointLightColor(PointLightColor);
+	// object->SetPointLightPosition(PointLightPosition);
+	// object->SetPointLightIntensity(PointLightIntensity);
+	//// スポットライト
+	// object->SetSpotLight(isSpotLight);
+	// object->SetSpotLightColor(SpotLightColor);
+	// object->SetSpotLightPosition(SpotLightPosition);
+	// object->SetSpotLightDirection(SpotLightDirection);
+	// object->SetSpotLightRange(SpotLightRange);
+	// object->SetSpotLightIntensity(SpotLightIntensity);
 #pragma endregion
 
 #pragma region ポストエフェクト
@@ -119,15 +108,14 @@ void GamePlayScene::Update() {
 
 #pragma endregion
 
-
 #ifdef USE_IMGUI
 	// ImGui
 
 	// カメラ
 	ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f, -100.0f, 100.0f);
 	ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -180.0f, 180.0f);
-	camera->SetTranslate({ cameraTransform.translate });
-	camera->SetRotate({ cameraTransform.rotate });
+	camera->SetTranslate({cameraTransform.translate});
+	camera->SetRotate({cameraTransform.rotate});
 
 #pragma region ライティング
 	// *ライティング* //
@@ -249,7 +237,6 @@ void GamePlayScene::Update() {
 #pragma endregion
 
 #endif
-
 }
 
 void GamePlayScene::Draw2D() {
@@ -257,26 +244,22 @@ void GamePlayScene::Draw2D() {
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
 	// スプライト描画
-	sprite->Draw();
+	// sprite->Draw();
 }
 void GamePlayScene::Draw3D() {
 	// 3Dオブジェクトの描画準備
 	ObjectCommon::GetInstance()->SetCommonPipelineState();
-
 	// 3Dオブジェクト描画
-	object->Draw();
+	player->Draw3D();
+
 	// パーティクル描画
 	ParticleManager::GetInstance()->Draw();
-
 
 	// アウトライン描画準備
 	ObjectCommon::GetInstance()->SetOutlinePipelineState();
 
 	// アウトライン描画
-	object->Draw();
-
+	// object->Draw();
 }
 
-void GamePlayScene::Finalize() {
-	CameraManager::GetInstance()->RemoveCamera("main");
-}
+void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
