@@ -32,6 +32,7 @@ private:
 	Transform transform_;
 	std::unique_ptr<Object> object_;
 	Camera* camera_ = nullptr;
+	Vector3 velocity_ = {0.0f, 0.0f, 0.0f}; // 現在の速度（初期値は0）
 	// 平行光
 	bool isDirectionalLight = false;
 	Vector4 DirectionalLightColor = {1.0f, 1.0f, 1.0f, 1.0f};
