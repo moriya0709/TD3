@@ -8,9 +8,11 @@
 #include "Object.h"
 #include "ParticleEmitter.h"
 #include "ParticleManager.h"
+#include "PlayerBullet.h"
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
+#include <list>
 
 class Player {
 public:
@@ -19,13 +21,15 @@ public:
 		int attack;                   // 攻撃力
 		float speed;                  // 速度
 		float hommingAccuracy = 0.0f; // ホーミング精度
-		float bulletSpeed = 0.0f;     // 弾速
+		float renge = 0.0f;     // 弾速
 		float chargeTime = 0.0f;      // チャージ時間
+		int haste = 0;                // 攻撃頻度
 	};
 	void Initialize(Camera* camera);
 	void Update();
 	void Draw2D();
 	void Draw3D();
+	~Player();
 
 private:
 	// プレイヤーのステータス
@@ -37,11 +41,17 @@ private:
 	// プレイヤーの2Dスプライト（照準）
 	std::unique_ptr<Sprite> reticle_;
 	// 照準の座標
-	Vector2 reticlePosition_ = {0.0f, 0.0f}; 
+	Vector2 reticlePosition_ = {0.0f, 0.0f};
 	// カメラのポインタ
 	Camera* camera_ = nullptr;
 	// プレイヤーの現在の速度
-	Vector3 velocity_ = {0.0f, 0.0f, 0.0f}; // 現在の速度（初期値は0）
+	Vector3 velocity_ = {0.0f, 0.0f, 0.0f};
+	// プレイヤーの弾
+	std::list<PlayerBullet*> bullets;
+	void Attack();
+	// 次の発射まで
+	int coolTime = 0;
+
 	// 平行光
 	bool isDirectionalLight = false;
 	Vector4 DirectionalLightColor = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -63,4 +73,6 @@ private:
 	Vector3 SpotLightDirection = {0.0f, 0.0f, 0.0f};
 	float SpotLightRange = 10.0f;
 	float SpotLightIntensity = 1.0f;
+
+
 };
