@@ -28,10 +28,19 @@ public:
 	void Draw3D();
 
 private:
+	// プレイヤーのステータス
 	Statas statas_;
+	// プレイヤーの座標や回転などの変換情報
 	Transform transform_;
-	std::unique_ptr<Object> object_;
+	// プレイヤーの3Dオブジェクト
+	std::unique_ptr<Object> playerObject_;
+	// プレイヤーの2Dスプライト（照準）
+	std::unique_ptr<Sprite> reticle_;
+	// 照準の座標
+	Vector2 reticlePosition_ = {0.0f, 0.0f}; 
+	// カメラのポインタ
 	Camera* camera_ = nullptr;
+	// プレイヤーの現在の速度
 	Vector3 velocity_ = {0.0f, 0.0f, 0.0f}; // 現在の速度（初期値は0）
 	// 平行光
 	bool isDirectionalLight = false;

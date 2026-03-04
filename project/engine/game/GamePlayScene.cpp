@@ -13,8 +13,8 @@ void GamePlayScene::Initialize() {
 	CameraManager::GetInstance()->AddCamera("main", camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
-	player = std::make_unique<Player>();
-	player->Initialize(camera.get());
+	player_ = std::make_unique<Player>();
+	player_->Initialize(camera.get());
 
 	// Emitパーティクル発生
 	particleEmitter = std::make_unique<ParticleEmitter>();
@@ -48,7 +48,7 @@ void GamePlayScene::Update() {
 	particleEmitter->Update();
 
 	// プレイヤー更新
-	player->Update();
+	player_->Update();
 
 #pragma region ライティング
 	// *ライティング* //
@@ -242,6 +242,7 @@ void GamePlayScene::Update() {
 void GamePlayScene::Draw2D() {
 	// 2Dオブジェクトの描画準備
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
+	player_->Draw2D();
 
 	// スプライト描画
 	// sprite->Draw();
@@ -250,7 +251,7 @@ void GamePlayScene::Draw3D() {
 	// 3Dオブジェクトの描画準備
 	ObjectCommon::GetInstance()->SetCommonPipelineState();
 	// 3Dオブジェクト描画
-	player->Draw3D();
+	player_->Draw3D();
 
 	// パーティクル描画
 	ParticleManager::GetInstance()->Draw();

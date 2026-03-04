@@ -10,13 +10,19 @@ void Player::Initialize(Camera* camera) {
 	transform_.rotate = {0.0f, 0.0f, 0.0f};
 	transform_.translate = {0.0f, 0.0f, 5.0f};
 
+	// Spriteの生成
+	reticle_ = std::make_unique<Sprite>();
+	reticle_->Initialize("Resource/reticle.png");
+	reticlePosition_ = {0.0f, 0.0f};
+	reticle_->SetPosition(reticlePosition_);
+
 	// モデルの生成
-	object_ = std::make_unique<Object>();
-	object_->Initialize(camera_);
-	object_->SetModel("player.obj");
-	object_->SetScale(transform_.scale);
-	object_->SetRotate(transform_.rotate);
-	object_->SetTranslate(transform_.translate);
+	playerObject_ = std::make_unique<Object>();
+	playerObject_->Initialize(camera_);
+	playerObject_->SetModel("player.obj");
+	playerObject_->SetScale(transform_.scale);
+	playerObject_->SetRotate(transform_.rotate);
+	playerObject_->SetTranslate(transform_.translate);
 
 	statas_.hp = 100;
 	statas_.attack = 10;
@@ -30,7 +36,8 @@ void Player::Update() {
 	// カメラ更新
 	camera_->Update();
 
-// 1. 目標となる移動方向の初期化
+#pragma region 移動処理
+	// 1. 目標となる移動方向の初期化
 	Vector3 targetDirection = {0.0f, 0.0f, 0.0f};
 
 	// 2. 入力から「どっちに動きたいか」を決定
@@ -59,7 +66,6 @@ void Player::Update() {
 	// 4. 【重要】慣性の計算（現在の速度を目標速度に近づける）
 	// 0.0f 〜 1.0f の値で、小さいほど滑らか（慣性が強い）になります
 	float lerpFactor = 0.1f;
-	
 
 	velocity_.x = velocity_.x + (targetVelocity.x - velocity_.x) * lerpFactor;
 	velocity_.y = velocity_.y + (targetVelocity.y - velocity_.y) * lerpFactor;
@@ -82,6 +88,8 @@ void Player::Update() {
 		transform_.translate.y = 3.0f; // 上端の制限
 	}
 
+#pragma endregion
+
 #pragma region ImGui
 	ImGui::Begin("Player");                                                      // Playerウィンドウ開始
 	ImGui::SliderInt("HP", &statas_.hp, 0, 100);                                 // 体力
@@ -95,43 +103,84 @@ void Player::Update() {
 
 #pragma endregion
 
+#pragma region オブジェクトの更新
+
 	// 4. 変更した座標をオブジェクトにセット
-	object_->SetTranslate(transform_.translate);
+	playerObject_->SetTranslate(transform_.translate);
 
 	// 5. オブジェクトの行列などを更新
-	object_->Update();
+	playerObject_->Update();
+#pragma endregion
+
+#pragma region 照準の更新
+
+	// 6. 照準の座標をマウス位置に合わせる
+	// Vector2 mousePosition = Input::GetInstance()->GetMousePosition();
+	// reticlePosition_ = mousePosition;
+	Vector2 move{};
+	if (input->PushKey(DIK_UP)) {
+		move.y -= 1.0f;
+	}else if (input->PushKey(DIK_DOWN)) {
+		move.y += 1.0f;
+	}
+	if (input->PushKey(DIK_LEFT)) {
+		move.x -= 1.0f;
+	}
+	else if (input->PushKey(DIK_RIGHT)) {
+		move.x += 1.0f;
+	}
+	reticlePosition_.x += move.x * 20.0f; // 照準の移動速度
+	reticlePosition_.y += move.y * 20.0f;
+	if (reticlePosition_.x < 0.0f) {
+		reticlePosition_.x = 0.0f; // 左端の制限
+	}
+	if (reticlePosition_.x > 1280.0f-reticle_->GetTextureSize().x) {
+		reticlePosition_.x = 1280.0f - reticle_->GetTextureSize().x; // 右端の制限
+	}
+	if (reticlePosition_.y < 0.0f) {
+		reticlePosition_.y = 0.0f; // 上端の制限
+	}
+	if (reticlePosition_.y > 720.0f - reticle_->GetTextureSize().y) {
+		reticlePosition_.y = 720.0f - reticle_->GetTextureSize().y; // 下端の制限
+	}
+
+	reticle_->SetPosition(reticlePosition_);
+	reticle_->Update();
 
 #pragma region ライティング
 	// *ライティング* //
 
 	// 平行光
-	object_->SetDirectionalLight(isDirectionalLight);
-	object_->SetDirectionalLightDirection(DirectionalLightDirection);
-	object_->SetDirectionalLightColor(DirectionalLightColor);
-	object_->SetDirectionalLightIntensity(DirectionalLightIntensity);
+	playerObject_->SetDirectionalLight(isDirectionalLight);
+	playerObject_->SetDirectionalLightDirection(DirectionalLightDirection);
+	playerObject_->SetDirectionalLightColor(DirectionalLightColor);
+	playerObject_->SetDirectionalLightIntensity(DirectionalLightIntensity);
 	// 環境光
-	object_->SetAmbientLight(isAmbientLight);
-	object_->SetAmbientLightColor(AmbientLightColor);
-	object_->SetAmbientLightIntensity(AmbientLightIntensity);
+	playerObject_->SetAmbientLight(isAmbientLight);
+	playerObject_->SetAmbientLightColor(AmbientLightColor);
+	playerObject_->SetAmbientLightIntensity(AmbientLightIntensity);
 	// ポイントライト
-	object_->SetPointLight(isPointLight);
-	object_->SetPointLightColor(PointLightColor);
-	object_->SetPointLightPosition(PointLightPosition);
-	object_->SetPointLightIntensity(PointLightIntensity);
+	playerObject_->SetPointLight(isPointLight);
+	playerObject_->SetPointLightColor(PointLightColor);
+	playerObject_->SetPointLightPosition(PointLightPosition);
+	playerObject_->SetPointLightIntensity(PointLightIntensity);
 	// スポットライト
-	object_->SetSpotLight(isSpotLight);
-	object_->SetSpotLightColor(SpotLightColor);
-	object_->SetSpotLightPosition(SpotLightPosition);
-	object_->SetSpotLightDirection(SpotLightDirection);
-	object_->SetSpotLightRange(SpotLightRange);
-	object_->SetSpotLightIntensity(SpotLightIntensity);
+	playerObject_->SetSpotLight(isSpotLight);
+	playerObject_->SetSpotLightColor(SpotLightColor);
+	playerObject_->SetSpotLightPosition(SpotLightPosition);
+	playerObject_->SetSpotLightDirection(SpotLightDirection);
+	playerObject_->SetSpotLightRange(SpotLightRange);
+	playerObject_->SetSpotLightIntensity(SpotLightIntensity);
 
 #pragma endregion
 }
 
-void Player::Draw2D() {}
+void Player::Draw2D() {
+	// sprite描画
+	reticle_->Draw(); 
+}
 
 void Player::Draw3D() {
 	// 3Dオブジェクト描画
-	object_->Draw();
+	playerObject_->Draw();
 }
