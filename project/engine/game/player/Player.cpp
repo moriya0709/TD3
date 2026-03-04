@@ -1,7 +1,7 @@
 #include "Player.h"
 #include "ObjectCommon.h"
-#include "SpriteCommon.h"
 #include "SceneManager.h"
+#include "SpriteCommon.h"
 
 void Player::Initialize(Camera* camera) {
 	// カメラの生成
@@ -21,10 +21,6 @@ void Player::Initialize(Camera* camera) {
 	statas_.hp = 100;
 	statas_.attack = 10;
 	statas_.speed = 0.1f;
-
-	
-
-
 }
 
 void Player::Update() {
@@ -46,13 +42,38 @@ void Player::Update() {
 	object_->SetTranslate(transform_.translate);
 
 	object_->Update();
+
+#pragma region ライティング
+	// *ライティング* //
+
+	// 平行光
+	object_->SetDirectionalLight(isDirectionalLight);
+	object_->SetDirectionalLightDirection(DirectionalLightDirection);
+	object_->SetDirectionalLightColor(DirectionalLightColor);
+	object_->SetDirectionalLightIntensity(DirectionalLightIntensity);
+	// 環境光
+	object_->SetAmbientLight(isAmbientLight);
+	object_->SetAmbientLightColor(AmbientLightColor);
+	object_->SetAmbientLightIntensity(AmbientLightIntensity);
+	// ポイントライト
+	object_->SetPointLight(isPointLight);
+	object_->SetPointLightColor(PointLightColor);
+	object_->SetPointLightPosition(PointLightPosition);
+	object_->SetPointLightIntensity(PointLightIntensity);
+	// スポットライト
+	object_->SetSpotLight(isSpotLight);
+	object_->SetSpotLightColor(SpotLightColor);
+	object_->SetSpotLightPosition(SpotLightPosition);
+	object_->SetSpotLightDirection(SpotLightDirection);
+	object_->SetSpotLightRange(SpotLightRange);
+	object_->SetSpotLightIntensity(SpotLightIntensity);
+
+#pragma endregion
 }
 
-void Player::Draw2D() {
-}
+void Player::Draw2D() {}
 
 void Player::Draw3D() {
 	// 3Dオブジェクト描画
 	object_->Draw();
 }
-
