@@ -13,9 +13,9 @@ void GamePlayScene::Initialize()
     // カメラマネージャ登録
     CameraManager::GetInstance()->AddCamera("main", camera.get());
     CameraManager::GetInstance()->SetActiveCamera("main");
-
-    player = std::make_unique<Player>();
-    player->Initialize(camera.get());
+  
+  	player_ = std::make_unique<Player>();
+  	player_->Initialize(camera.get());
 
     Enemy_ = std::make_unique<NormalEnemy>();
     Enemy_->Initialize(camera.get());
@@ -28,33 +28,11 @@ void GamePlayScene::Initialize()
     // 初期化済みの3Dオブジェクトにモデルを紐づける
 }
 
-void GamePlayScene::Update()
-{
-    // 入力取得
-    auto input = Input::GetInstance();
-    // カメラ更新
-    CameraManager::GetInstance()->Update();
-
-    // ENTERキーを押したら
-    if (input->TriggerKey(DIK_RETURN)) {
-        // シーン切り換え
-        SceneManager::GetInstance()->ChangeScene("TITLE");
-    }
-
-    // 数字の０キーが押されていたら
-    if (input->TriggerKey(DIK_0)) {
-        OutputDebugStringA("Hit 0\n"); // 出力ウィンドウに「Hit ０」と表示
-        // テクスチャ変更
-        sprite->ChangeTexture("Resource/uvChecker.png");
-        particleEmitter->SetActive("group2");
-    }
-
-    // パーティクルエミッタ更新
-    particleEmitter->Update();
-
-    // プレイヤー更新
-    player->Update();
-    Enemy_->Update();
+	// プレイヤー更新
+	player_->Update();
+  
+  // 敵更新
+  Enemy_->Update();
 
 #pragma region ライティング
     // *ライティング* //
@@ -245,21 +223,23 @@ void GamePlayScene::Update()
 #endif
 }
 
-void GamePlayScene::Draw2D()
-{
-    // 2Dオブジェクトの描画準備
-    SpriteCommon::GetInstance()->SetCommonPipelineState();
 
-    // スプライト描画
-    // sprite->Draw();
+void GamePlayScene::Draw2D() {
+	// 2Dオブジェクトの描画準備
+	SpriteCommon::GetInstance()->SetCommonPipelineState();
+  
+	player_->Draw2D();
+
+  // スプライト描画
+  // sprite->Draw();
 }
-void GamePlayScene::Draw3D()
-{
-    // 3Dオブジェクトの描画準備
-    ObjectCommon::GetInstance()->SetCommonPipelineState();
-    // 3Dオブジェクト描画
-    player->Draw3D();
 
+void GamePlayScene::Draw3D() {
+	// 3Dオブジェクトの描画準備
+	ObjectCommon::GetInstance()->SetCommonPipelineState();
+	// 3Dオブジェクト描画
+	player_->Draw3D();
+  
     Enemy_->Draw3D();
 
     // パーティクル描画
