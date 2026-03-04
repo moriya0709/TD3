@@ -216,16 +216,18 @@
     <ClCompile Include="Enemy.cpp">
       <Filter>ソース ファイル\Enemy</Filter>
     </ClCompile>
-    <ClCompile Include="EnemyBulet.cpp">
-      <Filter>ソース ファイル\Enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="EnemySpawner.cpp">
+    <ClCompile Include="EnemyBullet.cpp">
       <Filter>ソース ファイル\Enemy</Filter>
     </ClCompile>
     <ClCompile Include="NormalEnemy.cpp">
       <Filter>ソース ファイル\Enemy</Filter>
     </ClCompile>
+<ClCompile Include="NormalEnemyBullet.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="engine\game\player\PlayerBullet.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -374,16 +376,18 @@
     <ClInclude Include="Enemy.h">
       <Filter>ヘッダー ファイル\Enemy</Filter>
     </ClInclude>
-    <ClInclude Include="EnemyBulet.h">
-      <Filter>ヘッダー ファイル\Enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="EnemySpawner.h">
+    <ClInclude Include="EnemyBullet.h">
       <Filter>ヘッダー ファイル\Enemy</Filter>
     </ClInclude>
     <ClInclude Include="NormalEnemy.h">
       <Filter>ヘッダー ファイル\Enemy</Filter>
     </ClInclude>
+<ClInclude Include="NormalEnemyBullet.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="engine\game\player\PlayerBullet.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
