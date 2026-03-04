@@ -44,6 +44,14 @@ void Input::Update() {
 	keyboard->Acquire();
 	// 全キーの入力情報を取得する
 	keyboard->GetDeviceState(sizeof(key), key);
+
+	// スクリーン座標取得
+	POINT pos;
+	GetCursorPos(&pos);
+	ScreenToClient(windowAPI_->GetHwnd(), &pos);
+
+	mouseScreenX = pos.x;
+	mouseScreenY = pos.y;
 }
 
 Input* Input::GetInstance() {

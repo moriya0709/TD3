@@ -74,6 +74,7 @@
     <ClCompile Include="application\postEffect\PostEffect.cpp" />
     <ClCompile Include="NormalEnemy.cpp" />
     <ClCompile Include="NormalEnemyBullet.cpp" />
+    <ClCompile Include="engine\game\player\PlayerBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.PS.hlsl">
@@ -201,6 +202,8 @@
     <ClInclude Include="application\postEffect\PostEffect.h" />
     <ClInclude Include="NormalEnemy.h" />
     <ClInclude Include="NormalEnemyBullet.h" />
+    <ClInclude Include="engine\game\player\PlayerBullet.h" />
+
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
