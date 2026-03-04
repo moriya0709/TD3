@@ -97,6 +97,7 @@ void Game::Draw() {
 
 	// シーンマネージャー描画(2D)
 	SceneManager::GetInstance()->Draw2D();
+	
 
 	// ImGui描画
 	imGuiManager->Draw();

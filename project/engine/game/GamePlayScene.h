@@ -107,5 +107,5 @@ private:
 	// パーティクルエミッタ
 	std::unique_ptr<ParticleEmitter> particleEmitter = nullptr;
 
-	std::unique_ptr<Player> player = nullptr;
+	std::unique_ptr<Player> player_ = nullptr;
 };
