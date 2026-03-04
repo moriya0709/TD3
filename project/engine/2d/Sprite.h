@@ -90,7 +90,7 @@ private:
 	Vector2 size = { 640.0f,360.0f };
 
 	// アンカーポイント
-	Vector2 anchorPoint = { 0.0f,0.0f };
+	Vector2 anchorPoint = { 0.5f,0.5f };
 
 	// フリップ
 	bool isFlipX_ = false;
