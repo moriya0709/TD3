@@ -13,9 +13,9 @@ void GamePlayScene::Initialize()
     // カメラマネージャ登録
     CameraManager::GetInstance()->AddCamera("main", camera.get());
     CameraManager::GetInstance()->SetActiveCamera("main");
-  
-  	player_ = std::make_unique<Player>();
-  	player_->Initialize(camera.get());
+
+    player_ = std::make_unique<Player>();
+    player_->Initialize(camera.get());
 
     Enemy_ = std::make_unique<NormalEnemy>();
     Enemy_->Initialize(camera.get());
@@ -28,11 +28,14 @@ void GamePlayScene::Initialize()
     // 初期化済みの3Dオブジェクトにモデルを紐づける
 }
 
-	// プレイヤー更新
-	player_->Update();
-  
-  // 敵更新
-  Enemy_->Update();
+void GamePlayScene::Update()
+{
+
+    // プレイヤー更新
+    player_->Update();
+
+    // 敵更新
+    Enemy_->Update();
 
 #pragma region ライティング
     // *ライティング* //
@@ -223,23 +226,24 @@ void GamePlayScene::Initialize()
 #endif
 }
 
+void GamePlayScene::Draw2D()
+{
+    // 2Dオブジェクトの描画準備
+    SpriteCommon::GetInstance()->SetCommonPipelineState();
 
-void GamePlayScene::Draw2D() {
-	// 2Dオブジェクトの描画準備
-	SpriteCommon::GetInstance()->SetCommonPipelineState();
-  
-	player_->Draw2D();
+    player_->Draw2D();
 
-  // スプライト描画
-  // sprite->Draw();
+    // スプライト描画
+    // sprite->Draw();
 }
 
-void GamePlayScene::Draw3D() {
-	// 3Dオブジェクトの描画準備
-	ObjectCommon::GetInstance()->SetCommonPipelineState();
-	// 3Dオブジェクト描画
-	player_->Draw3D();
-  
+void GamePlayScene::Draw3D()
+{
+    // 3Dオブジェクトの描画準備
+    ObjectCommon::GetInstance()->SetCommonPipelineState();
+    // 3Dオブジェクト描画
+    player_->Draw3D();
+
     Enemy_->Draw3D();
 
     // パーティクル描画
