@@ -27,6 +27,10 @@ void Player::Initialize(Camera* camera) {
 	statas_.hp = 100;
 	statas_.attack = 10;
 	statas_.speed = 0.1f;
+	statas_.haste = 10;
+	statas_.chargeTime = 1.0f;
+	statas_.hommingAccuracy = 0.0f;
+	statas_.renge = 80.0f;
 }
 
 void Player::Update() {
@@ -96,8 +100,9 @@ void Player::Update() {
 	ImGui::SliderInt("Attack", &statas_.attack, 0, 100);                         // 攻撃力
 	ImGui::SliderFloat("Speed", &statas_.speed, 0.0f, 1.0f);                     // 速度
 	ImGui::SliderFloat("Homing Accuracy", &statas_.hommingAccuracy, 0.0f, 1.0f); // ホーミング精度
-	ImGui::SliderFloat("Bullet Speed", &statas_.bulletSpeed, 0.0f, 1.0f);        // 弾速
+	ImGui::SliderFloat("Bullet Speed", &statas_.renge, 0.0f, 1.0f);        // 弾速
 	ImGui::SliderFloat("Charge Time", &statas_.chargeTime, 0.0f, 5.0f);          // チャージ時間
+	ImGui::SliderInt("Haste", &statas_.haste, 0, 30);                            // 攻撃頻度
 	ImGui::SliderFloat3("Translate", &transform_.translate.x, -3.5f, 5.0f);      // 座標
 	ImGui::End();                                                                // Playerウィンドウ終了
 
@@ -122,15 +127,15 @@ void Player::Update() {
 	move = input->GetMouseScreen(); // マウスのスクリーン座標を更新
 
 	if (input->PushKey(DIK_UP)) {
-		move.y -= 1;
-	}else if (input->PushKey(DIK_DOWN)) {
-		move.y += 1;
+		move.y -= 1.0f;
+	} else if (input->PushKey(DIK_DOWN)) {
+		move.y += 1.0f;
 	}
 	if (input->PushKey(DIK_LEFT)) {
-		move.x -= 1;
-	}
-	else if (input->PushKey(DIK_RIGHT)) {
-		move.x += 1;
+		move.x -= 1.0f;
+	} else if (input->PushKey(DIK_RIGHT)) {
+		move.x += 1.0f;
+
 	}
 	reticlePosition_.x = move.x; // 照準の移動速度
 	reticlePosition_.y = move.y;
@@ -149,6 +154,10 @@ void Player::Update() {
 
 	reticle_->SetPosition(reticlePosition_);
 	reticle_->Update();
+	Attack();
+	for (PlayerBullet* bullet : bullets) {
+		bullet->Update();
+	}
 
 #pragma region ライティング
 	// *ライティング* //
@@ -180,10 +189,37 @@ void Player::Update() {
 
 void Player::Draw2D() {
 	// sprite描画
-	reticle_->Draw(); 
+	reticle_->Draw();
 }
 
 void Player::Draw3D() {
 	// 3Dオブジェクト描画
+	for (PlayerBullet* bullet : bullets) {
+		bullet->Draw3D();
+	}
+
 	playerObject_->Draw();
+}
+
+Player::~Player() {
+	for (PlayerBullet* bullet : bullets) {
+		delete bullet;
+	}
+}
+
+void Player::Attack() {
+	auto input = Input::GetInstance();
+
+	if (coolTime > 0) {
+		coolTime--;
+		return;
+	}
+	if (input->PushKey(DIK_SPACE)) {
+		// 攻撃処理
+		PlayerBullet* newBullet_ = new PlayerBullet();
+		newBullet_->Initialize(transform_.translate, camera_);
+		newBullet_->SetStatus(statas_.renge,statas_.hommingAccuracy);	
+		bullets.push_back(newBullet_);
+		coolTime = statas_.haste;
+	}
 }
