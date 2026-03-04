@@ -123,6 +123,9 @@ void Player::Update() {
 	// Vector2 mousePosition = Input::GetInstance()->GetMousePosition();
 	// reticlePosition_ = mousePosition;
 	Vector2 move{};
+
+	move = input->GetMouseScreen(); // マウスのスクリーン座標を更新
+
 	if (input->PushKey(DIK_UP)) {
 		move.y -= 1.0f;
 	} else if (input->PushKey(DIK_DOWN)) {
@@ -132,9 +135,10 @@ void Player::Update() {
 		move.x -= 1.0f;
 	} else if (input->PushKey(DIK_RIGHT)) {
 		move.x += 1.0f;
+
 	}
-	reticlePosition_.x += move.x * 20.0f; // 照準の移動速度
-	reticlePosition_.y += move.y * 20.0f;
+	reticlePosition_.x = move.x; // 照準の移動速度
+	reticlePosition_.y = move.y;
 	if (reticlePosition_.x < 0.0f) {
 		reticlePosition_.x = 0.0f; // 左端の制限
 	}
