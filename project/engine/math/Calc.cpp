@@ -131,6 +131,13 @@ Matrix4x4 MakeRotateZMatrix(float theta)
 	return result;
 }
 
+Matrix4x4 MakeRotateMatrix(const Vector3& rot) {
+	Matrix4x4 matRotX = MakeRotateXMatrix(rot.x);
+	Matrix4x4 matRotY = MakeRotateYMatrix(rot.y);
+	Matrix4x4 matRotZ = MakeRotateZMatrix(rot.z);
+	return matRotZ * matRotX * matRotY;
+}
+
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate)
 {
 	Matrix4x4 result{ 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, translate.x, translate.y, translate.z, 1.0f };

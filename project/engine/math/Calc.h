@@ -82,6 +82,7 @@ Matrix4x4 MakeScaleMatrix(const Vector3& scale);
 Matrix4x4 MakeRotateXMatrix(float theta);
 Matrix4x4 MakeRotateYMatrix(float theta);
 Matrix4x4 MakeRotateZMatrix(float theta);
+Matrix4x4 MakeRotateMatrix(const Vector3& rot);
 // 平行移動行列の作成
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 // アフィン変換行列の作成
