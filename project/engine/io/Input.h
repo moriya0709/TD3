@@ -7,6 +7,7 @@
 #include <wrl.h>
 
 #include "WindowAPI.h"
+#include "Calc.h"
 
 
 class Input {
@@ -29,6 +30,12 @@ public:
 	// マウス
 	LONG GetMouseX() const { return mouseState.lX; }
 	LONG GetMouseY() const { return mouseState.lY; }
+	Vector2 GetMouseScreen() const {
+		return Vector2{
+static_cast<float>(mouseScreenX),
+static_cast<float>(mouseScreenY)
+		};
+	}
 	bool IsMouseButtonPressed(int button);
 
 	// ゲームパッド
@@ -48,6 +55,8 @@ private:
 	// マウス
 	ComPtr<IDirectInputDevice8> mouse = nullptr;
 	DIMOUSESTATE mouseState{}; // マウスの状態
+	int mouseScreenX; // マウスのスクリーン座標X
+	int mouseScreenY; // マウスのスクリーン座標Y
 
 	// ゲームパッド
 	std::vector<IDirectInputDevice8> gamepads;

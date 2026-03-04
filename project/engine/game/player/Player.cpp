@@ -118,23 +118,26 @@ void Player::Update() {
 	// Vector2 mousePosition = Input::GetInstance()->GetMousePosition();
 	// reticlePosition_ = mousePosition;
 	Vector2 move{};
+
+	move = input->GetMouseScreen(); // マウスのスクリーン座標を更新
+
 	if (input->PushKey(DIK_UP)) {
-		move.y -= 1.0f;
+		move.y -= 1;
 	}else if (input->PushKey(DIK_DOWN)) {
-		move.y += 1.0f;
+		move.y += 1;
 	}
 	if (input->PushKey(DIK_LEFT)) {
-		move.x -= 1.0f;
+		move.x -= 1;
 	}
 	else if (input->PushKey(DIK_RIGHT)) {
-		move.x += 1.0f;
+		move.x += 1;
 	}
-	reticlePosition_.x += move.x * 20.0f; // 照準の移動速度
-	reticlePosition_.y += move.y * 20.0f;
+	reticlePosition_.x = move.x; // 照準の移動速度
+	reticlePosition_.y = move.y;
 	if (reticlePosition_.x < 0.0f) {
 		reticlePosition_.x = 0.0f; // 左端の制限
 	}
-	if (reticlePosition_.x > 1280.0f-reticle_->GetTextureSize().x) {
+	if (reticlePosition_.x > 1280.0f - reticle_->GetTextureSize().x) {
 		reticlePosition_.x = 1280.0f - reticle_->GetTextureSize().x; // 右端の制限
 	}
 	if (reticlePosition_.y < 0.0f) {
