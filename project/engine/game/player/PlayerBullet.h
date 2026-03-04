@@ -11,7 +11,6 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
-#include "Player.h"
 
 class PlayerBullet {
 public:
@@ -19,15 +18,15 @@ public:
 	void Update();
 	void Draw3D();
 	void Draw2D();
-	void SetStatus(const Player::Statas& statas) {
-		hommingAccuracy = statas.hommingAccuracy;
-		renge = statas.renge;
+	void SetStatus(const float hommingAccuracy, const float renge) {
+		hommingAccuracy_ = hommingAccuracy;
+		renge_ = renge;
 	}
 
 private:
 	// プレイヤーの弾のステータス
 	Transform transform_;
 	std::unique_ptr<Object> object_;
-	float hommingAccuracy = 0.0f; // ホーミング精度
-	float renge = 0.0f;           // 弾速
+	float hommingAccuracy_ = 0.0f; // ホーミング精度
+	float renge_ = 0.0f;           // 弾速
 };
