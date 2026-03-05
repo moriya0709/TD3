@@ -113,6 +113,6 @@ private:
 	std::unique_ptr<ParticleEmitter> particleEmitter = nullptr;
 
 	std::unique_ptr<Player> player_ = nullptr;
-  std::unique_ptr<Enemy> Enemy_ = nullptr;
+    std::unique_ptr<Enemy> Enemy_ = nullptr;
 
 };
