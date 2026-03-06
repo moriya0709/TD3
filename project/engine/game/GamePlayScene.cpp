@@ -14,15 +14,15 @@ void GamePlayScene::Initialize()
     CameraManager::GetInstance()->AddCamera("main", camera.get());
     CameraManager::GetInstance()->SetActiveCamera("main");
 
-
     CameraController_ = std::make_unique<CameraController>();
     CameraController_->Initialize(camera.get());
 
     player_ = std::make_unique<Player>();
     player_->Initialize(camera.get());
 
-    Enemy_ = std::make_unique<NormalEnemy>();
+    Enemy_ = std::make_unique<HomingEnemy>();
     Enemy_->Initialize(camera.get());
+    Enemy_->SetTargetPlayer(player_.get());
 
     Enemy2_ = std::make_unique<TargetEnemy>();
     Enemy2_->Initialize(camera.get());
@@ -242,7 +242,6 @@ void GamePlayScene::Draw2D()
 {
     // 2Dオブジェクトの描画準備
     SpriteCommon::GetInstance()->SetCommonPipelineState();
-
 
     player_->Draw2D();
 

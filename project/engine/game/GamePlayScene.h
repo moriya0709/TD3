@@ -17,6 +17,7 @@
 #include "../Enemy/Enemy.h"
 #include "../Enemy/NormalEnemy.h"
 #include "../Enemy/TargetEnemy.h"
+#include "../Enemy/HomingEnemy.h"
 #include "player/Player.h"
 
 class SpriteCommon;

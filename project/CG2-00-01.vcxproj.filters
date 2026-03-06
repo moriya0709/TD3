@@ -145,6 +145,8 @@
     <ClCompile Include="Enemy\TargetEnemy.cpp" />
     <ClCompile Include="Enemy\TargetEnemyBullet.cpp" />
     <ClCompile Include="CameraController.cpp" />
+    <ClCompile Include="Enemy\HomingEnemy.cpp" />
+    <ClCompile Include="Enemy\HomingEnemyBullet.cpp" />
     <ClCompile Include="Enemy\Enemy.cpp" />
     <ClCompile Include="Enemy\EnemyBullet.cpp" />
     <ClCompile Include="player\Player.cpp" />
@@ -271,6 +273,8 @@
     <ClInclude Include="Enemy\TargetEnemy.h" />
     <ClInclude Include="Enemy\TargetEnemyBullet.h" />
     <ClInclude Include="CameraController.h" />
+    <ClInclude Include="Enemy\HomingEnemy.h" />
+    <ClInclude Include="Enemy\HomingEnemyBullet.h" />
     <ClInclude Include="Enemy\Enemy.h" />
     <ClInclude Include="Enemy\EnemyBullet.h" />
     <ClInclude Include="player\Player.h" />
