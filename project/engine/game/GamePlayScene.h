@@ -11,6 +11,7 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
+#include "CameraContoroller.h"
 
 #include "player/Player.h"
 #include "../Enemy.h"
@@ -114,5 +115,6 @@ private:
 
 	std::unique_ptr<Player> player_ = nullptr;
     std::unique_ptr<Enemy> Enemy_ = nullptr;
+	std::unique_ptr<CameraController> cameraContoroller_ = nullptr;
 
 };
