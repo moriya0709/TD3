@@ -67,6 +67,11 @@ void WindowAPI::Initialize() {
 		nullptr					// オプション
 	);
 
+	// フルスクリーン
+	ToggleFullscreen();
+	// マウスカーソル表示
+	ShowCursor(true);
+
 	// ウィンドウを表示
 	ShowWindow(hwnd, SW_SHOW);
 
@@ -95,4 +100,59 @@ bool WindowAPI::ProcessMessage() {
 	}
 
 	return false;
+}
+
+void WindowAPI::ToggleFullscreen() {
+	SetFullscreen(isFullscreen_);
+}
+
+void WindowAPI::SetFullscreen(bool fullscreen) {
+	if (fullscreen == isFullscreen_) {
+		return;
+	}
+
+	if (fullscreen) {
+
+		// 現在のウィンドウサイズ保存
+		GetWindowRect(hwnd, &windowRect_);
+
+		// スタイル変更
+		SetWindowLong(hwnd, GWL_STYLE, WS_POPUP);
+
+		// モニタサイズ取得
+		MONITORINFO mi{};
+		mi.cbSize = sizeof(mi);
+		GetMonitorInfo(
+			MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST),
+			&mi
+		);
+
+		// フルスクリーン化
+		SetWindowPos(
+			hwnd,
+			HWND_TOP,
+			mi.rcMonitor.left,
+			mi.rcMonitor.top,
+			mi.rcMonitor.right - mi.rcMonitor.left,
+			mi.rcMonitor.bottom - mi.rcMonitor.top,
+			SWP_FRAMECHANGED
+		);
+	} else {
+
+		// ウィンドウスタイル戻す
+		SetWindowLong(hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+
+		// 元のサイズに戻す
+		SetWindowPos(
+			hwnd,
+			HWND_NOTOPMOST,
+			windowRect_.left,
+			windowRect_.top,
+			windowRect_.right - windowRect_.left,
+			windowRect_.bottom - windowRect_.top,
+			SWP_FRAMECHANGED
+		);
+	}
+
+	isFullscreen_ = fullscreen;
 }

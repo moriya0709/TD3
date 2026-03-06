@@ -34,6 +34,9 @@ void M_Framework::Initialize() {
 		}
 	};
 
+	// DPIに対応
+	SetProcessDPIAware();
+
 	// COMの初期化
 	CoInitializeEx(0, COINIT_MULTITHREADED);
 

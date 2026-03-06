@@ -1,4 +1,5 @@
 #include "NormalEnemy.h"
+#include "NormalEnemyBullet.h"
 
 void NormalEnemy::Initialize(Camera* camera)
 {
@@ -14,12 +15,33 @@ void NormalEnemy::Initialize(Camera* camera)
     object_->SetScale(transform_.scale);
     object_->SetRotate(transform_.rotate);
     object_->SetTranslate(transform_.translate);
+
+    interval = maxInterval;
 }
 
 void NormalEnemy::Update()
 {
-    // カメラ更新
-    camera_->Update();
+
+    // 弾を生成
+    interval -= 1.0f / 60.0f;
+
+    if (interval <= 0.0f) {
+        std::unique_ptr<NormalEnemyBullet> newBulletEnemy = std::make_unique<NormalEnemyBullet>();
+        newBulletEnemy->Initialize(camera_);
+
+        enemyBullet_.push_back(std::move(newBulletEnemy));
+        interval = maxInterval;
+    }
+    // 更新処理
+    for (auto& bullet : enemyBullet_) {
+        bullet->Update();
+    }
+
+    std::erase_if(enemyBullet_, [](const std::unique_ptr<EnemyBullet>& bullet) {
+        return !bullet->GetIsActive(); // GetIsActive が false なら削除
+    });
+
+    // ここにIMGUI
 
     object_->Update();
 }
@@ -28,4 +50,9 @@ void NormalEnemy::Draw3D()
 {
     // 3Dオブジェクト描画
     object_->Draw();
+
+    // 更新処理
+    for (auto& bullet : enemyBullet_) {
+        bullet->Draw3D();
+    }
 }
