@@ -16,48 +16,79 @@
 #include <map>
 #include "Sprite.h"
 
-struct InputEvent {
-	float time;
-	std::string key;
-	bool isPressed;
+// カメラの状態（速度）を記録する構造体
+struct CameraState {
+	float time;              // 変化が起きた時間
+	Vector3 velocity;        // 移動速度 (x, y, z)
+	Vector3 angularVelocity; // 回転速度 (rx, ry, rz)
 };
 
 class CameraController {
 public:
+	/// <summary>
+	/// 初期化：カメラの登録と、既存リプレイファイルの自動読み込み
+	/// </summary>
 	void Initialize(Camera* camera);
+
+	/// <summary>
+	/// 毎フレーム更新：通常操作またはリプレイの実行
+	/// </summary>
 	void Update();
 
 private:
-	class CameraInterface {
-	public:
-		virtual void SetRotate(Vector3 r) = 0;
-		virtual void SetTranslate(Vector3 t) = 0;
-	};
+	// --- 内部処理メソッド ---
 
-	// メンバ変数
-	Camera* camera; // 実際のカメラクラスの型に書き換えてください
+	// 通常時の入力処理と速度計算
+	void CalculateVelocityFromInput(Vector3& vel, Vector3& angVel);
+
+	// 速度に変化があった場合のみ履歴に記録
+	void RecordStateIfChanged(const Vector3& vel, const Vector3& angVel);
+
+	// リプレイ時の速度適用
+	void ApplyReplayState(Vector3& vel, Vector3& angVel);
+
+	// 物理移動（速度を座標に反映）
+	void ApplyPhysics(const Vector3& vel, const Vector3& angVel);
+
+	// リプレイ開始処理
+	void StartReplay();
+
+	// JSON保存・読み込み
+	void SaveToJSON(const std::string& filename);
+	void LoadFromJSON(const std::string& filename);
+
+private:
+	// --- メンバ変数 ---
+
+	Camera* camera = nullptr;
+
+	// 現在のトランスフォーム（計算用）
 	Transform cameraTransform = {
 	    {0, 0, 0},
         {0, 0, 0}
     };
+	// 録画開始時のトランスフォーム（リプレイ開始地点）
 	Transform initialTransform = {
 	    {0, 0, 0},
         {0, 0, 0}
     };
 
-	std::vector<InputEvent> inputHistory;
-	std::map<std::string, bool> replayKey;
-	std::map<std::string, bool> lastKeyStates;
+	// 履歴データ
+	std::vector<CameraState> stateHistory;
 
+	// リプレイ制御用
 	float timer = 0.0f;
 	bool isReplaying = false;
 	size_t replayIndex = 0;
+
+	// リプレイ中に現在適用されている速度
+	Vector3 activeVelocity = {0, 0, 0};
+	Vector3 activeAngularVelocity = {0, 0, 0};
+
+	// キーのトリガー判定用
 	bool lastRKey = false;
-	void ProcessNormalInput();
-	void ProcessReplay();
-	void ApplyPhysics(bool w, bool a, bool s, bool d, bool up, bool down, bool left, bool right);
-	void CheckAndRecord(std::string keyName, bool pressed);
-	void StartReplay();
-	void SaveToJSON(const std::string& filename);
-	void LoadFromJSON(const std::string& filename);
+
+	// 変化検知用の前フレーム速度
+	Vector3 lastRecordedVel = {-1.0f, -1.0f, -1.0f};
+	Vector3 lastRecordedAngVel = {-1.0f, -1.0f, -1.0f};
 };
