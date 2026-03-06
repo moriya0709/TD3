@@ -36,13 +36,14 @@ public:
     virtual bool GetIsActive() const = 0;
     virtual Vector3 GetWorldPosition() const = 0;
     virtual float GetRadius() const = 0;
-    //virtual void OnCollision() = 0;
+    // virtual void OnCollision() = 0;
 
     /* Set関数 */
     // 座標をセットする関数
     virtual void SetPosition(Vector3 Pos) = 0;
     virtual void SetBulletAcceleration(Vector3 num) = 0;
     virtual void SetactiveTimer(float num) = 0;
+    virtual void SetTargetPosition(Vector3 Pos) = 0;
 
 private:
     // Transform transform_; // 座標系

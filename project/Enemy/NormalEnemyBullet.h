@@ -18,13 +18,14 @@ public:
     void SetPosition(Vector3 Pos) override { transform_.translate = Pos; }
     void SetBulletAcceleration(Vector3 num) override { acceleration = num; }
     void SetactiveTimer(float num) override { activeTimer = num; }
+    void SetTargetPosition(Vector3 Pos) { Pos; }
 
 private:
     Transform transform_; // 座標系
     bool isAvile = true; // 生存しているか
     Vector3 acceleration; // 弾の速さ(個別で設定)
-    Vector3 vector; // ベクトル(速さ)
-    static inline const float maxSpeed = 0.20f; // 弾の最高速度(青天井でおk)
+    Vector3 velocity_; // ベクトル(速さ)
+    static inline const float maxSpeed = 1.00f; // 弾の最高速度(青天井でおk)
     float activeTimer; // 弾の持続時間
     static inline const float maxactiveTimer = 3.0f; // 弾の最大持続時間
 
