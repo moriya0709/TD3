@@ -20,6 +20,11 @@ const Vector3 operator+(const Vector3& v1, const Vector3& v2)
 	return temp += v2;
 }
 
+const Vector3 operator-(const Vector3& v1, const Vector3& v2) {
+	Vector3 temp(v1);
+	return temp -= v2;
+}
+
 // 02_06ÇÃÉXÉâÉCÉh24ñáñ⁄ÇÃLerpä÷êî
 Vector3 CameraLerp(const Vector3& v1, const Vector3& v2, float t) { return Vector3(Lerp(v1.x, v2.x, t), Lerp(v1.y, v2.y, t), Lerp(v1.z, v2.z, t)); }
 
@@ -289,6 +294,10 @@ Vector3 Normalize(const Vector3& v) {
 	};
 }
 
+float Dot(const Vector3& a, const Vector3& b) {
+	return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
 
 Matrix4x4& operator*=(Matrix4x4& lhm, const Matrix4x4& rhm)
 {
@@ -313,6 +322,31 @@ Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2)
 	Matrix4x4 result = m1;
 
 	return result *= m2;
+}
+
+Vector3 VectorTransform(const Vector3& v, const Matrix4x4& m) {
+	float w = v.x * m.m[0][3] + v.y * m.m[1][3] + v.z * m.m[2][3] + m.m[3][3];
+	return Vector3{
+		(v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + m.m[3][0]) / w,
+		(v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1] + m.m[3][1]) / w,
+		(v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2] + m.m[3][2]) / w,
+	};
+}
+
+float RaySphereIntersect(const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& sphereCenter, float radius) {
+	Vector3 oc = rayOrigin - sphereCenter;
+
+	float a = Dot(rayDir, rayDir);
+	float b = 2.0f * Dot(oc, rayDir);
+	float c = Dot(oc, oc) - radius * radius;
+
+	float discriminant = b * b - 4 * a * c;
+
+	if (discriminant < 0) {
+		return -1.0f; // åç∑Ç»Çµ
+	}
+
+	return (-b - sqrtf(discriminant)) / (2.0f * a); // ãﬂÇ¢ï˚ÇÃãóó£
 }
 
 float Lerp(float x1, float x2, float t) { return (1.0f - t) * x1 + t * x2; }

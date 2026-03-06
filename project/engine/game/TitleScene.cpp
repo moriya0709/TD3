@@ -4,14 +4,14 @@
 #include "SceneManager.h"
 
 void TitleScene::Initialize() {
-	// カメラ初期化
-	camera = std::make_unique <Camera>();
-	camera->SetRotate({ cameraTransform.rotate });
-	camera->SetTranslate({ cameraTransform.translate });
+
+	// レールカメラ初期化
+	railCamera = std::make_unique <RailCamera>();
+	railCamera->Initialize();
 
 	// カメラマネージャ登録
-	CameraManager::GetInstance()->AddCamera("main", camera.get());
-	CameraManager::GetInstance()->SetActiveCamera("main");
+	//CameraManager::GetInstance()->AddCamera("main", camera.get());
+	//CameraManager::GetInstance()->SetActiveCamera("main");
 
 	// スプライト
 	sprite = std::make_unique <Sprite>();
@@ -20,7 +20,7 @@ void TitleScene::Initialize() {
 	// 3Dオブジェクト
 	for (int i = 0; i < 2; i++) {
 		object[i] = std::make_unique <Object>();
-		object[i]->Initialize(camera.get());
+		object[i]->Initialize(railCamera->camera.get());
 	}
 
 
@@ -31,7 +31,7 @@ void TitleScene::Initialize() {
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	object[0]->SetModel("plane.obj");
-	object[1]->SetModel("axis.obj");
+	object[1]->SetModel("SkyDome.obj");
 
 	// 音声再生
 	SoundManager::GetInstance()->Play("bgm");
@@ -42,7 +42,10 @@ void TitleScene::Update() {
 	// 入力取得
 	auto input = Input::GetInstance();
 	// カメラ更新
-	CameraManager::GetInstance()->Update();
+	//CameraManager::GetInstance()->Update();
+
+	railCamera->Update();
+	railCamera->EditorUpdate();
 
 	// ENTERキーを押したら
 	if (input->TriggerKey(DIK_RETURN)) {
@@ -126,7 +129,7 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetHeightFogTop(heightFogTop);
 	PostEffect::GetInstance()->SetHeightFogBottom(heightFogBottom);
 	PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
-	PostEffect::GetInstance()->HightFogUpdate(camera.get());
+	PostEffect::GetInstance()->HightFogUpdate(railCamera->camera.get());
 	// DOF
 	PostEffect::GetInstance()->SetDOF(isDOF);
 	PostEffect::GetInstance()->SetFocusDistance(focusDistance);
@@ -138,11 +141,6 @@ void TitleScene::Update() {
 #ifdef USE_IMGUI
 	// ImGui
 
-	// カメラ
-	ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f, -100.0f, 100.0f);
-	ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -180.0f, 180.0f);
-	camera->SetTranslate({ cameraTransform.translate });
-	camera->SetRotate({ cameraTransform.rotate });
 
 #pragma region ライティング
 	// *ライティング* //
@@ -277,6 +275,9 @@ void TitleScene::Draw2D() {
 void TitleScene::Draw3D() {
 	// 3Dオブジェクトの描画準備
 	ObjectCommon::GetInstance()->SetCommonPipelineState();
+
+	// レールカメラエディター
+	railCamera->EditorDraw();
 
 	// 3Dオブジェクト描画
 	for (int i = 0; i < 2; i++) {
