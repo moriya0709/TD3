@@ -169,6 +169,8 @@
     <ClCompile Include="Enemy\TargetEnemy.cpp" />
     <ClCompile Include="Enemy\TargetEnemyBullet.cpp" />
     <ClCompile Include="CameraController.cpp" />
+    <ClCompile Include="Enemy\HomingEnemy.cpp" />
+    <ClCompile Include="Enemy\HomingEnemyBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\base\AbstractSceneFactory.h">
@@ -314,6 +316,8 @@
     <ClInclude Include="Enemy\TargetEnemy.h" />
     <ClInclude Include="Enemy\TargetEnemyBullet.h" />
     <ClInclude Include="CameraController.h" />
+    <ClInclude Include="Enemy\HomingEnemy.h" />
+    <ClInclude Include="Enemy\HomingEnemyBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Object3d.hlsli">
