@@ -14,6 +14,12 @@ void GamePlayScene::Initialize()
     CameraManager::GetInstance()->AddCamera("main", camera.get());
     CameraManager::GetInstance()->SetActiveCamera("main");
 
+    cameraContoroller_ = std::make_unique<CameraController>();
+	cameraContoroller_->Initialize(camera.get());
+
+
+
+
     player_ = std::make_unique<Player>();
     player_->Initialize(camera.get());
 
@@ -30,7 +36,7 @@ void GamePlayScene::Initialize()
 
 void GamePlayScene::Update()
 {
-
+	cameraContoroller_->Update();
     // プレイヤー更新
     player_->Update();
 
