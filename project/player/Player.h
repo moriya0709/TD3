@@ -29,6 +29,7 @@ public:
 	void Update();
 	void Draw2D();
 	void Draw3D();
+	Vector3 GetPosition() const { return transform_.translate; }
 	~Player();
 
 private:

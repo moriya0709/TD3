@@ -1,6 +1,6 @@
 #include "EnemyBullet.h"
 
-void EnemyBullet::Initialize(Camera* camera)
+void EnemyBullet::Initialize(Camera* camera, Vector3 Pos)
 {
 }
 

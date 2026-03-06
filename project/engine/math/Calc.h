@@ -57,7 +57,7 @@ const Vector3 operator+(const Vector3& v1, const Vector3& v2);
 const Vector3 operator-(const Vector3& v1, const Vector3& v2);
 
 // 02_06のスライド24枚目のLerp関数
-Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
+Vector3 CameraLerp(const Vector3& v1, const Vector3& v2, float t);
 
 // 02_06 スライド29枚目で追加
 const Vector3 operator*(const Vector3& v1, const float f);

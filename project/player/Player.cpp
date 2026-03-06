@@ -2,6 +2,7 @@
 #include "ObjectCommon.h"
 #include "SceneManager.h"
 #include "SpriteCommon.h"
+#include"engine/base/WindowAPI.h"
 
 void Player::Initialize(Camera* camera) {
 	// カメラの生成
@@ -100,11 +101,13 @@ void Player::Update() {
 	ImGui::SliderInt("Attack", &statas_.attack, 0, 100);                         // 攻撃力
 	ImGui::SliderFloat("Speed", &statas_.speed, 0.0f, 1.0f);                     // 速度
 	ImGui::SliderFloat("Homing Accuracy", &statas_.hommingAccuracy, 0.0f, 1.0f); // ホーミング精度
-	ImGui::SliderFloat("Bullet Speed", &statas_.renge, 0.0f, 1.0f);        // 弾速
+	ImGui::SliderFloat("Bullet Speed", &statas_.renge, 0.0f, 1.0f);              // 弾速
 	ImGui::SliderFloat("Charge Time", &statas_.chargeTime, 0.0f, 5.0f);          // チャージ時間
 	ImGui::SliderInt("Haste", &statas_.haste, 0, 30);                            // 攻撃頻度
 	ImGui::SliderFloat3("Translate", &transform_.translate.x, -3.5f, 5.0f);      // 座標
+	ImGui::DragFloat2("reticlePosition", &reticlePosition_.x, 1.0f, 0.0f, 1280.0f); // 照準の座標)
 	ImGui::End();                                                                // Playerウィンドウ終了
+
 
 #pragma endregion
 
@@ -135,21 +138,20 @@ void Player::Update() {
 		move.x -= 1.0f;
 	} else if (input->PushKey(DIK_RIGHT)) {
 		move.x += 1.0f;
-
 	}
 	reticlePosition_.x = move.x; // 照準の移動速度
 	reticlePosition_.y = move.y;
 	if (reticlePosition_.x < 0.0f) {
 		reticlePosition_.x = 0.0f; // 左端の制限
 	}
-	if (reticlePosition_.x > 1280.0f - reticle_->GetTextureSize().x) {
-		reticlePosition_.x = 1280.0f - reticle_->GetTextureSize().x; // 右端の制限
+	if (reticlePosition_.x > float(WindowAPI::kClientWidth)) {
+		reticlePosition_.x = float(WindowAPI::kClientWidth); // 右端の制限
 	}
 	if (reticlePosition_.y < 0.0f) {
 		reticlePosition_.y = 0.0f; // 上端の制限
 	}
-	if (reticlePosition_.y > 720.0f - reticle_->GetTextureSize().y) {
-		reticlePosition_.y = 720.0f - reticle_->GetTextureSize().y; // 下端の制限
+	if (reticlePosition_.y > float(WindowAPI::kClientHeight)) {
+		reticlePosition_.y = float(WindowAPI::kClientHeight); // 下端の制限
 	}
 
 	reticle_->SetPosition(reticlePosition_);
@@ -214,11 +216,13 @@ void Player::Attack() {
 		coolTime--;
 		return;
 	}
-	if (input->PushKey(DIK_SPACE)) {
+	// 攻撃入力(左クリック)を検出
+
+	if (input->IsMouseButtonPressed(0) || input->PushKey(DIK_SPACE)) {
 		// 攻撃処理
 		PlayerBullet* newBullet_ = new PlayerBullet();
 		newBullet_->Initialize(transform_.translate, camera_);
-		newBullet_->SetStatus(statas_.renge,statas_.hommingAccuracy);	
+		newBullet_->SetStatus(statas_.renge, statas_.hommingAccuracy,reticlePosition_);
 		bullets.push_back(newBullet_);
 		coolTime = statas_.haste;
 	}
