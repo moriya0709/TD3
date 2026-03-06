@@ -14,8 +14,9 @@ void GamePlayScene::Initialize()
     CameraManager::GetInstance()->AddCamera("main", camera.get());
     CameraManager::GetInstance()->SetActiveCamera("main");
 
-    cameraContoroller_ = std::make_unique<CameraController>();
-    cameraContoroller_->Initialize(camera.get());
+
+    CameraController_ = std::make_unique<CameraController>();
+	  CameraController_->Initialize(camera.get());
 
     player_ = std::make_unique<Player>();
     player_->Initialize(camera.get());
@@ -37,7 +38,8 @@ void GamePlayScene::Initialize()
 
 void GamePlayScene::Update()
 {
-    cameraContoroller_->Update();
+  	CameraController_->Update();
+
     // プレイヤー更新
     player_->Update();
 
@@ -229,6 +231,8 @@ void GamePlayScene::Update()
         ImGui::TreePop();
     }
 
+    CameraController_->DrawImGui();
+
 #pragma endregion
 
 #endif
@@ -238,6 +242,7 @@ void GamePlayScene::Draw2D()
 {
     // 2Dオブジェクトの描画準備
     SpriteCommon::GetInstance()->SetCommonPipelineState();
+
 
     player_->Draw2D();
 

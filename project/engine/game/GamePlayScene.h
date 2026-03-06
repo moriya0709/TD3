@@ -12,6 +12,8 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
+#include "CameraController.h"
+
 
 #include "../Enemy/Enemy.h"
 #include "../Enemy/NormalEnemy.h"
@@ -118,4 +120,5 @@ private:
     std::unique_ptr<Enemy> Enemy_ = nullptr;
     std::unique_ptr<Enemy> Enemy2_ = nullptr; // テスト用(後でlist化)
     std::unique_ptr<CameraController> cameraContoroller_ = nullptr;
+
 };

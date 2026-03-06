@@ -166,9 +166,9 @@
     <ClCompile Include="engine\game\TitleScene.cpp">
       <Filter>game\scene</Filter>
     </ClCompile>
-    <ClCompile Include="CameraContoroller.cpp" />
     <ClCompile Include="Enemy\TargetEnemy.cpp" />
     <ClCompile Include="Enemy\TargetEnemyBullet.cpp" />
+    <ClCompile Include="CameraController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\base\AbstractSceneFactory.h">
@@ -311,9 +311,9 @@
     </ClInclude>
     <ClInclude Include="externals\nlohmann\json.hpp" />
     <ClInclude Include="externals\nlohmann\json_fwd.hpp" />
-    <ClInclude Include="CameraContoroller.h" />
     <ClInclude Include="Enemy\TargetEnemy.h" />
     <ClInclude Include="Enemy\TargetEnemyBullet.h" />
+    <ClInclude Include="CameraController.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Object3d.hlsli">
