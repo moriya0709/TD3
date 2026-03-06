@@ -31,6 +31,14 @@ public:
     /// </summary>
     virtual void Draw3D();
 
+    /* GetŠÖ” */
+    virtual Vector3 GetWorldPosition() const = 0;
+    virtual float GetRadius() const = 0;
+    //virtual void OnCollision() = 0;
+
+    /* SetŠÖ” */
+
+
 private:
     //Transform transform_; // À•WŒn
     //float activeTimer; // ‘¶İ‚·‚éŠÔ

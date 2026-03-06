@@ -1,12 +1,12 @@
 #include "NormalEnemyBullet.h"
 
-void NormalEnemyBullet::Initialize(Camera* camera)
+void NormalEnemyBullet::Initialize(Camera* camera, Vector3 Pos)
 {
     camera_ = camera;
 
     transform_.scale = { 1.0f, 1.0f, 1.0f };
     transform_.rotate = { 0.0f, 0.0f, 0.0f };
-    transform_.translate = { 2.0f, 0.0f, 0.0f };
+    transform_.translate = Pos;
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
@@ -16,7 +16,7 @@ void NormalEnemyBullet::Initialize(Camera* camera)
     object_->SetTranslate(transform_.translate);
 
     activeTimer = maxactiveTimer;
-    acceleration = 0.1f;
+    acceleration.z = 0.1f;
 }
 
 void NormalEnemyBullet::Update()
@@ -29,11 +29,11 @@ void NormalEnemyBullet::Update()
 
     vector += acceleration;
 
-    if (vector >= maxSpeed) {
-        vector = maxSpeed;
+    if (vector.z >= maxSpeed) {
+        vector.z = maxSpeed;
     }
 
-    transform_.translate.y += vector;
+    transform_.translate += vector;
     object_->SetTranslate(transform_.translate);
 
     // çXêV
