@@ -31,7 +31,7 @@ void TitleScene::Initialize() {
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	object[0]->SetModel("plane.obj");
-	object[1]->SetModel("SkyDome.obj");
+	object[1]->SetModel("skydome.obj");
 
 	// 音声再生
 	SoundManager::GetInstance()->Play("bgm");

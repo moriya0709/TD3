@@ -22,6 +22,11 @@ void Game::Initialize() {
 	srvManager = std::make_unique<SrvManager>();
 	srvManager->Initialize(dxCommon);
 
+	// ImGui
+	imGuiManager = std::make_unique<ImGuiManager>();
+	imGuiManager->Initialize(windowAPI.get(), dxCommon, srvManager.get());
+
+
 	// テクスチャマネージャの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon, srvManager.get());
 	// 3Dモデルマネージャの初期化
@@ -44,18 +49,14 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("player.obj");
 	ModelManager::GetInstance()->LoadModel("cube.obj"); // レールエディター
 	ModelManager::GetInstance()->LoadModel("rail.obj"); // レールエディター
-	ModelManager::GetInstance()->LoadModel("SkyDome.obj"); 
+	ModelManager::GetInstance()->LoadModel("skydome.obj"); 
 
 	// サウンド
 	SoundManager::GetInstance()->Initialize();
 	SoundManager::GetInstance()->Load("bgm", "game.mp3");
 
 	// ポストエフェクト
-	PostEffect::GetInstance()->Initialize(dxCommon, windowAPI.get());
-
-	// ImGui
-	imGuiManager = std::make_unique<ImGuiManager>();
-	imGuiManager->Initialize(windowAPI.get(), dxCommon, srvManager.get());
+	PostEffect::GetInstance()->Initialize(dxCommon, windowAPI.get(),srvManager.get());
 
 	// シーンマネージャーの生成
 	// 最初のシーン生成

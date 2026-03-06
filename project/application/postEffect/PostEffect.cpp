@@ -1,14 +1,16 @@
 #include "PostEffect.h"
 #include "DirectXCommon.h"
 #include "WindowAPI.h"
+#include "SrvManager.h"
 #include "Camera.h"
 
 std::unique_ptr <PostEffect> PostEffect::instance = nullptr;
 
-void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI) {
+void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI,SrvManager* srvManager) {
 	// 引数で受け取ってメンバ変数に記録する
 	dxCommon_ = dxCommon;
 	windowAPI_ = windowAPI;
+	srvManager_ = srvManager;
 
 	// ルートシグネイチャ生成
 	CreateRootSignature();
@@ -19,6 +21,9 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI) {
 	InitializeViewport();
 	// シザリング矩形の初期化
 	InitializeScissorRect();
+
+	// Allocateでインデックスを取得してから渡す
+	srvIndex_ = srvManager_->Allocate();
 
 	// レンダーターゲット
 	renderTarget_ =
@@ -31,7 +36,7 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI) {
 			dxCommon_->GetRtvHeap(),
 			3,
 			dxCommon_->GetSrvHeap(),
-			10
+			srvIndex_
 		);
 
 	currentState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
@@ -83,7 +88,7 @@ void PostEffect::Draw() {
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
 	ID3D12DescriptorHeap* heaps[] = { dxCommon_->srvDescriptorHeap.Get() };
 	dxCommon_->GetCommandList()->SetDescriptorHeaps(1, heaps);
-	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(0, dxCommon_->GetSRVGPUDescriptorHandle(10));
+	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(0, dxCommon_->GetSRVGPUDescriptorHandle(srvIndex_));
 
 	// エフェクト切り替え
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, effectResource->GetGPUVirtualAddress());

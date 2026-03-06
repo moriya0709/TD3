@@ -10,6 +10,7 @@
 
 class DirectXCommon;
 class WindowAPI;
+class SrvManager;
 class Camera;
 
 struct RenderTarget {
@@ -77,7 +78,7 @@ static_assert(sizeof(EffectData) == 256, "Size must be 256 bytes");
 class PostEffect {
 public:
 	// 初期化
-	void Initialize(DirectXCommon* dxCommon,WindowAPI* windowAPI);
+	void Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvManager* srvManager);
 	// 描画
 	void Draw();
 
@@ -146,13 +147,16 @@ private:
 	// エフェクトデータ
 	EffectData* effectData = nullptr;
 
+	// index
+	uint32_t srvIndex_;
 
 	// シングルトンインスタンス
 	static std::unique_ptr <PostEffect> instance;
 
 	// ポインター
 	DirectXCommon* dxCommon_ = nullptr;
-	WindowAPI* windowAPI_ = nullptr;	
+	WindowAPI* windowAPI_ = nullptr;
+	SrvManager* srvManager_ = nullptr;
 
 	// レンダーターゲットの生成
 	RenderTarget CreateRenderTarget(
