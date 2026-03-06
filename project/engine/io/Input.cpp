@@ -33,6 +33,22 @@ void Input::Initialize(WindowAPI* windowAPI) {
 	result = keyboard->SetCooperativeLevel(
 		windowAPI_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
+
+	// DirectInput オブジェクト生成
+	HRESULT hr;
+	hr = DirectInput8Create(
+		GetModuleHandle(nullptr),
+		DIRECTINPUT_VERSION,
+		IID_IDirectInput8,
+		(void**)&directInput,
+		nullptr
+	);
+	// マウスデバイス生成
+	hr = directInput->CreateDevice(GUID_SysMouse, &mouse, nullptr);
+	// データフォーマット設定
+	hr = mouse->SetDataFormat(&c_dfDIMouse);
+	// 取得開始
+	mouse->Acquire();
 }
 
 // 更新
@@ -45,13 +61,24 @@ void Input::Update() {
 	// 全キーの入力情報を取得する
 	keyboard->GetDeviceState(sizeof(key), key);
 
-	// スクリーン座標取得
+	// マウススクリーン座標取得
 	POINT pos;
 	GetCursorPos(&pos);
 	ScreenToClient(windowAPI_->GetHwnd(), &pos);
 
 	mouseScreenX = pos.x;
 	mouseScreenY = pos.y;
+
+	// マウスボタン
+   // 現在の状態をクリアしてから取得
+	ZeroMemory(&mouseState, sizeof(mouseState));
+
+	HRESULT hr = mouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState);
+	if (FAILED(hr)) {
+		// フォーカスが外れた場合は再取得を試みる
+		mouse->Acquire();
+		mouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState);
+	}
 }
 
 Input* Input::GetInstance() {
@@ -83,12 +110,10 @@ bool Input::TriggerKey(BYTE keyNumber) {
 
 // マウスボタンが押されたかどうか
 bool Input::IsMouseButtonPressed(int button) {
-	// 指定ボタン押していればtrueを返す
-	if (mouseState.rgbButtons[button]) {
+	if (button < 0 || button >= 4) return false;
+	if (mouseState.rgbButtons[button] & 0x80) {
 		return true;
 	}
-
-	// 押していなければfalseを返す
 	return false;
 }
 
