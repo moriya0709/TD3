@@ -16,7 +16,7 @@ void GamePlayScene::Initialize()
 
 
     CameraController_ = std::make_unique<CameraController>();
-	  CameraController_->Initialize(camera.get());
+    CameraController_->Initialize(camera.get());
 
     player_ = std::make_unique<Player>();
     player_->Initialize(camera.get());
@@ -38,7 +38,7 @@ void GamePlayScene::Initialize()
 
 void GamePlayScene::Update()
 {
-  	CameraController_->Update();
+    CameraController_->Update();
 
     // プレイヤー更新
     player_->Update();
