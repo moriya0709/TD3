@@ -14,8 +14,8 @@
 #include "CameraContoroller.h"
 
 #include "player/Player.h"
-#include "../Enemy.h"
-#include "../NormalEnemy.h"
+#include "../Enemy/Enemy.h"
+#include "../Enemy/NormalEnemy.h"
 
 class SpriteCommon;
 class ObjectCommon;
