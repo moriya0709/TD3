@@ -14,6 +14,7 @@
 #include "Sprite.h"
 #include <list>
 
+// ベクトルを回転行列によって変換する関数
 class Player {
 public:
 	struct Statas {
@@ -27,6 +28,7 @@ public:
 	};
 	void Initialize(Camera* camera);
 	void Update();
+	void ApplyLighting();
 	void Draw2D();
 	void Draw3D();
 	Vector3 GetPosition() const { return transform_.translate; }

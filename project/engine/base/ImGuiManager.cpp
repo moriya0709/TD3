@@ -3,6 +3,7 @@
 #include "DirectXCommon.h"
 #include "SrvManager.h"
 
+
 void ImGuiManager::Initialize([[maybe_unused]]WindowAPI* windowAPI, [[maybe_unused]] DirectXCommon* dxCommon, [[maybe_unused]] SrvManager* srvManager) {
 #ifdef USE_IMGUI
 	dxCommon_ = dxCommon;
