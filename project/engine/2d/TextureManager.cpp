@@ -25,10 +25,12 @@ TextureManager* TextureManager::GetInstance() {
 void TextureManager::LoadTexture(const std::string& filePath) {
 	// 読み込み済みテクスチャを検索
 	if (textureDatas.contains(filePath)) {
+		OutputDebugStringA(("LoadTexture SKIP: [" + filePath + "]\n").c_str());
 		return;
 	}
 	// テクスチャ枚数上限チェック
 	assert(srvManager_->CanAllocate());
+	OutputDebugStringA(("LoadTexture NEW: [" + filePath + "]\n").c_str());
 
 	// テクスチャファイルを読んでプログラムで扱えるようにする
 	DirectX::ScratchImage image{};

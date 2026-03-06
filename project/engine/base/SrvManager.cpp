@@ -14,7 +14,6 @@ void SrvManager::Initialize(DirectXCommon* dxCommon) {
 		dxCommon_->GetDevice()->GetDescriptorHandleIncrementSize(
 			D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-
 }
 
 uint32_t SrvManager::Allocate() {
@@ -24,6 +23,11 @@ uint32_t SrvManager::Allocate() {
 	int index = useIndex;
 	// 次回の為に番号を1進める
 	useIndex++;
+
+	// ★ 追加：コールスタック付きでログ出力
+	OutputDebugStringA(("SrvManager::Allocate() -> index=" + std::to_string(index) + "\n").c_str());
+
+
 	// 上で記録した番号をreturn
 	return index;
 }
