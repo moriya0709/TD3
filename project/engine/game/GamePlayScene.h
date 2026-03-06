@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "BaseScene.h"
 #include "Camera.h"
-#include "CameraContoroller.h"
 #include "CameraManager.h"
 #include "ImGuiManager.h"
 #include "Input.h"
@@ -119,6 +118,6 @@ private:
     std::unique_ptr<Player> player_ = nullptr;
     std::unique_ptr<Enemy> Enemy_ = nullptr;
     std::unique_ptr<Enemy> Enemy2_ = nullptr; // テスト用(後でlist化)
-    std::unique_ptr<CameraController> cameraContoroller_ = nullptr;
+    std::unique_ptr<CameraController> CameraController_ = nullptr;
 
 };
