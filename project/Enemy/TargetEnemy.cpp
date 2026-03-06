@@ -1,4 +1,6 @@
 #include "TargetEnemy.h"
+#include "TargetEnemyBullet.h"
+#include "player/Player.h"
 
 void TargetEnemy::Initialize(Camera* camera)
 {
@@ -6,7 +8,7 @@ void TargetEnemy::Initialize(Camera* camera)
 
     transform_.scale = { 1.0f, 1.0f, 1.0f };
     transform_.rotate = { 0.0f, 0.0f, 0.0f };
-    transform_.translate = { 5.0f, 0.0f, 60.0f };
+    transform_.translate = { -5.0f, 0.0f, 60.0f };
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
@@ -21,7 +23,7 @@ void TargetEnemy::Initialize(Camera* camera)
 void TargetEnemy::Update()
 {
     // 移動
-    transform_.translate.x += kwalkSpeed;
+    //transform_.translate.x += kwalkSpeed;
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);
@@ -31,12 +33,14 @@ void TargetEnemy::Update()
 
     if (interval <= 0.0f) {
         // 弾の生成
-      /*  std::unique_ptr<NormalEnemyBullet> newBulletEnemy = std::make_unique<NormalEnemyBullet>();
+        std::unique_ptr<TargetEnemyBullet> newBulletEnemy = std::make_unique<TargetEnemyBullet>();
         newBulletEnemy->Initialize(camera_, transform_.translate);
-        newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.1f));
+        newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.08f));
+        newBulletEnemy->SetTargetPosition(player_->GetPosition());
+        
 
         enemyBullet_.push_back(std::move(newBulletEnemy));
-        interval = maxInterval;*/
+        interval = maxInterval;
     }
     // 更新処理
     for (auto& bullet : enemyBullet_) {

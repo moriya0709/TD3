@@ -12,9 +12,10 @@
 #include "SoundManager.h"
 #include "Sprite.h"
 
+class Player;
+
 class Enemy {
 public:
-
     /// <summary>
     /// ‰Šú‰»
     /// </summary>
@@ -34,17 +35,16 @@ public:
     /* GetŠÖ” */
     virtual Vector3 GetWorldPosition() const = 0;
     virtual float GetRadius() const = 0;
-    //virtual void OnCollision() = 0;
+    // virtual void OnCollision() = 0;
 
     /* SetŠÖ” */
-
+    virtual void SetTargetPlayer(Player* target) { };
 
 private:
-    //Transform transform_; // À•WŒn
-    //float activeTimer; // ‘¶İ‚·‚éŠÔ
-    //float isAvile; // ¶‘¶‚µ‚Ä‚¢‚é‚©
-    //float health; // ‘Ì—Í
+    // Transform transform_; // À•WŒn
+    // float activeTimer; // ‘¶İ‚·‚éŠÔ
+    // float isAvile; // ¶‘¶‚µ‚Ä‚¢‚é‚©
+    // float health; // ‘Ì—Í
 
-    //Camera* camera_ = nullptr;
-
+    // Camera* camera_ = nullptr;
 };

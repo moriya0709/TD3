@@ -2,6 +2,8 @@
 #include "Enemy.h"
 #include "EnemyBullet.h"
 
+class Player;
+
 class TargetEnemy : public Enemy {
 public:
     enum class Behavior {
@@ -16,6 +18,9 @@ public:
     void Update() override;
 
     void Draw3D() override;
+
+    // Set
+    void SetTargetPlayer(Player* target) override { player_ = target; }
 
     // Get
     Vector3 GetWorldPosition() const override { return transform_.translate; }
@@ -48,4 +53,6 @@ private:
 
     // ’e
     std::vector<std::unique_ptr<EnemyBullet>> enemyBullet_;
+    // ƒvƒŒƒCƒ„[‚Ìî•ñ
+    Player* player_ = nullptr;
 };

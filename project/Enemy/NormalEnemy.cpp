@@ -22,7 +22,7 @@ void NormalEnemy::Initialize(Camera* camera)
 void NormalEnemy::Update()
 {
     // 移動
-    transform_.translate.x += kwalkSpeed;
+    //transform_.translate.x += kwalkSpeed;
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);

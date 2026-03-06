@@ -27,13 +27,12 @@ void NormalEnemyBullet::Update()
         isAvile = false;
     }
 
-    vector += acceleration;
+    velocity_ += acceleration;
 
-    if (vector.z >= maxSpeed) {
-        vector.z = maxSpeed;
-    }
+    // Å‘å’l‚ğ‰z‚¦‚È‚¢‚æ‚¤‚É’²®
+    velocity_.z = std::clamp(velocity_.z, -maxSpeed, maxSpeed);
 
-    transform_.translate += vector;
+    transform_.translate += velocity_;
     object_->SetTranslate(transform_.translate);
 
     // XV
