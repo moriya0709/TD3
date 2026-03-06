@@ -53,7 +53,8 @@ Vector3 operator+(const Vector3& v);
 Vector3 operator-(const Vector3& v);
 
 // 02_06のCameraControllerのUpdate/Reset関数で必要
-const Vector3 operator+(const Vector3& lhv, const Vector3& rhv);
+const Vector3 operator+(const Vector3& v1, const Vector3& v2);
+const Vector3 operator-(const Vector3& v1, const Vector3& v2);
 
 // 02_06のスライド24枚目のLerp関数
 Vector3 CameraLerp(const Vector3& v1, const Vector3& v2, float t);
@@ -107,6 +108,15 @@ Matrix4x4 Inverse(const Matrix4x4& m);
 Matrix4x4 MakeIdentity4x4();
 
 Vector3 Normalize(const Vector3& v);
+// 内積
+float Dot(const Vector3& a, const Vector3& b);
+
+// ベクトルを行列で変換
+Vector3 VectorTransform(const Vector3& v, const Matrix4x4& m);
+
+// レイ
+float RaySphereIntersect(const Vector3& rayOrigin, const Vector3& rayDir,
+    const Vector3& sphereCenter, float radius);
 
 float Lerp(float x1, float x2, float t);
 
