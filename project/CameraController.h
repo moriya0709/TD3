@@ -1,20 +1,8 @@
 #pragma once
-#include "BaseScene.h"
 #include "Camera.h"
-#include "CameraManager.h"
-#include "ImGuiManager.h"
-#include "Input.h"
-#include "ModelManager.h"
-#include "Object.h"
-#include "ParticleEmitter.h"
-#include "ParticleManager.h"
-#include "PostEffect.h"
-#include "SoundManager.h"
-#include <vector>
+#include "Input.h" // ★ キー入力判定のために追加
 #include <string>
-#include <fstream>
-#include <map>
-#include "Sprite.h"
+#include <vector>
 
 // カメラの状態（速度）を記録する構造体
 struct CameraState {
@@ -25,70 +13,50 @@ struct CameraState {
 
 class CameraController {
 public:
-	/// <summary>
-	/// 初期化：カメラの登録と、既存リプレイファイルの自動読み込み
-	/// </summary>
 	void Initialize(Camera* camera);
-
-	/// <summary>
-	/// 毎フレーム更新：通常操作またはリプレイの実行
-	/// </summary>
 	void Update();
+	void DrawImGui();
 
 private:
-	// --- 内部処理メソッド ---
-
-	// 通常時の入力処理と速度計算
-	void CalculateVelocityFromInput(Vector3& vel, Vector3& angVel);
-
-	// 速度に変化があった場合のみ履歴に記録
+	// 内部ロジック
 	void RecordStateIfChanged(const Vector3& vel, const Vector3& angVel);
-
-	// リプレイ時の速度適用
 	void ApplyReplayState(Vector3& vel, Vector3& angVel);
-
-	// 物理移動（速度を座標に反映）
 	void ApplyPhysics(const Vector3& vel, const Vector3& angVel);
-
-	// リプレイ開始処理
 	void StartReplay();
+	void SeekTo(float targetTime);
+	void UpdateOrInsertKeyframe(float time, const Vector3& vel, const Vector3& angVel);
 
-	// JSON保存・読み込み
+	// ファイル入出力
 	void SaveToJSON(const std::string& filename);
 	void LoadFromJSON(const std::string& filename);
+	std::string GetFilePath(int slot) const;
 
 private:
-	// --- メンバ変数 ---
-
 	Camera* camera = nullptr;
 
-	// 現在のトランスフォーム（計算用）
 	Transform cameraTransform = {
 	    {0, 0, 0},
         {0, 0, 0}
     };
-	// 録画開始時のトランスフォーム（リプレイ開始地点）
 	Transform initialTransform = {
 	    {0, 0, 0},
         {0, 0, 0}
     };
 
-	// 履歴データ
 	std::vector<CameraState> stateHistory;
 
-	// リプレイ制御用
 	float timer = 0.0f;
 	bool isReplaying = false;
+	bool isPaused = false;
 	size_t replayIndex = 0;
+	int currentSlot = 1;
 
-	// リプレイ中に現在適用されている速度
 	Vector3 activeVelocity = {0, 0, 0};
 	Vector3 activeAngularVelocity = {0, 0, 0};
 
-	// キーのトリガー判定用
-	bool lastRKey = false;
+	Vector3 uiVelocity = {0.0f, 0.0f, 0.0f};
+	Vector3 uiAngularVelocity = {0.0f, 0.0f, 0.0f};
 
-	// 変化検知用の前フレーム速度
 	Vector3 lastRecordedVel = {-1.0f, -1.0f, -1.0f};
 	Vector3 lastRecordedAngVel = {-1.0f, -1.0f, -1.0f};
 };
