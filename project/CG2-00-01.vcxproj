@@ -74,12 +74,12 @@
     <ClCompile Include="engine\game\TitleScene.cpp" />
     <ClCompile Include="engine\base\WindowAPI.cpp" />
     <ClCompile Include="application\postEffect\PostEffect.cpp" />
-
     <ClCompile Include="Enemy\NormalEnemy.cpp" />
     <ClCompile Include="Enemy\NormalEnemyBullet.cpp" />
     <ClCompile Include="player\PlayerBullet.cpp" />
     <ClCompile Include="Enemy\TargetEnemy.cpp" />
     <ClCompile Include="Enemy\TargetEnemyBullet.cpp" />
+    <ClCompile Include="RailCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\shaders\PostEffect.PS.hlsl">
@@ -198,6 +198,7 @@
     <ClInclude Include="player\PlayerBullet.h" />
     <ClInclude Include="Enemy\TargetEnemy.h" />
     <ClInclude Include="Enemy\TargetEnemyBullet.h" />
+    <ClInclude Include="RailCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

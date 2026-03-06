@@ -133,39 +133,26 @@
     <ClCompile Include="engine\base\WindowAPI.cpp">
       <Filter>ソース ファイル\engine\base</Filter>
     </ClCompile>
-
-    <ClCompile Include="Enemy\Enemy.cpp">
-      <Filter>game\enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="Enemy\EnemyBullet.cpp">
-      <Filter>game\enemy</Filter>
-    </ClCompile>
     <ClCompile Include="engine\game\Game.cpp">
       <Filter>ソース ファイル\game\scene</Filter>
     </ClCompile>
     <ClCompile Include="engine\game\GamePlayScene.cpp">
       <Filter>ソース ファイル\game\scene</Filter>
     </ClCompile>
-
-    <ClCompile Include="Enemy\NormalEnemy.cpp">
-      <Filter>game\enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="Enemy\NormalEnemyBullet.cpp">
-      <Filter>game\enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="player\Player.cpp">
-      <Filter>game\player</Filter>
-    </ClCompile>
-    <ClCompile Include="player\PlayerBullet.cpp">
-      <Filter>game\player</Filter>
-    </ClCompile>
     <ClCompile Include="engine\game\TitleScene.cpp">
       <Filter>ソース ファイル\game\scene</Filter>
     </ClCompile>
-
     <ClCompile Include="Enemy\TargetEnemy.cpp" />
     <ClCompile Include="Enemy\TargetEnemyBullet.cpp" />
     <ClCompile Include="CameraController.cpp" />
+    <ClCompile Include="Enemy\Enemy.cpp" />
+    <ClCompile Include="Enemy\EnemyBullet.cpp" />
+    <ClCompile Include="player\Player.cpp" />
+    <ClCompile Include="externals\imgui\ImGuizmo.cpp" />
+    <ClCompile Include="Enemy\NormalEnemy.cpp" />
+    <ClCompile Include="Enemy\NormalEnemyBullet.cpp" />
+    <ClCompile Include="player\PlayerBullet.cpp" />
+    <ClCompile Include="RailCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -195,7 +182,6 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="RailCamera.h" />
     <ClInclude Include="application\postEffect\PostEffect.h">
       <Filter>ヘッダー ファイル\application\postEffect</Filter>
     </ClInclude>
@@ -274,44 +260,28 @@
     <ClInclude Include="engine\base\BaseScene.h">
       <Filter>ヘッダー ファイル\engine\scene</Filter>
     </ClInclude>
-    <ClInclude Include="Enemy\Enemy.h">
-      <Filter>game\enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="Enemy\EnemyBullet.h">
-      <Filter>game\enemy</Filter>
-    </ClInclude>
     <ClInclude Include="engine\game\Game.h">
       <Filter>ヘッダー ファイル\game\scene</Filter>
     </ClInclude>
     <ClInclude Include="engine\game\GamePlayScene.h">
       <Filter>ヘッダー ファイル\game\scene</Filter>
     </ClInclude>
-    <ClInclude Include="Enemy\NormalEnemy.h">
-      <Filter>game\enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="Enemy\NormalEnemyBullet.h">
-      <Filter>game\enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="player\Player.h">
-      <Filter>game\player</Filter>
-    </ClInclude>
-    <ClInclude Include="player\PlayerBullet.h">
-      <Filter>game\player</Filter>
-    </ClInclude>
-    <ClInclude Include="Enemy.h">
-      <Filter>ヘッダー ファイル\game\enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="EnemyBullet.h">
-      <Filter>ヘッダー ファイル\game\enemy</Filter>
-    </ClInclude>
-    <ClInclude Include="NormalEnemy.h">
-      <Filter>ヘッダー ファイル\game\enemy</Filter>
-    </ClInclude>
     <ClInclude Include="externals\nlohmann\json.hpp" />
     <ClInclude Include="externals\nlohmann\json_fwd.hpp" />
     <ClInclude Include="Enemy\TargetEnemy.h" />
     <ClInclude Include="Enemy\TargetEnemyBullet.h" />
     <ClInclude Include="CameraController.h" />
+    <ClInclude Include="Enemy\Enemy.h" />
+    <ClInclude Include="Enemy\EnemyBullet.h" />
+    <ClInclude Include="player\Player.h" />
+    <ClInclude Include="externals\imgui\ImGuizmo.h" />
+    <ClInclude Include="engine\scene\SceneFactory.h" />
+    <ClInclude Include="engine\scene\SceneManager.h" />
+    <ClInclude Include="engine\game\TitleScene.h" />
+    <ClInclude Include="Enemy\NormalEnemy.h" />
+    <ClInclude Include="Enemy\NormalEnemyBullet.h" />
+    <ClInclude Include="player\PlayerBullet.h" />
+    <ClInclude Include="RailCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">
