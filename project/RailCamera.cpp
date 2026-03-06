@@ -38,8 +38,13 @@ void RailCamera::Update() {
 		camera->SetTranslate(cameraTransform.translate);
 
 		// 進行方向を向かせる
-		//cameraTransform.rotate = GetForward(railT);
-		//camera->SetRotate(cameraTransform.rotate); // 向き設定があれば
+		Vector3 forward = GetForward(railT);
+		// forwardからオイラー角を計算
+		float yaw = atan2f(forward.x, forward.z);
+		float pitch = atan2f(-forward.y, sqrtf(forward.x * forward.x + forward.z * forward.z));
+		cameraTransform.rotate = { pitch, yaw ,0.0f };
+		// カメラ回転を更新
+		camera->SetRotate(cameraTransform.rotate);
 	}
 }
 
