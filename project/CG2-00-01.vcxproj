@@ -16,8 +16,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CameraContoroller.cpp" />
-    <ClCompile Include="Enemy.cpp" />
-    <ClCompile Include="EnemyBullet.cpp" />
+    <ClCompile Include="Enemy\Enemy.cpp" />
+    <ClCompile Include="Enemy\EnemyBullet.cpp" />
     <ClCompile Include="engine\camera\Camera.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\base\DirectXCommon.cpp" />
@@ -73,9 +73,11 @@
     <ClCompile Include="engine\game\TitleScene.cpp" />
     <ClCompile Include="engine\base\WindowAPI.cpp" />
     <ClCompile Include="application\postEffect\PostEffect.cpp" />
-    <ClCompile Include="NormalEnemy.cpp" />
-    <ClCompile Include="NormalEnemyBullet.cpp" />
+    <ClCompile Include="Enemy\NormalEnemy.cpp" />
+    <ClCompile Include="Enemy\NormalEnemyBullet.cpp" />
     <ClCompile Include="player\PlayerBullet.cpp" />
+    <ClCompile Include="Enemy\TargetEnemy.cpp" />
+    <ClCompile Include="Enemy\TargetEnemyBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.PS.hlsl">
@@ -159,8 +161,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraContoroller.h" />
-    <ClInclude Include="Enemy.h" />
-    <ClInclude Include="EnemyBullet.h" />
+    <ClInclude Include="Enemy\Enemy.h" />
+    <ClInclude Include="Enemy\EnemyBullet.h" />
     <ClInclude Include="engine\base\AbstractSceneFactory.h" />
     <ClInclude Include="engine\base\BaseScene.h" />
     <ClInclude Include="engine\camera\Camera.h" />
@@ -204,9 +206,11 @@
     <ClInclude Include="application\postEffect\PostEffect.h" />
     <ClInclude Include="externals\nlohmann\json.hpp" />
     <ClInclude Include="externals\nlohmann\json_fwd.hpp" />
-    <ClInclude Include="NormalEnemy.h" />
-    <ClInclude Include="NormalEnemyBullet.h" />
+    <ClInclude Include="Enemy\NormalEnemy.h" />
+    <ClInclude Include="Enemy\NormalEnemyBullet.h" />
     <ClInclude Include="player\PlayerBullet.h" />
+    <ClInclude Include="Enemy\TargetEnemy.h" />
+    <ClInclude Include="Enemy\TargetEnemyBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

@@ -139,10 +139,10 @@
     <ClCompile Include="engine\base\WindowAPI.cpp">
       <Filter>engine\base</Filter>
     </ClCompile>
-    <ClCompile Include="Enemy.cpp">
+    <ClCompile Include="Enemy\Enemy.cpp">
       <Filter>game\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="EnemyBullet.cpp">
+    <ClCompile Include="Enemy\EnemyBullet.cpp">
       <Filter>game\enemy</Filter>
     </ClCompile>
     <ClCompile Include="engine\game\Game.cpp">
@@ -151,10 +151,10 @@
     <ClCompile Include="engine\game\GamePlayScene.cpp">
       <Filter>game\scene</Filter>
     </ClCompile>
-    <ClCompile Include="NormalEnemy.cpp">
+    <ClCompile Include="Enemy\NormalEnemy.cpp">
       <Filter>game\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="NormalEnemyBullet.cpp">
+    <ClCompile Include="Enemy\NormalEnemyBullet.cpp">
       <Filter>game\enemy</Filter>
     </ClCompile>
     <ClCompile Include="player\Player.cpp">
@@ -167,6 +167,8 @@
       <Filter>game\scene</Filter>
     </ClCompile>
     <ClCompile Include="CameraContoroller.cpp" />
+    <ClCompile Include="Enemy\TargetEnemy.cpp" />
+    <ClCompile Include="Enemy\TargetEnemyBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\base\AbstractSceneFactory.h">
@@ -280,10 +282,10 @@
     <ClInclude Include="engine\base\WindowAPI.h">
       <Filter>engine\base</Filter>
     </ClInclude>
-    <ClInclude Include="Enemy.h">
+    <ClInclude Include="Enemy\Enemy.h">
       <Filter>game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="EnemyBullet.h">
+    <ClInclude Include="Enemy\EnemyBullet.h">
       <Filter>game\enemy</Filter>
     </ClInclude>
     <ClInclude Include="engine\game\Game.h">
@@ -292,10 +294,10 @@
     <ClInclude Include="engine\game\GamePlayScene.h">
       <Filter>game\scene</Filter>
     </ClInclude>
-    <ClInclude Include="NormalEnemy.h">
+    <ClInclude Include="Enemy\NormalEnemy.h">
       <Filter>game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="NormalEnemyBullet.h">
+    <ClInclude Include="Enemy\NormalEnemyBullet.h">
       <Filter>game\enemy</Filter>
     </ClInclude>
     <ClInclude Include="player\Player.h">
@@ -310,6 +312,8 @@
     <ClInclude Include="externals\nlohmann\json.hpp" />
     <ClInclude Include="externals\nlohmann\json_fwd.hpp" />
     <ClInclude Include="CameraContoroller.h" />
+    <ClInclude Include="Enemy\TargetEnemy.h" />
+    <ClInclude Include="Enemy\TargetEnemyBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Object3d.hlsli">
