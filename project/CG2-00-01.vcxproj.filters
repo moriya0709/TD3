@@ -157,15 +157,16 @@
     <ClCompile Include="NormalEnemyBullet.cpp">
       <Filter>game\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="engine\game\player\Player.cpp">
+    <ClCompile Include="player\Player.cpp">
       <Filter>game\player</Filter>
     </ClCompile>
-    <ClCompile Include="engine\game\player\PlayerBullet.cpp">
+    <ClCompile Include="player\PlayerBullet.cpp">
       <Filter>game\player</Filter>
     </ClCompile>
     <ClCompile Include="engine\game\TitleScene.cpp">
       <Filter>game\scene</Filter>
     </ClCompile>
+    <ClCompile Include="CameraContoroller.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="engine\base\AbstractSceneFactory.h">
@@ -297,15 +298,18 @@
     <ClInclude Include="NormalEnemyBullet.h">
       <Filter>game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="engine\game\player\Player.h">
+    <ClInclude Include="player\Player.h">
       <Filter>game\player</Filter>
     </ClInclude>
-    <ClInclude Include="engine\game\player\PlayerBullet.h">
+    <ClInclude Include="player\PlayerBullet.h">
       <Filter>game\player</Filter>
     </ClInclude>
     <ClInclude Include="engine\game\TitleScene.h">
       <Filter>game\scene</Filter>
     </ClInclude>
+    <ClInclude Include="externals\nlohmann\json.hpp" />
+    <ClInclude Include="externals\nlohmann\json_fwd.hpp" />
+    <ClInclude Include="CameraContoroller.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Object3d.hlsli">

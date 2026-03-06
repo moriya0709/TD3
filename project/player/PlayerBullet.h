@@ -18,9 +18,10 @@ public:
 	void Update();
 	void Draw3D();
 	void Draw2D();
-	void SetStatus(const float hommingAccuracy, const float renge) {
+	void SetStatus(const float hommingAccuracy, const float renge,const Vector2 reticlePosition) {
 		hommingAccuracy_ = hommingAccuracy;
 		renge_ = renge;
+		reticlePosition_ = reticlePosition;
 	}
 
 private:
@@ -29,4 +30,5 @@ private:
 	std::unique_ptr<Object> object_;
 	float hommingAccuracy_ = 0.0f; // ホーミング精度
 	float renge_ = 0.0f;           // 弾速
+	Vector2 reticlePosition_ = {0.0f, 0.0f}; // 照準の座標
 };
