@@ -15,6 +15,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="game\collision\Collision.cpp" />
     <ClCompile Include="engine\camera\Camera.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\base\DirectXCommon.cpp" />
@@ -149,6 +150,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="game\collision\Collision.h" />
     <ClInclude Include="game\camera\CameraController.h" />
     <ClInclude Include="game\enemy\Enemy.h" />
     <ClInclude Include="game\enemy\EnemyBullet.h" />

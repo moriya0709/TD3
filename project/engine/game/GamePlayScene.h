@@ -12,6 +12,7 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
+#include"../game/collision/Collision.h"
 
 #include "../../game/enemy/EnemyManager.h"
 #include "../../game/player/Player.h"
