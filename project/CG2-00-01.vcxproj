@@ -84,6 +84,8 @@
     <ClCompile Include="game\enemy\type\TargetEnemy.cpp" />
     <ClCompile Include="game\enemy\Bullet\TargetEnemyBullet.cpp" />
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
+    <ClCompile Include="game\player\PlayerNormalBullet.cpp" />
+    <ClCompile Include="game\player\PlayerChargeBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\shaders\PostEffect.PS.hlsl">
@@ -207,6 +209,8 @@
     <ClInclude Include="game\enemy\type\TargetEnemy.h" />
     <ClInclude Include="game\enemy\Bullet\TargetEnemyBullet.h" />
     <ClInclude Include="application\railCamera\RailCamera.h" />
+    <ClInclude Include="game\player\PlayerNormalBullet.h" />
+    <ClInclude Include="game\player\PlayerChargeBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

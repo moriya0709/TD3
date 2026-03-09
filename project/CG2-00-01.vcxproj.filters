@@ -185,6 +185,8 @@
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
     <ClCompile Include="game\collision\Collision.cpp" />
+    <ClCompile Include="game\player\PlayerNormalBullet.cpp" />
+    <ClCompile Include="game\player\PlayerChargeBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -352,6 +354,8 @@
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
     <ClInclude Include="game\collision\Collision.h" />
+    <ClInclude Include="game\player\PlayerNormalBullet.h" />
+    <ClInclude Include="game\player\PlayerChargeBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

@@ -23,7 +23,7 @@ public:
 		float speed;                  // 速度
 		float hommingAccuracy = 0.0f; // ホーミング精度
 		float renge = 0.0f;     // 弾速
-		float chargeTime = 0.0f;      // チャージ時間
+		int chargeTime = 0;      // チャージ時間
 		int haste = 0;                // 攻撃頻度
 	};
 	void Initialize(Camera* camera);
@@ -67,6 +67,8 @@ private:
 	// 次の発射まで
 	int coolTime = 0;
 	bool isSpecialAttack = false;
+	int chargeTimer = 0;
+	bool isCharging = false;
 
 	// 平行光
 	bool isDirectionalLight = false;
