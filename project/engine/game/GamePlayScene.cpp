@@ -41,6 +41,31 @@ void GamePlayScene::Update()
     // 敵更新
     enemy_->Update();
 
+#pragma region ライティング
+    // *ライティング* //
+
+    // 平行光
+    // object->SetDirectionalLight(isDirectionalLight);
+    // object->SetDirectionalLightDirection(DirectionalLightDirection);
+    // object->SetDirectionalLightColor(DirectionalLightColor);
+    // object->SetDirectionalLightIntensity(DirectionalLightIntensity);
+    //// 環境光
+    // object->SetAmbientLight(isAmbientLight);
+    // object->SetAmbientLightColor(AmbientLightColor);
+    // object->SetAmbientLightIntensity(AmbientLightIntensity);
+    //// ポイントライト
+    // object->SetPointLight(isPointLight);
+    // object->SetPointLightColor(PointLightColor);
+    // object->SetPointLightPosition(PointLightPosition);
+    // object->SetPointLightIntensity(PointLightIntensity);
+    //// スポットライト
+    // object->SetSpotLight(isSpotLight);
+    // object->SetSpotLightColor(SpotLightColor);
+    // object->SetSpotLightPosition(SpotLightPosition);
+    // object->SetSpotLightDirection(SpotLightDirection);
+    // object->SetSpotLightRange(SpotLightRange);
+    // object->SetSpotLightIntensity(SpotLightIntensity);
+#pragma endregion
 
 #pragma region ポストエフェクト
     // *ポストエフェクト* //

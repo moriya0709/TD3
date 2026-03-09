@@ -32,13 +32,6 @@ public:
 	void Draw3D();
 	Vector3 GetPosition() const { return transform_.translate; }
 	~Player();
-	float GetHitSize() const { return hitSize_; }
-	void Damage(int damage) {
-		statas_.hp -= damage;
-		if (statas_.hp < 0) {
-			statas_.hp = 0;
-		}
-	}
 
 
 
@@ -58,7 +51,6 @@ private:
 	// プレイヤーの現在の速度
 	Vector3 velocity_ = {0.0f, 0.0f, 0.0f};
 	Vector3 relativePos_ = {0.0f, 0.0f,0.0f}; // カメラからの相対位置（Zは固定）
-	float hitSize_ = 1.0f;                     // 当たり判定のサイズ
 
 	// プレイヤーの弾
 	std::list<PlayerBullet*> bullets;

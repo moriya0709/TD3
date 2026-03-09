@@ -184,7 +184,6 @@
     <ClCompile Include="game\enemy\EnemyManager.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="game\collision\Collision.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -351,7 +350,6 @@
     <ClInclude Include="game\enemy\EnemyManager.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\collision\Collision.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">
