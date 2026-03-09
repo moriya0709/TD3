@@ -21,8 +21,7 @@ public:
     Vector3 GetWorldPosition() const override { return transform_.translate; }
     float GetRadius() const override { return kHeight; }
 
-    // 弾リストへの読み取り専用アクセスを提供する関数を追加
-    const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
+   
 
 private:
     std::unique_ptr<Object> object_; // オブジェ
@@ -46,6 +45,5 @@ private:
     static inline const float kWidth = 1.0f;
     static inline const float kHeight = 1.0f;
 
-    // 弾
-    std::vector<std::unique_ptr<EnemyBullet>> enemyBullet_;
+  
 };
