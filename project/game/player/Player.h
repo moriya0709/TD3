@@ -28,11 +28,12 @@ public:
 	};
 	void Initialize(Camera* camera);
 	void Update();
-	void ApplyLighting();
 	void Draw2D();
 	void Draw3D();
 	Vector3 GetPosition() const { return transform_.translate; }
 	~Player();
+
+
 
 private:
 	// プレイヤーのステータス
@@ -57,6 +58,7 @@ private:
 	void UpdateBullets();
 	// 次の発射まで
 	int coolTime = 0;
+	bool isSpecialAttack = false;
 
 	// 平行光
 	bool isDirectionalLight = false;
