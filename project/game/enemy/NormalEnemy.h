@@ -11,7 +11,7 @@ public:
         kDefeated, // ¿À
     };
 
-    void Initialize(Camera* camera) override;
+    void Initialize(Camera* camera, Vector3 pos) override;
 
     void Update() override;
 
