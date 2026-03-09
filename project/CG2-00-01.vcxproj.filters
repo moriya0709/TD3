@@ -145,15 +145,6 @@
     <ClCompile Include="application\railCamera\RailCamera.cpp">
       <Filter>ソース ファイル\application\railCamera</Filter>
     </ClCompile>
-    <ClCompile Include="game\camera\CameraController.cpp">
-      <Filter>ソース ファイル\game\camera</Filter>
-    </ClCompile>
-    <ClCompile Include="game\enemy\Enemy.cpp">
-      <Filter>ソース ファイル\game\enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="game\enemy\EnemyBullet.cpp">
-      <Filter>ソース ファイル\game\enemy</Filter>
-    </ClCompile>
     <ClCompile Include="game\enemy\HomingEnemy.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
@@ -172,9 +163,6 @@
     <ClCompile Include="game\enemy\NormalEnemyBullet.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
-        <ClCompile Include="game\enemy\EnemyManager.cpp">
-      <Filter>ソース ファイル\game\enemy</Filter>
-    </ClCompile>
     <ClCompile Include="game\enemy\TargetEnemy.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
@@ -184,7 +172,18 @@
     <ClCompile Include="externals\imgui\ImGuizmo.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
- 
+    <ClCompile Include="game\enemy\Enemy.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="game\enemy\EnemyBullet.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="game\camera\CameraController.cpp">
+      <Filter>ソース ファイル\game\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="game\enemy\EnemyManager.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -300,7 +299,7 @@
     </ClInclude>
     <ClInclude Include="externals\nlohmann\json.hpp" />
     <ClInclude Include="externals\nlohmann\json_fwd.hpp" />
-  <ClInclude Include="engine\scene\SceneFactory.h">
+    <ClInclude Include="engine\scene\SceneFactory.h">
       <Filter>ヘッダー ファイル\engine\scene</Filter>
     </ClInclude>
     <ClInclude Include="engine\scene\SceneManager.h">
@@ -336,9 +335,6 @@
     <ClInclude Include="game\enemy\TargetEnemy.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-      <ClInclude Include="game\enemy\EnemyManager.h">
-      <Filter>ヘッダー ファイル\game\enemy</Filter>
-    </ClInclude>
     <ClInclude Include="game\enemy\TargetEnemyBullet.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
@@ -351,7 +347,9 @@
     <ClInclude Include="externals\imgui\ImGuizmo.h">
       <Filter>imgui</Filter>
     </ClInclude>
-   
+    <ClInclude Include="game\enemy\EnemyManager.h">
+      <Filter>ヘッダー ファイル\game\enemy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

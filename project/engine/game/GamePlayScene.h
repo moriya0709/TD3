@@ -13,8 +13,8 @@
 #include "SoundManager.h"
 #include "Sprite.h"
 
-#include "../Enemy/EnemyManager.h"
-#include "player/Player.h"
+#include "../../game/enemy/EnemyManager.h"
+#include "../../game/player/Player.h"
 
 class SpriteCommon;
 class ObjectCommon;

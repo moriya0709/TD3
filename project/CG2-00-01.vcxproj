@@ -15,13 +15,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CameraController.cpp" />
-    <ClCompile Include="Enemy\Enemy.cpp" />
-    <ClCompile Include="Enemy\EnemyBullet.cpp" />
     <ClCompile Include="engine\camera\Camera.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\base\DirectXCommon.cpp" />
     <ClCompile Include="engine\camera\DebugCamera.cpp" />
+    <ClCompile Include="game\camera\CameraController.cpp" />
+    <ClCompile Include="game\enemy\Enemy.cpp" />
+    <ClCompile Include="game\enemy\EnemyBullet.cpp" />
+    <ClCompile Include="game\enemy\EnemyManager.cpp" />
     <ClCompile Include="game\enemy\HomingEnemy.cpp" />
     <ClCompile Include="game\enemy\HomingEnemyBullet.cpp" />
     <ClCompile Include="game\player\Player.cpp" />
@@ -148,13 +149,14 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-     <ClInclude Include="game\camera\CameraController.h" />
+    <ClInclude Include="game\camera\CameraController.h" />
     <ClInclude Include="game\enemy\Enemy.h" />
     <ClInclude Include="game\enemy\EnemyBullet.h" />
     <ClInclude Include="engine\base\AbstractSceneFactory.h" />
     <ClInclude Include="engine\base\BaseScene.h" />
     <ClInclude Include="engine\camera\Camera.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
+    <ClInclude Include="game\enemy\EnemyManager.h" />
     <ClInclude Include="game\enemy\HomingEnemy.h" />
     <ClInclude Include="game\enemy\HomingEnemyBullet.h" />
     <ClInclude Include="game\player\Player.h" />
