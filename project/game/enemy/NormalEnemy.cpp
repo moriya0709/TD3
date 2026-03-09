@@ -1,13 +1,13 @@
 #include "NormalEnemy.h"
 #include "NormalEnemyBullet.h"
 
-void NormalEnemy::Initialize(Camera* camera)
+void NormalEnemy::Initialize(Camera* camera, Vector3 pos)
 {
     camera_ = camera;
 
     transform_.scale = { 1.0f, 1.0f, 1.0f };
     transform_.rotate = { 0.0f, 0.0f, 0.0f };
-    transform_.translate = { 5.0f, 0.0f, 60.0f };
+    transform_.translate = pos;
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
@@ -22,7 +22,7 @@ void NormalEnemy::Initialize(Camera* camera)
 void NormalEnemy::Update()
 {
     // 移動
-    //transform_.translate.x += kwalkSpeed;
+    // transform_.translate.x += kwalkSpeed;
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);

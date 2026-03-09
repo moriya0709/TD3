@@ -15,9 +15,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="game\camera\CameraController.cpp" />
-    <ClCompile Include="game\enemy\Enemy.cpp" />
-    <ClCompile Include="game\enemy\EnemyBullet.cpp" />
+    <ClCompile Include="CameraController.cpp" />
+    <ClCompile Include="Enemy\Enemy.cpp" />
+    <ClCompile Include="Enemy\EnemyBullet.cpp" />
     <ClCompile Include="engine\camera\Camera.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\base\DirectXCommon.cpp" />
@@ -148,7 +148,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="game\camera\CameraController.h" />
+     <ClInclude Include="game\camera\CameraController.h" />
     <ClInclude Include="game\enemy\Enemy.h" />
     <ClInclude Include="game\enemy\EnemyBullet.h" />
     <ClInclude Include="engine\base\AbstractSceneFactory.h" />

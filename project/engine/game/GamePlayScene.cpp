@@ -20,13 +20,8 @@ void GamePlayScene::Initialize()
     player_ = std::make_unique<Player>();
     player_->Initialize(camera.get());
 
-    Enemy_ = std::make_unique<HomingEnemy>();
-    Enemy_->Initialize(camera.get());
-    Enemy_->SetTargetPlayer(player_.get());
-
-    Enemy2_ = std::make_unique<TargetEnemy>();
-    Enemy2_->Initialize(camera.get());
-    Enemy2_->SetTargetPlayer(player_.get());
+    enemy_ = std::make_unique<EnemyManager>();
+    enemy_->Initialize("Resource/Data/EnemyaPop.json", player_.get(), camera.get());
 
     // Emitパーティクル発生
     particleEmitter = std::make_unique<ParticleEmitter>();
@@ -44,8 +39,7 @@ void GamePlayScene::Update()
     player_->Update();
 
     // 敵更新
-    Enemy_->Update();
-    Enemy2_->Update();
+    enemy_->Update();
 
 #pragma region ライティング
     // *ライティング* //
@@ -256,8 +250,7 @@ void GamePlayScene::Draw3D()
     // 3Dオブジェクト描画
     player_->Draw3D();
 
-    Enemy_->Draw3D();
-    Enemy2_->Draw3D();
+    enemy_->Draw3D();
 
     // パーティクル描画
     ParticleManager::GetInstance()->Draw();

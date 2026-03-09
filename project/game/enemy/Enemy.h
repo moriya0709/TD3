@@ -20,7 +20,7 @@ public:
     /// ‰Šú‰»
     /// </summary>
     /// <param name="camera"></param>
-    virtual void Initialize(Camera* camera);
+    virtual void Initialize(Camera* camera, Vector3 pos);
 
     /// <summary>
     /// XV
