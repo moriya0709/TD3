@@ -12,6 +12,8 @@
 #include "SoundManager.h"
 #include "Sprite.h"
 
+#include "EnemyBullet.h"
+
 class Player;
 
 class Enemy {
@@ -36,15 +38,14 @@ public:
     virtual Vector3 GetWorldPosition() const = 0;
     virtual float GetRadius() const = 0;
     // virtual void OnCollision() = 0;
+    const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
 
     /* SetŠÖ” */
     virtual void SetTargetPlayer(Player* target) { };
 
-private:
-    // Transform transform_; // À•WŒn
-    // float activeTimer; // ‘¶İ‚·‚éŠÔ
-    // float isAvile; // ¶‘¶‚µ‚Ä‚¢‚é‚©
-    // float health; // ‘Ì—Í
+protected:
+    // ’e
+    std::vector<std::unique_ptr<EnemyBullet>> enemyBullet_;
 
-    // Camera* camera_ = nullptr;
+private:
 };
