@@ -1,5 +1,7 @@
 ﻿#include "Player.h"
 #include "ObjectCommon.h"
+#include "PlayerChargeBullet.h"
+#include "PlayerNormalBullet.h"
 #include "SceneManager.h"
 #include "SpriteCommon.h"
 #include "engine/base/WindowAPI.h"
@@ -49,12 +51,14 @@ void Player::Initialize(Camera* camera) {
 	statas_.attack = 10;
 	statas_.speed = 0.2f; // XY移動は少し速い方が気持ちいいです
 	statas_.haste = 10;
-	statas_.chargeTime = 1.0f;
+	statas_.chargeTime = 60;
 	statas_.hommingAccuracy = 0.0f;
 	statas_.renge = 80.0f;
 
 	velocity_ = {0.0f, 0.0f, 0.0f};
 	coolTime = 0;
+	chargeTimer = 0;
+	isCharging = false;
 }
 
 void Player::Update() {
@@ -149,6 +153,7 @@ void Player::Update() {
 	ImGui::Text("Z-Distance from Camera: 5.0 (Fixed)");
 	ImGui::DragFloat3("World Pos", &transform_.translate.x, 0.1f);
 	ImGui::DragFloat2("Relative Pos", &relativePos_.x, 0.1f);
+	ImGui::DragInt("HP", &statas_.hp, 0.1f);
 	ImGui::End();
 #pragma endregion
 }
@@ -175,12 +180,28 @@ void Player::Attack() {
 		coolTime--;
 		return;
 	}
+	if (statas_.chargeTime < chargeTimer) {
+		isCharging = true;
+	} else {
+		isCharging = false;
+		chargeTimer++;
+	}
+
 	if (input->IsMouseButtonPressed(0) || input->PushKey(DIK_SPACE)) {
-		PlayerBullet* newBullet = new PlayerBullet();
-		newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge);
-		newBullet->SetStatus(statas_.hommingAccuracy);
-		bullets.push_back(newBullet);
-		coolTime = statas_.haste;
+		if (isCharging) {
+			// チャージ攻撃
+			PlayerBullet* newBullet = new PlayerChargeBullet();
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge * 1.5f);
+			newBullet->SetStatus(statas_.hommingAccuracy + 0.2f);
+			bullets.push_back(newBullet);
+			chargeTimer = statas_.haste*2; // チャージタイマーリセット
+		} else {
+			PlayerBullet* newBullet = new PlayerNormalBullet();
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge);
+			newBullet->SetStatus(statas_.hommingAccuracy);
+			bullets.push_back(newBullet);
+			coolTime = statas_.haste;
+		}
 	}
 }
 
