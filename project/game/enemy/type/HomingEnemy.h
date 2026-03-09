@@ -24,7 +24,7 @@ public:
 
     // Get
     Vector3 GetWorldPosition() const override { return transform_.translate; }
-    float GetRadius() const override { return kHeight; }
+    float GetRadius() const override { return radius; }
 
 private:
     std::unique_ptr<Object> object_; // オブジェ
@@ -43,10 +43,8 @@ private:
 
     // フラグ
     bool isDead_ = false;
-
     // キャラクターの当たり判定サイズ
-    static inline const float kWidth = 1.0f;
-    static inline const float kHeight = 1.0f;
+    static inline const float radius = 5.0f;
 
     // プレイヤーの情報
     Player* player_ = nullptr;

@@ -41,6 +41,8 @@ void GamePlayScene::Update()
     // 敵更新
     enemy_->Update();
 
+    // 当たり判定
+    ChekeAllCollision();
 
 #pragma region ポストエフェクト
     // *ポストエフェクト* //
@@ -238,3 +240,10 @@ void GamePlayScene::Draw3D()
 }
 
 void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
+
+void GamePlayScene::ChekeAllCollision()
+{
+    const std::list<std::unique_ptr<Enemy>>& enemies = enemy_->GetEnemies();
+    CheckCollisionPlayerEnemy(player_.get(), enemies);
+    CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
+}
