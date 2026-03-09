@@ -49,6 +49,8 @@ private:
 	Camera* camera_ = nullptr;
 	// プレイヤーの現在の速度
 	Vector3 velocity_ = {0.0f, 0.0f, 0.0f};
+	Vector3 relativePos_ = {0.0f, 0.0f,0.0f}; // カメラからの相対位置（Zは固定）
+
 	// プレイヤーの弾
 	std::list<PlayerBullet*> bullets;
 	void Attack();
@@ -77,6 +79,7 @@ private:
 	Vector3 SpotLightDirection = {0.0f, 0.0f, 0.0f};
 	float SpotLightRange = 10.0f;
 	float SpotLightIntensity = 1.0f;
+
 
 
 };
