@@ -10,8 +10,8 @@ class PlayerBullet;
 class Enemy;
 class EnemyBullet;
 
-void CheckCollisionPlayerEnemy(Player* player, std::list<Enemy*> enemy);
-void CheckCollisionPlayerEnemyBullet(Player* player, std::vector<EnemyBullet*> bullet);
+void CheckCollisionPlayerEnemy(Player* player, const std::list<std::unique_ptr<Enemy>>& enemies);
+void CheckCollisionPlayerEnemyBullet(Player* player, const std::list<std::unique_ptr<Enemy>>& enemies);
 
 void CheckCollisionPlayerBulletEnemy(std::list<PlayerBullet*> bullet, Enemy* enemy);
 void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet);

@@ -2,13 +2,67 @@
 #include "../enemy/Enemy.h"
 #include "../enemy/EnemyBullet.h"
 #include "Player.h"
-#include"PlayerBullet.h"
+#include "PlayerBullet.h"
 #include <cmath>
 
-void CheckCollisionPlayerEnemy(Player* player, std::list<Enemy*> enemy) {}
+void CheckCollisionPlayerEnemy(Player* player, const std::list<std::unique_ptr<Enemy>>& enemies)
+{
+    Vector3 playerPos = player->GetPosition();
+    float playerSize = player->GetHitSize();
 
-void CheckCollisionPlayerEnemyBullet(Player* player, std::vector<EnemyBullet*> bullet) {}
+    for (const auto& enemy : enemies) {
 
-void CheckCollisionPlayerBulletEnemy(std::list<PlayerBullet*> bullet, Enemy* enemy) {}
+        // 死んでいる場合スキップを入れる
 
-void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet) {}
+        Vector3 enemyPos = enemy->GetWorldPosition();
+        float enemySize = enemy->GetRadius();
+
+        Vector3 num = { playerPos.x - enemyPos.x, playerPos.y - enemyPos.y, playerPos.z - enemyPos.z };
+
+        float distance = sqrtf(num.x * num.x + num.y * num.y + num.z * num.z);
+
+        if (distance <= playerSize + enemySize) {
+            // hit
+
+            // 敵の攻撃力を受け取る
+
+            int test = 1;
+            player->Damage(test);
+        }
+    }
+}
+
+void CheckCollisionPlayerEnemyBullet(Player* player, const std::list<std::unique_ptr<Enemy>>& enemies)
+{
+    Vector3 playerPos = player->GetPosition();
+    float playerSize = player->GetHitSize();
+
+    for (const auto& enemyBullets_ : enemies) {
+
+        // 死んでいる場合スキップを入れる
+
+        const std::vector<std::unique_ptr<EnemyBullet>>& enemyBullet_ = enemyBullets_->GetBullets();
+        for (const auto& bullet : enemyBullet_) {
+            // 弾の座標
+            Vector3 BulletPos = bullet->GetWorldPosition();
+            float enemySize = bullet->GetRadius();
+
+            Vector3 num = { playerPos.x - BulletPos.x, playerPos.y - BulletPos.y, playerPos.z - BulletPos.z };
+
+            float distance = sqrtf(num.x * num.x + num.y * num.y + num.z * num.z);
+
+            if (distance <= playerSize + enemySize) {
+                // hit
+
+                // 敵の攻撃力を受け取る
+
+                int test = 1;
+                player->Damage(test);
+            }
+        }
+    }
+}
+
+void CheckCollisionPlayerBulletEnemy(std::list<PlayerBullet*> bullet, Enemy* enemy) { }
+
+void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet) { }

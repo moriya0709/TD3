@@ -32,6 +32,8 @@ public:
     // 終了
     void Finalize() override;
 
+    void ChekeAllCollision() ;
+
 private:
     Transform cameraTransform {
         { 1.0f, 1.0f, 1.0f }, // scale
