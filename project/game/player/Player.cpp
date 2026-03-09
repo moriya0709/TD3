@@ -59,6 +59,8 @@ void Player::Initialize(Camera* camera) {
 	coolTime = 0;
 	chargeTimer = 0;
 	isCharging = false;
+	ishit = false;
+	damageTimer = 0;
 }
 
 void Player::Update() {
@@ -137,6 +139,13 @@ void Player::Update() {
 	playerObject_->SetRotate(transform_.rotate);
 	playerObject_->SetScale(transform_.scale);
 	playerObject_->Update();
+
+	if (ishit) {
+		damageTimer--;
+		if (damageTimer <= 0) {
+			ishit = false;
+		}
+	}
 
 	Vector2 mouseMove = input->GetMouseScreen();
 	reticlePosition_.x = std::clamp(mouseMove.x, 0.0f, float(WindowAPI::kClientWidth));

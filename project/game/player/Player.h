@@ -38,8 +38,10 @@ public:
 		if (statas_.hp < 0) {
 			statas_.hp = 0;
 		}
+		ishit = true;
+		damageTimer = 30; // ダメージ表示タイマーリセット
 	}
-
+	bool GetIsHit() const { return ishit; }
 
 
 private:
@@ -69,6 +71,10 @@ private:
 	bool isSpecialAttack = false;
 	int chargeTimer = 0;
 	bool isCharging = false;
+	bool ishit = false;
+	int damageTimer = 0;
+
+
 
 	// 平行光
 	bool isDirectionalLight = false;
