@@ -4,9 +4,9 @@
 #include <fstream>
 #include <iostream> // エラー出力用
 
-#include "HomingEnemy.h"
-#include "NormalEnemy.h"
-#include "TargetEnemy.h"
+#include "type/HomingEnemy.h"
+#include "type/NormalEnemy.h"
+#include "type/TargetEnemy.h"
 
 using json = nlohmann::json;
 

@@ -145,10 +145,10 @@
     <ClCompile Include="application\railCamera\RailCamera.cpp">
       <Filter>ソース ファイル\application\railCamera</Filter>
     </ClCompile>
-    <ClCompile Include="game\enemy\HomingEnemy.cpp">
+    <ClCompile Include="game\enemy\type\HomingEnemy.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="game\enemy\HomingEnemyBullet.cpp">
+    <ClCompile Include="game\enemy\Bullet\HomingEnemyBullet.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
     <ClCompile Include="game\player\Player.cpp">
@@ -157,16 +157,16 @@
     <ClCompile Include="game\player\PlayerBullet.cpp">
       <Filter>ソース ファイル\game\player</Filter>
     </ClCompile>
-    <ClCompile Include="game\enemy\NormalEnemy.cpp">
+    <ClCompile Include="game\enemy\type\NormalEnemy.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="game\enemy\NormalEnemyBullet.cpp">
+    <ClCompile Include="game\enemy\Bullet\NormalEnemyBullet.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="game\enemy\TargetEnemy.cpp">
+    <ClCompile Include="game\enemy\type\TargetEnemy.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="game\enemy\TargetEnemyBullet.cpp">
+    <ClCompile Include="game\enemy\Bullet\TargetEnemyBullet.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\ImGuizmo.cpp">
@@ -320,22 +320,22 @@
     <ClInclude Include="game\enemy\EnemyBullet.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\enemy\HomingEnemy.h">
+    <ClInclude Include="game\enemy\type\HomingEnemy.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\enemy\HomingEnemyBullet.h">
+    <ClInclude Include="game\enemy\Bullet\HomingEnemyBullet.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\enemy\NormalEnemy.h">
+    <ClInclude Include="game\enemy\type\NormalEnemy.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\enemy\NormalEnemyBullet.h">
+    <ClInclude Include="game\enemy\Bullet\NormalEnemyBullet.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\enemy\TargetEnemy.h">
+    <ClInclude Include="game\enemy\type\TargetEnemy.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\enemy\TargetEnemyBullet.h">
+    <ClInclude Include="game\enemy\Bullet\TargetEnemyBullet.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
     <ClInclude Include="game\player\Player.h">

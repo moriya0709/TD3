@@ -1,8 +1,10 @@
 #pragma once
-#include "Enemy.h"
-#include "EnemyBullet.h"
+#include "../Enemy.h"
+#include "../EnemyBullet.h"
 
-class NormalEnemy : public Enemy {
+class Player;
+
+class HomingEnemy : public Enemy {
 public:
     enum class Behavior {
         kUnknown = -1,
@@ -11,11 +13,14 @@ public:
         kDefeated, // ÀË
     };
 
-    void Initialize(Camera* camera, Vector3 pos) override;
+    void Initialize(Camera* camera,  Vector3 pos) override;
 
     void Update() override;
 
     void Draw3D() override;
+
+    // Set
+    void SetTargetPlayer(Player* target) override { player_ = target; }
 
     // Get
     Vector3 GetWorldPosition() const override { return transform_.translate; }
@@ -48,4 +53,6 @@ private:
 
     // ’e
     std::vector<std::unique_ptr<EnemyBullet>> enemyBullet_;
+    // ƒvƒŒƒCƒ„[‚Ìî•ñ
+    Player* player_ = nullptr;
 };

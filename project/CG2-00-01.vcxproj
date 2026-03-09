@@ -23,8 +23,8 @@
     <ClCompile Include="game\enemy\Enemy.cpp" />
     <ClCompile Include="game\enemy\EnemyBullet.cpp" />
     <ClCompile Include="game\enemy\EnemyManager.cpp" />
-    <ClCompile Include="game\enemy\HomingEnemy.cpp" />
-    <ClCompile Include="game\enemy\HomingEnemyBullet.cpp" />
+    <ClCompile Include="game\enemy\type\HomingEnemy.cpp" />
+    <ClCompile Include="game\enemy\Bullet\HomingEnemyBullet.cpp" />
     <ClCompile Include="game\player\Player.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -77,11 +77,11 @@
     <ClCompile Include="engine\game\TitleScene.cpp" />
     <ClCompile Include="engine\base\WindowAPI.cpp" />
     <ClCompile Include="application\postEffect\PostEffect.cpp" />
-    <ClCompile Include="game\enemy\NormalEnemy.cpp" />
-    <ClCompile Include="game\enemy\NormalEnemyBullet.cpp" />
+    <ClCompile Include="game\enemy\type\NormalEnemy.cpp" />
+    <ClCompile Include="game\enemy\Bullet\NormalEnemyBullet.cpp" />
     <ClCompile Include="game\player\PlayerBullet.cpp" />
-    <ClCompile Include="game\enemy\TargetEnemy.cpp" />
-    <ClCompile Include="game\enemy\TargetEnemyBullet.cpp" />
+    <ClCompile Include="game\enemy\type\TargetEnemy.cpp" />
+    <ClCompile Include="game\enemy\Bullet\TargetEnemyBullet.cpp" />
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -157,8 +157,8 @@
     <ClInclude Include="engine\camera\Camera.h" />
     <ClInclude Include="engine\camera\CameraManager.h" />
     <ClInclude Include="game\enemy\EnemyManager.h" />
-    <ClInclude Include="game\enemy\HomingEnemy.h" />
-    <ClInclude Include="game\enemy\HomingEnemyBullet.h" />
+    <ClInclude Include="game\enemy\type\HomingEnemy.h" />
+    <ClInclude Include="game\enemy\Bullet\HomingEnemyBullet.h" />
     <ClInclude Include="game\player\Player.h" />
     <ClInclude Include="engine\math\CommonStructs.h" />
     <ClInclude Include="engine\base\DirectXCommon.h" />
@@ -199,11 +199,11 @@
     <ClInclude Include="application\postEffect\PostEffect.h" />
     <ClInclude Include="externals\nlohmann\json.hpp" />
     <ClInclude Include="externals\nlohmann\json_fwd.hpp" />
-    <ClInclude Include="game\enemy\NormalEnemy.h" />
-    <ClInclude Include="game\enemy\NormalEnemyBullet.h" />
+    <ClInclude Include="game\enemy\type\NormalEnemy.h" />
+    <ClInclude Include="game\enemy\Bullet\NormalEnemyBullet.h" />
     <ClInclude Include="game\player\PlayerBullet.h" />
-    <ClInclude Include="game\enemy\TargetEnemy.h" />
-    <ClInclude Include="game\enemy\TargetEnemyBullet.h" />
+    <ClInclude Include="game\enemy\type\TargetEnemy.h" />
+    <ClInclude Include="game\enemy\Bullet\TargetEnemyBullet.h" />
     <ClInclude Include="application\railCamera\RailCamera.h" />
   </ItemGroup>
   <ItemGroup>
