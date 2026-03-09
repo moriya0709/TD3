@@ -142,19 +142,45 @@
     <ClCompile Include="engine\game\TitleScene.cpp">
       <Filter>ソース ファイル\game\scene</Filter>
     </ClCompile>
-    <ClCompile Include="Enemy\TargetEnemy.cpp" />
-    <ClCompile Include="Enemy\TargetEnemyBullet.cpp" />
-    <ClCompile Include="CameraController.cpp" />
-    <ClCompile Include="Enemy\HomingEnemy.cpp" />
-    <ClCompile Include="Enemy\HomingEnemyBullet.cpp" />
-    <ClCompile Include="Enemy\Enemy.cpp" />
-    <ClCompile Include="Enemy\EnemyBullet.cpp" />
-    <ClCompile Include="player\Player.cpp" />
-    <ClCompile Include="externals\imgui\ImGuizmo.cpp" />
-    <ClCompile Include="Enemy\NormalEnemy.cpp" />
-    <ClCompile Include="Enemy\NormalEnemyBullet.cpp" />
-    <ClCompile Include="player\PlayerBullet.cpp" />
-    <ClCompile Include="RailCamera.cpp" />
+    <ClCompile Include="application\railCamera\RailCamera.cpp">
+      <Filter>ソース ファイル\application\railCamera</Filter>
+    </ClCompile>
+    <ClCompile Include="game\camera\CameraController.cpp">
+      <Filter>ソース ファイル\game\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="game\enemy\Enemy.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="game\enemy\EnemyBullet.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="game\enemy\HomingEnemy.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="game\enemy\HomingEnemyBullet.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="game\player\Player.cpp">
+      <Filter>ソース ファイル\game\player</Filter>
+    </ClCompile>
+    <ClCompile Include="game\player\PlayerBullet.cpp">
+      <Filter>ソース ファイル\game\player</Filter>
+    </ClCompile>
+    <ClCompile Include="game\enemy\NormalEnemy.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="game\enemy\NormalEnemyBullet.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="game\enemy\TargetEnemy.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="game\enemy\TargetEnemyBullet.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\ImGuizmo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -270,22 +296,54 @@
     </ClInclude>
     <ClInclude Include="externals\nlohmann\json.hpp" />
     <ClInclude Include="externals\nlohmann\json_fwd.hpp" />
-    <ClInclude Include="Enemy\TargetEnemy.h" />
-    <ClInclude Include="Enemy\TargetEnemyBullet.h" />
-    <ClInclude Include="CameraController.h" />
-    <ClInclude Include="Enemy\HomingEnemy.h" />
-    <ClInclude Include="Enemy\HomingEnemyBullet.h" />
-    <ClInclude Include="Enemy\Enemy.h" />
-    <ClInclude Include="Enemy\EnemyBullet.h" />
-    <ClInclude Include="player\Player.h" />
-    <ClInclude Include="externals\imgui\ImGuizmo.h" />
-    <ClInclude Include="engine\scene\SceneFactory.h" />
-    <ClInclude Include="engine\scene\SceneManager.h" />
-    <ClInclude Include="engine\game\TitleScene.h" />
-    <ClInclude Include="Enemy\NormalEnemy.h" />
-    <ClInclude Include="Enemy\NormalEnemyBullet.h" />
-    <ClInclude Include="player\PlayerBullet.h" />
-    <ClInclude Include="RailCamera.h" />
+    <ClInclude Include="engine\scene\SceneFactory.h">
+      <Filter>ヘッダー ファイル\engine\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\scene\SceneManager.h">
+      <Filter>ヘッダー ファイル\engine\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="application\railCamera\RailCamera.h">
+      <Filter>ヘッダー ファイル\application\railCamera</Filter>
+    </ClInclude>
+    <ClInclude Include="engine\game\TitleScene.h">
+      <Filter>ヘッダー ファイル\game\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="game\camera\CameraController.h">
+      <Filter>ヘッダー ファイル\game\camera</Filter>
+    </ClInclude>
+    <ClInclude Include="game\enemy\Enemy.h">
+      <Filter>ヘッダー ファイル\game\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="game\enemy\EnemyBullet.h">
+      <Filter>ヘッダー ファイル\game\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="game\enemy\HomingEnemy.h">
+      <Filter>ヘッダー ファイル\game\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="game\enemy\HomingEnemyBullet.h">
+      <Filter>ヘッダー ファイル\game\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="game\enemy\NormalEnemy.h">
+      <Filter>ヘッダー ファイル\game\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="game\enemy\NormalEnemyBullet.h">
+      <Filter>ヘッダー ファイル\game\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="game\enemy\TargetEnemy.h">
+      <Filter>ヘッダー ファイル\game\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="game\enemy\TargetEnemyBullet.h">
+      <Filter>ヘッダー ファイル\game\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="game\player\Player.h">
+      <Filter>ヘッダー ファイル\game\player</Filter>
+    </ClInclude>
+    <ClInclude Include="game\player\PlayerBullet.h">
+      <Filter>ヘッダー ファイル\game\player</Filter>
+    </ClInclude>
+    <ClInclude Include="externals\imgui\ImGuizmo.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">
@@ -409,6 +467,18 @@
     </Filter>
     <Filter Include="ソース ファイル\game\player">
       <UniqueIdentifier>{57d442d7-ff28-470f-9cd6-030fad52cf5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\game\camera">
+      <UniqueIdentifier>{af550405-0726-4ecb-bceb-bd6c60083372}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\application\railCamera">
+      <UniqueIdentifier>{b2b33171-a506-4244-a6cf-454ade64e9ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\application\railCamera">
+      <UniqueIdentifier>{f00161ea-cb65-4466-8da8-7d85697e5eff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\game\camera">
+      <UniqueIdentifier>{eebb3ad0-911d-4c8b-9191-b4ba9a0b02c3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
