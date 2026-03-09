@@ -1,5 +1,5 @@
 #pragma once
-#include "EnemyBullet.h"
+#include "../EnemyBullet.h"
 
 class Player;
 

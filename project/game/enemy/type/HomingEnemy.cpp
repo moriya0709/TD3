@@ -1,7 +1,8 @@
-#include "NormalEnemy.h"
-#include "NormalEnemyBullet.h"
+#include "HomingEnemy.h"
+#include "../player/Player.h"
+#include "../Bullet/HomingEnemyBullet.h"
 
-void NormalEnemy::Initialize(Camera* camera, Vector3 pos)
+void HomingEnemy::Initialize(Camera* camera, Vector3 pos)
 {
     camera_ = camera;
 
@@ -19,7 +20,7 @@ void NormalEnemy::Initialize(Camera* camera, Vector3 pos)
     interval = maxInterval;
 }
 
-void NormalEnemy::Update()
+void HomingEnemy::Update()
 {
     // 移動
     // transform_.translate.x += kwalkSpeed;
@@ -32,15 +33,17 @@ void NormalEnemy::Update()
 
     if (interval <= 0.0f) {
         // 弾の生成
-        std::unique_ptr<NormalEnemyBullet> newBulletEnemy = std::make_unique<NormalEnemyBullet>();
+        std::unique_ptr<HomingEnemyBullet> newBulletEnemy = std::make_unique<HomingEnemyBullet>();
         newBulletEnemy->Initialize(camera_, transform_.translate);
-        newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.1f));
+        newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.08f));
+        newBulletEnemy->SetTargetPosition(player_->GetPosition());
 
         enemyBullet_.push_back(std::move(newBulletEnemy));
         interval = maxInterval;
     }
     // 更新処理
     for (auto& bullet : enemyBullet_) {
+        bullet->SetTargetPosition(player_->GetPosition());
         bullet->Update();
     }
 
@@ -54,7 +57,7 @@ void NormalEnemy::Update()
     object_->Update();
 }
 
-void NormalEnemy::Draw3D()
+void HomingEnemy::Draw3D()
 {
     // 3Dオブジェクト描画
     object_->Draw();
