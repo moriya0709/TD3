@@ -52,6 +52,7 @@ private:
 	// ƒvƒŒƒCƒ„[‚Ì’e
 	std::list<PlayerBullet*> bullets;
 	void Attack();
+	void UpdateBullets();
 	// Ÿ‚Ì”­Ë‚Ü‚Å
 	int coolTime = 0;
 
@@ -79,3 +80,6 @@ private:
 
 
 };
+
+
+Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);

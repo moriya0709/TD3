@@ -137,6 +137,7 @@ void Player::Update() {
 	for (PlayerBullet* bullet : bullets) {
 		bullet->Update();
 	}
+	UpdateBullets();
 #pragma endregion
 }
 
@@ -164,9 +165,22 @@ void Player::Attack() {
 	}
 	if (input->IsMouseButtonPressed(0) || input->PushKey(DIK_SPACE)) {
 		PlayerBullet* newBullet = new PlayerBullet();
-		newBullet->Initialize(transform_.translate, camera_);
-		newBullet->SetStatus(statas_.renge, statas_.hommingAccuracy, reticlePosition_);
+		newBullet->Initialize(transform_.translate, camera_,reticlePosition_, statas_.renge );
+		newBullet->SetStatus(statas_.hommingAccuracy);
 		bullets.push_back(newBullet);
 		coolTime = statas_.haste;
+	}
+}
+
+void Player::UpdateBullets() {
+	for (auto it = bullets.begin(); it != bullets.end();) {
+		PlayerBullet* bullet = *it;
+		if (!bullet->IsActive()) {
+			delete bullet;
+			it = bullets.erase(it);
+		}
+		else {
+			++it;
+		}
 	}
 }
