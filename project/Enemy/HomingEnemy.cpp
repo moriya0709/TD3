@@ -2,13 +2,13 @@
 #include "../player/Player.h"
 #include "HomingEnemyBullet.h"
 
-void HomingEnemy::Initialize(Camera* camera)
+void HomingEnemy::Initialize(Camera* camera, Vector3 pos)
 {
     camera_ = camera;
 
     transform_.scale = { 1.0f, 1.0f, 1.0f };
     transform_.rotate = { 0.0f, 0.0f, 0.0f };
-    transform_.translate = { 0.0f, 0.0f, 60.0f };
+    transform_.translate = pos;
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
