@@ -42,6 +42,7 @@ public:
 
     /* Setä÷êî */
     virtual void SetTargetPlayer(Player* target) { };
+    //virtual void OnCollision();
 
 protected:
     // íe
