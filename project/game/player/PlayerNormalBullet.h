@@ -16,7 +16,7 @@
 
 class PlayerNormalBullet : public PlayerBullet {
 public:
-	void Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::unique_ptr<Enemy>>& enemies) override;
+	void Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies) override;
 	void Update() override;
 	void Draw3D() override;
 	void Draw2D() override;
@@ -39,7 +39,7 @@ private:
 	int lifeTime_ = 0;     // 弾の寿命（フレーム数）
 	int maxLifeTime_ = 30; // 弾の最大寿命（フレーム数）
 	bool isActive_ = true; // 弾が有効かどうか
-	Enemy* targetEnemy_; // ホーミング対象の敵
+	std::weak_ptr<Enemy> targetEnemy_; // ホーミング対象の敵
 	float bulletSpeed_;    // 弾の速さ
 };
 

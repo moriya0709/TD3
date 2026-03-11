@@ -243,7 +243,7 @@ void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("mai
 
 void GamePlayScene::ChekeAllCollision()
 {
-    const std::list<std::unique_ptr<Enemy>>& enemies = enemy_->GetEnemies();
+    const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
     CheckCollisionPlayerEnemy(player_.get(), enemies);
     CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
 	CheckCollisionPlayerBulletEnemy(player_.get(), enemies);

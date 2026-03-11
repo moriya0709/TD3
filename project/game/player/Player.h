@@ -27,7 +27,7 @@ public:
 		int haste = 0;                // 攻撃頻度
 	};
 	void Initialize(Camera* camera);
-	void Update(const std::list<std::unique_ptr<Enemy>>& enemies);
+	void Update(const std::list<std::shared_ptr<Enemy>>& enemies);
 	void Draw2D();
 	void Draw3D();
 	Vector3 GetPosition() const { return transform_.translate; }
@@ -44,6 +44,7 @@ public:
 	bool GetIsHit() const { return ishit; }
 
 	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets; }
+	int GetAttack() const { return statas_.attack; }
 
 private:
 	// プレイヤーのステータス
@@ -65,7 +66,7 @@ private:
 
 	// プレイヤーの弾
 	std::list<std::unique_ptr<PlayerBullet>> bullets;
-	void Attack(const std::list<std::unique_ptr<Enemy>>& enemies);
+	void Attack(const std::list<std::shared_ptr<Enemy>>& enemies);
 	void UpdateBullets();
 	// 次の発射まで
 	int coolTime = 0;
