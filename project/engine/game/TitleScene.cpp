@@ -51,12 +51,12 @@ void TitleScene::Update() {
 	railCamera->EditorUpdate();
 
 	// ENTERキーを押したら
-	//if (input->TriggerKey(DIK_RETURN)) {
-	//	// ゲームプレイシーン(次シーン)を生成
-	//	SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-	//	// 音声再生
-	//	SoundManager::GetInstance()->Stop("bgm");
-	//}
+	if (input->TriggerKey(DIK_RETURN)) {
+		// ゲームプレイシーン(次シーン)を生成
+		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		// 音声再生
+		SoundManager::GetInstance()->Stop("bgm");
+	}
 
 	// 数字の０キーが押されていたら
 	if (input->TriggerKey(DIK_0)) {
