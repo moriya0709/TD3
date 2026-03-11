@@ -54,7 +54,7 @@ void Player::Initialize(Camera* camera) {
 	statas_.speed = 0.2f; // XY移動は少し速い方が気持ちいいです
 	statas_.haste = 10;
 	statas_.chargeTime = 60;
-	statas_.hommingAccuracy = 0.5f;
+	statas_.hommingAccuracy = 0.01f;
 	statas_.renge = 80.0f;
 
 	velocity_ = {0.0f, 0.0f, 0.0f};
@@ -165,6 +165,9 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	ImGui::DragFloat3("World Pos", &transform_.translate.x, 0.1f);
 	ImGui::DragFloat2("Relative Pos", &relativePos_.x, 0.1f);
 	ImGui::DragInt("HP", &statas_.hp, 0.1f);
+	ImGui::DragInt("Attack", &statas_.attack, 0.1f);
+	ImGui::DragFloat("Speed", &statas_.speed, 0.01f);
+	ImGui::DragFloat("Homing Accuracy", &statas_.hommingAccuracy, 0.0001f, 0.0f, 1.0f, "%.4f");
 	ImGui::End();
 #pragma endregion
 }
