@@ -22,6 +22,7 @@ public:
     void SetBulletAcceleration(Vector3 num) override { acceleration_ = num; }
     void SetactiveTimer(float num) override { activeTimer = num; }
     void SetTargetPosition(Vector3 Pos) { targetPos_ = Pos; };
+    void OnCollision() override;
 
 private:
     Transform transform_; // ç¿ïWån
