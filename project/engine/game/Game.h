@@ -15,6 +15,7 @@
 #include "SoundManager.h"
 #include "ModelManager.h"
 #include "PostEffect.h"
+#include "RayMarching.h"
 
 #include "SceneManager.h"
 #include "SceneFactory.h"

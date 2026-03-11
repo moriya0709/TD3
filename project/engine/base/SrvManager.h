@@ -11,7 +11,7 @@ public:
 	void Initialize(DirectXCommon* dxCommon);
 
 	// 確保
-	uint32_t Allocate();
+	uint32_t Allocate(uint32_t num);
 
 	// デスクリプタハンドル計算
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(uint32_t index);

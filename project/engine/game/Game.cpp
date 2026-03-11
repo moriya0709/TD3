@@ -49,7 +49,7 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("player.obj");
 	ModelManager::GetInstance()->LoadModel("cube.obj"); // レールエディター
 	ModelManager::GetInstance()->LoadModel("rail.obj"); // レールエディター
-	ModelManager::GetInstance()->LoadModel("skydome.obj"); 
+	//ModelManager::GetInstance()->LoadModel("skydome.obj"); 
 
 	// サウンド
 	SoundManager::GetInstance()->Initialize();
