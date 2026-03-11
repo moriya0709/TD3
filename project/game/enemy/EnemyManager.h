@@ -12,6 +12,10 @@ struct EnemyPopData {
     std::string type; // 敵の種類
     Vector3 position; // 出現座標
     int hp; // 体力
+    // 複数の移動地点を保持するリスト
+    std::vector<WayPoint> movePattern;
+    WayPoint fleeWaypoint; // 逃走先
+    bool hasFleeData; //逃走先があるか
 };
 
 class EnemyManager {

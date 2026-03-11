@@ -1,6 +1,7 @@
 #pragma once
 #include "../Enemy.h"
 #include "../EnemyBullet.h"
+#include <vector>
 
 class NormalEnemy : public Enemy {
 public:
@@ -11,14 +12,28 @@ public:
         kDefeated, // ﾀﾋ
     };
 
+    /// <summary>
+    /// 初期化
+    /// </summary>
+    /// <param name="camera">カメラ</param>
+    /// <param name="pos">初期座標</param>
+    /// <param name="health">体力</param>
     void Initialize(Camera* camera, Vector3 pos, int health) override;
 
+    /// <summary>
+    /// 更新
+    /// </summary>
     void Update() override;
 
+    /// <summary>
+    /// オブジェクト表示
+    /// </summary>
     void Draw3D() override;
 
     // Set
     void OnCollision(int Damage) override;
+    void SetWayPoints(const std::vector<WayPoint>& waypoints) override;
+    void SetFleeWaypoint(const WayPoint& fleeWP, bool hasFleeData) override;
 
     // Get
     Vector3 GetWorldPosition() const override { return transform_.translate; }
@@ -26,6 +41,17 @@ public:
     bool GetIsDead() const override { return isDead_; }
 
 private:
+    void EnemyMove();
+    void BulletUpdate();
+
+    void BehaviorWalk();
+    void BehaviorAway();
+    void BehaviorDefeated();
+
+private:
+    Behavior behavior_ = Behavior::kWalk;
+    Behavior behaviorRequest_ = Behavior::kUnknown;
+
     std::unique_ptr<Object> object_; // オブジェ
     Camera* camera_ = nullptr; // カメラ―
 
@@ -45,4 +71,16 @@ private:
 
     // キャラクターの当たり判定サイズ
     static inline const float radius = 1.0f;
+
+    /* ウェイポイント移動の変数 */
+    std::vector<WayPoint> waypoints_;
+    int currentWayPointIndex_ = 0;
+    float waypointTimer_ = 0.0f;
+    Vector3 startPos_;
+
+    // --- 逃走用の変数 ---
+    WayPoint fleeWaypoint_;
+    bool hasFleeData_ = false;
+    float fleeTimer_ = 0.0f;
+    Vector3 fleeStartPos_; // 逃走を開始した瞬間の座標
 };

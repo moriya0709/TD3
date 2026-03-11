@@ -1,4 +1,4 @@
-﻿#include "CameraManager.h"
+#include "CameraManager.h"
 #include "ImGuiManager.h"
 #include "Object.h"
 #include "SoundManager.h"
