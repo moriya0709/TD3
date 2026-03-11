@@ -45,6 +45,48 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
                 data.position = { 0.0f, 0.0f, 0.0f };
             }
 
+            if (enemyData.contains("movePattern") && enemyData["movePattern"].is_array()) {
+
+                for (const auto& wpData : enemyData["movePattern"]) {
+                    WayPoint wp;
+
+                    // 到達時間の取得（書き忘れ対策でデフォルト1.0秒）
+                    wp.timeToReach = wpData.value("timeToReach", 1.0f);
+
+                    // 目標座標の取得
+                    if (wpData.contains("target")) {
+                        const auto& tData = wpData["target"];
+                        wp.target.x = tData.value("x", 0.0f);
+                        wp.target.y = tData.value("y", 0.0f);
+                        wp.target.z = tData.value("z", 0.0f);
+                    } else {
+                        // 座標がなければ原点をセット
+                        wp.target = { 0.0f, 0.0f, 0.0f };
+                    }
+
+                    // 経路リストに追加
+                    data.movePattern.push_back(wp);
+                }
+            }
+
+            if (enemyData.contains("flee")) {
+                const auto& fleeData = enemyData["flee"];
+
+                data.fleeWaypoint.timeToReach = fleeData.value("timeToReach", 2.0f);
+
+                if (fleeData.contains("target")) {
+                    const auto& tData = fleeData["target"];
+                    data.fleeWaypoint.target.x = tData.value("x", 0.0f);
+                    data.fleeWaypoint.target.y = tData.value("y", 0.0f);
+                    data.fleeWaypoint.target.z = tData.value("z", 0.0f);
+                } else {
+                    data.fleeWaypoint.target = { 0.0f, 0.0f, 0.0f };
+                }
+                data.hasFleeData = true; // 逃走データあり
+            } else {
+                data.hasFleeData = false; // 逃走データなし（後でデフォルトの逃げ方をする）
+            }
+
             // 取得したデータをリストに追加
             popDatas_.push_back(data);
         }
@@ -82,9 +124,9 @@ void EnemyManager::Update()
     }
 
     // 死んだ際のlist消し
-    // enemies_.remove_if([](const std::unique_ptr<Enemy>& enemy) {
-    // return enemy->GetIsDead();
-    //});
+    enemies_.remove_if([](const std::unique_ptr<Enemy>& enemy) {
+        return enemy->GetIsDead();
+    });
 }
 
 void EnemyManager::Draw3D()
@@ -111,6 +153,8 @@ void EnemyManager::SpawnEnemy(const EnemyPopData& data)
     if (newEnemy) {
         newEnemy->Initialize(camera_, data.position, data.hp);
         newEnemy->SetTargetPlayer(player_); // プレイヤーの情報を渡す
+        newEnemy->SetWayPoints(data.movePattern);
+        newEnemy->SetFleeWaypoint(data.fleeWaypoint, data.hasFleeData);
 
         enemies_.push_back(std::move(newEnemy));
     }

@@ -35,4 +35,6 @@ private:
 
     Camera* camera_ = nullptr; // カメラ
     std::unique_ptr<Object> object_; // オブジェ
+
+    /* ウェイポイント移動の変数 */
 };

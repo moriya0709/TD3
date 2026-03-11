@@ -16,6 +16,11 @@
 
 class Player;
 
+struct WayPoint {
+    Vector3 target; // –Ú•W‚ÌÀ•W
+    float timeToReach; // “’B‚É‚©‚¯‚éŠÔ
+};
+
 class Enemy {
 public:
     /// <summary>
@@ -43,7 +48,8 @@ public:
     /* SetŠÖ” */
     virtual void SetTargetPlayer(Player* target) { };
     virtual void OnCollision(int Damage) = 0;
-    // virtual void OnCollision();
+    virtual void SetWayPoints(const std::vector<WayPoint>& waypoints) { };
+    virtual void SetFleeWaypoint(const WayPoint& fleeWP, bool hasFleeData) { };
 
 protected:
     // ’e
