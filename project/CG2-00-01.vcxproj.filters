@@ -31,6 +31,12 @@
     <FxCompile Include="Resource\shaders\Sprite.VS.hlsl">
       <Filter>リソース ファイル\shader</Filter>
     </FxCompile>
+    <FxCompile Include="Resource\shaders\RayMarching.PS.hlsl">
+      <Filter>リソース ファイル\shader</Filter>
+    </FxCompile>
+    <FxCompile Include="Resource\shaders\RayMarching.VS.hlsl">
+      <Filter>リソース ファイル\shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -180,6 +186,9 @@
     </ClCompile>
     <ClCompile Include="externals\imgui\ImGuizmo.cpp">
       <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="application\rayMarching\RayMarching.cpp">
+      <Filter>ソース ファイル\application\rayMarching</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -344,6 +353,9 @@
     <ClInclude Include="externals\imgui\ImGuizmo.h">
       <Filter>imgui</Filter>
     </ClInclude>
+    <ClInclude Include="application\rayMarching\RayMarching.h">
+      <Filter>ヘッダー ファイル\application\rayMarching</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">
@@ -359,6 +371,9 @@
       <Filter>リソース ファイル\shader</Filter>
     </None>
     <None Include="Resource\shaders\Sprite.hlsli">
+      <Filter>リソース ファイル\shader</Filter>
+    </None>
+    <None Include="Resource\shaders\rayMarching.hlsli">
       <Filter>リソース ファイル\shader</Filter>
     </None>
   </ItemGroup>
@@ -479,6 +494,12 @@
     </Filter>
     <Filter Include="ソース ファイル\game\camera">
       <UniqueIdentifier>{eebb3ad0-911d-4c8b-9191-b4ba9a0b02c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\application\rayMarching">
+      <UniqueIdentifier>{8e93e33c-a722-40e6-886d-fba0b234b503}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\application\rayMarching">
+      <UniqueIdentifier>{968996c6-68b8-4087-8f89-cafc82a246d7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

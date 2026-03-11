@@ -172,7 +172,7 @@ void ParticleManager::CreateParticleGroup(const std::string name, const std::str
 	group.instancingResource = dxCommon_->CreateBufferResource(sizeof(ParticleForGPU) * kMaxParticleInstance);
 
 	// インスタンシング用にSRVを確保してSRVインデックスを記録
-	group.instancingIndex = srvManager_->Allocate();
+	group.instancingIndex = srvManager_->Allocate(1);
 
 	// SRV生成
 	srvManager_->CreateSRVforStructuredBuffer(

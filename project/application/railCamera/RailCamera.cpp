@@ -71,7 +71,7 @@ void RailCamera::EditorUpdate() {
 		ImGui::DragFloat("time", &railT,0.01f);
 		ImGui::Checkbox("isRail", &isRail);
 		// ƒJƒƒ‰
-		ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f, -100.0f, 100.0f);
+		ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f, -1000.0f, 1000.0f);
 		ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -180.0f, 180.0f);
 		camera->SetTranslate({ cameraTransform.translate });
 		camera->SetRotate({ cameraTransform.rotate });

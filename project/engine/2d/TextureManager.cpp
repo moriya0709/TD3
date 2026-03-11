@@ -49,7 +49,7 @@ void TextureManager::LoadTexture(const std::string& filePath) {
 	textureData.resource = dxCommon_->CreateTextureResource(textureData.metadata);
 
 	// SRVŠm•Û
-	textureData.srvIndex = srvManager_->Allocate();
+	textureData.srvIndex = srvManager_->Allocate(1);
 	textureData.srvHandleCPU = srvManager_->GetCPUDescriptorHandle(textureData.srvIndex);
 	textureData.srvHandleGPU = srvManager_->GetGPUDescriptorHandle(textureData.srvIndex);
 
