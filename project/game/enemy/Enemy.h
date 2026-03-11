@@ -22,7 +22,7 @@ public:
     /// èâä˙âª
     /// </summary>
     /// <param name="camera"></param>
-    virtual void Initialize(Camera* camera, Vector3 pos);
+    virtual void Initialize(Camera* camera, Vector3 pos, int health);
 
     /// <summary>
     /// çXêV
@@ -37,12 +37,13 @@ public:
     /* Getä÷êî */
     virtual Vector3 GetWorldPosition() const = 0;
     virtual float GetRadius() const = 0;
-    // virtual void OnCollision() = 0;
     const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
+    virtual bool GetIsDead() const = 0;
 
     /* Setä÷êî */
     virtual void SetTargetPlayer(Player* target) { };
-    //virtual void OnCollision();
+    virtual void OnCollision(int Damage) = 0;
+    // virtual void OnCollision();
 
 protected:
     // íe

@@ -11,15 +11,19 @@ public:
         kDefeated, // ÀË
     };
 
-    void Initialize(Camera* camera, Vector3 pos) override;
+    void Initialize(Camera* camera, Vector3 pos, int health) override;
 
     void Update() override;
 
     void Draw3D() override;
 
+    // Set
+    void OnCollision(int Damage) override;
+
     // Get
     Vector3 GetWorldPosition() const override { return transform_.translate; }
     float GetRadius() const override { return radius; }
+    bool GetIsDead() const override { return isDead_; }
 
 private:
     std::unique_ptr<Object> object_; // ƒIƒuƒWƒF
@@ -32,7 +36,7 @@ private:
 
     float activeTimer; // ‘¶İ‚·‚éŠÔ
     float isAvile; // ¶‘¶‚µ‚Ä‚¢‚é‚©
-    float health; // ‘Ì—Í
+    int health_; // ‘Ì—Í
     float interval; // ’e‚ğ”­Ë‚·‚éŠÔŠu
     static inline const float maxInterval = 2.0f; // ŠÔŠu
 

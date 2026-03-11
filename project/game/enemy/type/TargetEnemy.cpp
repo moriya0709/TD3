@@ -2,7 +2,7 @@
 #include "../bullet/TargetEnemyBullet.h"
 #include "Player.h"
 
-void TargetEnemy::Initialize(Camera* camera, Vector3 pos)
+void TargetEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 {
     camera_ = camera;
 
@@ -17,6 +17,9 @@ void TargetEnemy::Initialize(Camera* camera, Vector3 pos)
     object_->SetRotate(transform_.rotate);
     object_->SetTranslate(transform_.translate);
 
+    health_ = health;
+    isAvile = true;
+
     interval = maxInterval;
 }
 
@@ -24,6 +27,11 @@ void TargetEnemy::Update()
 {
     // 移動
     // transform_.translate.x += kwalkSpeed;
+
+    // 生きていないならやられモーション処理を入れる
+    if (!isAvile) {
+        isDead_ = true;
+    }
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);
@@ -64,5 +72,14 @@ void TargetEnemy::Draw3D()
     // 更新処理
     for (auto& bullet : enemyBullet_) {
         bullet->Draw3D();
+    }
+}
+
+void TargetEnemy::OnCollision(int Damage)
+{
+    health_ -= Damage;
+
+    if (health_ <= 0) {
+        isAvile = false;
     }
 }

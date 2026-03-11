@@ -83,7 +83,7 @@ void EnemyManager::Update()
 
     // €‚ñ‚¾Û‚ÌlistÁ‚µ
     // enemies_.remove_if([](const std::unique_ptr<Enemy>& enemy) {
-    // return enemy->IsDead();
+    // return enemy->GetIsDead();
     //});
 }
 
@@ -109,7 +109,7 @@ void EnemyManager::SpawnEnemy(const EnemyPopData& data)
 
     // ¶¬‚É¬Œ÷‚µ‚½‚ç‰Šú‰»
     if (newEnemy) {
-        newEnemy->Initialize(camera_, data.position);
+        newEnemy->Initialize(camera_, data.position, data.hp);
         newEnemy->SetTargetPlayer(player_); // ƒvƒŒƒCƒ„[‚Ìî•ñ‚ğ“n‚·
 
         enemies_.push_back(std::move(newEnemy));

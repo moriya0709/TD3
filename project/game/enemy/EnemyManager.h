@@ -17,12 +17,6 @@ struct EnemyPopData {
 class EnemyManager {
 public:
     /// <summary>
-    /// Json読み込み―
-    /// </summary>
-    /// <param name="filePath">読み込み対象のファイル</param>
-    void LoadEnemyData(const std::string& filePath);
-
-    /// <summary>
     /// 初期化
     /// </summary>
     /// <param name="filePath">読み込むぁいる</param>
@@ -46,6 +40,12 @@ public:
     const std::list<std::unique_ptr<Enemy>>& GetEnemies() const { return enemies_; }
 
 private:
+    /// <summary>
+    /// Json読み込み―
+    /// </summary>
+    /// <param name="filePath">読み込み対象のファイル</param>
+    void LoadEnemyData(const std::string& filePath);
+
     /// <summary>
     /// 敵のスポーン
     /// </summary>
