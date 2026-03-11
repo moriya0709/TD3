@@ -20,13 +20,8 @@ void GamePlayScene::Initialize()
     player_ = std::make_unique<Player>();
     player_->Initialize(camera.get());
 
-    Enemy_ = std::make_unique<HomingEnemy>();
-    Enemy_->Initialize(camera.get());
-    Enemy_->SetTargetPlayer(player_.get());
-
-    Enemy2_ = std::make_unique<TargetEnemy>();
-    Enemy2_->Initialize(camera.get());
-    Enemy2_->SetTargetPlayer(player_.get());
+    enemy_ = std::make_unique<EnemyManager>();
+    enemy_->Initialize("Resource/Data/EnemyaPop.json", player_.get(), camera.get());
 
     // Emitパーティクル発生
     particleEmitter = std::make_unique<ParticleEmitter>();
@@ -44,34 +39,10 @@ void GamePlayScene::Update()
     player_->Update();
 
     // 敵更新
-    Enemy_->Update();
-    Enemy2_->Update();
+    enemy_->Update();
 
-#pragma region ライティング
-    // *ライティング* //
-
-    // 平行光
-    // object->SetDirectionalLight(isDirectionalLight);
-    // object->SetDirectionalLightDirection(DirectionalLightDirection);
-    // object->SetDirectionalLightColor(DirectionalLightColor);
-    // object->SetDirectionalLightIntensity(DirectionalLightIntensity);
-    //// 環境光
-    // object->SetAmbientLight(isAmbientLight);
-    // object->SetAmbientLightColor(AmbientLightColor);
-    // object->SetAmbientLightIntensity(AmbientLightIntensity);
-    //// ポイントライト
-    // object->SetPointLight(isPointLight);
-    // object->SetPointLightColor(PointLightColor);
-    // object->SetPointLightPosition(PointLightPosition);
-    // object->SetPointLightIntensity(PointLightIntensity);
-    //// スポットライト
-    // object->SetSpotLight(isSpotLight);
-    // object->SetSpotLightColor(SpotLightColor);
-    // object->SetSpotLightPosition(SpotLightPosition);
-    // object->SetSpotLightDirection(SpotLightDirection);
-    // object->SetSpotLightRange(SpotLightRange);
-    // object->SetSpotLightIntensity(SpotLightIntensity);
-#pragma endregion
+    // 当たり判定
+    ChekeAllCollision();
 
 #pragma region ポストエフェクト
     // *ポストエフェクト* //
@@ -256,8 +227,7 @@ void GamePlayScene::Draw3D()
     // 3Dオブジェクト描画
     player_->Draw3D();
 
-    Enemy_->Draw3D();
-    Enemy2_->Draw3D();
+    enemy_->Draw3D();
 
     // パーティクル描画
     ParticleManager::GetInstance()->Draw();
@@ -270,3 +240,11 @@ void GamePlayScene::Draw3D()
 }
 
 void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
+
+void GamePlayScene::ChekeAllCollision()
+{
+    const std::list<std::unique_ptr<Enemy>>& enemies = enemy_->GetEnemies();
+    CheckCollisionPlayerEnemy(player_.get(), enemies);
+    CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
+	CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
+}

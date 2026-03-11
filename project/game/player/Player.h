@@ -22,17 +22,28 @@ public:
 		int attack;                   // 攻撃力
 		float speed;                  // 速度
 		float hommingAccuracy = 0.0f; // ホーミング精度
-		float renge = 0.0f;     // 弾速
-		float chargeTime = 0.0f;      // チャージ時間
+		float renge = 0.0f;           // 弾速
+		int chargeTime = 0;           // チャージ時間
 		int haste = 0;                // 攻撃頻度
 	};
 	void Initialize(Camera* camera);
 	void Update();
-	void ApplyLighting();
 	void Draw2D();
 	void Draw3D();
 	Vector3 GetPosition() const { return transform_.translate; }
 	~Player();
+	float GetHitSize() const { return hitSize_; }
+	void Damage(int damage) {
+		statas_.hp -= damage;
+		if (statas_.hp < 0) {
+			statas_.hp = 0;
+		}
+		ishit = true;
+		damageTimer = 30; // ダメージ表示タイマーリセット
+	}
+	bool GetIsHit() const { return ishit; }
+
+	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets; }
 
 private:
 	// プレイヤーのステータス
@@ -49,11 +60,20 @@ private:
 	Camera* camera_ = nullptr;
 	// プレイヤーの現在の速度
 	Vector3 velocity_ = {0.0f, 0.0f, 0.0f};
+	Vector3 relativePos_ = {0.0f, 0.0f, 0.0f}; // カメラからの相対位置（Zは固定）
+	float hitSize_ = 1.0f;                     // 当たり判定のサイズ
+
 	// プレイヤーの弾
-	std::list<PlayerBullet*> bullets;
+	std::list<std::unique_ptr<PlayerBullet>> bullets;
 	void Attack();
+	void UpdateBullets();
 	// 次の発射まで
 	int coolTime = 0;
+	bool isSpecialAttack = false;
+	int chargeTimer = 0;
+	bool isCharging = false;
+	bool ishit = false;
+	int damageTimer = 0;
 
 	// 平行光
 	bool isDirectionalLight = false;
@@ -76,6 +96,6 @@ private:
 	Vector3 SpotLightDirection = {0.0f, 0.0f, 0.0f};
 	float SpotLightRange = 10.0f;
 	float SpotLightIntensity = 1.0f;
-
-
 };
+
+Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);

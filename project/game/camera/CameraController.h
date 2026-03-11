@@ -18,6 +18,7 @@ public:
 	void Initialize(Camera* camera);
 	void Update();
 	void DrawImGui();
+	float GetCurrentReplayTime() const { return timer; }
 
 private:
 	void RecordStateIfChanged(const Vector3& vel, const Vector3& angVel);
@@ -26,7 +27,6 @@ private:
 	void StartReplay();
 	void SeekTo(float targetTime);
 	void UpdateOrInsertKeyframe(float time, const Vector3& vel, const Vector3& angVel);
-	void SetCurrentAsInitial();
 	void SaveToJSON(const std::string& filename);
 	void LoadFromJSON(const std::string& filename);
 	std::string GetFilePath(int slot) const;

@@ -1,5 +1,5 @@
 #pragma once
-#include "EnemyBullet.h"
+#include "../EnemyBullet.h"
 
 class NormalEnemyBullet : public EnemyBullet {
 public:
@@ -12,13 +12,14 @@ public:
     // Get
     bool GetIsActive() const override { return isAvile; };
     Vector3 GetWorldPosition() const override { return transform_.translate; };
-    float GetRadius() const override { return kWidth; };
+    float GetRadius() const override { return radius; };
 
     // Set
     void SetPosition(Vector3 Pos) override { transform_.translate = Pos; }
     void SetBulletAcceleration(Vector3 num) override { acceleration = num; }
     void SetactiveTimer(float num) override { activeTimer = num; }
     void SetTargetPosition(Vector3 Pos) { Pos; }
+    void OnCollision() override;
 
 private:
     Transform transform_; // 座標系
@@ -30,8 +31,7 @@ private:
     static inline const float maxactiveTimer = 3.0f; // 弾の最大持続時間
 
     // キャラクターの当たり判定サイズ
-    static inline const float kWidth = 1.0f;
-    static inline const float kHeight = 1.0f;
+    static inline const float radius = 2.0f;
 
     Camera* camera_ = nullptr; // カメラ
     std::unique_ptr<Object> object_; // オブジェ

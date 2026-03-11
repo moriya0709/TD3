@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "BaseScene.h"
 #include "Camera.h"
+#include "CameraController.h"
 #include "CameraManager.h"
 #include "ImGuiManager.h"
 #include "Input.h"
@@ -11,14 +12,10 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
-#include "CameraController.h"
+#include"../game/collision/Collision.h"
 
-
-#include "../Enemy/Enemy.h"
-#include "../Enemy/NormalEnemy.h"
-#include "../Enemy/TargetEnemy.h"
-#include "../Enemy/HomingEnemy.h"
-#include "Player.h"
+#include "../../game/enemy/EnemyManager.h"
+#include "../../game/player/Player.h"
 
 class SpriteCommon;
 class ObjectCommon;
@@ -34,6 +31,8 @@ public:
     void Draw3D() override;
     // 終了
     void Finalize() override;
+
+    void ChekeAllCollision() ;
 
 private:
     Transform cameraTransform {
@@ -117,8 +116,7 @@ private:
     std::unique_ptr<ParticleEmitter> particleEmitter = nullptr;
 
     std::unique_ptr<Player> player_ = nullptr;
-    std::unique_ptr<Enemy> Enemy_ = nullptr;
-    std::unique_ptr<Enemy> Enemy2_ = nullptr; // テスト用(後でlist化)
+    // リスト
+    std::unique_ptr<EnemyManager> enemy_ = nullptr;
     std::unique_ptr<CameraController> CameraController_ = nullptr;
-
 };

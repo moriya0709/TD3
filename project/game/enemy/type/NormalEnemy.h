@@ -1,6 +1,6 @@
 #pragma once
-#include "Enemy.h"
-#include "EnemyBullet.h"
+#include "../Enemy.h"
+#include "../EnemyBullet.h"
 
 class NormalEnemy : public Enemy {
 public:
@@ -11,18 +11,19 @@ public:
         kDefeated, // ﾀﾋ
     };
 
-    void Initialize(Camera* camera) override;
+    void Initialize(Camera* camera, Vector3 pos, int health) override;
 
     void Update() override;
 
     void Draw3D() override;
 
+    // Set
+    void OnCollision(int Damage) override;
+
     // Get
     Vector3 GetWorldPosition() const override { return transform_.translate; }
-    float GetRadius() const override { return kHeight; }
-
-    // 弾リストへの読み取り専用アクセスを提供する関数を追加
-    const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
+    float GetRadius() const override { return radius; }
+    bool GetIsDead() const override { return isDead_; }
 
 private:
     std::unique_ptr<Object> object_; // オブジェ
@@ -35,7 +36,7 @@ private:
 
     float activeTimer; // 存在する時間
     float isAvile; // 生存しているか
-    float health; // 体力
+    int health_; // 体力
     float interval; // 弾を発射する間隔
     static inline const float maxInterval = 2.0f; // 間隔
 
@@ -43,9 +44,5 @@ private:
     bool isDead_ = false;
 
     // キャラクターの当たり判定サイズ
-    static inline const float kWidth = 1.0f;
-    static inline const float kHeight = 1.0f;
-
-    // 弾
-    std::vector<std::unique_ptr<EnemyBullet>> enemyBullet_;
+    static inline const float radius = 1.0f;
 };

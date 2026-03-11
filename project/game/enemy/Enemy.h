@@ -12,6 +12,8 @@
 #include "SoundManager.h"
 #include "Sprite.h"
 
+#include "EnemyBullet.h"
+
 class Player;
 
 class Enemy {
@@ -20,7 +22,7 @@ public:
     /// ‰Šú‰»
     /// </summary>
     /// <param name="camera"></param>
-    virtual void Initialize(Camera* camera);
+    virtual void Initialize(Camera* camera, Vector3 pos, int health);
 
     /// <summary>
     /// XV
@@ -35,16 +37,17 @@ public:
     /* GetŠÖ” */
     virtual Vector3 GetWorldPosition() const = 0;
     virtual float GetRadius() const = 0;
-    // virtual void OnCollision() = 0;
+    const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
+    virtual bool GetIsDead() const = 0;
 
     /* SetŠÖ” */
     virtual void SetTargetPlayer(Player* target) { };
+    virtual void OnCollision(int Damage) = 0;
+    // virtual void OnCollision();
+
+protected:
+    // ’e
+    std::vector<std::unique_ptr<EnemyBullet>> enemyBullet_;
 
 private:
-    // Transform transform_; // À•WŒn
-    // float activeTimer; // ‘¶İ‚·‚éŠÔ
-    // float isAvile; // ¶‘¶‚µ‚Ä‚¢‚é‚©
-    // float health; // ‘Ì—Í
-
-    // Camera* camera_ = nullptr;
 };

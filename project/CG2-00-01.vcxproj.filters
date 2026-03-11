@@ -151,19 +151,10 @@
     <ClCompile Include="application\railCamera\RailCamera.cpp">
       <Filter>ソース ファイル\application\railCamera</Filter>
     </ClCompile>
-    <ClCompile Include="game\camera\CameraController.cpp">
-      <Filter>ソース ファイル\game\camera</Filter>
-    </ClCompile>
-    <ClCompile Include="game\enemy\Enemy.cpp">
+    <ClCompile Include="game\enemy\type\HomingEnemy.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="game\enemy\EnemyBullet.cpp">
-      <Filter>ソース ファイル\game\enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="game\enemy\HomingEnemy.cpp">
-      <Filter>ソース ファイル\game\enemy</Filter>
-    </ClCompile>
-    <ClCompile Include="game\enemy\HomingEnemyBullet.cpp">
+    <ClCompile Include="game\enemy\Bullet\HomingEnemyBullet.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
     <ClCompile Include="game\player\Player.cpp">
@@ -172,16 +163,16 @@
     <ClCompile Include="game\player\PlayerBullet.cpp">
       <Filter>ソース ファイル\game\player</Filter>
     </ClCompile>
-    <ClCompile Include="game\enemy\NormalEnemy.cpp">
+    <ClCompile Include="game\enemy\type\NormalEnemy.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="game\enemy\NormalEnemyBullet.cpp">
+    <ClCompile Include="game\enemy\Bullet\NormalEnemyBullet.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="game\enemy\TargetEnemy.cpp">
+    <ClCompile Include="game\enemy\type\TargetEnemy.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="game\enemy\TargetEnemyBullet.cpp">
+    <ClCompile Include="game\enemy\Bullet\TargetEnemyBullet.cpp">
       <Filter>ソース ファイル\game\enemy</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\ImGuizmo.cpp">
@@ -190,6 +181,21 @@
     <ClCompile Include="application\rayMarching\RayMarching.cpp">
       <Filter>ソース ファイル\application\rayMarching</Filter>
     </ClCompile>
+    <ClCompile Include="game\enemy\Enemy.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="game\enemy\EnemyBullet.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="game\camera\CameraController.cpp">
+      <Filter>ソース ファイル\game\camera</Filter>
+    </ClCompile>
+    <ClCompile Include="game\enemy\EnemyManager.cpp">
+      <Filter>ソース ファイル\game\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="game\collision\Collision.cpp" />
+    <ClCompile Include="game\player\PlayerNormalBullet.cpp" />
+    <ClCompile Include="game\player\PlayerChargeBullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -326,22 +332,22 @@
     <ClInclude Include="game\enemy\EnemyBullet.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\enemy\HomingEnemy.h">
+    <ClInclude Include="game\enemy\type\HomingEnemy.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\enemy\HomingEnemyBullet.h">
+    <ClInclude Include="game\enemy\Bullet\HomingEnemyBullet.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\enemy\NormalEnemy.h">
+    <ClInclude Include="game\enemy\type\NormalEnemy.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\enemy\NormalEnemyBullet.h">
+    <ClInclude Include="game\enemy\Bullet\NormalEnemyBullet.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\enemy\TargetEnemy.h">
+    <ClInclude Include="game\enemy\type\TargetEnemy.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
-    <ClInclude Include="game\enemy\TargetEnemyBullet.h">
+    <ClInclude Include="game\enemy\Bullet\TargetEnemyBullet.h">
       <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
     <ClInclude Include="game\player\Player.h">
@@ -355,7 +361,12 @@
     </ClInclude>
     <ClInclude Include="application\rayMarching\RayMarching.h">
       <Filter>ヘッダー ファイル\application\rayMarching</Filter>
+    <ClInclude Include="game\enemy\EnemyManager.h">
+      <Filter>ヘッダー ファイル\game\enemy</Filter>
     </ClInclude>
+    <ClInclude Include="game\collision\Collision.h" />
+    <ClInclude Include="game\player\PlayerNormalBullet.h" />
+    <ClInclude Include="game\player\PlayerChargeBullet.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\Object3d.hlsli">

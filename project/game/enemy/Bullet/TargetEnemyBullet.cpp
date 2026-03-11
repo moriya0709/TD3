@@ -41,6 +41,11 @@ void TargetEnemyBullet::SetTargetPosition(Vector3 Pos)
     acceleration_ = direction * accelerationScalar;
 }
 
+void TargetEnemyBullet::OnCollision()
+{
+    isAvile = false;
+}
+
 void TargetEnemyBullet::Update()
 {
 

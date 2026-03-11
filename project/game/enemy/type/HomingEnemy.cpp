@@ -1,13 +1,14 @@
-#include "NormalEnemy.h"
-#include "NormalEnemyBullet.h"
+#include "HomingEnemy.h"
+#include "../Bullet/HomingEnemyBullet.h"
+#include "../player/Player.h"
 
-void NormalEnemy::Initialize(Camera* camera)
+void HomingEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 {
     camera_ = camera;
 
     transform_.scale = { 1.0f, 1.0f, 1.0f };
     transform_.rotate = { 0.0f, 0.0f, 0.0f };
-    transform_.translate = { 5.0f, 0.0f, 60.0f };
+    transform_.translate = pos;
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
@@ -16,13 +17,21 @@ void NormalEnemy::Initialize(Camera* camera)
     object_->SetRotate(transform_.rotate);
     object_->SetTranslate(transform_.translate);
 
+    health_ = health;
+    isAvile = true;
+
     interval = maxInterval;
 }
 
-void NormalEnemy::Update()
+void HomingEnemy::Update()
 {
     // 移動
-    //transform_.translate.x += kwalkSpeed;
+    // transform_.translate.x += kwalkSpeed;
+
+    // 生きていないならやられモーション処理を入れる
+    if (!isAvile) {
+        isDead_ = true;
+    }
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);
@@ -32,15 +41,17 @@ void NormalEnemy::Update()
 
     if (interval <= 0.0f) {
         // 弾の生成
-        std::unique_ptr<NormalEnemyBullet> newBulletEnemy = std::make_unique<NormalEnemyBullet>();
+        std::unique_ptr<HomingEnemyBullet> newBulletEnemy = std::make_unique<HomingEnemyBullet>();
         newBulletEnemy->Initialize(camera_, transform_.translate);
-        newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.1f));
+        newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.08f));
+        newBulletEnemy->SetTargetPosition(player_->GetPosition());
 
         enemyBullet_.push_back(std::move(newBulletEnemy));
         interval = maxInterval;
     }
     // 更新処理
     for (auto& bullet : enemyBullet_) {
+        bullet->SetTargetPosition(player_->GetPosition());
         bullet->Update();
     }
 
@@ -54,7 +65,7 @@ void NormalEnemy::Update()
     object_->Update();
 }
 
-void NormalEnemy::Draw3D()
+void HomingEnemy::Draw3D()
 {
     // 3Dオブジェクト描画
     object_->Draw();
@@ -62,5 +73,14 @@ void NormalEnemy::Draw3D()
     // 更新処理
     for (auto& bullet : enemyBullet_) {
         bullet->Draw3D();
+    }
+}
+
+void HomingEnemy::OnCollision(int Damage)
+{
+    health_ -= Damage;
+
+    if (health_ <= 0) {
+        isAvile = false;
     }
 }

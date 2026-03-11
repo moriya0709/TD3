@@ -1,14 +1,14 @@
-#include "HomingEnemy.h"
-#include "../player/Player.h"
-#include "HomingEnemyBullet.h"
+#include "TargetEnemy.h"
+#include "../bullet/TargetEnemyBullet.h"
+#include "Player.h"
 
-void HomingEnemy::Initialize(Camera* camera)
+void TargetEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 {
     camera_ = camera;
 
     transform_.scale = { 1.0f, 1.0f, 1.0f };
     transform_.rotate = { 0.0f, 0.0f, 0.0f };
-    transform_.translate = { 0.0f, 0.0f, 60.0f };
+    transform_.translate = pos;
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
@@ -17,13 +17,21 @@ void HomingEnemy::Initialize(Camera* camera)
     object_->SetRotate(transform_.rotate);
     object_->SetTranslate(transform_.translate);
 
+    health_ = health;
+    isAvile = true;
+
     interval = maxInterval;
 }
 
-void HomingEnemy::Update()
+void TargetEnemy::Update()
 {
     // 移動
     // transform_.translate.x += kwalkSpeed;
+
+    // 生きていないならやられモーション処理を入れる
+    if (!isAvile) {
+        isDead_ = true;
+    }
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);
@@ -33,7 +41,7 @@ void HomingEnemy::Update()
 
     if (interval <= 0.0f) {
         // 弾の生成
-        std::unique_ptr<HomingEnemyBullet> newBulletEnemy = std::make_unique<HomingEnemyBullet>();
+        std::unique_ptr<TargetEnemyBullet> newBulletEnemy = std::make_unique<TargetEnemyBullet>();
         newBulletEnemy->Initialize(camera_, transform_.translate);
         newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.08f));
         newBulletEnemy->SetTargetPosition(player_->GetPosition());
@@ -43,7 +51,6 @@ void HomingEnemy::Update()
     }
     // 更新処理
     for (auto& bullet : enemyBullet_) {
-        bullet->SetTargetPosition(player_->GetPosition());
         bullet->Update();
     }
 
@@ -57,7 +64,7 @@ void HomingEnemy::Update()
     object_->Update();
 }
 
-void HomingEnemy::Draw3D()
+void TargetEnemy::Draw3D()
 {
     // 3Dオブジェクト描画
     object_->Draw();
@@ -65,5 +72,14 @@ void HomingEnemy::Draw3D()
     // 更新処理
     for (auto& bullet : enemyBullet_) {
         bullet->Draw3D();
+    }
+}
+
+void TargetEnemy::OnCollision(int Damage)
+{
+    health_ -= Damage;
+
+    if (health_ <= 0) {
+        isAvile = false;
     }
 }

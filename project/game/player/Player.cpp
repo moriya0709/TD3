@@ -1,27 +1,38 @@
 ﻿#include "Player.h"
 #include "ObjectCommon.h"
+#include "PlayerChargeBullet.h"
+#include "PlayerNormalBullet.h"
 #include "SceneManager.h"
 #include "SpriteCommon.h"
 #include "engine/base/WindowAPI.h"
 #include <algorithm>
 #include <cmath>
+
+// ベクトルの回転用関数
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
 	Vector3 result;
-
-	// 行列の「回転・スケーリング」成分のみを適用する
-	// (第4成分 w = 0 として扱うことで、平行移動を無視する)
 	result.x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0];
 	result.y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1];
 	result.z = v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2];
-
 	return result;
 }
+
 void Player::Initialize(Camera* camera) {
-	// カメラのセット
 	camera_ = camera;
 	transform_.scale = {1.0f, 1.0f, 1.0f};
 	transform_.rotate = {0.0f, 0.0f, 0.0f};
-	transform_.translate = {0.0f, 0.0f, 5.0f}; // 奥行き(Z)を固定
+
+	// 1. 相対位置の初期化 (カメラの正面 10.0f)
+	relativePos_ = {0.0f, 0.0f, 10.0f};
+
+	// 初期状態のワールド座標を計算
+	Vector3 camPos = camera_->GetTranslate();
+	Matrix4x4 camRotMat = MakeRotateMatrix(camera_->GetRotate());
+	Vector3 rotatedOffset = TransformNormal(relativePos_, camRotMat);
+
+	transform_.translate.x = camPos.x + rotatedOffset.x;
+	transform_.translate.y = camPos.y + rotatedOffset.y;
+	transform_.translate.z = camPos.z + rotatedOffset.z;
 
 	// Spriteの生成 (照準)
 	reticle_ = std::make_unique<Sprite>();
@@ -33,91 +44,94 @@ void Player::Initialize(Camera* camera) {
 	playerObject_ = std::make_unique<Object>();
 	playerObject_->Initialize(camera_);
 	playerObject_->SetModel("player.obj");
+	playerObject_->SetTranslate(transform_.translate);
 
 	// ステータス初期化
 	statas_.hp = 100;
 	statas_.attack = 10;
-	statas_.speed = 0.15f;
+	statas_.speed = 0.2f; // XY移動は少し速い方が気持ちいいです
 	statas_.haste = 10;
-	statas_.chargeTime = 1.0f;
+	statas_.chargeTime = 60;
 	statas_.hommingAccuracy = 0.0f;
 	statas_.renge = 80.0f;
 
 	velocity_ = {0.0f, 0.0f, 0.0f};
 	coolTime = 0;
+	chargeTimer = 0;
+	isCharging = false;
+	ishit = false;
+	damageTimer = 0;
 }
 
 void Player::Update() {
 	auto input = Input::GetInstance();
 
-	// カメラ更新
 	camera_->Update();
+	Vector3 camPos = camera_->GetTranslate();
+	Matrix4x4 camRotMat = MakeRotateMatrix(camera_->GetRotate());
 
-#pragma region 移動処理 (XY平面基準)
+#pragma region 移動処理 (動的画面内制限)
 
-	// 1. 入力からローカル移動方向を決定 (XY平面)
-	Vector3 moveDirection = {0.0f, 0.0f, 0.0f};
+	// 1. 入力からローカル移動方向(XY)を決定
+	Vector3 moveInput = {0.0f, 0.0f, 0.0f};
 	if (input->PushKey(DIK_W))
-		moveDirection.y += 1.0f; // 上
+		moveInput.y += 1.0f;
 	if (input->PushKey(DIK_S))
-		moveDirection.y -= 1.0f; // 下
+		moveInput.y -= 1.0f;
 	if (input->PushKey(DIK_A))
-		moveDirection.x -= 1.0f; // 左
+		moveInput.x -= 1.0f;
 	if (input->PushKey(DIK_D))
-		moveDirection.x += 1.0f; // 右
+		moveInput.x += 1.0f;
 
-	// 2. 移動ベクトルの正規化
-	float length = std::sqrt(moveDirection.x * moveDirection.x + moveDirection.y * moveDirection.y);
-	Vector3 worldDirection = {0.0f, 0.0f, 0.0f};
-
+	// 2. 正規化
+	float length = std::sqrt(moveInput.x * moveInput.x + moveInput.y * moveInput.y);
+	Vector3 targetVelocity = {0.0f, 0.0f, 0.0f};
 	if (length > 0.0f) {
-		moveDirection.x /= length;
-		moveDirection.y /= length;
-
-		// 3. カメラの回転を考慮してワールド方向に変換
-		// XY平面の移動を維持するため、回転行列を適用
-		Matrix4x4 camRotMat = MakeRotateMatrix(camera_->GetRotate());
-		worldDirection = TransformNormal(moveDirection, camRotMat);
+		targetVelocity.x = (moveInput.x / length) * statas_.speed;
+		targetVelocity.y = (moveInput.y / length) * statas_.speed;
 	}
 
-	// 4. 慣性(Lerp)を用いた速度計算
-	Vector3 targetVelocity = {worldDirection.x * statas_.speed, worldDirection.y * statas_.speed, worldDirection.z * statas_.speed};
-
+	// 3. 慣性適用
 	float lerpFactor = 0.12f;
 	velocity_.x += (targetVelocity.x - velocity_.x) * lerpFactor;
 	velocity_.y += (targetVelocity.y - velocity_.y) * lerpFactor;
-	velocity_.z += (targetVelocity.z - velocity_.z) * lerpFactor;
 
-	// 5. 座標更新
-	transform_.translate.x += velocity_.x;
-	transform_.translate.y += velocity_.y;
-	transform_.translate.z += velocity_.z;
+	// 4. 相対座標の更新
+	relativePos_.x += velocity_.x;
+	relativePos_.y += velocity_.y;
 
-	// 6. 進行方向を向く (XY平面上の回転)
-	// XY移動に合わせて、モデルが少し傾くような演出にすると自然です
+	// 5. 【重要】カメラの視界（Frustum）に合わせた制限の計算
+	// 一般的な画角(45度)とアスペクト比(16:9)の場合
+	float fovY = 0.45f; // 垂直画角（ラジアン） ※約25.7度相当。プロジェクトのカメラ設定に合わせて調整してください
+	float aspect = (float)WindowAPI::kClientWidth / (float)WindowAPI::kClientHeight;
+
+	// 距離(relativePos_.z)に応じて、画面内に収まる限界値を計算
+	// 高さ = 距離 * tan(画角/2)
+	float verticalLimit = relativePos_.z * std::tan(fovY / 2.0f);
+	float horizontalLimit = verticalLimit * aspect;
+
+	// 自機が少し画面内に残るようにマージンを引く
+	float margin = 0.8f;
+	float finalLimitX = horizontalLimit - margin;
+	float finalLimitY = verticalLimit - margin;
+
+	relativePos_.x = std::clamp(relativePos_.x, -finalLimitX, finalLimitX);
+	relativePos_.y = std::clamp(relativePos_.y, -finalLimitY, finalLimitY);
+
+	// 6. ワールド座標に変換
+	Vector3 rotatedOffset = TransformNormal(relativePos_, camRotMat);
+	transform_.translate.x = camPos.x + rotatedOffset.x;
+	transform_.translate.y = camPos.y + rotatedOffset.y;
+	transform_.translate.z = camPos.z + rotatedOffset.z;
+
+	// 7. 見た目の回転
 	float speedSq = velocity_.x * velocity_.x + velocity_.y * velocity_.y;
 	if (speedSq > 0.001f) {
-		// Z軸回転（左右への傾き）や Y軸回転を調整
-		transform_.rotate.z = -velocity_.x * 2.0f; // 左右移動で少し傾く
-		transform_.rotate.x = velocity_.y * 1.0f;  // 上下移動で少し傾く
+		transform_.rotate.z = -velocity_.x * 2.0f;
+		transform_.rotate.x = velocity_.y * 1.0f;
 	}
+	transform_.rotate.y = camera_->GetRotate().y;
 
-	// 7. 画面内制限 (カメラのXY位置を基準にした相対制限)
-	Vector3 camPos = camera_->GetTranslate();
-	float horizontalLimit = 6.0f;
-	float verticalLimit = 4.0f;
-
-	transform_.translate.x = std::clamp(transform_.translate.x, camPos.x - horizontalLimit, camPos.x + horizontalLimit);
-	transform_.translate.y = std::clamp(transform_.translate.y, camPos.y - verticalLimit, camPos.y + verticalLimit);
-
-#pragma endregion
-
-#pragma region ImGui
-	ImGui::Begin("Player Control");
-	ImGui::Text("Move: WASD (XY Plane)");
-	ImGui::SliderFloat("Speed", &statas_.speed, 0.0f, 1.0f);
-	ImGui::DragFloat3("Position", &transform_.translate.x, 0.1f);
-	ImGui::End();
 #pragma endregion
 
 #pragma region 各種更新
@@ -126,7 +140,13 @@ void Player::Update() {
 	playerObject_->SetScale(transform_.scale);
 	playerObject_->Update();
 
-	// 照準(Reticle)の更新
+	if (ishit) {
+		damageTimer--;
+		if (damageTimer <= 0) {
+			ishit = false;
+		}
+	}
+
 	Vector2 mouseMove = input->GetMouseScreen();
 	reticlePosition_.x = std::clamp(mouseMove.x, 0.0f, float(WindowAPI::kClientWidth));
 	reticlePosition_.y = std::clamp(mouseMove.y, 0.0f, float(WindowAPI::kClientHeight));
@@ -134,24 +154,31 @@ void Player::Update() {
 	reticle_->Update();
 
 	Attack();
-	for (PlayerBullet* bullet : bullets) {
-		bullet->Update();
-	}
+	UpdateBullets();
+#pragma endregion
+
+#pragma region ImGui
+	ImGui::Begin("Player Config");
+	ImGui::Text("Z-Distance from Camera: 5.0 (Fixed)");
+	ImGui::DragFloat3("World Pos", &transform_.translate.x, 0.1f);
+	ImGui::DragFloat2("Relative Pos", &relativePos_.x, 0.1f);
+	ImGui::DragInt("HP", &statas_.hp, 0.1f);
+	ImGui::End();
 #pragma endregion
 }
 
 void Player::Draw2D() { reticle_->Draw(); }
 
 void Player::Draw3D() {
-	for (PlayerBullet* bullet : bullets) {
+	for (const auto& bullet : bullets) {
 		bullet->Draw3D();
 	}
 	playerObject_->Draw();
 }
 
 Player::~Player() {
-	for (PlayerBullet* bullet : bullets) {
-		delete bullet;
+	for (auto& bullet : bullets) {
+		// unique_ptrなのでdelete不要
 	}
 	bullets.clear();
 }
@@ -162,11 +189,38 @@ void Player::Attack() {
 		coolTime--;
 		return;
 	}
+	if (statas_.chargeTime < chargeTimer) {
+		isCharging = true;
+	} else {
+		isCharging = false;
+		chargeTimer++;
+	}
+
 	if (input->IsMouseButtonPressed(0) || input->PushKey(DIK_SPACE)) {
-		PlayerBullet* newBullet = new PlayerBullet();
-		newBullet->Initialize(transform_.translate, camera_);
-		newBullet->SetStatus(statas_.renge, statas_.hommingAccuracy, reticlePosition_);
-		bullets.push_back(newBullet);
-		coolTime = statas_.haste;
+		if (isCharging) {
+			// チャージ攻撃
+			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge * 1.5f);
+			newBullet->SetStatus(statas_.hommingAccuracy + 0.2f);
+			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
+			chargeTimer = statas_.haste*2; // チャージタイマーリセット
+		} else {
+			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge);
+			newBullet->SetStatus(statas_.hommingAccuracy);
+			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
+			coolTime = statas_.haste;
+		}
+	}
+}
+
+void Player::UpdateBullets() {
+	for (auto it = bullets.begin(); it != bullets.end();) {
+		if (!(*it)->IsActive()) {
+			it = bullets.erase(it);
+		} else {
+			(*it)->Update();
+			++it;
+		}
 	}
 }

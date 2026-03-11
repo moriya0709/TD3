@@ -96,3 +96,8 @@ void HomingEnemyBullet::CheckCameraCulling()
         isAvile = false;
     }
 }
+
+void HomingEnemyBullet::OnCollision()
+{
+    isAvile = false;
+}
