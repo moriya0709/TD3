@@ -62,8 +62,7 @@ void CheckCollisionPlayerEnemyBullet(Player* player, const std::list<std::unique
 }
 
 void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::unique_ptr<Enemy>>& enemies) {
-	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player->GetBullets();
-	for (const auto& bullet : playerBullets) {
+	for (const auto& bullet : player->GetBullets()) {
 		Vector3 bulletPos = bullet->GetPosition();
 		float bulletSize = bullet->GetHitSize();
 		for (const auto& enemy : enemies) {
