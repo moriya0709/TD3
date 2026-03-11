@@ -16,7 +16,7 @@ void ImGuiManager::Initialize([[maybe_unused]]WindowAPI* windowAPI, [[maybe_unus
 	// win32—p‰Šú‰»
 	ImGui_ImplWin32_Init(windowAPI->GetHwnd());
 	// DirectX12—p‰Šú‰»
-	uint32_t index = srvManager->Allocate();
+	uint32_t index = srvManager->Allocate(1);
 	ImGui_ImplDX12_Init(dxCommon_->GetDevice(),
 		static_cast<int>(dxCommon_->GetSwapChainResourceNum()),
 		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,

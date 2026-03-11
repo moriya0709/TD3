@@ -44,3 +44,8 @@ void NormalEnemyBullet::Draw3D()
     // 3Dオブジェクト描画
     object_->Draw();
 }
+
+void NormalEnemyBullet::OnCollision()
+{
+    isAvile = false;
+}

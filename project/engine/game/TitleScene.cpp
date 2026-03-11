@@ -23,7 +23,6 @@ void TitleScene::Initialize() {
 		object[i]->Initialize(railCamera->camera.get());
 	}
 
-
 	// Emitパーティクル発生
 	particleEmitter = std::make_unique <ParticleEmitter>();
 	particleEmitter->Initialize("group1", transformParticle, 5, 1.0f);
@@ -35,6 +34,10 @@ void TitleScene::Initialize() {
 
 	// 音声再生
 	SoundManager::GetInstance()->Play("bgm");
+
+	// レイマーチング
+	rayMarching = std::make_unique <RayMarching>();
+	rayMarching->Initialize(railCamera->camera.get());
 
 }
 
@@ -48,12 +51,12 @@ void TitleScene::Update() {
 	railCamera->EditorUpdate();
 
 	// ENTERキーを押したら
-	if (input->TriggerKey(DIK_RETURN)) {
-		// ゲームプレイシーン(次シーン)を生成
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-		// 音声再生
-		SoundManager::GetInstance()->Stop("bgm");
-	}
+	//if (input->TriggerKey(DIK_RETURN)) {
+	//	// ゲームプレイシーン(次シーン)を生成
+	//	SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+	//	// 音声再生
+	//	SoundManager::GetInstance()->Stop("bgm");
+	//}
 
 	// 数字の０キーが押されていたら
 	if (input->TriggerKey(DIK_0)) {
@@ -135,6 +138,19 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetFocusDistance(focusDistance);
 	PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
 	PostEffect::GetInstance()->SetFocusRange(focusRange);
+
+#pragma endregion
+
+#pragma region レイマーチング
+	// レイマーチング
+	rayMarching->Update(railCamera->camera.get());
+	//rayMarching->SetTime(rayMarchingTime);
+	rayMarching->SetSunDir(rayMarchingSunDir);
+	rayMarching->SetDensity(rayMarchingDensity);
+	rayMarching->SetCloudTop(rayMarchingCloudBottom);
+	rayMarching->SetCloudBottom(rayMarchingCloudTop);
+	rayMarching->SetRialLight(rayMarchingIsRialLight);
+	rayMarching->SetAnimeLight(rayMarchingIsAnimeLight);
 
 #pragma endregion
 
@@ -261,6 +277,18 @@ void TitleScene::Update() {
 
 #pragma endregion
 
+#pragma region レイマーチング
+	// レイマーチング
+	//ImGui::DragFloat("rayMarchingTime", &rayMarchingTime, 0.1f,0.0f,10.0f);
+	ImGui::DragFloat3("rayMarchingSunDir", &rayMarchingSunDir.x, 0.1f,-50.0f,50.0f);
+	ImGui::DragFloat("rayMarchingDensity", &rayMarchingDensity, 0.01f,-5.0f,1.0f);
+	ImGui::DragFloat("rayMarchingCloudBottom", &rayMarchingCloudBottom, 10.0f,-5000.0f,5000.0f);
+	ImGui::DragFloat("rayMarchingCloudTop", &rayMarchingCloudTop, 10.0f, -5000.0f, 5000.0f);
+	ImGui::Checkbox("rayMarchingIsRialLight", &rayMarchingIsRialLight);
+	ImGui::Checkbox("rayMarchingIsAnimeLight", &rayMarchingIsAnimeLight);
+
+#pragma endregion
+
 #endif
 
 }
@@ -295,6 +323,8 @@ void TitleScene::Draw3D() {
 		object[i]->Draw();
 	}
 
+	// レイマーチング
+	rayMarching->Draw();
 }
 
 void TitleScene::Finalize() {

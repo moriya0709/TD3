@@ -23,7 +23,7 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI,SrvMan
 	InitializeScissorRect();
 
 	// Allocateでインデックスを取得してから渡す
-	srvIndex_ = srvManager_->Allocate();
+	srvIndex_ = srvManager_->Allocate(3);
 
 	// レンダーターゲット
 	renderTarget_ =
@@ -38,6 +38,41 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI,SrvMan
 			dxCommon_->GetSrvHeap(),
 			srvIndex_
 		);
+
+	// --- ここから追加：t1 と t2 を埋める ---
+	UINT srvDescriptorSize = dxCommon_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	// --- t1: gPreviousTexture 用 (今回は未使用なので Null Descriptor で埋める) ---
+	D3D12_CPU_DESCRIPTOR_HANDLE srvHandleT1 = dxCommon_->GetSrvHeap()->GetCPUDescriptorHandleForHeapStart();
+	srvHandleT1.ptr += (srvIndex_ + 1) * srvDescriptorSize;
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC nullSrvDesc{};
+	nullSrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	nullSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	nullSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	nullSrvDesc.Texture2D.MipLevels = 1;
+
+	dxCommon_->GetDevice()->CreateShaderResourceView(nullptr, &nullSrvDesc, srvHandleT1);
+
+	// --- t2: gDepthTexture 用 (DirectXCommonの深度バッファを紐付ける) ---
+	D3D12_CPU_DESCRIPTOR_HANDLE srvHandleT2 = dxCommon_->GetSrvHeap()->GetCPUDescriptorHandleForHeapStart();
+	srvHandleT2.ptr += (srvIndex_ + 2) * srvDescriptorSize;
+
+	// --- t2: gDepthTexture 用の SRV 作成箇所を修正 ---
+	D3D12_SHADER_RESOURCE_VIEW_DESC depthSrvDesc{};
+
+	// ★ ここを R32_FLOAT から R24_UNORM_X8_TYPELESS に変更
+	depthSrvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+
+	depthSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	depthSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	depthSrvDesc.Texture2D.MipLevels = 1;
+
+	dxCommon_->GetDevice()->CreateShaderResourceView(
+		dxCommon_->GetDepthStencilResource(),
+		&depthSrvDesc,
+		srvHandleT2
+	);
 
 	currentState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
@@ -142,7 +177,7 @@ void PostEffect::HightFogUpdate(Camera* camera) {
 	Matrix4x4 finalMat;
 	DirectX::XMStoreFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(&finalMat), resultInvVP);
 
-	PostEffect::GetInstance()->SetInverseViewProjectionMatrix(finalMat);
+	SetInverseViewProjectionMatrix(finalMat);
 
 }
 

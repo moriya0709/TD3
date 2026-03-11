@@ -16,19 +16,15 @@ void SrvManager::Initialize(DirectXCommon* dxCommon) {
 
 }
 
-uint32_t SrvManager::Allocate() {
-	assert(useIndex < kMaxSRVConst);
+uint32_t SrvManager::Allocate(uint32_t num) {
+	assert(useIndex + num <= kMaxSRVConst);
 
-	// returnする番号を一旦記録しておく
 	int index = useIndex;
-	// 次回の為に番号を1進める
-	useIndex++;
+	// まとめて確保した分、インデックスを進める
+	useIndex += num;
 
-	// ★ 追加：コールスタック付きでログ出力
-	OutputDebugStringA(("SrvManager::Allocate() -> index=" + std::to_string(index) + "\n").c_str());
+	OutputDebugStringA(("SrvManager::Allocate() -> index=" + std::to_string(index) + ", count=" + std::to_string(num) + "\n").c_str());
 
-
-	// 上で記録した番号をreturn
 	return index;
 }
 
