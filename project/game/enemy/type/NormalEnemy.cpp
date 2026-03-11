@@ -1,7 +1,7 @@
 #include "NormalEnemy.h"
 #include "../Bullet/NormalEnemyBullet.h"
 
-void NormalEnemy::Initialize(Camera* camera, Vector3 pos)
+void NormalEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 {
     camera_ = camera;
 
@@ -16,6 +16,9 @@ void NormalEnemy::Initialize(Camera* camera, Vector3 pos)
     object_->SetRotate(transform_.rotate);
     object_->SetTranslate(transform_.translate);
 
+    health_ = health;
+    isAvile = true;
+
     interval = maxInterval;
 }
 
@@ -23,6 +26,11 @@ void NormalEnemy::Update()
 {
     // 移動
     // transform_.translate.x += kwalkSpeed;
+
+    // 生きていないならやられモーション処理を入れる
+    if (!isAvile) {
+        isDead_ = true;
+    }
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);
@@ -62,5 +70,14 @@ void NormalEnemy::Draw3D()
     // 更新処理
     for (auto& bullet : enemyBullet_) {
         bullet->Draw3D();
+    }
+}
+
+void NormalEnemy::OnCollision(int Damage)
+{
+    health_ -= Damage;
+
+    if (health_ <= 0) {
+        isAvile = false;
     }
 }

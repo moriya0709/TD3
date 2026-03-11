@@ -1,8 +1,8 @@
 #include "HomingEnemy.h"
-#include "../player/Player.h"
 #include "../Bullet/HomingEnemyBullet.h"
+#include "../player/Player.h"
 
-void HomingEnemy::Initialize(Camera* camera, Vector3 pos)
+void HomingEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 {
     camera_ = camera;
 
@@ -17,6 +17,9 @@ void HomingEnemy::Initialize(Camera* camera, Vector3 pos)
     object_->SetRotate(transform_.rotate);
     object_->SetTranslate(transform_.translate);
 
+    health_ = health;
+    isAvile = true;
+
     interval = maxInterval;
 }
 
@@ -24,6 +27,11 @@ void HomingEnemy::Update()
 {
     // 移動
     // transform_.translate.x += kwalkSpeed;
+
+    // 生きていないならやられモーション処理を入れる
+    if (!isAvile) {
+        isDead_ = true;
+    }
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);
@@ -65,5 +73,14 @@ void HomingEnemy::Draw3D()
     // 更新処理
     for (auto& bullet : enemyBullet_) {
         bullet->Draw3D();
+    }
+}
+
+void HomingEnemy::OnCollision(int Damage)
+{
+    health_ -= Damage;
+
+    if (health_ <= 0) {
+        isAvile = false;
     }
 }
