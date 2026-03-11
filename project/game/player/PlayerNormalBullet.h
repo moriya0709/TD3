@@ -20,6 +20,9 @@ public:
 	void Draw2D() override;
 	void SetStatus(const float hommingAccuracy) override { hommingAccuracy_ = hommingAccuracy; }
 	bool IsActive() override { return isActive_; }
+	int GetPenetration() override { return 0; }
+	Vector3 GetPosition() const override { return transform_.translate; }
+	float GetHitSize() const override { return 0.5f; } // 例: ヒットサイズ0.5
 
 private:
 	// プレイヤーの弾のステータス

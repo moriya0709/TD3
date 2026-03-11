@@ -246,4 +246,5 @@ void GamePlayScene::ChekeAllCollision()
     const std::list<std::unique_ptr<Enemy>>& enemies = enemy_->GetEnemies();
     CheckCollisionPlayerEnemy(player_.get(), enemies);
     CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
+	CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
 }

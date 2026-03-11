@@ -170,15 +170,15 @@ void Player::Update() {
 void Player::Draw2D() { reticle_->Draw(); }
 
 void Player::Draw3D() {
-	for (PlayerBullet* bullet : bullets) {
+	for (const auto& bullet : bullets) {
 		bullet->Draw3D();
 	}
 	playerObject_->Draw();
 }
 
 Player::~Player() {
-	for (PlayerBullet* bullet : bullets) {
-		delete bullet;
+	for (auto& bullet : bullets) {
+		// unique_ptrなのでdelete不要
 	}
 	bullets.clear();
 }
@@ -199,16 +199,16 @@ void Player::Attack() {
 	if (input->IsMouseButtonPressed(0) || input->PushKey(DIK_SPACE)) {
 		if (isCharging) {
 			// チャージ攻撃
-			PlayerBullet* newBullet = new PlayerChargeBullet();
+			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge * 1.5f);
 			newBullet->SetStatus(statas_.hommingAccuracy + 0.2f);
-			bullets.push_back(newBullet);
+			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
 			chargeTimer = statas_.haste*2; // チャージタイマーリセット
 		} else {
-			PlayerBullet* newBullet = new PlayerNormalBullet();
+			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge);
 			newBullet->SetStatus(statas_.hommingAccuracy);
-			bullets.push_back(newBullet);
+			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
 			coolTime = statas_.haste;
 		}
 	}
@@ -216,12 +216,10 @@ void Player::Attack() {
 
 void Player::UpdateBullets() {
 	for (auto it = bullets.begin(); it != bullets.end();) {
-		PlayerBullet* bullet = *it;
-		if (!bullet->IsActive()) {
-			delete bullet;
+		if (!(*it)->IsActive()) {
 			it = bullets.erase(it);
 		} else {
-			bullet->Update();
+			(*it)->Update();
 			++it;
 		}
 	}

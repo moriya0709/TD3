@@ -21,6 +21,9 @@ public:
 	virtual void SetStatus(const float hommingAccuracy);
 	virtual bool IsActive();
 	virtual int GetPenetration();
+	virtual Vector3 GetPosition() const { return Vector3(); };
+	virtual float GetHitSize() const { return 0.0f; };
+
 
 private:
 	// プレイヤーの弾のステータス
