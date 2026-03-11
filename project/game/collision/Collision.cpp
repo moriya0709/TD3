@@ -67,10 +67,8 @@ void CheckCollisionPlayerEnemyBullet(Player* player, const std::list<std::unique
 
 
 void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::unique_ptr<Enemy>>& enemies) {
-	// 弾のリストを取得（constを外すか、弾自体に状態変更メソッドが必要です）
-	const std::list<std::unique_ptr<PlayerBullet>>& playerBullets = player->GetBullets();
 
-	for (const auto& bullet : playerBullets) {
+	for (const auto& bullet : player->GetBullets()) {
 		// すでに当たって消える予定の弾はスキップ
 		if (!bullet->IsActive())
 			continue;
