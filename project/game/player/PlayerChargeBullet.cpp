@@ -3,11 +3,11 @@
 #include "ObjectCommon.h"
 #include "SceneManager.h"
 #include "SpriteCommon.h"
-
 #include <cmath> // sqrt用
 
 // Initializeに必要な引数を追加しています（レティクルの位置、最大距離、寿命）
-void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge) {
+void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::unique_ptr<Enemy>>& enemies) {
+	enemies;
 	// --- 1. 基本設定 ---
 	transform_.scale = {0.4f, 0.4f, 1.0f};
 	transform_.rotate = {0.0f, 0.0f, 0.0f};

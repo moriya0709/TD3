@@ -36,7 +36,7 @@ void GamePlayScene::Update()
     CameraController_->Update();
 
     // プレイヤー更新
-    player_->Update();
+    player_->Update(enemy_->GetEnemies());
 
     // 敵更新
     enemy_->Update();
