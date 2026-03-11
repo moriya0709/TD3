@@ -109,26 +109,21 @@ void EnemyManager::Initialize(const std::string& filePath, Player* player, Camer
         });
 }
 
-void EnemyManager::Update()
-{
-    currentTimer_ += 1.0f / 60.0f;
-    // スポーン処理
-    while (currentSpawnIndex_ < popDatas_.size() && popDatas_[currentSpawnIndex_].popTime <= currentTimer_) {
+void EnemyManager::Update() {
+	currentTimer_ += 1.0f / 60.0f;
 
-        SpawnEnemy(popDatas_[currentSpawnIndex_]);
-        currentSpawnIndex_++; // 次の敵へ
-    }
+	while (currentSpawnIndex_ < popDatas_.size() && popDatas_[currentSpawnIndex_].popTime <= currentTimer_) {
+		SpawnEnemy(popDatas_[currentSpawnIndex_]);
+		currentSpawnIndex_++;
+	}
 
-    for (auto& enemy : enemies_) {
-        enemy->Update();
-    }
+	for (auto& enemy : enemies_) {
+		enemy->Update();
+	}
 
-    // 死んだ際のlist消し
-    enemies_.remove_if([](const std::unique_ptr<Enemy>& enemy) {
-        return enemy->GetIsDead();
-    });
+	// --- 修正ポイント：引数を std::shared_ptr に変更 ---
+	enemies_.remove_if([](const std::shared_ptr<Enemy>& enemy) { return enemy->GetIsDead(); });
 }
-
 void EnemyManager::Draw3D()
 {
     for (auto& enemy : enemies_) {
@@ -136,26 +131,26 @@ void EnemyManager::Draw3D()
     }
 }
 
-void EnemyManager::SpawnEnemy(const EnemyPopData& data)
-{
-    std::unique_ptr<Enemy> newEnemy = nullptr;
+void EnemyManager::SpawnEnemy(const EnemyPopData& data) {
+	// unique_ptr で生成する（これはそのままでOK）
+	std::unique_ptr<Enemy> newEnemy = nullptr;
 
-    // typeから対象の敵を生成。
-    if (data.type == "NormalEnemy") {
-        newEnemy = std::make_unique<NormalEnemy>();
-    } else if (data.type == "HomingEnemy") {
-        newEnemy = std::make_unique<HomingEnemy>();
-    } else if (data.type == "TargetEnemy") {
-        newEnemy = std::make_unique<TargetEnemy>();
-    }
+	if (data.type == "NormalEnemy") {
+		newEnemy = std::make_unique<NormalEnemy>();
+	} else if (data.type == "HomingEnemy") {
+		newEnemy = std::make_unique<HomingEnemy>();
+	} else if (data.type == "TargetEnemy") {
+		newEnemy = std::make_unique<TargetEnemy>();
+	}
 
-    // 生成に成功したら初期化
-    if (newEnemy) {
-        newEnemy->Initialize(camera_, data.position, data.hp);
-        newEnemy->SetTargetPlayer(player_); // プレイヤーの情報を渡す
-        newEnemy->SetWayPoints(data.movePattern);
-        newEnemy->SetFleeWaypoint(data.fleeWaypoint, data.hasFleeData);
+	if (newEnemy) {
+		newEnemy->Initialize(camera_, data.position, data.hp);
+		newEnemy->SetTargetPlayer(player_);
+		newEnemy->SetWayPoints(data.movePattern);
+		newEnemy->SetFleeWaypoint(data.fleeWaypoint, data.hasFleeData);
 
-        enemies_.push_back(std::move(newEnemy));
-    }
+		// --- 修正ポイント：unique_ptr から shared_ptr への転送 ---
+		// unique_ptr は shared_ptr にそのまま move して渡せます
+		enemies_.push_back(std::move(newEnemy));
+	}
 }

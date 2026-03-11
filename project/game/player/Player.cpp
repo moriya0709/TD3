@@ -50,7 +50,7 @@ void Player::Initialize(Camera* camera) {
 
 	// ステータス初期化
 	statas_.hp = 100;
-	statas_.attack = 10;
+	statas_.attack = 20;
 	statas_.speed = 0.2f; // XY移動は少し速い方が気持ちいいです
 	statas_.haste = 10;
 	statas_.chargeTime = 60;
@@ -65,7 +65,7 @@ void Player::Initialize(Camera* camera) {
 	damageTimer = 0;
 }
 
-void Player::Update(const std::list<std::unique_ptr<Enemy>>& enemies) {
+void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	auto input = Input::GetInstance();
 
 	camera_->Update();
@@ -185,7 +185,7 @@ Player::~Player() {
 	bullets.clear();
 }
 
-void Player::Attack(const std::list<std::unique_ptr<Enemy>>& enemies) {
+void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	auto input = Input::GetInstance();
 	if (coolTime > 0) {
 		coolTime--;

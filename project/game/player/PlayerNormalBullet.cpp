@@ -6,7 +6,7 @@
 #include <cmath> // sqrt用
 
 // Initializeに必要な引数を追加しています（レティクルの位置、最大距離、寿命）
-void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::unique_ptr<Enemy>>& enemies) {
+void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies) {
 	// --- 1. 基本設定（既存） ---
 	transform_.scale = {0.2f, 0.2f, 0.2f};
 	transform_.translate = position;
@@ -37,7 +37,7 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	velocity_ = {(toTarget.x / distToTarget) * bulletSpeed_, (toTarget.y / distToTarget) * bulletSpeed_, (toTarget.z / distToTarget) * bulletSpeed_};
 
 	// --- 4. ホーミング対象の探索 ---
-	targetEnemy_ = nullptr;
+
 	float minAngle = 0.5f; // 探索範囲（ラジアン。約30度以内など）
 
 	for (const auto& enemy : enemies) {
@@ -53,7 +53,7 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 
 		// 内積が1に近いほど方向が一致している。一定範囲内かつ一番近い敵を選ぶ等の処理
 		if (dot > std::cos(minAngle)) {
-			targetEnemy_ = enemy.get(); // 修正: unique_ptr<Enemy> ではなく Enemy* 型にする
+			targetEnemy_ = enemy; // 修正: unique_ptr<Enemy> ではなく Enemy* 型にする
 			// 最初に見つかった敵、あるいは一番近い敵をセット
 			break;
 		}
@@ -63,9 +63,11 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	object_->SetTranslate(transform_.translate);
 }
 void PlayerNormalBullet::Update() {
-	if (targetEnemy_) {
+	std::shared_ptr<Enemy> target = targetEnemy_.lock();
+
+	if (target){
 		// 1. 敵への方向を計算
-		Vector3 enemyPos = targetEnemy_->GetWorldPosition();
+		Vector3 enemyPos = target->GetWorldPosition();
 		Vector3 toEnemy = {enemyPos.x - transform_.translate.x, enemyPos.y - transform_.translate.y, enemyPos.z - transform_.translate.z};
 		float dist = std::sqrt(toEnemy.x * toEnemy.x + toEnemy.y * toEnemy.y + toEnemy.z * toEnemy.z);
 
