@@ -208,7 +208,8 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge * 1.5f,enemies);
 			newBullet->SetStatus(statas_.hommingAccuracy + 0.2f);
 			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
-			chargeTimer = statas_.haste*2; // チャージタイマーリセット
+			chargeTimer = 0; // チャージタイマーリセット
+			coolTime = statas_.haste * 2;            // チャージ攻撃後のクールタイムも長くする
 		} else {
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge,enemies);

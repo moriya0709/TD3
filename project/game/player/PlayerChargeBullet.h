@@ -22,9 +22,9 @@ public:
 	void SetStatus(const float hommingAccuracy) override { hommingAccuracy_ = hommingAccuracy; }
 	bool IsActive() override { return isActive_; }
 	void SetActive(bool active) override { isActive_ = active; }
-	int GetPenetration() override { return 1; } // 貫通力1（例）
+	int GetPenetration() override { return 0; }
 	Vector3 GetPosition() const override { return transform_.translate; }
-	float GetHitSize() const override { return 0.7f; } // 例: ヒットサイズ0.7	
+	float GetHitSize() const override { return 0.5f; } // 例: ヒットサイズ0.5
 
 private:
 	// プレイヤーの弾のステータス
@@ -35,7 +35,9 @@ private:
 	Vector2 reticlePosition_ = {0.0f, 0.0f}; // 照準の座標
 	Camera* camera_ = nullptr;
 	Vector3 velocity_ = {0.0f, 0.0f, 0.0f};
-	int lifeTime_ = 0;     // 弾の寿命（フレーム数）
-	int maxLifeTime_ = 30; // 弾の最大寿命（フレーム数）
-	bool isActive_ = true; // 弾が有効かどうか
+	int lifeTime_ = 0;                 // 弾の寿命（フレーム数）
+	int maxLifeTime_ = 60;             // 弾の最大寿命（フレーム数）
+	bool isActive_ = true;             // 弾が有効かどうか
+	std::weak_ptr<Enemy> targetEnemy_; // ホーミング対象の敵
+	float bulletSpeed_;                // 弾の速さ
 };
