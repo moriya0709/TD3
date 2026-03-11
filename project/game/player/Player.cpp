@@ -7,6 +7,8 @@
 #include "engine/base/WindowAPI.h"
 #include <algorithm>
 #include <cmath>
+#include <list>
+#include"../enemy/Enemy.h"
 
 // ベクトルの回転用関数
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
@@ -52,7 +54,7 @@ void Player::Initialize(Camera* camera) {
 	statas_.speed = 0.2f; // XY移動は少し速い方が気持ちいいです
 	statas_.haste = 10;
 	statas_.chargeTime = 60;
-	statas_.hommingAccuracy = 0.0f;
+	statas_.hommingAccuracy = 0.5f;
 	statas_.renge = 80.0f;
 
 	velocity_ = {0.0f, 0.0f, 0.0f};
@@ -63,7 +65,7 @@ void Player::Initialize(Camera* camera) {
 	damageTimer = 0;
 }
 
-void Player::Update() {
+void Player::Update(const std::list<std::unique_ptr<Enemy>>& enemies) {
 	auto input = Input::GetInstance();
 
 	camera_->Update();
@@ -153,7 +155,7 @@ void Player::Update() {
 	reticle_->SetPosition(reticlePosition_);
 	reticle_->Update();
 
-	Attack();
+	Attack(enemies);
 	UpdateBullets();
 #pragma endregion
 
@@ -183,7 +185,7 @@ Player::~Player() {
 	bullets.clear();
 }
 
-void Player::Attack() {
+void Player::Attack(const std::list<std::unique_ptr<Enemy>>& enemies) {
 	auto input = Input::GetInstance();
 	if (coolTime > 0) {
 		coolTime--;
@@ -200,13 +202,13 @@ void Player::Attack() {
 		if (isCharging) {
 			// チャージ攻撃
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge * 1.5f);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge * 1.5f,enemies);
 			newBullet->SetStatus(statas_.hommingAccuracy + 0.2f);
 			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
 			chargeTimer = statas_.haste*2; // チャージタイマーリセット
 		} else {
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge,enemies);
 			newBullet->SetStatus(statas_.hommingAccuracy);
 			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
 			coolTime = statas_.haste;

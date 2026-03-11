@@ -12,9 +12,10 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
+
 class PlayerChargeBullet : public PlayerBullet {
 public:
-	void Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge) override;
+	void Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::unique_ptr<Enemy>>& enemies) override;
 	void Update() override;
 	void Draw3D() override;
 	void Draw2D() override;

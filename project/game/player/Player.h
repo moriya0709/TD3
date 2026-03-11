@@ -12,9 +12,9 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
-#include <list>
 
 // ベクトルを回転行列によって変換する関数
+class Enemy;
 class Player {
 public:
 	struct Statas {
@@ -27,7 +27,7 @@ public:
 		int haste = 0;                // 攻撃頻度
 	};
 	void Initialize(Camera* camera);
-	void Update();
+	void Update(const std::list<std::unique_ptr<Enemy>>& enemies);
 	void Draw2D();
 	void Draw3D();
 	Vector3 GetPosition() const { return transform_.translate; }
@@ -65,7 +65,7 @@ private:
 
 	// プレイヤーの弾
 	std::list<std::unique_ptr<PlayerBullet>> bullets;
-	void Attack();
+	void Attack(const std::list<std::unique_ptr<Enemy>>& enemies);
 	void UpdateBullets();
 	// 次の発射まで
 	int coolTime = 0;
