@@ -25,7 +25,23 @@ void EnemyManager::Initialize(const std::string& filePath, Player* player, Camer
 void EnemyManager::Update()
 {
     if (currentTimer_ == precurrenTimer) {
-        return;
+        return; // タイマーが動いていないから早期リターン
+    }
+
+    if (!isEditing_ && fs::exists(jsonFilePath_)) { // 編集モードでなければチェック
+        try {
+            // ファイルの最終更新日時を取得
+            auto currentWriteTime = fs::last_write_time(jsonFilePath_);
+
+            // 最後に読み込んだ時より新しければリロード
+            if (currentWriteTime > lastWriteTime_) {
+                std::cout << "JSON modified. Hot-reloading: " << jsonFilePath_ << std::endl;
+                LoadEnemyData(jsonFilePath_);
+            }
+        } catch (const fs::filesystem_error& e) {
+            // ファイルが他のプロセスで使用中などのエラー対策
+            std::cerr << "Filesystem error: " << e.what() << std::endl;
+        }
     }
 
     while (currentSpawnIndex_ < popDatas_.size() && popDatas_[currentSpawnIndex_].popTime <= currentTimer_) {
@@ -222,4 +238,136 @@ void EnemyManager::SaveToJson(const std::string& filePath)
         lastWriteTime_ = fs::last_write_time(filePath);
         std::cout << "JSON saved: " << filePath << std::endl;
     }
+}
+
+void EnemyManager::DrawImGui()
+{
+    ImGui::Begin("EnemyPopManager");
+
+    // 1. ファイル操作ボタン
+    if (isEditing_) {
+        ImGui::TextColored(ImVec4(1, 1, 0, 1), "Editing Mode: Auto-Hot-Reload Disabled");
+        if (ImGui::Button("Save to JSON")) {
+            SaveToJson(jsonFilePath_);
+            LoadEnemyData(jsonFilePath_); // 保存データを現在のデータに反映
+            isEditing_ = false; // 編集モード終了
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            editingPopDatas_ = popDatas_; // 編集前のデータに戻す
+            isEditing_ = false; // 編集モード終了
+        }
+    } else {
+        if (ImGui::Button("Reload JSON")) {
+            LoadEnemyData(jsonFilePath_);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Start Edit")) {
+            isEditing_ = true;
+            editingPopDatas_ = popDatas_; // 編集用データを最新に
+        }
+    }
+
+    ImGui::Separator();
+
+    // 2. 敵リスト表示と選択
+    if (ImGui::CollapsingHeader("Enemy Pop List")) {
+        for (int i = 0; i < (int)editingPopDatas_.size(); ++i) {
+            std::string label = "Enemy [" + std::to_string(i) + "] - " + editingPopDatas_[i].type;
+            if (ImGui::Selectable(label.c_str(), selectedEnemyIndex_ == i)) {
+                selectedEnemyIndex_ = i;
+            }
+        }
+        if (ImGui::Button("Add New Enemy")) {
+            EnemyPopData newData;
+            newData.type = "NormalEnemy";
+            newData.hp = 100;
+            newData.position = { 0, 0, 200 }; // 遠くに
+            editingPopDatas_.push_back(newData);
+            selectedEnemyIndex_ = (int)editingPopDatas_.size() - 1;
+            isEditing_ = true;
+        }
+    }
+
+    ImGui::Separator();
+
+    // 3. 選択中の敵の詳細編集
+    if (selectedEnemyIndex_ >= 0 && selectedEnemyIndex_ < (int)editingPopDatas_.size()) {
+        ImGui::PushID(selectedEnemyIndex_); // IDをプッシュしてバグ防止
+
+        auto& data = editingPopDatas_[selectedEnemyIndex_];
+
+        ImGui::Text("Selected Enemy [%d]", selectedEnemyIndex_);
+
+        // 基本データ編集
+        if (ImGui::InputFloat("Pop Time", &data.popTime))
+            isEditing_ = true;
+
+        // typeの編集（InputTextは少し手間が必要）
+        char typeBuffer[64];
+        strncpy_s(typeBuffer, data.type.c_str(), sizeof(typeBuffer));
+        if (ImGui::InputText("Type", typeBuffer, sizeof(typeBuffer))) {
+            data.type = typeBuffer;
+            isEditing_ = true;
+        }
+
+        if (ImGui::InputInt("HP", &data.hp))
+            isEditing_ = true;
+        if (ImGui::InputFloat3("Spawn Pos", &data.position.x))
+            isEditing_ = true;
+
+        ImGui::Separator();
+
+        // 移動経路（movePattern）編集
+        if (ImGui::CollapsingHeader("Move Pattern Waypoints")) {
+            for (int j = 0; j < (int)data.movePattern.size(); ++j) {
+                ImGui::PushID(j); // WP用のID
+                auto& wp = data.movePattern[j];
+                std::string wpLabel = "WP [" + std::to_string(j) + "]";
+                if (ImGui::InputFloat3(wpLabel.c_str(), &wp.target.x))
+                    isEditing_ = true;
+                ImGui::SameLine();
+                ImGui::SetNextItemWidth(100);
+                if (ImGui::InputFloat("Time", &wp.timeToReach))
+                    isEditing_ = true;
+
+                ImGui::SameLine();
+                if (ImGui::Button("Delete")) {
+                    data.movePattern.erase(data.movePattern.begin() + j);
+                    isEditing_ = true;
+                }
+                ImGui::PopID(); // WP ID
+            }
+            if (ImGui::Button("Add Waypoint")) {
+                WayPoint newWP;
+                newWP.target = data.position; // スポーン地点から開始
+                newWP.timeToReach = 2.0f;
+                data.movePattern.push_back(newWP);
+                isEditing_ = true;
+            }
+        }
+
+        ImGui::Separator();
+
+        // 逃走（flee）データ編集
+        if (ImGui::Checkbox("Has Flee Data", &data.hasFleeData))
+            isEditing_ = true;
+        if (data.hasFleeData) {
+            if (ImGui::InputFloat3("Flee Target", &data.fleeWaypoint.target.x))
+                isEditing_ = true;
+            if (ImGui::InputFloat("Flee Time", &data.fleeWaypoint.timeToReach))
+                isEditing_ = true;
+        }
+
+        ImGui::Separator();
+        if (ImGui::Button("Delete This Enemy")) {
+            editingPopDatas_.erase(editingPopDatas_.begin() + selectedEnemyIndex_);
+            selectedEnemyIndex_ = -1;
+            isEditing_ = true;
+        }
+
+        ImGui::PopID(); // Enemy ID
+    }
+
+    ImGui::End();
 }

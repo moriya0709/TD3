@@ -204,6 +204,7 @@ void GamePlayScene::Update()
     }
 
     CameraController_->DrawImGui();
+    enemy_->DrawImGui();
 
 #pragma endregion
 
