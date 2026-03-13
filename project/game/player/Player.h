@@ -17,6 +17,15 @@
 class Enemy;
 class Player {
 public:
+	enum style {
+		Normal,
+		speed,
+		power,
+		sniper
+
+	};
+
+
 	struct Statas {
 		int hp;                       // ‘Ì—Í
 		int attack;                   // UŒ‚—Í
@@ -97,6 +106,7 @@ private:
 	Vector3 SpotLightDirection = {0.0f, 0.0f, 0.0f};
 	float SpotLightRange = 10.0f;
 	float SpotLightIntensity = 1.0f;
+
 };
 
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
