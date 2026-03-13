@@ -54,6 +54,7 @@ public:
 
 	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets; }
 	int GetAttack() const { return statas_.attack; }
+	int GetHP() const { return statas_.hp; }
 
 private:
 	// プレイヤーのステータス
