@@ -19,7 +19,9 @@ void EnemyManager::Initialize(const std::string& filePath, Player* player, Camer
     precurrenTimer = 0.0f;
     currentSpawnIndex_ = 0;
 
-    LoadEnemyData(filePath);
+    jsonFilePath_ = filePath;
+
+    LoadEnemyData(jsonFilePath_);
 }
 
 void EnemyManager::Update()
@@ -93,7 +95,6 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
     popDatas_.clear();
 
     if (data.contains("enemies") && data["enemies"].is_array()) {
-
         for (const auto& enemyData : data["enemies"]) {
             EnemyPopData data;
 
@@ -199,30 +200,34 @@ void EnemyManager::SpawnEnemy(const EnemyPopData& data)
 
 void EnemyManager::SaveToJson(const std::string& filePath)
 {
-    json jsonData;
-    jsonData["enemies"] = json::array(); // 配列として初期化
+    nlohmann::ordered_json jsonData;
+    jsonData["enemies"] = nlohmann::ordered_json::array();
 
-    for (const auto& data : editingPopDatas_) { // 編集中のデータを保存
-        json enemyData;
+    for (const auto& data : editingPopDatas_) {
+        // ★ここも ordered_json に変更
+        nlohmann::ordered_json enemyData;
+
+        // 【重要】ここで代入した順番の通りにJSONファイルに書き込まれます！
+        // 人間が読みやすい順番で代入してください
         enemyData["popTime"] = data.popTime;
         enemyData["type"] = data.type;
         enemyData["hp"] = data.hp;
         enemyData["position"] = Vector3ToJson(data.position);
 
-        // 移動パターンをJSONに変換
-        enemyData["movePattern"] = json::array();
+        // 移動パターン
+        enemyData["movePattern"] = nlohmann::ordered_json::array();
         for (const auto& wp : data.movePattern) {
-            json wpData;
-            wpData["timeToReach"] = wp.timeToReach;
+            nlohmann::ordered_json wpData;
             wpData["target"] = Vector3ToJson(wp.target);
+            wpData["timeToReach"] = wp.timeToReach;
             enemyData["movePattern"].push_back(wpData);
         }
 
-        // 逃走データをJSONに変換
+        // 逃走データ
         if (data.hasFleeData) {
-            json fleeData;
-            fleeData["timeToReach"] = data.fleeWaypoint.timeToReach;
+            nlohmann::ordered_json fleeData;
             fleeData["target"] = Vector3ToJson(data.fleeWaypoint.target);
+            fleeData["timeToReach"] = data.fleeWaypoint.timeToReach;
             enemyData["flee"] = fleeData;
         }
 
@@ -231,12 +236,11 @@ void EnemyManager::SaveToJson(const std::string& filePath)
 
     std::ofstream file(filePath);
     if (file.is_open()) {
-        file << jsonData.dump(4); // インデント4文字で保存
+        file << jsonData.dump(4); // インデント4文字で綺麗に保存
         file.close();
 
-        // 【重要】保存直後に最終更新日時を更新し、自らホットリロードするのを防ぐ
         lastWriteTime_ = fs::last_write_time(filePath);
-        std::cout << "JSON saved: " << filePath << std::endl;
+        std::cout << "JSON saved (Ordered): " << filePath << std::endl;
     }
 }
 
