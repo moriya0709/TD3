@@ -40,7 +40,7 @@
         },
         {
           "target" : { "x": 10.0, "y": 0.0, "z": 60.0 },
-          "timeToReach" : 1.0
+          "timeToReach" : 3.0
         }
       ],
       "flee": {
@@ -64,7 +64,7 @@
         },
         {
           "target" : { "x": 20.0, "y": 0.0, "z": 60.0 },
-          "timeToReach" : 1.0
+          "timeToReach" : 3.0
         }
       ],
       "flee": {
@@ -88,7 +88,7 @@
         },
         {
           "target" : { "x": 26.0, "y": 0.0, "z": 60.0 },
-          "timeToReach" : 1.0
+          "timeToReach" : 3.0
         }
       ],
       "flee": {
@@ -112,7 +112,7 @@
         },
         {
           "target" : { "x": 8.0, "y": 0.0, "z": 60.0 },
-          "timeToReach" : 1.0
+          "timeToReach" : 3.0
         }
       ],
       "flee": {

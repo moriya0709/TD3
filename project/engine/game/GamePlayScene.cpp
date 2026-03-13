@@ -39,6 +39,7 @@ void GamePlayScene::Update()
     player_->Update(enemy_->GetEnemies());
 
     // 敵更新
+    enemy_->SetcurrentTimer_(CameraController_->GetCurrentReplayTime());
     enemy_->Update();
 
     // 当たり判定
@@ -246,5 +247,5 @@ void GamePlayScene::ChekeAllCollision()
     const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
     CheckCollisionPlayerEnemy(player_.get(), enemies);
     CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
-	CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
+    CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
 }
