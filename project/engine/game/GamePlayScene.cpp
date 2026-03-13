@@ -18,7 +18,7 @@ void GamePlayScene::Initialize()
     CameraController_->Initialize(camera.get());
 
     player_ = std::make_unique<Player>();
-    player_->Initialize(camera.get());
+	player_->Initialize(camera.get(), Player::Style::normal);
 
     enemy_ = std::make_unique<EnemyManager>();
     enemy_->Initialize("Resource/Data/EnemyaPop.json", player_.get(), camera.get());
