@@ -66,7 +66,7 @@ private:
     void SaveToJson(const std::string& filePath);
 
     // Vector3‚ğJSON‚É•ÏŠ·‚·‚é‚½‚ß‚Ìƒwƒ‹ƒp[ŠÖ”
-    nlohmann::json Vector3ToJson(const Vector3& v)
+    nlohmann::ordered_json Vector3ToJson(const Vector3& v)
     {
         return { { "x", v.x }, { "y", v.y }, { "z", v.z } };
     }
