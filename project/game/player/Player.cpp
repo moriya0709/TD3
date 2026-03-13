@@ -49,7 +49,7 @@ void Player::Initialize(Camera* camera, Style style) {
 	playerObject_->SetTranslate(transform_.translate);
 
 	switch (style) {
-	case Player::Normal:
+	case Player::normal:
 		break;
 	case Player::speed:
 		break;
