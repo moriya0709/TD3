@@ -1,5 +1,7 @@
 #pragma once
 #include <Calc.h>
+#include <externals/nlohmann/json.hpp>
+#include <filesystem>
 #include <list>
 #include <memory>
 #include <string>
@@ -37,6 +39,9 @@ public:
     /// </summary>
     void Draw3D();
 
+    // IMGUI描画
+    void DrawImGui();
+
     /* Set関数 */
     void SetcurrentTimer_(float timer);
 
@@ -57,12 +62,34 @@ private:
     /// <param name="data">データ</param>
     void SpawnEnemy(const EnemyPopData& data);
 
+    // 現在のデータをJSONファイルに保存する
+    void SaveToJson(const std::string& filePath);
+
+    // Vector3をJSONに変換するためのヘルパー関数
+    nlohmann::json Vector3ToJson(const Vector3& v)
+    {
+        return { { "x", v.x }, { "y", v.y }, { "z", v.z } };
+    }
+
+private:
     // 読み込んだデータをストックしておくリスト
     std::vector<EnemyPopData> popDatas_;
     uint32_t currentSpawnIndex_ = 0; // 次に出現させる敵のインデックス
 
     float currentTimer_ = 0.0f; // ゲーム開始からの経過時間（または進行距離）
+    float precurrenTimer = 0.0f;
     std::list<std::shared_ptr<Enemy>> enemies_; // 生きている敵のリスト
     Player* player_ = nullptr; // ターゲット用のプレイヤーポインタ
     Camera* camera_ = nullptr; // カメラポインタ
+
+    // 書き込みのデータ
+    std::string jsonFilePath_; // 読み込んでいるJSONのパス
+    std::vector<EnemyPopData> editingPopDatas_; // IMGUIで編集中のデータ
+
+    // ホットリロード用の変数
+    std::filesystem::file_time_type lastWriteTime_; // JSONの最終更新日時
+
+    // IMGUI用の状態変数
+    bool isEditing_ = false; // 編集モードかどうか
+    int selectedEnemyIndex_ = -1; // IMGUIで選択中の敵のインデックス
 };
