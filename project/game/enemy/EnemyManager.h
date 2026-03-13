@@ -15,7 +15,7 @@ struct EnemyPopData {
     // 複数の移動地点を保持するリスト
     std::vector<WayPoint> movePattern;
     WayPoint fleeWaypoint; // 逃走先
-    bool hasFleeData; //逃走先があるか
+    bool hasFleeData; // 逃走先があるか
 };
 
 class EnemyManager {
@@ -38,6 +38,7 @@ public:
     void Draw3D();
 
     /* Set関数 */
+    void SetcurrentTimer_(float timer);
 
     /* Get関数 */
     // 【当たり判定用】生きている敵のリストを取得する
