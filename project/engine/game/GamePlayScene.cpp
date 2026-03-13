@@ -28,7 +28,8 @@ void GamePlayScene::Initialize()
     particleEmitter->Initialize("group1", transformParticle, 5, 1.0f);
     particleEmitter->Emit();
 
-    // 初期化済みの3Dオブジェクトにモデルを紐づける
+
+
 }
 
 void GamePlayScene::Update()
@@ -76,8 +77,26 @@ void GamePlayScene::Update()
 
 #pragma endregion
 
+#pragma region レイマーチング
+    // レイマーチング
+    RayMarching::GetInstance()->SetCamera(camera.get());
+    // レイマーチング
+    RayMarching::GetInstance()->CameraUpdate(camera.get());
+    //rayMarching->SetTime(rayMarchingTime);
+    RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
+    RayMarching::GetInstance()->SetDensity(rayMarchingDensity);
+    RayMarching::GetInstance()->SetCloudTop(rayMarchingCloudBottom);
+    RayMarching::GetInstance()->SetCloudBottom(rayMarchingCloudTop);
+    RayMarching::GetInstance()->SetRialLight(rayMarchingIsRialLight);
+    RayMarching::GetInstance()->SetAnimeLight(rayMarchingIsAnimeLight);
+
+#pragma endregion
+
 #ifdef USE_IMGUI
     // ImGui
+    // フレームレートの取得と表示
+    float fps = ImGui::GetIO().Framerate;
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
 
     // カメラ
     ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f, -100.0f, 100.0f);
@@ -206,6 +225,18 @@ void GamePlayScene::Update()
 
 #pragma endregion
 
+#pragma region レイマーチング
+    // レイマーチング
+    //ImGui::DragFloat("rayMarchingTime", &rayMarchingTime, 0.1f,0.0f,10.0f);
+    ImGui::DragFloat3("rayMarchingSunDir", &rayMarchingSunDir.x, 0.1f, -50.0f, 50.0f);
+    ImGui::DragFloat("rayMarchingDensity", &rayMarchingDensity, 0.01f, -5.0f, 10.0f);
+    ImGui::DragFloat("rayMarchingCloudBottom", &rayMarchingCloudBottom, 10.0f, -5000.0f, 5000.0f);
+    ImGui::DragFloat("rayMarchingCloudTop", &rayMarchingCloudTop, 10.0f, -5000.0f, 5000.0f);
+    ImGui::Checkbox("rayMarchingIsRialLight", &rayMarchingIsRialLight);
+    ImGui::Checkbox("rayMarchingIsAnimeLight", &rayMarchingIsAnimeLight);
+
+#pragma endregion
+
 #endif
 }
 
@@ -237,6 +268,7 @@ void GamePlayScene::Draw3D()
 
     // アウトライン描画
     // object->Draw();
+
 }
 
 void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }

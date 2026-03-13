@@ -104,11 +104,11 @@ private:
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
-	float rayMarchingDensity = 0.04f;
-	float rayMarchingCloudBottom = 130.0f;
-	float rayMarchingCloudTop = -1200.0f;
-	bool rayMarchingIsRialLight = true;
-	bool rayMarchingIsAnimeLight = false;
+	float rayMarchingDensity = 2.00f;
+	float rayMarchingCloudBottom = 230.0f;
+	float rayMarchingCloudTop = 30.0f;
+	bool rayMarchingIsRialLight = false;
+	bool rayMarchingIsAnimeLight = true;
 	
 
 	// スプライト
@@ -119,7 +119,5 @@ private:
 	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
 	// レールカメラ
 	std::unique_ptr <RailCamera> railCamera = nullptr;
-	// レイマーチング
-	std::unique_ptr <RayMarching> rayMarching = nullptr;
 
 };
