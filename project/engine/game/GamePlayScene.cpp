@@ -18,10 +18,10 @@ void GamePlayScene::Initialize()
     CameraController_->Initialize(camera.get());
 
     player_ = std::make_unique<Player>();
-    player_->Initialize(camera.get());
+	player_->Initialize(camera.get(), Player::Style::normal);
 
     enemy_ = std::make_unique<EnemyManager>();
-    enemy_->Initialize("Resource/Data/EnemyaPop.json", player_.get(), camera.get());
+    enemy_->Initialize(player_.get(), camera.get(), CameraController_.get());
 
     // Emitパーティクル発生
     particleEmitter = std::make_unique<ParticleEmitter>();
@@ -37,9 +37,10 @@ void GamePlayScene::Update()
     CameraController_->Update();
 
     // プレイヤー更新
-    player_->Update();
+    player_->Update(enemy_->GetEnemies());
 
     // 敵更新
+    enemy_->SetcurrentTimer_(CameraController_->GetCurrentReplayTime());
     enemy_->Update();
 
     // 当たり判定
@@ -222,6 +223,7 @@ void GamePlayScene::Update()
     }
 
     CameraController_->DrawImGui();
+    enemy_->DrawImGui();
 
 #pragma endregion
 
@@ -275,8 +277,8 @@ void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("mai
 
 void GamePlayScene::ChekeAllCollision()
 {
-    const std::list<std::unique_ptr<Enemy>>& enemies = enemy_->GetEnemies();
+    const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
     CheckCollisionPlayerEnemy(player_.get(), enemies);
     CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
-	CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
+    CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
 }

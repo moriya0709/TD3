@@ -25,40 +25,42 @@ void HomingEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 
 void HomingEnemy::Update()
 {
-    // 移動
-    // transform_.translate.x += kwalkSpeed;
+    if (behaviorRequest_ != Behavior::kUnknown) {
+        behavior_ = behaviorRequest_;
+
+        switch (behavior_) {
+        case HomingEnemy::Behavior::kDefeated:
+        default:
+
+            break;
+        }
+
+        behaviorRequest_ = Behavior::kUnknown;
+    }
+
+    switch (behavior_) {
+    case Behavior::kWalk:
+        BehaviorWalk();
+        break;
+    case Behavior::kAway:
+        BehaviorAway();
+        break;
+    case Behavior::kDefeated:
+        BehaviorDefeated();
+        break;
+    default:
+        break;
+    }
+
+    BulletUpdate();
 
     // 生きていないならやられモーション処理を入れる
     if (!isAvile) {
-        isDead_ = true;
+        behaviorRequest_ = Behavior::kDefeated;
     }
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);
-
-    // 弾を生成する時間を減らす
-    interval -= 1.0f / 60.0f;
-
-    if (interval <= 0.0f) {
-        // 弾の生成
-        std::unique_ptr<HomingEnemyBullet> newBulletEnemy = std::make_unique<HomingEnemyBullet>();
-        newBulletEnemy->Initialize(camera_, transform_.translate);
-        newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.08f));
-        newBulletEnemy->SetTargetPosition(player_->GetPosition());
-
-        enemyBullet_.push_back(std::move(newBulletEnemy));
-        interval = maxInterval;
-    }
-    // 更新処理
-    for (auto& bullet : enemyBullet_) {
-        bullet->SetTargetPosition(player_->GetPosition());
-        bullet->Update();
-    }
-
-    // 弾の削除
-    std::erase_if(enemyBullet_, [](const std::unique_ptr<EnemyBullet>& bullet) {
-        return !bullet->GetIsActive(); // GetIsActive が false なら削除
-    });
 
     // ここにIMGUI
 
@@ -83,4 +85,127 @@ void HomingEnemy::OnCollision(int Damage)
     if (health_ <= 0) {
         isAvile = false;
     }
+}
+
+void HomingEnemy::SetWayPoints(const std::vector<WayPoint>& waypoints)
+{
+    waypoints_ = waypoints;
+    currentWayPointIndex_ = 0;
+    waypointTimer_ = 0.0f;
+
+    // 初期座標
+    startPos_ = transform_.translate;
+}
+
+void HomingEnemy::SetFleeWaypoint(const WayPoint& fleeWP, bool hasFleeData)
+{
+    fleeWaypoint_ = fleeWP;
+    hasFleeData_ = hasFleeData;
+}
+
+void HomingEnemy::EnemyMove()
+{
+    float deltaTime = 1.0f / 60.0f;
+
+    if (currentWayPointIndex_ < waypoints_.size()) {
+
+        // タイマーを進める
+        waypointTimer_ += deltaTime;
+
+        // 現在目指しているウェイポイントの情報を取得
+        const WayPoint& currentWP = waypoints_[currentWayPointIndex_];
+
+        float t = waypointTimer_ / currentWP.timeToReach;
+
+        if (t > 1.0f) {
+            t = 1.0f;
+        }
+
+        transform_.translate = startPos_ + (currentWP.target - startPos_) * t;
+
+        if (t >= 1.0f) {
+            currentWayPointIndex_++; // 次の地点へ
+            waypointTimer_ = 0.0f; // タイマーリセット
+            startPos_ = transform_.translate; // 現在地を次の「出発点」にする
+        }
+    }
+    if (currentWayPointIndex_ >= static_cast<int>(waypoints_.size())) {
+        // ★全てのウェイポイントを巡回し終わった！
+        behaviorRequest_ = Behavior::kAway;
+
+        // 【追加】逃走のための初期化
+        fleeTimer_ = 0.0f;
+        fleeStartPos_ = transform_.translate; // 現在地を逃走のスタート地点にする
+    }
+}
+
+void HomingEnemy::BulletUpdate()
+{
+    // 弾を生成する時間を減らす
+    if (behavior_ == Behavior::kWalk) {
+        interval -= 1.0f / 60.0f;
+    }
+
+    if (interval <= 0.0f) {
+        // 弾の生成
+        std::unique_ptr<HomingEnemyBullet> newBulletEnemy = std::make_unique<HomingEnemyBullet>();
+        newBulletEnemy->Initialize(camera_, transform_.translate);
+        newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.08f));
+        newBulletEnemy->SetTargetPosition(player_->GetPosition());
+
+        enemyBullet_.push_back(std::move(newBulletEnemy));
+        interval = maxInterval;
+    }
+    // 更新処理
+    for (auto& bullet : enemyBullet_) {
+        bullet->SetTargetPosition(player_->GetPosition());
+        bullet->Update();
+    }
+
+    // 弾の削除
+    std::erase_if(enemyBullet_, [](const std::unique_ptr<EnemyBullet>& bullet) {
+        return !bullet->GetIsActive(); // GetIsActive が false なら削除
+    });
+}
+void HomingEnemy::BehaviorWalk()
+{
+    // 移動
+    EnemyMove();
+}
+
+void HomingEnemy::BehaviorAway()
+{
+    if (hasFleeData_) {
+        float deltaTime = 1.0f / 60.0f;
+        fleeTimer_ += deltaTime;
+
+        float t = fleeTimer_ / fleeWaypoint_.timeToReach;
+        if (t > 1.0f)
+            t = 1.0f;
+
+        // 逃走先へ向かってLerp
+        transform_.translate.x = fleeStartPos_.x + (fleeWaypoint_.target.x - fleeStartPos_.x) * t;
+        transform_.translate.y = fleeStartPos_.y + (fleeWaypoint_.target.y - fleeStartPos_.y) * t;
+        transform_.translate.z = fleeStartPos_.z + (fleeWaypoint_.target.z - fleeStartPos_.z) * t;
+
+        // 逃走地点に完全に到着したら、存在を消去する
+        if (t >= 1.0f) {
+            isDead_ = true;
+        }
+    } else {
+        // JSONに逃走先が書かれていなかった場合のデフォルト動作（保険）
+        transform_.translate.z += 0.5f;
+        transform_.translate.y += 0.2f;
+
+        float cameraZ = camera_->GetTranslate().z;
+        if (transform_.translate.z > cameraZ + 200.0f) {
+            isDead_ = true;
+        }
+    }
+}
+
+void HomingEnemy::BehaviorDefeated()
+{
+    // 上に断末のコードを角
+    isDead_ = true;
 }

@@ -12,11 +12,20 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
-#include <list>
 
 // ベクトルを回転行列によって変換する関数
+class Enemy;
 class Player {
 public:
+	enum Style {
+		normal,
+		speed,
+		power,
+		sniper
+
+	};
+
+
 	struct Statas {
 		int hp;                       // 体力
 		int attack;                   // 攻撃力
@@ -26,8 +35,8 @@ public:
 		int chargeTime = 0;           // チャージ時間
 		int haste = 0;                // 攻撃頻度
 	};
-	void Initialize(Camera* camera);
-	void Update();
+	void Initialize(Camera* camera ,Style style);
+	void Update(const std::list<std::shared_ptr<Enemy>>& enemies);
 	void Draw2D();
 	void Draw3D();
 	Vector3 GetPosition() const { return transform_.translate; }
@@ -42,8 +51,11 @@ public:
 		damageTimer = 30; // ダメージ表示タイマーリセット
 	}
 	bool GetIsHit() const { return ishit; }
+	void SetStatas(const Statas& newStatas) { statas_ = newStatas; }
 
 	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets; }
+	int GetAttack() const { return statas_.attack; }
+	int GetHP() const { return statas_.hp; }
 
 private:
 	// プレイヤーのステータス
@@ -65,7 +77,7 @@ private:
 
 	// プレイヤーの弾
 	std::list<std::unique_ptr<PlayerBullet>> bullets;
-	void Attack();
+	void Attack(const std::list<std::shared_ptr<Enemy>>& enemies);
 	void UpdateBullets();
 	// 次の発射まで
 	int coolTime = 0;
@@ -96,6 +108,7 @@ private:
 	Vector3 SpotLightDirection = {0.0f, 0.0f, 0.0f};
 	float SpotLightRange = 10.0f;
 	float SpotLightIntensity = 1.0f;
+
 };
 
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);

@@ -7,6 +7,8 @@
 #include "engine/base/WindowAPI.h"
 #include <algorithm>
 #include <cmath>
+#include <list>
+#include"../enemy/Enemy.h"
 
 // ベクトルの回転用関数
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
@@ -17,7 +19,7 @@ Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
 	return result;
 }
 
-void Player::Initialize(Camera* camera) {
+void Player::Initialize(Camera* camera, Style style) {
 	camera_ = camera;
 	transform_.scale = {1.0f, 1.0f, 1.0f};
 	transform_.rotate = {0.0f, 0.0f, 0.0f};
@@ -46,13 +48,26 @@ void Player::Initialize(Camera* camera) {
 	playerObject_->SetModel("player.obj");
 	playerObject_->SetTranslate(transform_.translate);
 
+	switch (style) {
+	case Player::normal:
+		break;
+	case Player::speed:
+		break;
+	case Player::power:
+		break;
+	case Player::sniper:
+		break;
+	default:
+		break;
+	}
+
 	// ステータス初期化
 	statas_.hp = 100;
-	statas_.attack = 10;
+	statas_.attack = 20;
 	statas_.speed = 0.2f; // XY移動は少し速い方が気持ちいいです
 	statas_.haste = 10;
 	statas_.chargeTime = 60;
-	statas_.hommingAccuracy = 0.0f;
+	statas_.hommingAccuracy = 0.01f;
 	statas_.renge = 80.0f;
 
 	velocity_ = {0.0f, 0.0f, 0.0f};
@@ -63,7 +78,7 @@ void Player::Initialize(Camera* camera) {
 	damageTimer = 0;
 }
 
-void Player::Update() {
+void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	auto input = Input::GetInstance();
 
 	camera_->Update();
@@ -153,7 +168,7 @@ void Player::Update() {
 	reticle_->SetPosition(reticlePosition_);
 	reticle_->Update();
 
-	Attack();
+	Attack(enemies);
 	UpdateBullets();
 #pragma endregion
 
@@ -163,6 +178,9 @@ void Player::Update() {
 	ImGui::DragFloat3("World Pos", &transform_.translate.x, 0.1f);
 	ImGui::DragFloat2("Relative Pos", &relativePos_.x, 0.1f);
 	ImGui::DragInt("HP", &statas_.hp, 0.1f);
+	ImGui::DragInt("Attack", &statas_.attack, 0.1f);
+	ImGui::DragFloat("Speed", &statas_.speed, 0.01f);
+	ImGui::DragFloat("Homing Accuracy", &statas_.hommingAccuracy, 0.0001f, 0.0f, 1.0f, "%.4f");
 	ImGui::End();
 #pragma endregion
 }
@@ -183,7 +201,7 @@ Player::~Player() {
 	bullets.clear();
 }
 
-void Player::Attack() {
+void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	auto input = Input::GetInstance();
 	if (coolTime > 0) {
 		coolTime--;
@@ -200,13 +218,14 @@ void Player::Attack() {
 		if (isCharging) {
 			// チャージ攻撃
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge * 1.5f);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge * 1.5f,enemies);
 			newBullet->SetStatus(statas_.hommingAccuracy + 0.2f);
 			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
-			chargeTimer = statas_.haste*2; // チャージタイマーリセット
+			chargeTimer = 0; // チャージタイマーリセット
+			coolTime = statas_.haste * 2;            // チャージ攻撃後のクールタイムも長くする
 		} else {
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge,enemies);
 			newBullet->SetStatus(statas_.hommingAccuracy);
 			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
 			coolTime = statas_.haste;

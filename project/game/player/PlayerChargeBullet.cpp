@@ -1,81 +1,107 @@
-#include "PlayerChargeBullet.h"
-#include "player.h"
 #include "ObjectCommon.h"
+#include "PlayerChargeBullet.h"
 #include "SceneManager.h"
 #include "SpriteCommon.h"
-
+#include "player.h"
 #include <cmath> // sqrt用
 
 // Initializeに必要な引数を追加しています（レティクルの位置、最大距離、寿命）
-void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge) {
-	// --- 1. 基本設定 ---
-	transform_.scale = {0.4f, 0.4f, 1.0f};
-	transform_.rotate = {0.0f, 0.0f, 0.0f};
-	transform_.translate = position; // プレイヤー（発射位置）
-
+void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies) {
+	// --- 1. 基本設定（既存） ---
+	transform_.scale = {0.2f, 0.2f, 0.2f};
+	transform_.translate = position;
 	object_ = std::make_unique<Object>();
 	object_->Initialize(camera);
 	object_->SetModel("player.obj");
-
 	camera_ = camera;
 	lifeTime_ = 0;
 	isActive_ = true;
-	renge_ = renge;
 
-	// --- 2. 正確なターゲット地点（最終地点）の計算 ---
-
-	// 画面中心からのレティクルのズレ（ピクセル）
+	// --- 2. ターゲット地点の計算（既存） ---
 	float diffX = reticlePosition.x - (WindowAPI::kClientWidth / 2.0f);
 	float diffY = (WindowAPI::kClientHeight / 2.0f) - reticlePosition.y;
-
-	// カメラの垂直方向視野角（FOV）を 45度と仮定した場合の焦点距離を計算
-	// ※お使いのカメラ設定のFOV（ラジアン）に合わせて調整してください
-	float fovY = 0.785f; // 約45度
+	float fovY = 0.45f;
 	float focalLength = (WindowAPI::kClientHeight / 2.0f) / std::tan(fovY / 2.0f);
-
-	// カメラ空間での目標地点。Z軸の移動距離を renge_ とした時の X, Y を求める
-	// これにより「レティクルが指す奥行き renge_ の地点」が求まる
-	Vector3 targetPosCS = {(diffX / focalLength) * renge_, (diffY / focalLength) * renge_, renge_};
-
-	// --- 3. カメラ空間からワールド空間への変換 ---
-
-	// カメラのワールド行列（位置と回転を含む）
+	Vector3 targetPosCS = {(diffX / focalLength) * renge, (diffY / focalLength) * renge, renge};
 	Matrix4x4 camWorldMat = MakeAffineMatrix({1.0f, 1.0f, 1.0f}, camera_->GetRotate(), camera_->GetTranslate());
-
-	// カメラから見た目標地点を、ワールド座標の絶対位置に変換
 	Vector3 targetPosWorld = VectorTransform(targetPosCS, camWorldMat);
 
-	// --- 4. 速度の決定 ---
+	// --- 3. 初速と方向の決定 ---
+	Vector3 toTarget = {targetPosWorld.x - position.x, targetPosWorld.y - position.y, targetPosWorld.z - position.z};
+	float distToTarget = std::sqrt(toTarget.x * toTarget.x + toTarget.y * toTarget.y + toTarget.z * toTarget.z);
 
-	// 弾の開始位置（プレイヤー）から、計算したターゲット地点（ワールド座標）へ
-	// 弾がプレイヤーの横から中心に向かって「収束」するように飛ぶようになります
-	velocity_.x = (targetPosWorld.x - position.x) / (float)maxLifeTime_;
-	velocity_.y = (targetPosWorld.y - position.y) / (float)maxLifeTime_;
-	velocity_.z = (targetPosWorld.z - position.z) / (float)maxLifeTime_;
+	// 弾の速さを固定（時間で割る）
+	bulletSpeed_ = distToTarget / (float)maxLifeTime_;
 
-	// 初期設定を反映
+	// 正規化した方向ベクトルを速度に変換
+	velocity_ = {(toTarget.x / distToTarget) * bulletSpeed_, (toTarget.y / distToTarget) * bulletSpeed_, (toTarget.z / distToTarget) * bulletSpeed_};
+
+	// --- 4. ホーミング対象の探索 ---
+
+	float minAngle = 0.5f; // 探索範囲（ラジアン。約30度以内など）
+
+	for (const auto& enemy : enemies) {
+		Vector3 enemyPos = enemy->GetWorldPosition();
+		Vector3 toEnemy = {enemyPos.x - position.x, enemyPos.y - position.y, enemyPos.z - position.z};
+		float distToEnemy = std::sqrt(toEnemy.x * toEnemy.x + toEnemy.y * toEnemy.y + toEnemy.z * toEnemy.z);
+
+		// 弾の進行方向と敵への方向の内積から角度を計算
+		Vector3 dirToEnemy = {toEnemy.x / distToEnemy, toEnemy.y / distToEnemy, toEnemy.z / distToEnemy};
+		Vector3 currentDir = {velocity_.x / bulletSpeed_, velocity_.y / bulletSpeed_, velocity_.z / bulletSpeed_};
+
+		float dot = currentDir.x * dirToEnemy.x + currentDir.y * dirToEnemy.y + currentDir.z * dirToEnemy.z;
+
+		// 内積が1に近いほど方向が一致している。一定範囲内かつ一番近い敵を選ぶ等の処理
+		if (dot > std::cos(minAngle)) {
+			targetEnemy_ = enemy; // 修正: unique_ptr<Enemy> ではなく Enemy* 型にする
+			// 最初に見つかった敵、あるいは一番近い敵をセット
+			break;
+		}
+	}
+
 	object_->SetScale(transform_.scale);
-	object_->SetRotate(transform_.rotate);
 	object_->SetTranslate(transform_.translate);
 }
 void PlayerChargeBullet::Update() {
-	// 1. 座標の更新 (現在の座標に速度を加算)
+	std::shared_ptr<Enemy> target = targetEnemy_.lock();
+
+	if (target) {
+		// 1. 敵への方向を計算
+		Vector3 enemyPos = target->GetWorldPosition();
+		Vector3 toEnemy = {enemyPos.x - transform_.translate.x, enemyPos.y - transform_.translate.y, enemyPos.z - transform_.translate.z};
+		float dist = std::sqrt(toEnemy.x * toEnemy.x + toEnemy.y * toEnemy.y + toEnemy.z * toEnemy.z);
+
+		if (dist > 0.1f) {
+			// 敵への理想的な速度ベクトル
+			Vector3 targetVelocity = {(toEnemy.x / dist) * bulletSpeed_, (toEnemy.y / dist) * bulletSpeed_, (toEnemy.z / dist) * bulletSpeed_};
+
+			// 2. 現在の速度を理想の速度に近づける (Lerp)
+			velocity_.x += (targetVelocity.x - velocity_.x) * hommingAccuracy_;
+			velocity_.y += (targetVelocity.y - velocity_.y) * hommingAccuracy_;
+			velocity_.z += (targetVelocity.z - velocity_.z) * hommingAccuracy_;
+
+			// 速度の大きさを一定に保つ（曲がっても加速しないように）
+			float currentSpeed = std::sqrt(velocity_.x * velocity_.x + velocity_.y * velocity_.y + velocity_.z * velocity_.z);
+			velocity_.x = (velocity_.x / currentSpeed) * bulletSpeed_;
+			velocity_.y = (velocity_.y / currentSpeed) * bulletSpeed_;
+			velocity_.z = (velocity_.z / currentSpeed) * bulletSpeed_;
+		}
+	}
+
+	// 3. 座標更新（共通）
 	transform_.translate.x += velocity_.x;
 	transform_.translate.y += velocity_.y;
 	transform_.translate.z += velocity_.z;
 
-	// 2. モデルへの反映
 	object_->SetTranslate(transform_.translate);
 	object_->Update();
 
-	// 3. 寿命のチェック
 	if (lifeTime_ >= maxLifeTime_) {
 		isActive_ = false;
 	} else {
 		lifeTime_++;
 	}
 }
-
 void PlayerChargeBullet::Draw3D() {
 	if (isActive_) {
 		object_->Draw();
