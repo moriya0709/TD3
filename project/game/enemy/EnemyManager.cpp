@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream> // エラー出力用
 
+#include "../camera/CameraController.h"
 #include "type/HomingEnemy.h"
 #include "type/NormalEnemy.h"
 #include "type/TargetEnemy.h"
@@ -11,26 +12,46 @@
 using json = nlohmann::json;
 namespace fs = std::filesystem;
 
-void EnemyManager::Initialize(const std::string& filePath, Player* player, Camera* camera)
+void EnemyManager::Initialize(Player* player, Camera* camera, CameraController* cameraController)
 {
     player_ = player;
     camera_ = camera;
+    cameraContrroller_ = cameraController;
     currentTimer_ = 0.0f;
     precurrenTimer = 0.0f;
     currentSpawnIndex_ = 0;
 
-    jsonFilePath_ = filePath;
+    currentLoadedStage_ = cameraContrroller_->GetCurrentStage();
+    jsonFilePath_ = GetJsonPath(currentLoadedStage_);
+    targetEditStage_ = currentLoadedStage_;
 
     LoadEnemyData(jsonFilePath_);
 }
 
 void EnemyManager::Update()
 {
+
+    // カメラ側のステージが変わったかどうかのチェック
+
+    int cameraStage = cameraContrroller_->GetCurrentStage();
+
+    // 編集モードでなく、かつカメラのステージが進行した場合、自動で次のJSONを読み込む
+    if (!isEditing_ && currentLoadedStage_ != cameraStage) {
+        currentLoadedStage_ = cameraStage;
+        jsonFilePath_ = GetJsonPath(currentLoadedStage_);
+        targetEditStage_ = currentLoadedStage_;
+
+        std::cout << "Stage changed! Loading: " << jsonFilePath_ << std::endl;
+        LoadEnemyData(jsonFilePath_);
+    }
+
+    // 更新処理
+
     if (currentTimer_ == precurrenTimer) {
         return; // タイマーが動いていないから早期リターン
     }
 
-    if (!isEditing_ && fs::exists(jsonFilePath_)) { // 編集モードでなければチェック
+    if (!isEditing_ && std::filesystem::exists(jsonFilePath_)) { // 編集モードでなければチェック
         try {
             // ファイルの最終更新日時を取得
             auto currentWriteTime = fs::last_write_time(jsonFilePath_);
@@ -248,27 +269,64 @@ void EnemyManager::DrawImGui()
 {
     ImGui::Begin("EnemyPopManager");
 
-    // 1. ファイル操作ボタン
+    // ==========================================
+    // 1. ステージ管理 & ファイル切り替え UI
+    // ==========================================
+    if (ImGui::CollapsingHeader("Stage & File Management", ImGuiTreeNodeFlags_DefaultOpen)) {
+
+        // 現在の状況を表示
+        ImGui::Text("Camera Current Stage: %d", cameraContrroller_->GetCurrentStage());
+        ImGui::Text("Loaded JSON Stage : %d", currentLoadedStage_);
+        ImGui::TextDisabled("File: %s", jsonFilePath_.c_str());
+
+        ImGui::Spacing();
+
+        // 読み込むJSONを強制的に切り替える（編集用）
+        ImGui::InputInt("Target Stage", &targetEditStage_);
+
+        // マイナスにならないように制限
+        if (targetEditStage_ < 0)
+            targetEditStage_ = 0;
+
+        ImGui::SameLine();
+        if (ImGui::Button("Load Stage JSON")) {
+            currentLoadedStage_ = targetEditStage_;
+            jsonFilePath_ = GetJsonPath(currentLoadedStage_);
+            LoadEnemyData(jsonFilePath_);
+
+            // 別のステージを読み込んだら一旦編集モードをリセットする
+            isEditing_ = false;
+        }
+
+        // ※もし新しいステージのJSONファイルが存在しない場合でも、
+        // 「Save to JSON」を押せば新規作成されるようになります。
+    }
+
+    ImGui::Separator();
+
+    // ==========================================
+    // 2. 既存のファイル操作ボタン（Save, Reload等）
+    // ==========================================
     if (isEditing_) {
-        ImGui::TextColored(ImVec4(1, 1, 0, 1), "Editing Mode: Auto-Hot-Reload Disabled");
+        ImGui::TextColored(ImVec4(1, 1, 0, 1), "Editing Stage %d", currentLoadedStage_);
         if (ImGui::Button("Save to JSON")) {
             SaveToJson(jsonFilePath_);
-            LoadEnemyData(jsonFilePath_); // 保存データを現在のデータに反映
-            isEditing_ = false; // 編集モード終了
+            LoadEnemyData(jsonFilePath_); // セーブ後に再読み込み
+            isEditing_ = false;
         }
         ImGui::SameLine();
         if (ImGui::Button("Cancel")) {
-            editingPopDatas_ = popDatas_; // 編集前のデータに戻す
-            isEditing_ = false; // 編集モード終了
+            editingPopDatas_ = popDatas_;
+            isEditing_ = false;
         }
     } else {
-        if (ImGui::Button("Reload JSON")) {
+        if (ImGui::Button("Reload Current JSON")) {
             LoadEnemyData(jsonFilePath_);
         }
         ImGui::SameLine();
         if (ImGui::Button("Start Edit")) {
             isEditing_ = true;
-            editingPopDatas_ = popDatas_; // 編集用データを最新に
+            editingPopDatas_ = popDatas_;
         }
     }
 
