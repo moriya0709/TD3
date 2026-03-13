@@ -29,10 +29,10 @@ private:
 	void ApplyPhysics(const Vector3& vel, const Vector3& angVel);
 	void StartReplay();
 	void SeekTo(float targetTime);
-	void UpdateOrInsertKeyframe(float time, const Vector3& vel, const Vector3& angVel);
 	void SaveToJSON(const std::string& filename);
 	void LoadFromJSON(const std::string& filename);
 	std::string GetFilePath(int slot) const;
+	int GetCurrentStage() const { return currentStage; }
 
 private:
 	Camera* camera = nullptr;
@@ -54,7 +54,7 @@ private:
 	bool isSmoothMode = true;   // スプライン補間フラグ
 	bool showDebugTrace = true; // デバッグライン表示フラグ
 
-	int currentSlot = 1;
+	int currentStage = 1;
 	float playbackSpeed = 1.0f;
 
 	Vector3 activeVelocity = {0, 0, 0};

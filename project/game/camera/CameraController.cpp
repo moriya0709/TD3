@@ -57,7 +57,7 @@ void CameraController::Initialize(Camera* targetCamera) {
 	this->camera = targetCamera;
 	timer = 0.0f;
 	isReplaying = isPaused = isRecording = false;
-	currentSlot = 1;
+	currentStage = 1;
 	playbackSpeed = 1.0f;
 
 	if (camera) {
@@ -65,7 +65,7 @@ void CameraController::Initialize(Camera* targetCamera) {
 		initialTransform.translate = camera->GetTranslate();
 	}
 	cameraTransform = initialTransform;
-	LoadFromJSON(GetFilePath(currentSlot));
+	LoadFromJSON(GetFilePath(currentStage));
 }
 
 std::string CameraController::GetFilePath(int slot) const { return "Resource/Data/replay_" + std::to_string(slot) + ".json"; }
@@ -84,10 +84,10 @@ void CameraController::Update() {
 	else if (input->TriggerKey(DIK_5))
 		newSlot = 5;
 
-	if (newSlot != -1 && newSlot != currentSlot) {
-		currentSlot = newSlot;
+	if (newSlot != -1 && newSlot != currentStage) {
+		currentStage = newSlot;
 		isReplaying = isRecording = false;
-		LoadFromJSON(GetFilePath(currentSlot));
+		LoadFromJSON(GetFilePath(currentStage));
 		if (!stateHistory.empty())
 			StartReplay();
 	}
@@ -118,7 +118,7 @@ void CameraController::Update() {
 		if (timer >= kMaxDuration) {
 			timer = kMaxDuration;
 			isRecording = false;
-			SaveToJSON(GetFilePath(currentSlot));
+			SaveToJSON(GetFilePath(currentStage));
 		}
 
 		currentVel = uiVelocity;
@@ -144,12 +144,12 @@ void CameraController::DrawImGui() {
 
 	ImGui::Separator();
 
-	ImGui::Text("Slot: %d", currentSlot);
+	ImGui::Text("StageData: %d", currentStage);
 	for (int i = 1; i <= 5; ++i) {
-		if (ImGui::RadioButton(std::to_string(i).c_str(), currentSlot == i)) {
-			currentSlot = i;
+		if (ImGui::RadioButton(std::to_string(i).c_str(), currentStage == i)) {
+			currentStage = i;
 			isReplaying = isRecording = false;
-			LoadFromJSON(GetFilePath(currentSlot));
+			LoadFromJSON(GetFilePath(currentStage));
 			if (!stateHistory.empty())
 				StartReplay();
 		}
@@ -207,7 +207,7 @@ void CameraController::DrawImGui() {
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
 			if (ImGui::Button("■ Stop & Save", ImVec2(240, 30))) {
 				isRecording = false;
-				SaveToJSON(GetFilePath(currentSlot));
+				SaveToJSON(GetFilePath(currentStage));
 			}
 			ImGui::PopStyleColor();
 		}
