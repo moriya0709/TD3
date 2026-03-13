@@ -10,17 +10,20 @@ struct CameraState {
 	Vector3 angularVelocity;
 };
 
-
-static void HelpMarker(const char* desc);
 class CameraController {
 public:
-	Vector3 CameraLerp(const Vector3& start, const Vector3& end, float t);
 	void Initialize(Camera* camera);
 	void Update();
 	void DrawImGui();
+	void DrawDebugTrace(); // ★ 追加：軌跡を描画する
+
 	float GetCurrentReplayTime() const { return timer; }
 
 private:
+	// ★ 補間用ヘルパー
+	Vector3 CameraLerp(const Vector3& start, const Vector3& end, float t);
+	Vector3 CatmullRom(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
+
 	void RecordStateIfChanged(const Vector3& vel, const Vector3& angVel);
 	void ApplyReplayState(Vector3& vel, Vector3& angVel);
 	void ApplyPhysics(const Vector3& vel, const Vector3& angVel);
@@ -47,14 +50,12 @@ private:
 	float timer = 0.0f;
 	bool isReplaying = false;
 	bool isPaused = false;
-	bool isRecording = false; // ★ 録画中フラグ
-	bool isSmoothMode = true; // 滑らかに補間するかどうか
+	bool isRecording = false;
+	bool isSmoothMode = true;   // スプライン補間フラグ
+	bool showDebugTrace = true; // デバッグライン表示フラグ
 
-	size_t replayIndex = 0;
 	int currentSlot = 1;
 	float playbackSpeed = 1.0f;
-
-
 
 	Vector3 activeVelocity = {0, 0, 0};
 	Vector3 activeAngularVelocity = {0, 0, 0};
