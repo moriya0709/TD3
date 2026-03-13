@@ -21,7 +21,7 @@ void GamePlayScene::Initialize()
     player_->Initialize(camera.get());
 
     enemy_ = std::make_unique<EnemyManager>();
-    enemy_->Initialize("Resource/Data/EnemyaPop.json", player_.get(), camera.get());
+    enemy_->Initialize(player_.get(), camera.get(), CameraController_.get());
 
     // Emitパーティクル発生
     particleEmitter = std::make_unique<ParticleEmitter>();

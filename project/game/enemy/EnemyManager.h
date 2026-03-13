@@ -8,6 +8,9 @@
 
 #include "Enemy.h"
 
+class Player;
+class CameraController;
+
 // 敵の出現情報を保持する構造体
 struct EnemyPopData {
     float popTime; // 出現時間（または距離）
@@ -27,7 +30,7 @@ public:
     /// </summary>
     /// <param name="filePath">読み込むぁいる</param>
     /// <param name="player">プレイヤーのポインタ</param>
-    void Initialize(const std::string& filePath, Player* player, Camera* camera);
+    void Initialize(Player* player, Camera* camera, CameraController* cameraController);
 
     /// <summary>
     /// 更新
@@ -71,6 +74,12 @@ private:
         return { { "x", v.x }, { "y", v.y }, { "z", v.z } };
     }
 
+    // ステージ番号からJSONのファイルパスを生成する関数
+    std::string GetJsonPath(int stage) const
+    {
+        return "Resource/Data/enemySpawnStage" + std::to_string(stage) + ".json";
+    }
+
 private:
     // 読み込んだデータをストックしておくリスト
     std::vector<EnemyPopData> popDatas_;
@@ -79,8 +88,10 @@ private:
     float currentTimer_ = 0.0f; // ゲーム開始からの経過時間（または進行距離）
     float precurrenTimer = 0.0f;
     std::list<std::shared_ptr<Enemy>> enemies_; // 生きている敵のリスト
+
     Player* player_ = nullptr; // ターゲット用のプレイヤーポインタ
     Camera* camera_ = nullptr; // カメラポインタ
+    CameraController* cameraContrroller_ = nullptr;
 
     // 書き込みのデータ
     std::string jsonFilePath_; // 読み込んでいるJSONのパス
@@ -92,4 +103,7 @@ private:
     // IMGUI用の状態変数
     bool isEditing_ = false; // 編集モードかどうか
     int selectedEnemyIndex_ = -1; // IMGUIで選択中の敵のインデックス
+
+    int currentLoadedStage_ = -1; // 現在読み込まれているステージ番号
+    int targetEditStage_ = 0; // ImGuiで編集・読み込みたいステージ番号
 };
