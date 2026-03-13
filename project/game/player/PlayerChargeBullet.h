@@ -23,6 +23,7 @@ public:
 	bool IsActive() override { return isActive_; }
 	void SetActive(bool active) override { isActive_ = active; }
 	int GetPenetration() override { return 0; }
+	void SetPenetration(int penetration) override { penetrationCount_ = penetration; }
 	Vector3 GetPosition() const override { return transform_.translate; }
 	float GetHitSize() const override { return 0.5f; } // 例: ヒットサイズ0.5
 
@@ -40,4 +41,5 @@ private:
 	bool isActive_ = true;             // 弾が有効かどうか
 	std::weak_ptr<Enemy> targetEnemy_; // ホーミング対象の敵
 	float bulletSpeed_;                // 弾の速さ
+	int penetrationCount_ = 5;         // 貫通数
 };

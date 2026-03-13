@@ -23,6 +23,7 @@ public:
 	virtual bool IsActive();
 	virtual void SetActive(bool active) {};
 	virtual int GetPenetration();
+	virtual void SetPenetration(int penetration) {};
 	virtual Vector3 GetPosition() const { return Vector3(); };
 	virtual float GetHitSize() const { return 0.0f; };
 

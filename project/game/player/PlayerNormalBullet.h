@@ -24,6 +24,7 @@ public:
 	bool IsActive() override { return isActive_; }
 	void SetActive(bool active) override { isActive_ = active; }
 	int GetPenetration() override { return 0; }
+	void SetPenetration(int penetration) override { }
 	Vector3 GetPosition() const override { return transform_.translate; }
 	float GetHitSize() const override { return 0.5f; } // 例: ヒットサイズ0.5
 
