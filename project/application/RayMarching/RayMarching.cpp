@@ -1,22 +1,36 @@
 #include "RayMarching.h"
 #include "DirectXCommon.h"
+#include "SrvManager.h"
 #include "Camera.h"
 
 std::unique_ptr <RayMarching> RayMarching::instance = nullptr;
 
-void RayMarching::Initialize(Camera* camera) {
+void RayMarching::Initialize(SrvManager* srvManager) {
 	dxCommon_ = DirectXCommon::GetInstance();
+	srvManager_ = srvManager;
+
+	// デスクリプタヒープの生成
+	srvDescriptorHeap = dxCommon_->GetSrvHeap();
 
 	// ルートシグネイチャ
 	CreateRootSignature();
 	// グラフィックスパイプライン
 	CreateGraphicsPipeline();
 
+	// コンピュートルートシグネイチャの生成
+	CreateComputeRootSignature();
+	// コンピュートパイプラインの生成
+	CreateComputePipeline();
+
+	Create3DTextureResource();
+	CreateUAVDescriptor();
+	CreateSRVDescriptor();
+
 	// パラメーター
 	cloudParamResource = dxCommon_->CreateBufferResource(sizeof(CloudParam));
 	cloudParamResource->Map(0, nullptr, reinterpret_cast<void**>(&cloudParam));
-	cloudParam->invViewProj = Inverse(camera->GetViewProjectionMatrix());
-	cloudParam->cameraPos = camera->GetTranslate();
+	cloudParam->invViewProj;
+	cloudParam->cameraPos;
 	cloudParam->time = 0.0f; // 時間
 	cloudParam->sunDir = { 0.3f, 0.8f, 0.2f }; // 太陽方向
 	cloudParam->density = 0.5f; 	// 密度
@@ -24,10 +38,45 @@ void RayMarching::Initialize(Camera* camera) {
 	cloudParam->cloudTop = 300.0f; // 雲の上端
 	cloudParam->isRialLight = false; // リアル調ライティング
 	cloudParam->isAnimeLight = true; // アニメ調ライティング
+	cloudParam->isMoveX = false; // 時間経過による移動(x)
+	cloudParam->isMoveY = false; // 時間経過による移動(y)
+	cloudParam->isMoveZ = true; // 時間経過による移動(Z)
 
 }
 
-void RayMarching::Update(Camera* camera) {
+void RayMarching::Draw() {
+	auto commandList = dxCommon_->GetCommandList();
+	auto device = dxCommon_->GetDevice();
+
+	commandList->SetPipelineState(graphicsPipelineState.Get());
+	commandList->SetGraphicsRootSignature(rootSignature.Get());
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// ヒープのセット
+	ID3D12DescriptorHeap* ppHeaps[] = { srvDescriptorHeap.Get() };
+	commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+
+	// CBVのセット
+	commandList->SetGraphicsRootConstantBufferView(0, cloudParamResource->GetGPUVirtualAddress());
+
+	// --------------------------------------------------------
+	// ★ ここを修正！必ず「srvIndex_」を使う！
+	// --------------------------------------------------------
+	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+
+	// 固定の「10」ではなく、CreateSRVDescriptorで取得した srvIndex_ を足す！
+	srvGpuHandle.ptr += (descriptorSize * srvIndex_);
+
+	// RootParameterの1番にセット
+	commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
+	// --------------------------------------------------------
+
+	// 描画
+	commandList->DrawInstanced(3, 1, 0, 0);
+}
+
+void RayMarching::CameraUpdate(Camera* camera) {
 	// カメラ
 	Matrix4x4 camWorldMat = camera->GetWorldMatrix();
 
@@ -50,20 +99,64 @@ void RayMarching::Update(Camera* camera) {
 
 
 	// 時間
-	cloudParam->time += 1.0f / 10.0f;
+	cloudParam->time += 1.0f / 1.0f;
 
 }
 
-void RayMarching::Draw() {
-	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());
-	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
-	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+void RayMarching::ComputeCloud() {
+	auto commandList = dxCommon_->GetCommandList();
+	auto device = dxCommon_->GetDevice();
 
-	// パラメーター
-	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, cloudParamResource->GetGPUVirtualAddress());
+	// --------------------------------------------------------
+	// ① バリア: SRV(読み込み) から UAV(書き込み) へ状態遷移
+	// --------------------------------------------------------
+	D3D12_RESOURCE_BARRIER barrierToUAV{};
+	barrierToUAV.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrierToUAV.Transition.pResource = cloud3DTexture.Get();
+	barrierToUAV.Transition.StateBefore = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	barrierToUAV.Transition.StateAfter = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	barrierToUAV.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	commandList->ResourceBarrier(1, &barrierToUAV);
 
-	// 全画面トライアングルを描画
-	dxCommon_->GetCommandList()->DrawInstanced(3, 1, 0, 0);
+	// --------------------------------------------------------
+	// ② コンピュートシェーダーのセット
+	// --------------------------------------------------------
+	commandList->SetPipelineState(computePipelineState.Get());
+	commandList->SetComputeRootSignature(computeRootSignature.Get());
+
+	// ヒープをセット（Drawと同じSRV/UAVヒープを使います）
+	ID3D12DescriptorHeap* ppHeaps[] = { srvDescriptorHeap.Get() };
+	commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+
+	// ★ UAVのGPUハンドルを計算してセット（Drawの時のSRVと同じやり方です！）
+	UINT descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	D3D12_GPU_DESCRIPTOR_HANDLE uavGpuHandle = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	uavGpuHandle.ptr += (descriptorSize * uavIndex_); // uavIndex_ を使う
+
+	// ComputeRootSignatureの0番にUAVをセット
+	commandList->SetComputeRootDescriptorTable(0, uavGpuHandle);
+
+	// --------------------------------------------------------
+	// ③ 実行（Dispatch）
+	// ★ スレッドグループ数: 128 / 8 = 16
+	// (※HLSL側が [numthreads(8, 8, 8)] になっている前提です)
+	// --------------------------------------------------------
+	commandList->Dispatch(16, 16, 16);
+
+	// --------------------------------------------------------
+	// ④ バリア: UAV(書き込み) から SRV(読み込み) へ戻す
+	// --------------------------------------------------------
+	D3D12_RESOURCE_BARRIER barrierToSRV{};
+	barrierToSRV.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrierToSRV.Transition.pResource = cloud3DTexture.Get();
+	barrierToSRV.Transition.StateBefore = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+	barrierToSRV.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+	barrierToSRV.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	commandList->ResourceBarrier(1, &barrierToSRV);
+}
+
+void RayMarching::SetCamera(Camera* camera) {
+	cloudParam->cameraPos = camera->GetTranslate();
 }
 
 RayMarching* RayMarching::GetInstance() {
@@ -78,7 +171,7 @@ void RayMarching::CreateRootSignature() {
 	// DescriptorRange作成
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0; // 0から始まる
-	descriptorRange[0].NumDescriptors = 128; // 数は1つ
+	descriptorRange[0].NumDescriptors = 1; // 数は1つ
 	descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // SRVを使う
 	descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND; // offsetを自動計算
 
@@ -87,10 +180,18 @@ void RayMarching::CreateRootSignature() {
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	// RootParameter作成
-	D3D12_ROOT_PARAMETER rootParameters[1] = {};
+	D3D12_ROOT_PARAMETER rootParameters[2] = {};
+	// [0番目] パラメーター: CBV (今まで通り)
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
 	rootParameters[0].Descriptor.ShaderRegister = 0;
+
+	// [1番目] パラメーター: SRV (新しく追加！)
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[1].DescriptorTable.pDescriptorRanges = descriptorRange;
+	rootParameters[1].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
+
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーター配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
@@ -208,3 +309,161 @@ void RayMarching::CreateGraphicsPipeline() {
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 }
+
+void RayMarching::CreateComputeRootSignature() {
+	// 1. UAV（書き込み用テクスチャ）のためのDescriptorRange作成
+	D3D12_DESCRIPTOR_RANGE uavRange[1] = {};
+	uavRange[0].BaseShaderRegister = 0; // register(u0) に対応
+	uavRange[0].NumDescriptors = 1;     // 使うテクスチャは1つ
+	uavRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV; // ここが重要！SRVやCBVではなくUAV
+	uavRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	// 2. RootParameter作成
+	D3D12_ROOT_PARAMETER rootParameters[1] = {};
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // ディスクリプタテーブルを使用
+	rootParameters[0].DescriptorTable.NumDescriptorRanges = _countof(uavRange);
+	rootParameters[0].DescriptorTable.pDescriptorRanges = uavRange;
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // CSでは必ずALLにする
+
+	// 3. RootSignatureの設定
+	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
+	descriptionRootSignature.pParameters = rootParameters;
+	descriptionRootSignature.NumParameters = _countof(rootParameters);
+
+	// サンプラーはCS内での書き込み処理自体には不要なので設定しません
+	descriptionRootSignature.pStaticSamplers = nullptr;
+	descriptionRootSignature.NumStaticSamplers = 0;
+
+	// CS用のRootSignatureにはIA（Input Assembler）などの許可フラグは不要
+	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+
+	// 4. シリアライズしてバイナリにする
+	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
+	HRESULT hr = D3D12SerializeRootSignature(&descriptionRootSignature,
+		D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+
+	if (FAILED(hr)) {
+		if (errorBlob) {
+			Log(reinterpret_cast<char*>(errorBlob->GetBufferPointer()));
+		}
+		assert(false);
+	}
+
+	// 5. バイナリを元に生成（メンバ変数 computeRootSignature に保存すると仮定）
+	hr = dxCommon_->GetDevice()->CreateRootSignature(0,
+		signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
+		IID_PPV_ARGS(&computeRootSignature));
+	assert(SUCCEEDED(hr));
+}
+
+void RayMarching::CreateComputePipeline() {
+	// 1. Compute Shaderのコンパイル（ターゲットは "cs_6_0" などになります）
+	computeShaderBlob = dxCommon_->CompileShader(L"Resource/shaders/RayMarching.CS.hlsl", L"cs_6_0");
+	assert(computeShaderBlob != nullptr);
+
+	// 2. Compute PSO用のDesc構造体を準備
+	D3D12_COMPUTE_PIPELINE_STATE_DESC computePipelineStateDesc{};
+
+	// 3. RootSignatureのセット
+	// ※注意: Compute ShaderでUAV（書き込み用テクスチャ）などを使うための
+	// Compute専用のRootSignatureを別途作成してセットするのが一般的です。
+	computePipelineStateDesc.pRootSignature = computeRootSignature.Get();
+
+	// 4. コンパイルしたCSをセット
+	computePipelineStateDesc.CS = {
+		computeShaderBlob->GetBufferPointer(),
+		computeShaderBlob->GetBufferSize()
+	};
+
+	// 5. Compute Pipeline Stateの生成
+	// 呼び出すメソッドが CreateGraphicsPipelineState ではなく CreateComputePipelineState になります！
+	HRESULT hr = dxCommon_->GetDevice()->CreateComputePipelineState(
+		&computePipelineStateDesc,
+		IID_PPV_ARGS(&computePipelineState));
+	assert(SUCCEEDED(hr));
+}
+
+void RayMarching::Create3DTextureResource() {
+	auto device = dxCommon_->GetDevice();
+
+	// 1. ヒープ設定（VRAM上に確保）
+	D3D12_HEAP_PROPERTIES heapProps{};
+	heapProps.Type = D3D12_HEAP_TYPE_DEFAULT; // CPUからはアクセスせず、GPUだけで高速に読み書きする
+
+	// 2. リソースの設定（3Dテクスチャ）
+	D3D12_RESOURCE_DESC resDesc{};
+	resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D; // ここが3Dテクスチャの証！
+	resDesc.Width = 128;              // 幅
+	resDesc.Height = 128;             // 高さ
+	resDesc.DepthOrArraySize = 128;   // 奥行き
+	resDesc.MipLevels = 1;
+	// フォーマット：雲のデータ(float4)を入れるので、精度に余裕のある16bit Floatか、容量重視の8bit UNORMを選びます
+	resDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	resDesc.SampleDesc.Count = 1;
+	resDesc.SampleDesc.Quality = 0;
+	resDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+
+	// ★重要: Compute Shaderから書き込むためのフラグ
+	resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
+	// 3. リソースの生成
+	HRESULT hr = device->CreateCommittedResource(
+		&heapProps,
+		D3D12_HEAP_FLAG_NONE,
+		&resDesc,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+		nullptr,
+		IID_PPV_ARGS(&cloud3DTexture)
+	);
+	assert(SUCCEEDED(hr));
+}
+
+void RayMarching::CreateUAVDescriptor() {
+	auto device = dxCommon_->GetDevice();
+
+	// 1. マネージャーからインデックスをもらう
+	uavIndex_ = srvManager_->Allocate(1);
+
+	// 2. マネージャーから直接 CPUハンドル をもらう！
+	D3D12_CPU_DESCRIPTOR_HANDLE uavHandle = srvManager_->GetCPUDescriptorHandle(uavIndex_);
+	
+	// UAVの設定
+	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+	uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
+	uavDesc.Texture3D.MipSlice = 0;
+	uavDesc.Texture3D.FirstWSlice = 0;
+	uavDesc.Texture3D.WSize = 128; // 全ての深度(W)を指定
+
+	// ★ ここで先ほど計算した正しいアドレス(uavHandle)を渡す！
+	device->CreateUnorderedAccessView(
+		cloud3DTexture.Get(),
+		nullptr,
+		&uavDesc,
+		uavHandle // 空っぽ(0x0)じゃなくなりました！
+	);
+}
+
+void RayMarching::CreateSRVDescriptor() {
+	auto device = dxCommon_->GetDevice();
+
+	// 1. マネージャーからインデックスをもらう
+	srvIndex_ = srvManager_->Allocate(1);
+
+	// 2. マネージャーから直接 CPUハンドル をもらう！（手計算しない）
+	// ※関数名は GetCPUDescriptorHandle や GetCPUHandle など、環境に合わせてください
+	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = srvManager_->GetCPUDescriptorHandle(srvIndex_);
+
+	// ⑤ SRVの作成（これ以降は元のまま）
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Texture3D.MipLevels = 1;
+	srvDesc.Texture3D.MostDetailedMip = 0;
+
+	// さっき計算した srvHandleに書き込む！
+	device->CreateShaderResourceView(cloud3DTexture.Get(), &srvDesc, srvHandle);
+}
+

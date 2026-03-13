@@ -8,6 +8,7 @@
 #include "Calc.h"
 
 class DirectXCommon;
+class SrvManager;
 class Camera;
 
 struct CloudParam {
@@ -24,20 +25,28 @@ struct CloudParam {
 
 	int isRialLight;
 	int isAnimeLight;
-	int pad[2];
+	int isMoveX;
+	int isMoveY;
+
+	int isMoveZ;
+	int pad[3];
 
 };
 
 class RayMarching {
 public:
 	// 初期化
-	void Initialize(Camera* camera);
-	// 更新
-	void Update(Camera* camera);
+	void Initialize(SrvManager* srvManager);
 	// 描画
 	void Draw();
 
+	// カメラ更新
+	void CameraUpdate(Camera* camera);
+	// コンピュートシェーダーを実行
+	void ComputeCloud();
+
 	// パラメーター
+	void SetCamera(Camera* camera);
 	void SetInvViewProj(Matrix4x4 invViewProj) { cloudParam->invViewProj = invViewProj; }
 	void SetTime(float time) { cloudParam->time = time; }
 	void SetSunDir(Vector3 sunDir) { cloudParam->sunDir = sunDir; }
@@ -46,36 +55,71 @@ public:
 	void SetCloudTop(float cloudTop) {cloudParam->cloudTop = cloudTop;}
 	void SetRialLight(bool isRialLight){ cloudParam->isRialLight = isRialLight; }
 	void SetAnimeLight(bool isAnimeLight){ cloudParam->isAnimeLight = isAnimeLight; }
+	void SetMoveX(bool isMoveX){ cloudParam->isMoveX = isMoveX; }
+	void SetMoveY(bool isMoveY){ cloudParam->isMoveY = isMoveY; }
+	void SetMoveZ(bool isMoveZ){ cloudParam->isMoveZ = isMoveZ; }
 
 	// シングルトンインスタンスの取得
 	static RayMarching* GetInstance();
 
 private:
+	// パラメーター
 	Microsoft::WRL::ComPtr<ID3D12Resource> cloudParamResource;
 	CloudParam* cloudParam;
+
+	// 3Dテクスチャ
+	Microsoft::WRL::ComPtr<ID3D12Resource> cloud3DTexture;
 
 	// シングルトンインスタンス
 	static std::unique_ptr <RayMarching> instance;
 
 	// ルートシグネイチャ
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12RootSignature> computeRootSignature = nullptr;
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	D3D12_INPUT_ELEMENT_DESC inputElementDescs[4] = {};
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = nullptr;
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = nullptr;
+	Microsoft::WRL::ComPtr<IDxcBlob> computeShaderBlob = nullptr;
 	D3D12_BLEND_DESC blendDesc{};
 	D3D12_RASTERIZER_DESC rasterizerDesc{};
 
 	// グラフィックスパイプライン
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> computePipelineState = nullptr;
+
+	// UAV
+	D3D12_CPU_DESCRIPTOR_HANDLE uavHandle;
+	//SRV
+	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle;
+
+	// SRV用デスクリプタヒープ
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap;
+
+	// index
+	uint32_t srvIndex_;
+	uint32_t uavIndex_;
 
 	// DirectXCommonポインタ
 	DirectXCommon* dxCommon_ = nullptr;
+	// SRVマネージャーポインタ
+	SrvManager* srvManager_ = nullptr;
 
 	// ルートシグネイチャの作成
 	void CreateRootSignature();
 	// グラフィックスパイプラインの生成
 	void CreateGraphicsPipeline();
+	// コンピュートルートシグネイチャの生成
+	void CreateComputeRootSignature();
+	// コンピュートパイプラインの生成
+	void CreateComputePipeline();
+	
+	// 3Dテクスチャリソースの生成
+	void Create3DTextureResource();
+	// UAVの生成
+	void CreateUAVDescriptor();
+	// SRVの生成
+	void CreateSRVDescriptor();
 
 };
 

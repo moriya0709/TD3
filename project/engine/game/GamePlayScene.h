@@ -17,6 +17,8 @@
 #include "../../game/enemy/EnemyManager.h"
 #include "../../game/player/Player.h"
 
+#include "RayMarching.h"
+
 class SpriteCommon;
 class ObjectCommon;
 
@@ -106,6 +108,15 @@ private:
     float focusRange = 5.0f;
     float bokehRadius = 5.0f;
 
+    // レイマーチング
+    //float rayMarchingTime = 0.0f; ;
+    Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
+    float rayMarchingDensity = 2.0f;
+    float rayMarchingCloudBottom = 30.0f;
+    float rayMarchingCloudTop = -230.0f;
+    bool rayMarchingIsRialLight = false;
+    bool rayMarchingIsAnimeLight = true;
+
     // カメラ
     std::unique_ptr<Camera> camera = nullptr;
     // スプライト
@@ -119,4 +130,5 @@ private:
     // リスト
     std::unique_ptr<EnemyManager> enemy_ = nullptr;
     std::unique_ptr<CameraController> CameraController_ = nullptr;
+
 };

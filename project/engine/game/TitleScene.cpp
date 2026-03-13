@@ -35,10 +35,6 @@ void TitleScene::Initialize() {
 	// 音声再生
 	SoundManager::GetInstance()->Play("bgm");
 
-	// レイマーチング
-	rayMarching = std::make_unique <RayMarching>();
-	rayMarching->Initialize(railCamera->camera.get());
-
 }
 
 void TitleScene::Update() {
@@ -142,21 +138,24 @@ void TitleScene::Update() {
 #pragma endregion
 
 #pragma region レイマーチング
+	RayMarching::GetInstance()->SetCamera(railCamera->camera.get());
 	// レイマーチング
-	rayMarching->Update(railCamera->camera.get());
+	RayMarching::GetInstance()->CameraUpdate(railCamera->camera.get());
 	//rayMarching->SetTime(rayMarchingTime);
-	rayMarching->SetSunDir(rayMarchingSunDir);
-	rayMarching->SetDensity(rayMarchingDensity);
-	rayMarching->SetCloudTop(rayMarchingCloudBottom);
-	rayMarching->SetCloudBottom(rayMarchingCloudTop);
-	rayMarching->SetRialLight(rayMarchingIsRialLight);
-	rayMarching->SetAnimeLight(rayMarchingIsAnimeLight);
+	RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
+	RayMarching::GetInstance()->SetDensity(rayMarchingDensity);
+	RayMarching::GetInstance()->SetCloudTop(rayMarchingCloudBottom);
+	RayMarching::GetInstance()->SetCloudBottom(rayMarchingCloudTop);
+	RayMarching::GetInstance()->SetRialLight(rayMarchingIsRialLight);
+	RayMarching::GetInstance()->SetAnimeLight(rayMarchingIsAnimeLight);
 
 #pragma endregion
 
 #ifdef USE_IMGUI
 	// ImGui
-
+	// フレームレートの取得と表示
+	float fps = ImGui::GetIO().Framerate;
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
 
 #pragma region ライティング
 	// *ライティング* //
@@ -281,7 +280,7 @@ void TitleScene::Update() {
 	// レイマーチング
 	//ImGui::DragFloat("rayMarchingTime", &rayMarchingTime, 0.1f,0.0f,10.0f);
 	ImGui::DragFloat3("rayMarchingSunDir", &rayMarchingSunDir.x, 0.1f,-50.0f,50.0f);
-	ImGui::DragFloat("rayMarchingDensity", &rayMarchingDensity, 0.01f,-5.0f,1.0f);
+	ImGui::DragFloat("rayMarchingDensity", &rayMarchingDensity, 0.01f,-5.0f,10.0f);
 	ImGui::DragFloat("rayMarchingCloudBottom", &rayMarchingCloudBottom, 10.0f,-5000.0f,5000.0f);
 	ImGui::DragFloat("rayMarchingCloudTop", &rayMarchingCloudTop, 10.0f, -5000.0f, 5000.0f);
 	ImGui::Checkbox("rayMarchingIsRialLight", &rayMarchingIsRialLight);
@@ -323,8 +322,6 @@ void TitleScene::Draw3D() {
 		object[i]->Draw();
 	}
 
-	// レイマーチング
-	rayMarching->Draw();
 }
 
 void TitleScene::Finalize() {

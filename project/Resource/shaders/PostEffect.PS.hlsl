@@ -163,7 +163,6 @@ float4 main(PSInput input) : SV_TARGET
                 sampleUV = saturate(sampleUV);
 
                 float4 sampleColor = gCurrentTexture.Sample(gSampler, sampleUV);
-    // ----------------------------
 
                 float weight = dot(sampleColor.rgb, float3(0.299, 0.587, 0.114));
                 weight = pow(weight, 2.0) + 0.1;

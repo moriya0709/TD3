@@ -1,5 +1,9 @@
 #include "rayMarching.hlsli"
 
+// 新しく追加する定義
+Texture3D<float4> CloudNoiseTex : register(t0); // 3Dノイズテクスチャ
+SamplerState LinearRepeatSampler : register(s0); // リピート（繰り返し）設定のサンプラー
+
 struct PSInput
 {
     float4 pos : SV_POSITION;
@@ -22,7 +26,11 @@ cbuffer CloudParam : register(b0)
     
     int isRialLight;
     int isAnimeLight;
-    int pad[2];
+    int isMoveX;
+    int isMoveY;
+    
+    int isMoveZ;
+    int pad[3];
 
     
 }
@@ -68,60 +76,107 @@ float fbm(float3 p)
     return f;
 }
 
+// ヘルパー関数をファイル上部に追加
+float Remap(float value, float oldMin, float oldMax, float newMin, float newMax)
+{
+    return newMin + saturate((value - oldMin) / (oldMax - oldMin)) * (newMax - newMin);
+}
+
 float CloudDensity(float3 p)
 {
     float height = (p.y - cloudBottom) / (cloudTop - cloudBottom);
+    if (height < 0.0 || height > 1.0)
+        return 0.0;
 
-    if (height < 0 || height > 1)
-        return 0;
+    // ★ ベース・ディテール用UVW
+    float3 uvwBase = p * 0.0008;
+    if (isMoveX)
+    uvwBase.x += time * 0.008;
+    if (isMoveY)
+    uvwBase.y += time * 0.008;
+    if (isMoveZ)
+    uvwBase.z += time * 0.008;
 
-    float3 uv = p * 0.001;
-    uv.xz += time * 0.01;
-    
-    // 低周波ノイズを使って、雲を「塊」にする
-    float coverage = fbm(uv * 0.5); // baseよりさらに引き伸ばしたノイズ
-    coverage = smoothstep(0.4, 0.5, coverage + density); // 0.4以下の場所は完全に消える
+    // ★ Coverage用UVW（より広域・ゆっくり動く）
+    float3 uvwCov = p * 0.00018;
+    if (isMoveX)
+    uvwCov.x += time * 0.003;
+    if (isMoveY)
+    uvwCov.y += time * 0.003;
+    if (isMoveZ)
+    uvwCov.z += time * 0.003;
 
-    float base = fbm(uv);
-    float detail = fbm(uv * 4.0);
+    // ★ この2サンプルだけで fbm×3 + worley 全部を代替
+    float4 n = CloudNoiseTex.SampleLevel(LinearRepeatSampler, uvwBase, 0);
+    float cov = CloudNoiseTex.SampleLevel(LinearRepeatSampler, uvwCov, 0).b;
 
-    // baseからdetailを「引く」ことでエッジをギザギザにする
+    float base = n.r;
+    float detail = n.g;
+
+    // 元のロジックをほぼそのまま維持
     float localDensity = base - (height * 0.8) - 0.1 + (density * 0.5);
-    localDensity += detail * 0.3;
+    localDensity -= detail * 0.3; // detailは足すより引く方がギザギザになる
 
-   // マスクを掛けて、隙間を確定させる
-    localDensity *= coverage;
+    float coverageMask = smoothstep(0.4, 0.5, cov + density * 0.3);
+    localDensity *= coverageMask;
+    localDensity *= smoothstep(0.0, 0.15, height);
+    localDensity *= smoothstep(1.0, 0.7, height);
 
-    // 高度による制限
-    localDensity *= smoothstep(0, 0.15, height);
-    localDensity *= smoothstep(1, 0.7, height);
+   // 高さによる基本形状（下は平ら、上は丸く減衰）
+    float heightGradient = smoothstep(0.0, 0.15, height) * smoothstep(1.0, 0.7, height);
+    float baseCloud = base * heightGradient * coverageMask;
 
-    // 強めにしきい値を設定して、空間をパキッと分ける
-    return saturate((localDensity - 0.1) * 2.0);
+    // ★ Remapを使って、雲の「外側（密度が低い部分）」だけをdetailノイズで浸食する
+    // detailノイズの影響力を高さによって変える（上部ほど激しく浸食してモコモコに）
+    float detailModifier = lerp(detail * 0.2, detail * 0.8, height);
+    float finalDensity = Remap(baseCloud, detailModifier, 1.0, 0.0, 1.0);
+
+    // 密度スケールの適用
+    finalDensity *= density;
+
+    return saturate(finalDensity);
 }
 
 float3 RialLightCloud(float3 p)
 {
     float3 lightDir = normalize(sunDir);
-
-    float shadow = 0;
-
+    float shadow = 0.0;
     float3 pos = p;
 
+    float lightStepLen = 100.0;
     for (int i = 0; i < 6; i++)
     {
-        pos += lightDir * 50;
-        shadow += CloudDensity(pos);
+        pos += lightDir * lightStepLen;
+        shadow += CloudDensity(pos) * lightStepLen * 0.04;
     }
 
-    shadow = exp(-shadow * 0.5);
+    // ① 多重散乱の近似 (光の減衰を複数のオクターブで計算)
+    // 濃い影（本来のshadow）に、薄い影（遠くまで届く散乱光）を足し合わせる
+    float3 transmission = 0.0;
+    transmission += exp(-shadow); // 単一散乱（強い影）
+    transmission += exp(-shadow * 0.25) * 0.7; // 2次散乱（少し奥まで届く）
+    transmission += exp(-shadow * 0.05) * 0.15; // 高次散乱（さらに奥まで届く）
 
-    float3 sunColor = float3(1.0, 0.95, 0.9);
+    // ② パウダーエフェクト（Beer-Powder）
+    // 雲の表面（密度が低い部分）で光が乱反射して白く輝く現象を近似
+    float powder = 1.0 - exp(-shadow * 2.0);
+    transmission *= powder;
 
-   // 環境光（アンビエント）を追加
-    float3 ambientColor = float3(0.3, 0.4, 0.5); // 青みがかった暗い色
+    // ③ Henyey-Greenstein 近似 (前方散乱＋後方散乱のデュアルHG)
+    float3 viewDir = normalize(p - cameraPos);
+    float cosTheta = dot(-viewDir, lightDir);
     
-    return sunColor * shadow + ambientColor * 0.5; // 少しだけ底上げする
+    // 太陽に近い縁が強く光る（前方散乱）と、太陽を背にしたときの柔らかい光（後方散乱）をブレンド
+    float g1 = 0.8;
+    float hg1 = (1.0 - g1 * g1) / pow(abs(1.0 + g1 * g1 - 2.0 * g1 * cosTheta), 1.5);
+    float g2 = -0.2; // 後方散乱
+    float hg2 = (1.0 - g2 * g2) / pow(abs(1.0 + g2 * g2 - 2.0 * g2 * cosTheta), 1.5);
+    float scatter = lerp(hg1, hg2, 0.5) * 0.25 * 3.14;
+
+    float3 sunColor = float3(1.0, 0.95, 0.85);
+    float3 ambientColor = float3(0.25, 0.35, 0.5);
+
+    return sunColor * transmission * scatter + ambientColor * (1.0 - transmission * 0.5);
 }
 
 float3 AnimeLightCloud(float3 p)
@@ -192,38 +247,48 @@ float4 main(VSOutput input) : SV_TARGET
     float effectiveEnd = min(tStart + maxCloudDist, tEnd);
     float effectiveDist = effectiveEnd - tStart;
 
-    float stepLen = effectiveDist / 64.0;
-    // 最初の位置を計算
+     // ★ 修正④: 適応ステップ長（近くは細かく、遠くは粗く）
+    float minStep = 80.0;
+    float maxStep = 400.0;
+
     float3 pos = cameraPos + rayDir * tStart;
-    // UV座標と時間を使ってランダムな値(0.0〜1.0)を作り、1ステップの範囲で開始位置をズラす
     float randomJitter = hash(float3(input.uv * 1000.0, time));
-    pos += rayDir * (stepLen * randomJitter);
-    
+    pos += rayDir * (minStep * randomJitter);
+
     float3 color = 0;
-    float transmittance = 1;
-    float3 light;
-    
-    for (int i = 0; i < 64; i++)
+    float transmittance = 1.0;
+    float t = tStart;
+
+    for (int i = 0; i < 96; i++)
     {
-        float density = CloudDensity(pos);
-        float opticalDepth = density * stepLen * 0.05; // 0.05を基本の濃さの係数とする
+        if (t >= effectiveEnd)
+            break;
+
+        float d = CloudDensity(pos);
+
+        // ★ 修正⑤: 空領域は大きくスキップ（コスト削減の要）
+        float stepLen = (d < 0.01) ? maxStep : minStep;
+        float opticalDepth = d * stepLen * 0.04;
 
         if (opticalDepth > 0.001)
         {
+            float3 light;
             if (isRialLight)
-             light = RialLightCloud(pos);
+                light = RialLightCloud(pos);
             if (isAnimeLight)
-             light = AnimeLightCloud(pos);
-            // 透過率と同じ係数(opticalDepth)を色にも掛ける！
+                light = AnimeLightCloud(pos);
+
             color += opticalDepth * light * transmittance;
             transmittance *= exp(-opticalDepth);
-    
-            if (transmittance < 0.01)
+
+            if (transmittance < 0.005)
                 break;
         }
+
         pos += rayDir * stepLen;
+        t += stepLen;
     }
-    
+
     float alpha = 1.0 - transmittance;
     return float4(color, alpha);
 }
