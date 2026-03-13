@@ -20,7 +20,7 @@ void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, con
 	// --- 2. ターゲット地点の計算（既存） ---
 	float diffX = reticlePosition.x - (WindowAPI::kClientWidth / 2.0f);
 	float diffY = (WindowAPI::kClientHeight / 2.0f) - reticlePosition.y;
-	float fovY = 0.785f;
+	float fovY = 0.45f;
 	float focalLength = (WindowAPI::kClientHeight / 2.0f) / std::tan(fovY / 2.0f);
 	Vector3 targetPosCS = {(diffX / focalLength) * renge, (diffY / focalLength) * renge, renge};
 	Matrix4x4 camWorldMat = MakeAffineMatrix({1.0f, 1.0f, 1.0f}, camera_->GetRotate(), camera_->GetTranslate());
