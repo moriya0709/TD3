@@ -219,6 +219,94 @@
                 },
                 "timeToReach": 3.0
             }
+        },
+        {
+            "popTime": 2.0,
+            "type": "HomingEnemy",
+            "hp": 150,
+            "position": {
+                "x": -5.0,
+                "y": 0.0,
+                "z": 60.0
+            },
+            "movePattern": [
+                {
+                    "target": {
+                        "x": 0.0,
+                        "y": -2.0,
+                        "z": 60.0
+                    },
+                    "timeToReach": 3.0
+                },
+                {
+                    "target": {
+                        "x": 3.0,
+                        "y": -4.0,
+                        "z": 60.0
+                    },
+                    "timeToReach": 3.0
+                },
+                {
+                    "target": {
+                        "x": 10.0,
+                        "y": 0.0,
+                        "z": 60.0
+                    },
+                    "timeToReach": 3.0
+                }
+            ],
+            "flee": {
+                "target": {
+                    "x": -100.0,
+                    "y": 0.0,
+                    "z": -100.0
+                },
+                "timeToReach": 3.0
+            }
+        },
+        {
+            "popTime": 2.0,
+            "type": "HomingEnemy",
+            "hp": 150,
+            "position": {
+                "x": -5.0,
+                "y": 0.0,
+                "z": 60.0
+            },
+            "movePattern": [
+                {
+                    "target": {
+                        "x": 0.0,
+                        "y": -2.0,
+                        "z": 60.0
+                    },
+                    "timeToReach": 3.0
+                },
+                {
+                    "target": {
+                        "x": 3.0,
+                        "y": -4.0,
+                        "z": 60.0
+                    },
+                    "timeToReach": 3.0
+                },
+                {
+                    "target": {
+                        "x": 10.0,
+                        "y": 0.0,
+                        "z": 60.0
+                    },
+                    "timeToReach": 3.0
+                }
+            ],
+            "flee": {
+                "target": {
+                    "x": 0.0,
+                    "y": 100.0,
+                    "z": -100.0
+                },
+                "timeToReach": 3.0
+            }
         }
     ]
 }
