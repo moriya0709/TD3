@@ -17,8 +17,8 @@
 class Enemy;
 class Player {
 public:
-	enum style {
-		Normal,
+	enum Style {
+		normal,
 		speed,
 		power,
 		sniper
@@ -35,7 +35,7 @@ public:
 		int chargeTime = 0;           // チャージ時間
 		int haste = 0;                // 攻撃頻度
 	};
-	void Initialize(Camera* camera);
+	void Initialize(Camera* camera ,Style style);
 	void Update(const std::list<std::shared_ptr<Enemy>>& enemies);
 	void Draw2D();
 	void Draw3D();
@@ -51,6 +51,7 @@ public:
 		damageTimer = 30; // ダメージ表示タイマーリセット
 	}
 	bool GetIsHit() const { return ishit; }
+	void SetStatas(const Statas& newStatas) { statas_ = newStatas; }
 
 	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets; }
 	int GetAttack() const { return statas_.attack; }

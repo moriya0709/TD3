@@ -19,7 +19,7 @@ Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
 	return result;
 }
 
-void Player::Initialize(Camera* camera) {
+void Player::Initialize(Camera* camera, Style style) {
 	camera_ = camera;
 	transform_.scale = {1.0f, 1.0f, 1.0f};
 	transform_.rotate = {0.0f, 0.0f, 0.0f};
@@ -47,6 +47,19 @@ void Player::Initialize(Camera* camera) {
 	playerObject_->Initialize(camera_);
 	playerObject_->SetModel("player.obj");
 	playerObject_->SetTranslate(transform_.translate);
+
+	switch (style) {
+	case Player::Normal:
+		break;
+	case Player::speed:
+		break;
+	case Player::power:
+		break;
+	case Player::sniper:
+		break;
+	default:
+		break;
+	}
 
 	// ステータス初期化
 	statas_.hp = 100;
