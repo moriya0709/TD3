@@ -37,20 +37,11 @@ void Input::Initialize(WindowAPI* windowAPI) {
 	result = keyboard->SetCooperativeLevel(
 		windowAPI_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
-
-	// DirectInput オブジェクト生成
-	HRESULT hr;
-	hr = DirectInput8Create(
-		GetModuleHandle(nullptr),
-		DIRECTINPUT_VERSION,
-		IID_IDirectInput8,
-		(void**)&directInput,
-		nullptr
-	);
+	
 	// マウスデバイス生成
-	hr = directInput->CreateDevice(GUID_SysMouse, &mouse, nullptr);
+	result = directInput->CreateDevice(GUID_SysMouse, &mouse, nullptr);
 	// データフォーマット設定
-	hr = mouse->SetDataFormat(&c_dfDIMouse);
+	result = mouse->SetDataFormat(&c_dfDIMouse);
 	// 取得開始
 	mouse->Acquire();
 
@@ -67,7 +58,7 @@ void Input::Initialize(WindowAPI* windowAPI) {
 				return DIENUM_CONTINUE;
 			}
 
-			newPad->SetDataFormat(&c_dfDIJoystick2);
+			newPad->SetDataFormat(&c_dfDIJoystick);
 			newPad->SetCooperativeLevel(self->windowAPI_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
 
 			// ★追加：軸の範囲を設定する
@@ -117,13 +108,16 @@ void Input::Update() {
 		mouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState);
 	}
 
-	// Update関数内のパッドループ
+	// Update関数内のパッドループを以下に丸ごと入れ替え
 	for (size_t i = 0; i < gamepads.size(); i++) {
-		// 常に最新の状態を問い合わせる
-		HRESULT hr = gamepads[i]->Acquire();
-		if (SUCCEEDED(hr)) {
-			gamepads[i]->Poll();
-			gamepads[i]->GetDeviceState(sizeof(DIJOYSTATE), &padStates[i]);
+		gamepads[i]->Poll();
+
+		// 現在の状態を取得
+		HRESULT hr = gamepads[i]->GetDeviceState(sizeof(DIJOYSTATE), &padStates[i]);
+
+		// もし取得に失敗（ウィンドウからフォーカスが外れた等）したら再取得を試みる
+		if (FAILED(hr)) {
+			gamepads[i]->Acquire();
 		}
 	}
 }
