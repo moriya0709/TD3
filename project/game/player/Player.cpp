@@ -1,4 +1,5 @@
 ﻿#include "Player.h"
+#include "../enemy/Enemy.h"
 #include "ObjectCommon.h"
 #include "PlayerChargeBullet.h"
 #include "PlayerNormalBullet.h"
@@ -8,7 +9,6 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
-#include"../enemy/Enemy.h"
 
 // ベクトルの回転用関数
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
@@ -101,11 +101,11 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	if (input->PushKey(DIK_D)) {
 		moveInput.x += 1.0f;
 	}
-	pad.x= (input->GetPadLeftAxisX(0));
-	if (pad.x != 0) {
+	movePad.x = (input->GetPadLeftAxisX(0));
+	if (movePad.x != 0) {
 		moveInput.x += float(input->GetPadLeftAxisX(0) / 32768.0); // ゲームパッドの入力を-1.0f～1.0fに正規化
 	}
-	pad.y = (input->GetPadLeftAxisY(0));
+	movePad.y = (input->GetPadLeftAxisY(0));
 
 	if (input->GetPadLeftAxisY(0) != 0) {
 		moveInput.y -= float(input->GetPadLeftAxisY(0) / 32768.0); // ゲームパッドの入力を-1.0f～1.0fに正規化
@@ -174,10 +174,16 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 			ishit = false;
 		}
 	}
-
-	Vector2 mouseMove = input->GetMouseScreen();
-	reticlePosition_.x = std::clamp(mouseMove.x, 0.0f, float(WindowAPI::kClientWidth));
-	reticlePosition_.y = std::clamp(mouseMove.y, 0.0f, float(WindowAPI::kClientHeight));
+	if (mouseMove.x == input->GetMouseScreen().x && mouseMove.y == input->GetMouseScreen().y) {
+		reticlePad.x = (input->GetPadRightAxisX(0)/32768.0f);
+		reticlePad.y = (input->GetPadRightAxisY(0) / 32768.0f);
+		reticlePosition_.x += reticlePad.x * reticleSpeed;
+		reticlePosition_.y -= reticlePad.y * reticleSpeed; // Y軸は上下逆なので減算
+	} else {
+		mouseMove = input->GetMouseScreen();
+		reticlePosition_.x = std::clamp(mouseMove.x, 0.0f, float(WindowAPI::kClientWidth));
+		reticlePosition_.y = std::clamp(mouseMove.y, 0.0f, float(WindowAPI::kClientHeight));
+	}
 	reticle_->SetPosition(reticlePosition_);
 	reticle_->Update();
 
@@ -194,6 +200,11 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	ImGui::DragInt("Attack", &statas_.attack, 0.1f);
 	ImGui::DragFloat("Speed", &statas_.speed, 0.01f);
 	ImGui::DragFloat("Homing Accuracy", &statas_.hommingAccuracy, 0.0001f, 0.0f, 1.0f, "%.4f");
+	ImGui::DragFloat("Reticle Speed", &reticleSpeed, 0.1f);
+	ImGui::DragFloat2("Move Pad", &movePad.x, 0.0f);
+
+	ImGui::DragFloat2("Reticle Pad", &reticlePad.x, 0.0f);
+
 	ImGui::End();
 #pragma endregion
 }
@@ -227,18 +238,18 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 		chargeTimer++;
 	}
 
-	if (input->IsMouseButtonPressed(0) || input->PushKey(DIK_SPACE)) {
+	if (input->IsMouseButtonPressed(0) || input->IsPadButtonPressed(0, 5)) {
 		if (isCharging) {
 			// チャージ攻撃
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge * 1.5f,enemies);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge * 1.5f, enemies);
 			newBullet->SetStatus(statas_.hommingAccuracy + 0.2f);
 			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
-			chargeTimer = 0; // チャージタイマーリセット
+			chargeTimer = 0;                         // チャージタイマーリセット
 			coolTime = statas_.haste * 2;            // チャージ攻撃後のクールタイムも長くする
 		} else {
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge,enemies);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge, enemies);
 			newBullet->SetStatus(statas_.hommingAccuracy);
 			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
 			coolTime = statas_.haste;
