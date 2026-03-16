@@ -32,23 +32,23 @@ void Game::Initialize() {
 	// 3Dモデルマネージャの初期化
 	ModelManager::GetInstance()->Initialize(dxCommon);
 	// Particleマネージャ
-	ParticleManager::GetInstance()->Initialize(dxCommon, srvManager.get(), "Resource", "plane.obj");
+	ParticleManager::GetInstance()->Initialize(dxCommon, srvManager.get(), "Resource/plane", "plane.obj");
 
 #pragma endregion
 
 #pragma region 最初のシーン
 
 	// パーティクルマネージャ初期化
-	ParticleManager::GetInstance()->CreateParticleGroup("group1", "Resource/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("group1", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("group2", "Resource/uvChecker.png");
 
 	// .objファイルからモデル読み込み
-	ModelManager::GetInstance()->LoadModel("plane.obj");
-	ModelManager::GetInstance()->LoadModel("axis.obj");
-	ModelManager::GetInstance()->LoadModel("emission.obj");
-	ModelManager::GetInstance()->LoadModel("player.obj");
-	ModelManager::GetInstance()->LoadModel("cube.obj"); // レールエディター
-	ModelManager::GetInstance()->LoadModel("rail.obj"); // レールエディター
+	ModelManager::GetInstance()->LoadModel("Resource/plane","plane.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/axis", "axis.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/emission", "emission.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/player", "player.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.obj"); // レールエディター
+	ModelManager::GetInstance()->LoadModel("Resource/rail", "rail.obj"); // レールエディター
 	//ModelManager::GetInstance()->LoadModel("skydome.obj"); 
 
 	// サウンド

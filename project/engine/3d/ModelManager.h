@@ -16,7 +16,7 @@ public:
 	static ModelManager* GetInstance();
 
 	// モデルファイルの読み込み
-	void LoadModel(const std::string& filePath);
+	void LoadModel(const std::string& directoryPath, const std::string& filePath);
 	// モデルの検索
 	Model* FindModel(const std::string& filePath);
 	
