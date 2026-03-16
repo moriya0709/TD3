@@ -58,23 +58,30 @@ void Input::Initialize(WindowAPI* windowAPI) {
 // 接続されているジョイスティック（パッド）を探して、見つかるたびに EnumJoysticksCallback を呼ぶ
 	result = directInput->EnumDevices(
 		DI8DEVCLASS_GAMECTRL,
+		// --- Initialize関数内のEnumDevicesの中 ---
 		[](const DIDEVICEINSTANCE* pdidInstance, VOID* pContext) -> BOOL {
 			auto self = static_cast<Input*>(pContext);
 			ComPtr<IDirectInputDevice8> newPad;
 
-			// デバイス生成
 			if (FAILED(self->directInput->CreateDevice(pdidInstance->guidInstance, &newPad, nullptr))) {
 				return DIENUM_CONTINUE;
 			}
 
-			// フォーマット設定
 			newPad->SetDataFormat(&c_dfDIJoystick2);
-			// 排他制御
 			newPad->SetCooperativeLevel(self->windowAPI_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
 
-			// ★ここが重要！リストに追加
+			// ★追加：軸の範囲を設定する
+			DIPROPRANGE diprg;
+			diprg.diph.dwSize = sizeof(DIPROPRANGE);
+			diprg.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+			diprg.diph.dwHow = DIPH_DEVICE;
+			diprg.diph.dwObj = 0;
+			diprg.lMin = -32768; // 最小値
+			diprg.lMax = 32768;  // 最大値
+			newPad->SetProperty(DIPROP_RANGE, &diprg.diph);
+
 			self->gamepads.push_back(newPad);
-			self->padStates.emplace_back(); // 状態保存用の箱も増やす
+			self->padStates.emplace_back();
 
 			return DIENUM_CONTINUE;
 		},
@@ -110,15 +117,14 @@ void Input::Update() {
 		mouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState);
 	}
 
-	// Update関数の最後に追加
+	// Update関数内のパッドループ
 	for (size_t i = 0; i < gamepads.size(); i++) {
-		HRESULT hr = gamepads[i]->Poll(); // データを最新に更新
-		if (FAILED(hr)) {
-			gamepads[i]->Acquire();
-			continue;
+		// 常に最新の状態を問い合わせる
+		HRESULT hr = gamepads[i]->Acquire();
+		if (SUCCEEDED(hr)) {
+			gamepads[i]->Poll();
+			gamepads[i]->GetDeviceState(sizeof(DIJOYSTATE), &padStates[i]);
 		}
-		// 現在の状態を取得して padStates[i] に格納
-		gamepads[i]->GetDeviceState(sizeof(DIJOYSTATE), &padStates[i]);
 	}
 }
 
