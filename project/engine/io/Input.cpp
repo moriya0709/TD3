@@ -49,6 +49,32 @@ void Input::Initialize(WindowAPI* windowAPI) {
 	hr = mouse->SetDataFormat(&c_dfDIMouse);
 	// 取得開始
 	mouse->Acquire();
+
+	// --- ゲームパッドの列挙 ---
+// 接続されているジョイスティック（パッド）を探して、見つかるたびに EnumJoysticksCallback を呼ぶ
+	result = directInput->EnumDevices(
+		DI8DEVCLASS_GAMECTRL,
+		[](const DIDEVICEINSTANCE* pdidInstance, VOID* pContext) -> BOOL {
+			auto self = static_cast<Input*>(pContext);
+			ComPtr<IDirectInputDevice8> newPad;
+
+			// デバイス生成
+			if (FAILED(self->directInput->CreateDevice(pdidInstance->guidInstance, &newPad, nullptr))) {
+				return DIENUM_CONTINUE;
+			}
+
+			// フォーマット設定
+			newPad->SetDataFormat(&c_dfDIJoystick2);
+			// 排他制御
+			newPad->SetCooperativeLevel(self->windowAPI_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
+
+			// ★ここが重要！リストに追加
+			self->gamepads.push_back(newPad);
+			self->padStates.emplace_back(); // 状態保存用の箱も増やす
+
+			return DIENUM_CONTINUE;
+		},
+		this, DIEDFL_ATTACHEDONLY);
 }
 
 // 更新
@@ -78,6 +104,17 @@ void Input::Update() {
 		// フォーカスが外れた場合は再取得を試みる
 		mouse->Acquire();
 		mouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState);
+	}
+
+	// Update関数の最後に追加
+	for (size_t i = 0; i < gamepads.size(); i++) {
+		HRESULT hr = gamepads[i]->Poll(); // データを最新に更新
+		if (FAILED(hr)) {
+			gamepads[i]->Acquire();
+			continue;
+		}
+		// 現在の状態を取得して padStates[i] に格納
+		gamepads[i]->GetDeviceState(sizeof(DIJOYSTATE), &padStates[i]);
 	}
 }
 
@@ -129,10 +166,38 @@ bool Input::IsPadButtonPressed(int padIndex, int button) {
 }
 
 // ゲームパッドの軸の値を取得
-LONG Input::GetPadAxisX(int padIndex) {
-	return padStates[padIndex].lX; // 左スティックX
+LONG Input::GetPadLeftAxisX(int padIndex) {
+	// 1. padIndexが負の数ではないか
+	// 2. padIndexが現在のvectorのサイズ（中身の数）を超えていないか
+	if (padIndex >= 0 && padIndex < static_cast<int>(padStates.size())) {
+		return padStates[padIndex].lX;
+	}
+
+	// パッドが認識されていない場合は 0 を返して安全にやり過ごす
+	return 0;
 }
-LONG Input::GetPadAxisY(int padIndex) {
-	return padStates[padIndex].lY; // 左スティックY
+LONG Input::GetPadLeftAxisY(int padIndex) {
+	// 1. padIndexが負の数ではないか
+	// 2. padIndexが現在のvectorのサイズ（中身の数）を超えていないか
+	if (padIndex >= 0 && padIndex < static_cast<int>(padStates.size())) {
+		return padStates[padIndex].lY;
+	}
+
+	// パッドが認識されていない場合は 0 を返して安全にやり過ごす
+	return 0;
+}
+
+LONG Input::GetPadRightAxisX(int padIndex) {
+	if (padIndex >= 0 && padIndex < static_cast<int>(padStates.size())) {
+		return padStates[padIndex].lZ; // 右Xは lZ
+	}
+	return 0;
+}
+
+LONG Input::GetPadRightAxisY(int padIndex) {
+	if (padIndex >= 0 && padIndex < static_cast<int>(padStates.size())) {
+		return padStates[padIndex].lRz; // 右Yは lRz
+	}
+	return 0;
 }
 

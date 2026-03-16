@@ -40,8 +40,10 @@ static_cast<float>(mouseScreenY)
 
 	// ゲームパッド
 	bool IsPadButtonPressed(int padIndex, int button);
-	LONG GetPadAxisX(int padIndex);
-	LONG GetPadAxisY(int padIndex);
+	LONG GetPadLeftAxisX(int padIndex);
+	LONG GetPadLeftAxisY(int padIndex);
+	LONG GetPadRightAxisX(int padIndex);
+	LONG GetPadRightAxisY(int padIndex);
 
 private:
 	// DirectInputのインスタンス
@@ -59,7 +61,8 @@ private:
 	int mouseScreenY; // マウスのスクリーン座標Y
 
 	// ゲームパッド
-	std::vector<IDirectInputDevice8> gamepads;
+	std::vector<ComPtr<IDirectInputDevice8>> gamepads;
+	ComPtr<IDirectInputDevice8> newGamepad;
 	std::vector<DIJOYSTATE> padStates;
 
 	// シングルトンインスタンス

@@ -109,6 +109,9 @@ private:
 	float rayMarchingCloudTop = 30.0f;
 	bool rayMarchingIsRialLight = false;
 	bool rayMarchingIsAnimeLight = true;
+
+	int padX;
+	int padY;
 	
 
 	// スプライト
