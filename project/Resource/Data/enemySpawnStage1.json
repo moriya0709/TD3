@@ -2,7 +2,7 @@
     "enemies": [
         {
             "popTime": 1.0,
-            "type": "NormalEnemy",
+            "type": "HomingEnemy",
             "hp": 50,
             "position": {
                 "x": -100.0,
@@ -96,7 +96,7 @@
         },
         {
             "popTime": 3.0,
-            "type": "TargetEnemy",
+            "type": "HomingEnemy",
             "hp": 80,
             "position": {
                 "x": 100.0,
@@ -143,7 +143,7 @@
         },
         {
             "popTime": 4.0,
-            "type": "TargetEnemy",
+            "type": "HomingEnemy",
             "hp": 80,
             "position": {
                 "x": 10.0,
