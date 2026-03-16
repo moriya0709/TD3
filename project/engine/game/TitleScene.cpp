@@ -66,7 +66,6 @@ void TitleScene::Update() {
 	}
 
 
-
 	// * 3Dオブジェクト* //
 	for (int i = 0; i < 2; i++) {
 		object[i]->Update();

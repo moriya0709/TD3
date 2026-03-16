@@ -89,14 +89,27 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 
 	// 1. 入力からローカル移動方向(XY)を決定
 	Vector3 moveInput = {0.0f, 0.0f, 0.0f};
-	if (input->PushKey(DIK_W))
+	if (input->PushKey(DIK_W)) {
 		moveInput.y += 1.0f;
-	if (input->PushKey(DIK_S))
+	}
+	if (input->PushKey(DIK_S)) {
 		moveInput.y -= 1.0f;
-	if (input->PushKey(DIK_A))
+	}
+	if (input->PushKey(DIK_A)) {
 		moveInput.x -= 1.0f;
-	if (input->PushKey(DIK_D))
+	}
+	if (input->PushKey(DIK_D)) {
 		moveInput.x += 1.0f;
+	}
+	pad.x= (input->GetPadLeftAxisX(0));
+	if (pad.x != 0) {
+		moveInput.x += float(input->GetPadLeftAxisX(0) / 32768.0); // ゲームパッドの入力を-1.0f～1.0fに正規化
+	}
+	pad.y = (input->GetPadLeftAxisY(0));
+
+	if (input->GetPadLeftAxisY(0) != 0) {
+		moveInput.y -= float(input->GetPadLeftAxisY(0) / 32768.0); // ゲームパッドの入力を-1.0f～1.0fに正規化
+	}
 
 	// 2. 正規化
 	float length = std::sqrt(moveInput.x * moveInput.x + moveInput.y * moveInput.y);
