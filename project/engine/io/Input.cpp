@@ -188,7 +188,7 @@ float Input::GetPadLeftAxisY(int padIndex) {
 
 float Input::GetPadRightAxisX(int padIndex) {
 	if (padIndex >= 0 && padIndex < static_cast<int>(padStates.size())) {
-		float val = static_cast<float>(padStates[padIndex].lZ) / STICK_MAX;
+		float val = static_cast<float>(padStates[padIndex].lRx) / STICK_MAX;
 		return (abs(val) < DEAD_ZONE) ? 0.0f : val;
 	}
 	return 0.0f;
@@ -196,7 +196,7 @@ float Input::GetPadRightAxisX(int padIndex) {
 
 float Input::GetPadRightAxisY(int padIndex) {
 	if (padIndex >= 0 && padIndex < static_cast<int>(padStates.size())) {
-		float val = static_cast<float>(padStates[padIndex].lRz) / STICK_MAX;
+		float val = static_cast<float>(padStates[padIndex].lRy) / STICK_MAX;
 		return (abs(val) < DEAD_ZONE) ? 0.0f : val;
 	}
 	return 0.0f;
