@@ -47,6 +47,7 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/axis", "axis.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/emission", "emission.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/player", "player.obj");
+    ModelManager::GetInstance()->LoadModel("Resource/test", "test.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.obj"); // レールエディター
 	ModelManager::GetInstance()->LoadModel("Resource/rail", "rail.obj"); // レールエディター
 	//ModelManager::GetInstance()->LoadModel("skydome.obj"); 

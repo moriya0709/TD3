@@ -11,8 +11,8 @@ void HomingEnemyBullet::Initialize(Camera* camera, Vector3 Pos)
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
-    object_->SetModel("plane.obj");
-    object_->SetScale({ 0.5f, 0.5f, 0.5f });
+    object_->SetModel("test.obj");
+    object_->SetScale(transform_.scale);
     object_->SetRotate(transform_.rotate);
     object_->SetTranslate(transform_.translate);
 
@@ -59,6 +59,7 @@ void HomingEnemyBullet::Update()
     // ‰¡Ž²•ûŒü‚Ì’·‚³‚ð‹‚ß‚é
     float hypotXZ = std::hypot(velocity_.x, velocity_.z);
     rotate.x = atan2(-velocity_.y, hypotXZ);
+    rotate.z = 0.0f;
     object_->SetRotate(rotate);
 
     transform_.translate += velocity_;
