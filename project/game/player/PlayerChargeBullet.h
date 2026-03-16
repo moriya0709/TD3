@@ -19,12 +19,16 @@ public:
 	void Update() override;
 	void Draw3D() override;
 	void Draw2D() override;
-	void SetStatus(const float hommingAccuracy) override { hommingAccuracy_ = hommingAccuracy; }
+	void SetStatus(const float hommingAccuracy, const int damage) override {
+		hommingAccuracy_ = hommingAccuracy;
+		damage_ = damage*2;
+	}
 	bool IsActive() override { return isActive_; }
 	void SetActive(bool active) override { isActive_ = active; }
 	int GetPenetration() override { return 0; }
 	Vector3 GetPosition() const override { return transform_.translate; }
 	float GetHitSize() const override { return 0.5f; } // 例: ヒットサイズ0.5
+	virtual int GetDamage() const override { return damage_; }
 
 private:
 	// プレイヤーの弾のステータス
@@ -40,4 +44,5 @@ private:
 	bool isActive_ = true;             // 弾が有効かどうか
 	std::weak_ptr<Enemy> targetEnemy_; // ホーミング対象の敵
 	float bulletSpeed_;                // 弾の速さ
+	int damage_ = 0;                   // 弾のダメージ量
 };
