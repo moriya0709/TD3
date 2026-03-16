@@ -175,10 +175,10 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 		}
 	}
 	if (mouseMove.x == input->GetMouseScreen().x && mouseMove.y == input->GetMouseScreen().y) {
-		reticlePad.x = (input->GetPadRightAxisX(0)/32768.0f);
-		reticlePad.y = (input->GetPadRightAxisY(0) / 32768.0f);
+		reticlePad.x = (input->GetPadRightAxisX(0));
+		reticlePad.y = (input->GetPadRightAxisY(0));
 		reticlePosition_.x += reticlePad.x * reticleSpeed;
-		reticlePosition_.y -= reticlePad.y * reticleSpeed; // Y軸は上下逆なので減算
+		reticlePosition_.y += reticlePad.y * reticleSpeed; // Y軸は上下逆なので減算
 	} else {
 		mouseMove = input->GetMouseScreen();
 		reticlePosition_.x = std::clamp(mouseMove.x, 0.0f, float(WindowAPI::kClientWidth));
