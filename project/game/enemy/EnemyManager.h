@@ -44,6 +44,7 @@ public:
 
     // IMGUI•`‰æ
     void DrawImGui();
+    void DrawEnemyImGui();
 
     /* SetŠÖ” */
     void SetcurrentTimer_(float timer);

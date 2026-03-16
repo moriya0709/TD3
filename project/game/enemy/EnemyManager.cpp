@@ -188,7 +188,7 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
 
 void EnemyManager::SpawnEnemy(const EnemyPopData& data)
 {
-    // unique_ptr で生成する（これはそのままでOK）
+    // unique_ptr で生成する（
     std::unique_ptr<Enemy> newEnemy = nullptr;
 
     if (data.type == "NormalEnemy") {
@@ -344,7 +344,7 @@ void EnemyManager::DrawImGui()
         if (ImGui::InputFloat("Pop Time", &data.popTime))
             isEditing_ = true;
 
-        // typeの編集（InputTextは少し手間が必要）
+        // typeの編集
         char typeBuffer[64];
         strncpy_s(typeBuffer, data.type.c_str(), sizeof(typeBuffer));
         if (ImGui::InputText("Type", typeBuffer, sizeof(typeBuffer))) {
@@ -414,4 +414,8 @@ void EnemyManager::DrawImGui()
     }
 
     ImGui::End();
+}
+
+void EnemyManager::DrawEnemyImGui()
+{
 }

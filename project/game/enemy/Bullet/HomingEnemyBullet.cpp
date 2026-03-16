@@ -54,6 +54,13 @@ void HomingEnemyBullet::Update()
         velocity_ = currentDir * maxSpeed;
     }
 
+    Vector3 rotate;
+    rotate.y = atan2(velocity_.x, velocity_.z);
+    // ‰¡²•ûŒü‚Ì’·‚³‚ğ‹‚ß‚é
+    float hypotXZ = std::hypot(velocity_.x, velocity_.z);
+    rotate.x = atan2(-velocity_.y, hypotXZ);
+    object_->SetRotate(rotate);
+
     transform_.translate += velocity_;
     object_->SetTranslate(transform_.translate);
 
