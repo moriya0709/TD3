@@ -108,7 +108,10 @@ private:
 	Vector3 SpotLightDirection = {0.0f, 0.0f, 0.0f};
 	float SpotLightRange = 10.0f;
 	float SpotLightIntensity = 1.0f;
-	Vector2 pad; 
+	Vector2 movePad;
+	Vector2 reticlePad;
+	Vector2 mouseMove;
+	float reticleSpeed = 1.0f; // ˆÚ“®‘¬“x
 
 };
 
