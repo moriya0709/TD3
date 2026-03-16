@@ -69,29 +69,26 @@ void HomingEnemyBullet::Draw3D()
 
 void HomingEnemyBullet::CheckCameraCulling()
 {
-    // 1. カメラの位置を取得
+
     Vector3 cameraPos = camera_->GetTranslate();
 
-    // 2. カメラのワールド行列を取得
     const Matrix4x4& worldMat = camera_->GetWorldMatrix();
 
-    // 3. ワールド行列から「正面（Z軸）の向き」を抜き出す
     Vector3 cameraForward = { worldMat.m[2][0], worldMat.m[2][1], worldMat.m[2][2] };
 
-    // （念のため正規化して長さを1にしておく）
+    // 正規化
     cameraForward = Normalize(cameraForward);
 
-    // 4. カメラから弾へ向かうベクトルを作る
+    // べ黒る
     Vector3 toBullet;
     toBullet.x = transform_.translate.x - cameraPos.x;
     toBullet.y = transform_.translate.y - cameraPos.y;
     toBullet.z = transform_.translate.z - cameraPos.z;
 
-    // 5. 内積（Dot）を計算して判定
+    // 内積
     float dotProduct = cameraForward.x * toBullet.x + cameraForward.y * toBullet.y + cameraForward.z * toBullet.z;
 
-    // 6. 内積がマイナス（カメラの後ろ）なら消滅させる
-    // ※ 画面の端でフッと消えるのを防ぐため、少し余裕を持たせて -2.0f などにするのが実戦的です
+    // カメラから離れているなら
     if (dotProduct < -2.0f) {
         isAvile = false;
     }
