@@ -108,6 +108,7 @@ private:
 	Vector3 SpotLightDirection = {0.0f, 0.0f, 0.0f};
 	float SpotLightRange = 10.0f;
 	float SpotLightIntensity = 1.0f;
+	Vector2 pad; 
 
 };
 

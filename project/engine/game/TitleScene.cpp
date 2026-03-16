@@ -65,9 +65,6 @@ void TitleScene::Update() {
 		PostEffect::GetInstance()->SetInversion(true);
 	}
 
-	padX = input->GetPadRightAxisX(0);
-	padY = input->GetPadRightAxisY(0);
-
 	// * 3Dオブジェクト* //
 	for (int i = 0; i < 2; i++) {
 		object[i]->Update();
