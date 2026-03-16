@@ -27,6 +27,7 @@ public:
 
 
 	struct Statas {
+		Style style;                  // スタイル
 		int hp;                       // 体力
 		int attack;                   // 攻撃力
 		float speed;                  // 速度
@@ -43,23 +44,36 @@ public:
 	~Player();
 	float GetHitSize() const { return hitSize_; }
 	void Damage(int damage) {
-		statas_.hp -= damage;
-		if (statas_.hp < 0) {
-			statas_.hp = 0;
+		statas_[currentStyle].hp -= damage;
+		if (statas_[currentStyle].hp < 0) {
+			statas_[currentStyle].hp = 0;
 		}
 		ishit = true;
 		damageTimer = 30; // ダメージ表示タイマーリセット
 	}
 	bool GetIsHit() const { return ishit; }
-	void SetStatas(const Statas& newStatas) { statas_ = newStatas; }
+	//void SetStatas(const Statas& newStatas) { statas_ = newStatas; }
 
 	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets; }
-	int GetAttack() const { return statas_.attack; }
-	int GetHP() const { return statas_.hp; }
+	int GetAttack() const { return statas_[currentStyle].attack; }
+	int GetHP() const { return statas_[currentStyle].hp; }
+	int GetCurrentStyleLevel(Style style,int statas) const {
+		if (style < 0 || style >= 4) {
+			return 0; // 無効なスタイルの場合はレベル0を返す
+		}
+		return cureentStyleStatasLevels[style][statas];
+	}
+	int SetCurrentStyleLevel(Style style, int level,int statas) {
+		if (style < 0 || style >= 4) {
+			return 0; // 無効なスタイルの場合はレベル0を返す
+		}
+		cureentStyleStatasLevels[style][statas] = level;
+		return cureentStyleStatasLevels[style][statas];
+	}
 
 private:
 	// プレイヤーのステータス
-	Statas statas_;
+	Statas statas_[4];
 	// プレイヤーの座標や回転などの変換情報
 	Transform transform_;
 	// プレイヤーの3Dオブジェクト
@@ -113,6 +127,13 @@ private:
 	Vector2 reticlePad;
 	Vector2 mouseMove;
 	float reticleSpeed = 30.0f; // 移動速度
+	Style currentStyle = normal;
+
+
+	static int cureentStyleStatasLevels[4][2];
+	void StyleLevelUp(Style style, int statas);
+	std::string GetFilePath(int slot) const;
+	void LoadStatas(const std::string& filePath);
 
 };
 

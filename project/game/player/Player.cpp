@@ -9,6 +9,10 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
+#include <externals/nlohmann/json.hpp>
+#include <filesystem>
+#include <fstream>
+
 
 // ベクトルの回転用関数
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
@@ -18,6 +22,48 @@ Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
 	result.z = v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2];
 	return result;
 }
+
+void to_json(nlohmann::json& j, const Player::Statas& statas) {
+	j = nlohmann::json{
+		{"hp", statas.hp},
+		{"attack", statas.attack},
+		{"speed", statas.speed},
+		{"hommingAccuracy", statas.hommingAccuracy},
+		{"renge", statas.renge},
+		{"chargeTime", statas.chargeTime},
+		{"haste", statas.haste}
+	};
+}
+
+
+void from_json(const nlohmann::json& j, Player::Statas& statas) {
+	j.at("hp").get_to(statas.hp);
+	j.at("attack").get_to(statas.attack);
+	j.at("speed").get_to(statas.speed);
+	j.at("hommingAccuracy").get_to(statas.hommingAccuracy);
+	j.at("renge").get_to(statas.renge);
+	j.at("chargeTime").get_to(statas.chargeTime);
+	j.at("haste").get_to(statas.haste);
+}
+
+void to_json(nlohmann::json& j, const Player::Style& style) {
+	j = nlohmann::json{
+	    {"style", style}
+	};
+}
+
+void from_json(const nlohmann::json& j, Player::Style& style) {
+	j.at("style").get_to(style); }
+
+
+std::string Player::GetFilePath(int slot) const { return "Resource/Data/replay_" + std::to_string(slot) + ".json"; }
+
+void Player::LoadStatas(const std::string& filePath) {
+
+	
+}
+
+
 
 void Player::Initialize(Camera* camera, Style style) {
 	camera_ = camera;
@@ -52,27 +98,13 @@ void Player::Initialize(Camera* camera, Style style) {
 	playerObject_->SetModel("player.obj");
 	playerObject_->SetTranslate(transform_.translate);
 
-	switch (style) {
-	case Player::normal:
-		break;
-	case Player::speed:
-		break;
-	case Player::power:
-		break;
-	case Player::sniper:
-		break;
-	default:
-		break;
-	}
-
-	// ステータス初期化
-	statas_.hp = 100;
-	statas_.attack = 20;
-	statas_.speed = 0.2f;
-	statas_.haste = 10;
-	statas_.chargeTime = 60;
-	statas_.hommingAccuracy = 0.01f;
-	statas_.renge = 80.0f;
+	statas_[currentStyle].hp = 100;
+	statas_[currentStyle].attack = 20;
+	statas_[currentStyle].speed = 0.2f;
+	statas_[currentStyle].haste = 10;
+	statas_[currentStyle].chargeTime = 60;
+	statas_[currentStyle].hommingAccuracy = 0.01f;
+	statas_[currentStyle].renge = 80.0f;
 
 	velocity_ = {0.0f, 0.0f, 0.0f};
 	coolTime = 0;
@@ -119,8 +151,8 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	float length = std::sqrt(moveInput.x * moveInput.x + moveInput.y * moveInput.y);
 	Vector3 targetVelocity = {0.0f, 0.0f, 0.0f};
 	if (length > 0.0f) {
-		targetVelocity.x = (moveInput.x / length) * statas_.speed;
-		targetVelocity.y = (moveInput.y / length) * statas_.speed;
+		targetVelocity.x = (moveInput.x / length) * statas_[currentStyle].speed;
+		targetVelocity.y = (moveInput.y / length) * statas_[currentStyle].speed;
 	}
 
 	// 3. 慣性適用
@@ -183,15 +215,28 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 		reticlePad.y = (input->GetPadRightAxisY(0));
 		reticlePosition_.x += reticlePad.x * reticleSpeed;
 		reticlePosition_.y += reticlePad.y * reticleSpeed; // Y軸は上下逆なので減算
+		if (reticlePosition_.x < 0) {
+			reticlePosition_.x = 0;
+		}
+		if (reticlePosition_.x > WindowAPI::kClientWidth) {
+			reticlePosition_.x = WindowAPI::kClientWidth;
+		}
+		if (reticlePosition_.y < 0) {
+			reticlePosition_.y = 0;
+		}
+		if (reticlePosition_.y > WindowAPI::kClientHeight) {
+			reticlePosition_.y = WindowAPI::kClientHeight;
+		}
+
 	} else {
 		mouseMove = input->GetMouseScreen();
 		reticlePosition_.x = std::clamp(mouseMove.x, 0.0f, float(WindowAPI::kClientWidth));
 		reticlePosition_.y = std::clamp(mouseMove.y, 0.0f, float(WindowAPI::kClientHeight));
 	}
-		chargeReticle_->SetPosition(reticlePosition_);
-		chargeReticle_->Update();
-		reticle_->SetPosition(reticlePosition_);
-		reticle_->Update();
+	chargeReticle_->SetPosition(reticlePosition_);
+	chargeReticle_->Update();
+	reticle_->SetPosition(reticlePosition_);
+	reticle_->Update();
 
 	Attack(enemies);
 	UpdateBullets();
@@ -202,10 +247,10 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	ImGui::Text("Z-Distance from Camera: 5.0 (Fixed)");
 	ImGui::DragFloat3("World Pos", &transform_.translate.x, 0.1f);
 	ImGui::DragFloat2("Relative Pos", &relativePos_.x, 0.1f);
-	ImGui::DragInt("HP", &statas_.hp, 0.1f);
-	ImGui::DragInt("Attack", &statas_.attack, 0.1f);
-	ImGui::DragFloat("Speed", &statas_.speed, 0.01f);
-	ImGui::DragFloat("Homing Accuracy", &statas_.hommingAccuracy, 0.0001f, 0.0f, 1.0f, "%.4f");
+	ImGui::DragInt("HP", &statas_[currentStyle].hp, 0.1f);
+	ImGui::DragInt("Attack", &statas_[currentStyle].attack, 0.1f);
+	ImGui::DragFloat("Speed", &statas_[currentStyle].speed, 0.01f);
+	ImGui::DragFloat("Homing Accuracy", &statas_[currentStyle].hommingAccuracy, 0.0001f, 0.0f, 1.0f, "%.4f");
 	ImGui::DragFloat("Reticle Speed", &reticleSpeed, 0.1f);
 	ImGui::DragFloat2("Move Pad", &movePad.x, 0.0f);
 
@@ -243,7 +288,7 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 		coolTime--;
 		return;
 	}
-	if (statas_.chargeTime < chargeTimer) {
+	if (statas_[currentStyle].chargeTime < chargeTimer) {
 		isCharging = true;
 	} else {
 		isCharging = false;
@@ -254,17 +299,18 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 		if (isCharging) {
 			// チャージ攻撃
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge * 1.5f, enemies);
-			newBullet->SetStatus(statas_.hommingAccuracy + 0.2f, statas_.attack);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies);
+			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy + 0.2f, statas_[currentStyle].attack);
 			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
 			chargeTimer = 0;                         // チャージタイマーリセット
-			coolTime = statas_.haste * 2;            // チャージ攻撃後のクールタイムも長くする
+			coolTime = statas_[currentStyle].haste * 2; // チャージ攻撃後のクールタイムも長くする
 		} else {
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge, enemies);
-			newBullet->SetStatus(statas_.hommingAccuracy, statas_.attack);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge, enemies);
+			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy, statas_[currentStyle].attack);
 			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
-			coolTime = statas_.haste;
+			coolTime = statas_[currentStyle].haste;
+			chargeTimer = 0; // チャージタイマーリセット
 		}
 	}
 }
@@ -279,3 +325,6 @@ void Player::UpdateBullets() {
 		}
 	}
 }
+
+void Player::StyleLevelUp(Style style, int statas) {}
+
