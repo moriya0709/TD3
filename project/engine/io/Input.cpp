@@ -8,6 +8,10 @@
 
 std::unique_ptr <Input> Input::instance = nullptr;
 
+// 共通の定数
+const float STICK_MAX = 32768.0f;
+const float DEAD_ZONE = 0.1f; // 10%以下の傾きは無視する
+
 // 初期化
 void Input::Initialize(WindowAPI* windowAPI) {
 	// 借りてきたWindowAPIのインスタンスを記録
@@ -166,38 +170,35 @@ bool Input::IsPadButtonPressed(int padIndex, int button) {
 }
 
 // ゲームパッドの軸の値を取得
-LONG Input::GetPadLeftAxisX(int padIndex) {
-	// 1. padIndexが負の数ではないか
-	// 2. padIndexが現在のvectorのサイズ（中身の数）を超えていないか
+float Input::GetPadLeftAxisX(int padIndex) {
 	if (padIndex >= 0 && padIndex < static_cast<int>(padStates.size())) {
-		return padStates[padIndex].lX;
+		float val = static_cast<float>(padStates[padIndex].lX) / STICK_MAX;
+		return (abs(val) < DEAD_ZONE) ? 0.0f : val;
 	}
-
-	// パッドが認識されていない場合は 0 を返して安全にやり過ごす
-	return 0;
+	return 0.0f;
 }
-LONG Input::GetPadLeftAxisY(int padIndex) {
-	// 1. padIndexが負の数ではないか
-	// 2. padIndexが現在のvectorのサイズ（中身の数）を超えていないか
+float Input::GetPadLeftAxisY(int padIndex) {
 	if (padIndex >= 0 && padIndex < static_cast<int>(padStates.size())) {
-		return padStates[padIndex].lY;
+		// Y軸は上がマイナスで返ってくることが多いため、ゲームに合わせて反転させることもある
+		float val = static_cast<float>(padStates[padIndex].lY) / STICK_MAX;
+		return (abs(val) < DEAD_ZONE) ? 0.0f : val;
 	}
-
-	// パッドが認識されていない場合は 0 を返して安全にやり過ごす
-	return 0;
+	return 0.0f;
 }
 
-LONG Input::GetPadRightAxisX(int padIndex) {
+float Input::GetPadRightAxisX(int padIndex) {
 	if (padIndex >= 0 && padIndex < static_cast<int>(padStates.size())) {
-		return padStates[padIndex].lZ; // 右Xは lZ
+		float val = static_cast<float>(padStates[padIndex].lZ) / STICK_MAX;
+		return (abs(val) < DEAD_ZONE) ? 0.0f : val;
 	}
-	return 0;
+	return 0.0f;
 }
 
-LONG Input::GetPadRightAxisY(int padIndex) {
+float Input::GetPadRightAxisY(int padIndex) {
 	if (padIndex >= 0 && padIndex < static_cast<int>(padStates.size())) {
-		return padStates[padIndex].lRz; // 右Yは lRz
+		float val = static_cast<float>(padStates[padIndex].lRz) / STICK_MAX;
+		return (abs(val) < DEAD_ZONE) ? 0.0f : val;
 	}
-	return 0;
+	return 0.0f;
 }
 

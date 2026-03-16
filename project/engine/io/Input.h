@@ -40,10 +40,10 @@ static_cast<float>(mouseScreenY)
 
 	// ゲームパッド
 	bool IsPadButtonPressed(int padIndex, int button);
-	LONG GetPadLeftAxisX(int padIndex);
-	LONG GetPadLeftAxisY(int padIndex);
-	LONG GetPadRightAxisX(int padIndex);
-	LONG GetPadRightAxisY(int padIndex);
+	float GetPadLeftAxisX(int padIndex);
+	float GetPadLeftAxisY(int padIndex);
+	float GetPadRightAxisX(int padIndex);
+	float GetPadRightAxisY(int padIndex);
 
 private:
 	// DirectInputのインスタンス
