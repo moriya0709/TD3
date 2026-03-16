@@ -38,7 +38,7 @@ void Player::Initialize(Camera* camera, Style style) {
 
 	// Spriteの生成 (照準)
 	reticle_ = std::make_unique<Sprite>();
-	reticle_->Initialize("Resource/reticle.png");
+	reticle_->Initialize("Resource/reticle/reticle.png");
 	reticlePosition_ = {640.0f, 360.0f};
 	reticle_->SetPosition(reticlePosition_);
 
