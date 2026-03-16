@@ -89,9 +89,9 @@ void TargetEnemy::OnCollision(int Damage)
 
 void TargetEnemy::SetWayPoints(const std::vector<WayPoint>& waypoints)
 {
-    waypoints_ = waypoints;
+    wayPoints_ = waypoints;
     currentWayPointIndex_ = 0;
-    waypointTimer_ = 0.0f;
+    wayPointTimer_ = 0.0f;
 
     // 初期座標
     startPos_ = transform_.translate;
@@ -107,15 +107,26 @@ void TargetEnemy::EnemyMove()
 {
     float deltaTime = 1.0f / 60.0f;
 
-    if (currentWayPointIndex_ < waypoints_.size()) {
+    if (isStop_) {
+        wayStopTimer_ -= deltaTime;
+        if (wayStopTimer_ <= 0.0f) {
+            isStop_ = false;
+
+            currentWayPointIndex_++; // 次の地点へ
+            wayPointTimer_ = 0.0f; // タイマーリセット
+            startPos_ = transform_.translate; // 現在地を次の「出発点」にする
+        }
+    }
+
+    if (currentWayPointIndex_ < wayPoints_.size()) {
 
         // タイマーを進める
-        waypointTimer_ += deltaTime;
+        wayPointTimer_ += deltaTime;
 
         // 現在目指しているウェイポイントの情報を取得
-        const WayPoint& currentWP = waypoints_[currentWayPointIndex_];
+        const WayPoint& currentWP = wayPoints_[currentWayPointIndex_];
 
-        float t = waypointTimer_ / currentWP.timeToReach;
+        float t = wayPointTimer_ / currentWP.timeToReach;
 
         if (t > 1.0f) {
             t = 1.0f;
@@ -124,17 +135,15 @@ void TargetEnemy::EnemyMove()
         transform_.translate = startPos_ + (currentWP.target - startPos_) * t;
 
         if (t >= 1.0f) {
-            currentWayPointIndex_++; // 次の地点へ
-            waypointTimer_ = 0.0f; // タイマーリセット
-            startPos_ = transform_.translate; // 現在地を次の「出発点」にする
+            wayStopTimer_ = currentWP.timeToStop;
+            isStop_ = true;
         }
     }
 
-    if (currentWayPointIndex_ >= static_cast<int>(waypoints_.size())) {
-        // ★全てのウェイポイントを巡回し終わった！
+    if (currentWayPointIndex_ >= static_cast<int>(wayPoints_.size())) {
+        // 逃走状態に移行
         behaviorRequest_ = Behavior::kAway;
 
-        // 【追加】逃走のための初期化
         fleeTimer_ = 0.0f;
         fleeStartPos_ = transform_.translate; // 現在地を逃走のスタート地点にする
     }

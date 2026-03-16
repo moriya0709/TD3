@@ -145,6 +145,7 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
 
                     // 到達時間の取得（書き忘れ対策でデフォルト1.0秒）
                     wp.timeToReach = wpData.value("timeToReach", 1.0f);
+                    wp.timeToStop = wpData.value("timeToStop", 1.0f);
 
                     // 目標座標の取得
                     if (wpData.contains("target")) {
@@ -166,6 +167,7 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
                 const auto& fleeData = enemyData["flee"];
 
                 data.fleeWaypoint.timeToReach = fleeData.value("timeToReach", 2.0f);
+                data.fleeWaypoint.timeToStop = 0.0f; // 逃走時間に停止はない
 
                 if (fleeData.contains("target")) {
                     const auto& tData = fleeData["target"];
@@ -225,11 +227,8 @@ void EnemyManager::SaveToJson(const std::string& filePath)
     jsonData["enemies"] = nlohmann::ordered_json::array();
 
     for (const auto& data : editingPopDatas_) {
-        // ★ここも ordered_json に変更
         nlohmann::ordered_json enemyData;
 
-        // 【重要】ここで代入した順番の通りにJSONファイルに書き込まれます！
-        // 人間が読みやすい順番で代入してください
         enemyData["popTime"] = data.popTime;
         enemyData["type"] = data.type;
         enemyData["hp"] = data.hp;
@@ -241,6 +240,7 @@ void EnemyManager::SaveToJson(const std::string& filePath)
             nlohmann::ordered_json wpData;
             wpData["target"] = Vector3ToJson(wp.target);
             wpData["timeToReach"] = wp.timeToReach;
+            wpData["timeToStop"] = wp.timeToStop;
             enemyData["movePattern"].push_back(wpData);
         }
 
@@ -269,9 +269,6 @@ void EnemyManager::DrawImGui()
 {
     ImGui::Begin("EnemyPopManager");
 
-    // ==========================================
-    // 1. ステージ管理 & ファイル切り替え UI
-    // ==========================================
     if (ImGui::CollapsingHeader("Stage & File Management", ImGuiTreeNodeFlags_DefaultOpen)) {
 
         // 現在の状況を表示
@@ -297,16 +294,10 @@ void EnemyManager::DrawImGui()
             // 別のステージを読み込んだら一旦編集モードをリセットする
             isEditing_ = false;
         }
-
-        // ※もし新しいステージのJSONファイルが存在しない場合でも、
-        // 「Save to JSON」を押せば新規作成されるようになります。
     }
 
     ImGui::Separator();
 
-    // ==========================================
-    // 2. 既存のファイル操作ボタン（Save, Reload等）
-    // ==========================================
     if (isEditing_) {
         ImGui::TextColored(ImVec4(1, 1, 0, 1), "Editing Stage %d", currentLoadedStage_);
         if (ImGui::Button("Save to JSON")) {
@@ -332,7 +323,6 @@ void EnemyManager::DrawImGui()
 
     ImGui::Separator();
 
-    // 2. 敵リスト表示と選択
     if (ImGui::CollapsingHeader("Enemy Pop List")) {
         for (int i = 0; i < (int)editingPopDatas_.size(); ++i) {
             std::string label = "Enemy [" + std::to_string(i) + "] - " + editingPopDatas_[i].type;
@@ -344,7 +334,7 @@ void EnemyManager::DrawImGui()
             EnemyPopData newData;
             newData.type = "NormalEnemy";
             newData.hp = 100;
-            newData.position = { 0, 0, 200 }; // 遠くに
+            newData.position = { 0, 0, 60 }; // 遠くに
             editingPopDatas_.push_back(newData);
             selectedEnemyIndex_ = (int)editingPopDatas_.size() - 1;
             isEditing_ = true;
@@ -353,7 +343,6 @@ void EnemyManager::DrawImGui()
 
     ImGui::Separator();
 
-    // 3. 選択中の敵の詳細編集
     if (selectedEnemyIndex_ >= 0 && selectedEnemyIndex_ < (int)editingPopDatas_.size()) {
         ImGui::PushID(selectedEnemyIndex_); // IDをプッシュしてバグ防止
 
@@ -390,7 +379,9 @@ void EnemyManager::DrawImGui()
                     isEditing_ = true;
                 ImGui::SameLine();
                 ImGui::SetNextItemWidth(100);
-                if (ImGui::InputFloat("Time", &wp.timeToReach))
+                if (ImGui::InputFloat("timeToReach", &wp.timeToReach))
+                    isEditing_ = true;
+                if (ImGui::InputFloat("timeToStop", &wp.timeToStop))
                     isEditing_ = true;
 
                 ImGui::SameLine();
@@ -404,6 +395,7 @@ void EnemyManager::DrawImGui()
                 WayPoint newWP;
                 newWP.target = data.position; // スポーン地点から開始
                 newWP.timeToReach = 2.0f;
+                newWP.timeToStop = 1.0f;
                 data.movePattern.push_back(newWP);
                 isEditing_ = true;
             }
