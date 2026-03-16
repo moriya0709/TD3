@@ -66,6 +66,7 @@ private:
 	std::unique_ptr<Object> playerObject_;
 	// プレイヤーの2Dスプライト（照準）
 	std::unique_ptr<Sprite> reticle_;
+	std::unique_ptr<Sprite> chargeReticle_;
 	// 照準の座標
 	Vector2 reticlePosition_ = {0.0f, 0.0f};
 	// カメラのポインタ
@@ -111,7 +112,7 @@ private:
 	Vector2 movePad;
 	Vector2 reticlePad;
 	Vector2 mouseMove;
-	float reticleSpeed = 1.0f; // 移動速度
+	float reticleSpeed = 30.0f; // 移動速度
 
 };
 

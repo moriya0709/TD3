@@ -12,7 +12,7 @@ namespace fs = std::filesystem;
 // 3分間の定数
 const float kMaxDuration = 180.0f;
 
-// --- 描画関数 (環境に合わせて差し替えてください) ---
+// --- 描画関数 
 void DrawLine(const Vector3& s, const Vector3& e, uint32_t color) { /* 描画処理の実装 */ }
 
 // --- nlohmann/json 変換定義 ---

@@ -42,6 +42,10 @@ void Player::Initialize(Camera* camera, Style style) {
 	reticlePosition_ = {640.0f, 360.0f};
 	reticle_->SetPosition(reticlePosition_);
 
+	chargeReticle_ = std::make_unique<Sprite>();
+	chargeReticle_->Initialize("Resource/reticle/chargeReticle.png");
+	chargeReticle_->SetPosition(reticlePosition_);
+
 	// モデルの生成
 	playerObject_ = std::make_unique<Object>();
 	playerObject_->Initialize(camera_);
@@ -64,7 +68,7 @@ void Player::Initialize(Camera* camera, Style style) {
 	// ステータス初期化
 	statas_.hp = 100;
 	statas_.attack = 20;
-	statas_.speed = 0.2f; // XY移動は少し速い方が気持ちいいです
+	statas_.speed = 0.2f;
 	statas_.haste = 10;
 	statas_.chargeTime = 60;
 	statas_.hommingAccuracy = 0.01f;
@@ -184,8 +188,10 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 		reticlePosition_.x = std::clamp(mouseMove.x, 0.0f, float(WindowAPI::kClientWidth));
 		reticlePosition_.y = std::clamp(mouseMove.y, 0.0f, float(WindowAPI::kClientHeight));
 	}
-	reticle_->SetPosition(reticlePosition_);
-	reticle_->Update();
+		chargeReticle_->SetPosition(reticlePosition_);
+		chargeReticle_->Update();
+		reticle_->SetPosition(reticlePosition_);
+		reticle_->Update();
 
 	Attack(enemies);
 	UpdateBullets();
@@ -209,8 +215,14 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 #pragma endregion
 }
 
-void Player::Draw2D() { reticle_->Draw(); }
+void Player::Draw2D() {
+	if (isCharging) {
+		chargeReticle_->Draw();
+	} else {
 
+		reticle_->Draw();
+	}
+}
 void Player::Draw3D() {
 	for (const auto& bullet : bullets) {
 		bullet->Draw3D();
@@ -243,14 +255,14 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 			// チャージ攻撃
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge * 1.5f, enemies);
-			newBullet->SetStatus(statas_.hommingAccuracy + 0.2f);
+			newBullet->SetStatus(statas_.hommingAccuracy + 0.2f, statas_.attack);
 			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
 			chargeTimer = 0;                         // チャージタイマーリセット
 			coolTime = statas_.haste * 2;            // チャージ攻撃後のクールタイムも長くする
 		} else {
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_.renge, enemies);
-			newBullet->SetStatus(statas_.hommingAccuracy);
+			newBullet->SetStatus(statas_.hommingAccuracy, statas_.attack);
 			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
 			coolTime = statas_.haste;
 		}

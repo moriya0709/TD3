@@ -19,12 +19,13 @@ public:
 	virtual void Update();
 	virtual void Draw3D();
 	virtual void Draw2D();
-	virtual void SetStatus(const float hommingAccuracy);
+	virtual void SetStatus(const float hommingAccuracy,const int damage);
 	virtual bool IsActive();
 	virtual void SetActive(bool active) {};
 	virtual int GetPenetration();
 	virtual Vector3 GetPosition() const { return Vector3(); };
 	virtual float GetHitSize() const { return 0.0f; };
+	virtual int GetDamage() const { return 0; };
 
 
 private:
