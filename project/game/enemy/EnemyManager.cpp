@@ -32,19 +32,9 @@ void EnemyManager::Update()
 {
 
     // カメラ側のステージが変わったかどうかのチェック
-
     int cameraStage = cameraContrroller_->GetCurrentStage();
 
-    // 編集モードでなく、かつカメラのステージが進行した場合、自動で次のJSONを読み込む
-    if (!isEditing_ && currentLoadedStage_ != cameraStage) {
-        currentLoadedStage_ = cameraStage;
-        jsonFilePath_ = GetJsonPath(currentLoadedStage_);
-        targetEditStage_ = currentLoadedStage_;
-
-        std::cout << "Stage changed! Loading: " << jsonFilePath_ << std::endl;
-        LoadEnemyData(jsonFilePath_);
-    }
-
+  
     // 更新処理
 
     if (currentTimer_ == precurrenTimer) {

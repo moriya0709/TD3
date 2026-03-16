@@ -33,8 +33,6 @@ void TargetEnemyBullet::SetTargetPosition(Vector3 Pos)
     // directionを「長さが1のベクトル（正規化ベクトル）」にする
     direction = Normalize(direction);
 
-    // 初速をゼロにするか、最初から速度を持たせるかを設定します。
-    // 今回は徐々に加速する設定を活かします。
     velocity_ = { 0.0f, 0.0f, 0.0f };
 
     // 加速度の「大きさ」を決め、それにターゲットの方向を掛け合わせる
