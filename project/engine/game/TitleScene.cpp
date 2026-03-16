@@ -65,6 +65,7 @@ void TitleScene::Update() {
 		PostEffect::GetInstance()->SetInversion(true);
 	}
 
+
 	// * 3Dオブジェクト* //
 	for (int i = 0; i < 2; i++) {
 		object[i]->Update();

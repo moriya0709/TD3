@@ -37,20 +37,11 @@ void Input::Initialize(WindowAPI* windowAPI) {
 	result = keyboard->SetCooperativeLevel(
 		windowAPI_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
-
-	// DirectInput オブジェクト生成
-	HRESULT hr;
-	hr = DirectInput8Create(
-		GetModuleHandle(nullptr),
-		DIRECTINPUT_VERSION,
-		IID_IDirectInput8,
-		(void**)&directInput,
-		nullptr
-	);
+	
 	// マウスデバイス生成
-	hr = directInput->CreateDevice(GUID_SysMouse, &mouse, nullptr);
+	result = directInput->CreateDevice(GUID_SysMouse, &mouse, nullptr);
 	// データフォーマット設定
-	hr = mouse->SetDataFormat(&c_dfDIMouse);
+	result = mouse->SetDataFormat(&c_dfDIMouse);
 	// 取得開始
 	mouse->Acquire();
 
@@ -58,23 +49,30 @@ void Input::Initialize(WindowAPI* windowAPI) {
 // 接続されているジョイスティック（パッド）を探して、見つかるたびに EnumJoysticksCallback を呼ぶ
 	result = directInput->EnumDevices(
 		DI8DEVCLASS_GAMECTRL,
+		// --- Initialize関数内のEnumDevicesの中 ---
 		[](const DIDEVICEINSTANCE* pdidInstance, VOID* pContext) -> BOOL {
 			auto self = static_cast<Input*>(pContext);
 			ComPtr<IDirectInputDevice8> newPad;
 
-			// デバイス生成
 			if (FAILED(self->directInput->CreateDevice(pdidInstance->guidInstance, &newPad, nullptr))) {
 				return DIENUM_CONTINUE;
 			}
 
-			// フォーマット設定
-			newPad->SetDataFormat(&c_dfDIJoystick2);
-			// 排他制御
+			newPad->SetDataFormat(&c_dfDIJoystick);
 			newPad->SetCooperativeLevel(self->windowAPI_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
 
-			// ★ここが重要！リストに追加
+			// ★追加：軸の範囲を設定する
+			DIPROPRANGE diprg;
+			diprg.diph.dwSize = sizeof(DIPROPRANGE);
+			diprg.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+			diprg.diph.dwHow = DIPH_DEVICE;
+			diprg.diph.dwObj = 0;
+			diprg.lMin = -32768; // 最小値
+			diprg.lMax = 32768;  // 最大値
+			newPad->SetProperty(DIPROP_RANGE, &diprg.diph);
+
 			self->gamepads.push_back(newPad);
-			self->padStates.emplace_back(); // 状態保存用の箱も増やす
+			self->padStates.emplace_back();
 
 			return DIENUM_CONTINUE;
 		},
@@ -110,15 +108,17 @@ void Input::Update() {
 		mouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState);
 	}
 
-	// Update関数の最後に追加
+	// Update関数内のパッドループを以下に丸ごと入れ替え
 	for (size_t i = 0; i < gamepads.size(); i++) {
-		HRESULT hr = gamepads[i]->Poll(); // データを最新に更新
+		gamepads[i]->Poll();
+
+		// 現在の状態を取得
+		HRESULT hr = gamepads[i]->GetDeviceState(sizeof(DIJOYSTATE), &padStates[i]);
+
+		// もし取得に失敗（ウィンドウからフォーカスが外れた等）したら再取得を試みる
 		if (FAILED(hr)) {
 			gamepads[i]->Acquire();
-			continue;
 		}
-		// 現在の状態を取得して padStates[i] に格納
-		gamepads[i]->GetDeviceState(sizeof(DIJOYSTATE), &padStates[i]);
 	}
 }
 
