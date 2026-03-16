@@ -19,6 +19,7 @@ class Player;
 struct WayPoint {
     Vector3 target; // –Ú•W‚ÌÀ•W
     float timeToReach; // “’B‚É‚©‚¯‚éŠÔ
+    float timeToStop; // ’â~ŠÔ
 };
 
 class Enemy {

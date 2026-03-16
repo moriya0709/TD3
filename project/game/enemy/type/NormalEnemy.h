@@ -73,9 +73,11 @@ private:
     static inline const float radius = 1.0f;
 
     /* ウェイポイント移動の変数 */
-    std::vector<WayPoint> waypoints_;
+    std::vector<WayPoint> wayPoints_;
     int currentWayPointIndex_ = 0;
-    float waypointTimer_ = 0.0f;
+    float wayPointTimer_ = 0.0f;
+    float wayStopTimer_ = 0.0f;
+    bool isStop_ = false;
     Vector3 startPos_;
 
     // --- 逃走用の変数 ---
