@@ -33,14 +33,11 @@ void RayMarching::Initialize(SrvManager* srvManager) {
 	cloudParam->cameraPos;
 	cloudParam->time = 0.0f; // 時間
 	cloudParam->sunDir = { 0.3f, 0.8f, 0.2f }; // 太陽方向
-	cloudParam->density = 0.5f; 	// 密度
+	cloudParam->cloudCoverage = 0.5f; 	// 雲の量
 	cloudParam->cloudBottom = 50.0f; 	// 雲の下端
 	cloudParam->cloudTop = 300.0f; // 雲の上端
 	cloudParam->isRialLight = false; // リアル調ライティング
 	cloudParam->isAnimeLight = true; // アニメ調ライティング
-	cloudParam->isMoveX = false; // 時間経過による移動(x)
-	cloudParam->isMoveY = false; // 時間経過による移動(y)
-	cloudParam->isMoveZ = true; // 時間経過による移動(Z)
 
 }
 
@@ -76,7 +73,9 @@ void RayMarching::Draw() {
 	commandList->DrawInstanced(3, 1, 0, 0);
 }
 
-void RayMarching::CameraUpdate(Camera* camera) {
+void RayMarching::Update(Camera* camera) {
+	// カメラ座標
+	cloudParam->cameraPos = camera->GetTranslate();
 	// カメラ
 	Matrix4x4 camWorldMat = camera->GetWorldMatrix();
 
@@ -98,8 +97,36 @@ void RayMarching::CameraUpdate(Camera* camera) {
 	SetInvViewProj(finalMat);
 
 
+	// 現在のカメラのワールド座標を取得（以前のコードにあった GetTranslate() を使用）
+	Vector3 currentPosVec = camera->GetTranslate();
+	DirectX::XMFLOAT3 currentPos = { currentPosVec.x, currentPosVec.y, currentPosVec.z };
+
+	// 初回フレームはワープを防ぐため、現在地を記録して処理をスキップ
+	if (isFirstFrame) {
+		previousCameraPos = currentPos;
+		isFirstFrame = false;
+	}
+
+	// 1. 前回からの移動量（差分）を計算
+	DirectX::XMFLOAT3 deltaPos;
+	deltaPos.x = currentPos.x - previousCameraPos.x;
+	deltaPos.y = currentPos.y - previousCameraPos.y;
+	deltaPos.z = currentPos.z - previousCameraPos.z;
+
+	// 2. 移動量にスピードを掛けて、オフセットに蓄積（足し込む）
+	float moveSpeed = 0.01f; // ★雲が流れる速さ（お好みで調整）
+	cloudOffset.x += deltaPos.x * moveSpeed;
+	cloudOffset.y += deltaPos.y * moveSpeed;
+	cloudOffset.z += deltaPos.z * moveSpeed;
+
+	// 3. 次のフレームのために現在地を記録
+	previousCameraPos = currentPos;
+
+	// 4. 定数バッファ(Cbuffer)に蓄積オフセットをセット
+	cloudParam->cloudOffset = cloudOffset;
+
 	// 時間
-	cloudParam->time += 1.0f / 1.0f;
+	cloudParam->time += 1.0f / 60.0f;
 
 }
 
@@ -153,10 +180,6 @@ void RayMarching::ComputeCloud() {
 	barrierToSRV.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 	barrierToSRV.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	commandList->ResourceBarrier(1, &barrierToSRV);
-}
-
-void RayMarching::SetCamera(Camera* camera) {
-	cloudParam->cameraPos = camera->GetTranslate();
 }
 
 RayMarching* RayMarching::GetInstance() {

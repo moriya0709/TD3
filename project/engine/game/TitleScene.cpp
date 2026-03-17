@@ -139,12 +139,11 @@ void TitleScene::Update() {
 #pragma endregion
 
 #pragma region レイマーチング
-	RayMarching::GetInstance()->SetCamera(railCamera->camera.get());
 	// レイマーチング
-	RayMarching::GetInstance()->CameraUpdate(railCamera->camera.get());
+	RayMarching::GetInstance()->Update(railCamera->camera.get());
 	//rayMarching->SetTime(rayMarchingTime);
 	RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
-	RayMarching::GetInstance()->SetDensity(rayMarchingDensity);
+	RayMarching::GetInstance()->SetCloudCoverage(rayMarchingCloudCoverage);
 	RayMarching::GetInstance()->SetCloudTop(rayMarchingCloudBottom);
 	RayMarching::GetInstance()->SetCloudBottom(rayMarchingCloudTop);
 	RayMarching::GetInstance()->SetRialLight(rayMarchingIsRialLight);
@@ -281,7 +280,7 @@ void TitleScene::Update() {
 	// レイマーチング
 	//ImGui::DragFloat("rayMarchingTime", &rayMarchingTime, 0.1f,0.0f,10.0f);
 	ImGui::DragFloat3("rayMarchingSunDir", &rayMarchingSunDir.x, 0.1f,-50.0f,50.0f);
-	ImGui::DragFloat("rayMarchingDensity", &rayMarchingDensity, 0.01f,-5.0f,10.0f);
+	ImGui::DragFloat("rayMarchingCloudCoverage", &rayMarchingCloudCoverage, 0.01f,-5.0f,10.0f);
 	ImGui::DragFloat("rayMarchingCloudBottom", &rayMarchingCloudBottom, 10.0f,-5000.0f,5000.0f);
 	ImGui::DragFloat("rayMarchingCloudTop", &rayMarchingCloudTop, 10.0f, -5000.0f, 5000.0f);
 	ImGui::Checkbox("rayMarchingIsRialLight", &rayMarchingIsRialLight);

@@ -4,6 +4,7 @@
 #include <wrl.h>
 #include <dxcapi.h>
 #include <memory>
+#include <directxmath.h>
 
 #include "Calc.h"
 
@@ -18,18 +19,15 @@ struct CloudParam {
 	float time;
 
 	Vector3 sunDir;
-	float density;
+	float cloudCoverage;
 
 	float cloudBottom;
 	float cloudTop;
-
 	int isRialLight;
 	int isAnimeLight;
-	int isMoveX;
-	int isMoveY;
 
-	int isMoveZ;
-	int pad[3];
+	DirectX::XMFLOAT3 cloudOffset;
+	int pad;
 
 };
 
@@ -41,23 +39,19 @@ public:
 	void Draw();
 
 	// カメラ更新
-	void CameraUpdate(Camera* camera);
+	void Update(Camera* camera);
 	// コンピュートシェーダーを実行
 	void ComputeCloud();
 
 	// パラメーター
-	void SetCamera(Camera* camera);
 	void SetInvViewProj(Matrix4x4 invViewProj) { cloudParam->invViewProj = invViewProj; }
 	void SetTime(float time) { cloudParam->time = time; }
 	void SetSunDir(Vector3 sunDir) { cloudParam->sunDir = sunDir; }
-	void SetDensity(float density) { cloudParam->density = density; }
+	void SetCloudCoverage(float cloudCoverage) { cloudParam->cloudCoverage = cloudCoverage; }
 	void SetCloudBottom(float cloudBottom) {cloudParam->cloudBottom = cloudBottom;}
 	void SetCloudTop(float cloudTop) {cloudParam->cloudTop = cloudTop;}
 	void SetRialLight(bool isRialLight){ cloudParam->isRialLight = isRialLight; }
 	void SetAnimeLight(bool isAnimeLight){ cloudParam->isAnimeLight = isAnimeLight; }
-	void SetMoveX(bool isMoveX){ cloudParam->isMoveX = isMoveX; }
-	void SetMoveY(bool isMoveY){ cloudParam->isMoveY = isMoveY; }
-	void SetMoveZ(bool isMoveZ){ cloudParam->isMoveZ = isMoveZ; }
 
 	// シングルトンインスタンスの取得
 	static RayMarching* GetInstance();
@@ -99,6 +93,14 @@ private:
 	// index
 	uint32_t srvIndex_;
 	uint32_t uavIndex_;
+
+	// 前フレームのカメラ座標
+	DirectX::XMFLOAT3 previousCameraPos = { 0.0f, 0.0f, 0.0f };
+	// 雲のUVをずらすための蓄積オフセット
+	DirectX::XMFLOAT3 cloudOffset = { 0.0f, 0.0f, 0.0f };
+	// 初回実行判定用フラグ
+	bool isFirstFrame = true;
+
 
 	// DirectXCommonポインタ
 	DirectXCommon* dxCommon_ = nullptr;

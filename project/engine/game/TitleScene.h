@@ -104,9 +104,9 @@ private:
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
-	float rayMarchingDensity = 2.00f;
-	float rayMarchingCloudBottom = 230.0f;
-	float rayMarchingCloudTop = 30.0f;
+	float rayMarchingCloudCoverage = 0.15f;
+	float rayMarchingCloudBottom = 50.0f;
+	float rayMarchingCloudTop = -240.0f;
 	bool rayMarchingIsRialLight = false;
 	bool rayMarchingIsAnimeLight = true;
 
