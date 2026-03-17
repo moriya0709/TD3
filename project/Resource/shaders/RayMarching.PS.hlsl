@@ -21,7 +21,7 @@ cbuffer CloudParam : register(b0)
     float cloudCoverage;
 
     float cloudBottom;
-    float cloudTop;   
+    float cloudTop;
     int isRialLight;
     int isAnimeLight;
     
@@ -62,7 +62,7 @@ float fbm(float3 p)
     float f = 0;
     float amp = 0.5;
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 4; i++)
     {
         f += amp * noise(p);
         p *= 2.0;
@@ -108,13 +108,13 @@ float CloudDensity(float3 p)
     // この後どんなにディテールを足しても絶対に雲になりません。
     // だったら、ここで計算を打ち切って空(0.0)を返します！
     // ---------------------------------------------------
-    if (baseDensity + 0.3 <= 0.0)
+    if (baseDensity + 0.15 <= 0.0)
     {
         return 0.0;
     }
 
     // ここまで生き残った場所（雲の内部や輪郭）だけ、重い2回目のノイズを計算！
-    float detail = fbm(uv * 4.0);
+    float detail = noise(uv * 4.0) * 0.5 + noise(uv * 8.0) * 0.25;
 
     // 仮の密度にディテールを合成
     float localDensity = baseDensity + (detail * 0.3);
@@ -137,7 +137,7 @@ float3 RialLightCloud(float3 p)
     float3 pos = p;
 
     float lightStepLen = 100.0;
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 4; i++)
     {
         pos += lightDir * lightStepLen;
         shadow += CloudDensity(pos) * lightStepLen * 0.04;
@@ -245,7 +245,7 @@ float3 CalculateAtmosphere(float3 cameraPos, float3 rayDir, float3 sunDir)
     float mieScaleHeight = 1200.0; // ミー散乱は高度1.2km
 
     // 計算の分割数（背景用なので16回で十分綺麗です）
-    int numSteps = 16;
+    int numSteps = 8;
     float stepSize = (tMax - tMin) / float(numSteps);
     float currentPos = tMin + stepSize * 0.5;
     
@@ -253,15 +253,19 @@ float3 CalculateAtmosphere(float3 cameraPos, float3 rayDir, float3 sunDir)
     float3 totalRayleigh = float3(0, 0, 0);
     float3 totalMie = float3(0, 0, 0);
 
+    // 係数を事前計算
+    static const float PI = 3.14159265;
+    static const float INV_4PI = 1.0 / (4.0 * PI);
+    
     // 位相関数（光が視線に向かってどう散乱するか）
     float cosTheta = dot(rayDir, sunDir);
     // レイリー位相関数（空全体に広がる光）
     float phaseRayleigh = 3.0 / (16.0 * 3.14159) * (1.0 + cosTheta * cosTheta);
     // ミー位相関数（太陽の周りに強く出る光）
     float g = 0.76;
-    float phaseMie = 3.0 / (8.0 * 3.14159) * ((1.0 - g * g) * (1.0 + cosTheta * cosTheta)) /
-                     ((2.0 + g * g) * pow(abs(1.0 + g * g - 2.0 * g * cosTheta), 1.5));
-
+    float g2 = g * g;
+    float denom = pow(abs(1.0 + g2 - 2.0 * g * cosTheta), 1.5);
+    float phaseMie = (1.0 - g2) * INV_4PI / denom;
     // 大気の中を進みながら光を足し合わせるループ
     for (int i = 0; i < numSteps; i++)
     {
@@ -301,209 +305,163 @@ float3 CalculateAtmosphere(float3 cameraPos, float3 rayDir, float3 sunDir)
     return skyColor;
 }
 
-// ---------------------------------------------------------
-// メイン処理（空と雲の統合版）
-// ---------------------------------------------------------
 float4 main(VSOutput input) : SV_TARGET
 {
-    // UV→NDC変換
     float2 ndcXY = input.uv * 2.0f - 1.0f;
     ndcXY.y *= -1.0f;
-    
     float4 clip = float4(ndcXY, 1.0, 1.0);
     float4 world = mul(invViewProj, clip);
     world.xyz /= world.w;
-    
     float3 rayDir = normalize(world.xyz - cameraPos);
 
     // ==========================================
-    // 1. 大気散乱（背景の空）の計算
+    // 1. 大気散乱
     // ==========================================
     float3 normalizedSunDir = normalize(-sunDir);
-    float3 skyRayDir = rayDir;
 
-    // 水平線の位置調整
-    float horizonOffset = 0.05;
-    skyRayDir.y += horizonOffset;
-    skyRayDir = normalize(skyRayDir);
+    float3 skyRayDir = normalize(rayDir + float3(0, 0.05, 0));
+    float3 skyColor = CalculateAtmosphere(cameraPos, skyRayDir, normalizedSunDir);
 
-    // 空の色の計算（フェード前の生の色を取得）
-    float3 skyColorRaw = CalculateAtmosphere(cameraPos, skyRayDir, normalizedSunDir);
-    float3 skyColor = skyColorRaw;
-    
-    // ==========================================
-    // ★【新規追加】雲の環境光用に、地平線下の影響を受けない「上空の色」を計算する
-    // ==========================================
-    float3 ambientRayDir = rayDir;
-    ambientRayDir.y = max(ambientRayDir.y, 0.05); // 強制的に上空（Y=0.5）を向かせる
-    ambientRayDir = normalize(ambientRayDir);
+    float3 ambientRayDir = normalize(float3(rayDir.x, max(rayDir.y, 0.05), rayDir.z));
     float3 cloudAmbientSkyColor = CalculateAtmosphere(cameraPos, ambientRayDir, normalizedSunDir);
-    
-       // 水平線
+
+    // ★ 昼夜判定（normalizedSunDir.yが正=昼、負=夜）
+    float sunHeight = normalizedSunDir.y;
+    float dayFactor = saturate(sunHeight * 4.0); // 0=夜、1=昼
+    float sunsetTime = smoothstep(0.3, 0.0, sunHeight)
+                     * smoothstep(-0.2, 0.0, sunHeight); // 夕焼けピーク
+
+    // ==========================================
+    // 水平線
+    // ==========================================
     if (skyRayDir.y < 0.0)
     {
-        // 時間によって海の色を変える
-        
-      // 1. 太陽の高さ（Y成分）を取得
-        // normalizedSunDir.y は、太陽が上にあるとプラス、下（夜）に沈むとマイナスになります。
-        float sunHeight = normalizedSunDir.y;
-
-        // 2. 昼・夕方・夜の「海の色」をそれぞれ定義
-        float3 daySea = float3(0.05, 0.3, 0.6); // 昼：鮮やかな青
-        float3 sunsetSea = float3(0.6, 0.25, 0.1); // 夕方：夕焼けを反射したオレンジ・赤
-        float3 nightSea = float3(0.01, 0.015, 0.03); // 夜：暗い紺色
-
+        float3 daySea = float3(0.05, 0.3, 0.6);
+        float3 sunsetSea = float3(0.6, 0.25, 0.1);
+        float3 nightSea = float3(0.01, 0.015, 0.03);
         float3 seaColor;
-
-        // 3. 太陽の高さに合わせて、色をブレンドする
         if (sunHeight > 0.0)
-        {
-            // 太陽が地平線より上（夕方〜昼）
-            float blend = smoothstep(0.0, 0.2, sunHeight);
-            seaColor = lerp(sunsetSea, daySea, blend);
-        }
+            seaColor = lerp(sunsetSea, daySea, smoothstep(0.0, 0.2, sunHeight));
         else
-        {
-            // 太陽が地平線より下（夜〜夕方）
-            float blend = smoothstep(-0.2, 0.0, sunHeight);
-            seaColor = lerp(nightSea, sunsetSea, blend);
-        }
-
-        // さらに、上空の空の色(cloudAmbientSkyColor)を少し足すと、水面の反射っぽくなってより自然に馴染みます！
+            seaColor = lerp(nightSea, sunsetSea, smoothstep(-0.2, 0.0, sunHeight));
         seaColor += cloudAmbientSkyColor * 0.1;
-
-        // 4. 元のフェードの計算（空の色と海の色を境界でなじませる）
-        float fadeWidth = 0.05;
-        float fadeFactor = smoothstep(-fadeWidth, 0.0, skyRayDir.y);
-        skyColor = lerp(seaColor, skyColor, fadeFactor);
+        skyColor = lerp(seaColor, skyColor, smoothstep(-0.05, 0.0, skyRayDir.y));
     }
-    
+
+    // ★ 地平線グロー（昼夜で変化）
+    float horizonBand = smoothstep(0.0, 0.12, skyRayDir.y)
+                      * smoothstep(0.12, 0.0, skyRayDir.y);
+
+    float3 horizonDay = float3(0.6, 0.8, 1.0);
+    float3 horizonSunset = float3(1.0, 0.4, 0.1);
+    float3 horizonNight = float3(0.02, 0.04, 0.12);
+    float3 horizonColor;
+    if (sunHeight > 0.0)
+        horizonColor = lerp(horizonSunset, horizonDay, smoothstep(0.0, 0.3, sunHeight));
+    else
+        horizonColor = lerp(horizonNight, horizonSunset, smoothstep(-0.3, 0.0, sunHeight));
+
+    float sunAlignH = saturate(dot(float2(skyRayDir.x, skyRayDir.z),
+                                    float2(normalizedSunDir.x, normalizedSunDir.z)));
+    float horizonGlow = horizonBand * lerp(0.2, 1.0, sunAlignH);
+    skyColor = lerp(skyColor, horizonColor, horizonGlow);
+
     // ==========================================
-    // 2. 雲の交差判定と初期化
+    // 2. 雲の交差判定
     // ==========================================
     float3 color = float3(0, 0, 0);
     float transmittance = 1.0;
     bool hitClouds = true;
 
-    // 真横や範囲外の場合は雲の描画のみをスキップする
     if (abs(rayDir.y) < 0.0001)
-    {
         hitClouds = false;
-    }
 
     float tBottom = (cloudBottom - cameraPos.y) / rayDir.y;
     float tTop = (cloudTop - cameraPos.y) / rayDir.y;
-    
     float tStart = min(tBottom, tTop);
-    float tEnd = max(tBottom, tTop);
-
-    float maxDist = 50000.0;
-    tEnd = min(tEnd, maxDist);
-
+    float tEnd = min(max(tBottom, tTop), 50000.0);
     if (tEnd < 0 || tStart >= tEnd)
-    {
         hitClouds = false;
-    }
-    
 
-    
     // ==========================================
-    // 3. 雲のレイマーチング (雲と交差する時のみ実行)
+    // 3. レイマーチング
     // ==========================================
     if (hitClouds)
     {
         tStart = max(tStart, 0);
-        float maxCloudDist = 20000.0;
-        float effectiveEnd = min(tStart + maxCloudDist, tEnd);
+        float effectiveEnd = min(tStart + 20000.0, tEnd);
 
-        float minStep = 80.0;
-        float maxStep = 400.0;
+        float minStep = 100.0;
+        float maxStep = 600.0;
 
         float3 pos = cameraPos + rayDir * tStart;
-        float randomJitter = hash(float3(input.uv * 1000.0, time));
-        pos += rayDir * (minStep * randomJitter);
+        float randomJitter = frac(sin(dot(input.uv, float2(127.1, 311.7)))
+                           * 43758.5 + time * 0.1);
+        pos += rayDir * (minStep * randomJitter * 0.5);
 
         float t = tStart;
 
-        for (int i = 0; i < 96; i++)
+        for (int i = 0; i < 48; i++)
         {
             if (t >= effectiveEnd)
                 break;
 
             float d = CloudDensity(pos);
+
+            // 3段階ステップ
             float stepLen = (d < 0.01) ? maxStep : minStep;
             float opticalDepth = d * stepLen * 0.04;
 
             if (opticalDepth > 0.001)
             {
-               // ==========================================
-                // 追加: リアルな雲のライティング計算
-                // ==========================================
-                // 太陽の向きと視線の角度（内積）
+                // HG位相関数
                 float cosTheta = dot(rayDir, normalizedSunDir);
-
-                // 1. Henyey-Greenstein 位相関数（太陽の周りが眩しく光る効果）
-                // g は光の前方散乱の強さ（0.0〜1.0）。0.7くらいが雲に丁度いいです。
                 float g = 0.7;
-                float phase = (1.0 - g * g) / pow(1.0 + g * g - 2.0 * g * cosTheta, 1.5) / (4.0 * 3.14159);
-                // 逆光時のフチの輝きを足す
+                float phase = (1.0 - g * g)
+                                 / pow(1.0 + g * g - 2.0 * g * cosTheta, 1.5)
+                                 / (4.0 * 3.14159);
                 float phaseBlend = lerp(phase, 1.0, 0.3);
 
-                // 2. パウダー効果（表面が明るく、奥が暗くなる）
-                // opticalDepth（密度）を使って、表面付近だけ明るくする
                 float powderEffect = 1.0 - exp(-opticalDepth * 2.0);
-
-                // 3. 雲の中の太陽光の強さ（簡易的な影の計算）
-                // 本来は太陽方向へもう一度レイマーチングしますが、重いので近似します
-                // d は CloudDensity で取得した現在の密度
                 float lightScattering = exp(-d * 50.0) * powderEffect * phaseBlend;
-                
-                // 夕焼けの広がりと強さの計算
-                // 1. 太陽と視線の角度（1.0が太陽のド真ん中、-1.0が真後ろ）
-                float cosThetaGlobal = dot(rayDir, normalizedSunDir);
-                // 2. ★ここで広がりを決める！
-                float sunsetSpread = smoothstep(-5.0, 1.0, cosThetaGlobal);
-                // 3. 太陽が低い時（夕方）だけ効果を出すための判定（Yが 0.0 近辺の時）
-                float sunsetTime = smoothstep(0.3, 0.0, normalizedSunDir.y) * smoothstep(-0.2, 0.0, normalizedSunDir.y);
-                // 4. 空全体に広がる夕焼けの基本色（燃えるようなオレンジ）
+
+                // 夕焼け色
+                float sunsetSpread = smoothstep(-1.0, 1.0, cosTheta);
                 float3 wideSunsetColor = float3(1.0, 0.35, 0.1) * sunsetSpread * sunsetTime;
-                
-                // ==========================================
-                // 色の合成
-                // ==========================================
+
+                // ★ 太陽色（昼→夕焼け→夜でブレンド）
+                float3 daySunColor = float3(1.0, 0.92, 0.85);
+                float3 sunsetSunColor = float3(1.0, 0.45, 0.05);
+                float3 nightSunColor = float3(0.08, 0.10, 0.18); // 月明かり
+                float3 currentSunColor = lerp(daySunColor, sunsetSunColor, sunsetTime);
+                currentSunColor = lerp(nightSunColor, currentSunColor, dayFactor);
+
+                // ★ 太陽光強度（夜は大幅減）
+                float sunIntensity = lerp(0.2, 7.0, dayFactor);
+                float3 sunIllumination = currentSunColor * sunIntensity * lightScattering;
+
+                // ★ 環境光（夜は暗い紺）
+                float3 nightAmbient = float3(0.015, 0.02, 0.05);
+                float skyLuma = dot(cloudAmbientSkyColor, float3(0.299, 0.587, 0.114));
+                float3 desaturatedSky = lerp(float3(skyLuma, skyLuma, skyLuma),
+                                             cloudAmbientSkyColor, 0.2);
+                float3 dayAmbient = (desaturatedSky * 0.1) + (wideSunsetColor * 0.4);
+                float3 cloudAmbient = lerp(nightAmbient, dayAmbient, dayFactor);
+
+                // ライト関数
                 float3 light = float3(0, 0, 0);
-                
-                // 元のライト関数がある場合は掛け合わせる
                 if (isRialLight)
                     light = RialLightCloud(pos);
                 if (isAnimeLight)
                     light = AnimeLightCloud(pos);
 
-              
-                // ==========================================
-                // 夕焼けを広範囲に適用するライティング
-                // ==========================================
-                
-                // (Henyey-Greenstein や powderEffect の計算はそのまま...)
+                // ★ ライト関数の結果も昼夜でスケール
+                light = light * lerp(0.05, 1.0, dayFactor);
 
-                // 1. 太陽光の「直接光」の色を、時間帯によって白からオレンジに変化させる
-                float3 daySunColor = float3(1.0, 0.9, 0.8);
-                float3 sunsetSunColor = float3(1.0, 0.4, 0.05); // 濃い夕焼け色
-                float3 currentSunColor = lerp(daySunColor, sunsetSunColor, sunsetTime);
-                
-                // 太陽光の計算
-                float3 sunIllumination = currentSunColor * 5.0 * lightScattering;
+                light += sunIllumination + cloudAmbient;
 
-                // 2. ★環境光（雲の影の色）に、広範囲の夕焼け色をガッツリ足す！
-                // これにより、太陽の光が直接当たっていない雲の裏側や、遠くの雲も夕焼け色に染まります。
-                float3 cloudAmbient = (cloudAmbientSkyColor * 0.15) + (wideSunsetColor * 0.6);
-
-                // 3. ベースの光に合成
-                light = (light * 0.5) + sunIllumination + cloudAmbient;
-                
                 color += opticalDepth * light * transmittance;
                 transmittance *= exp(-opticalDepth);
-
                 if (transmittance < 0.005)
                     break;
             }
@@ -514,38 +472,21 @@ float4 main(VSOutput input) : SV_TARGET
     }
 
     // ==========================================
-    // 4. 最終合成 (空 + 雲)
+    // 4. 最終合成
     // ==========================================
-    // 雲がない場所（hitClouds = false）では、color=0, transmittance=1 なので skyColor がそのまま出力される
     float3 finalColor = color + skyColor * transmittance;
 
-    // トーンマッピング（明るさの調整）
-    float exposure = 1.5;
+    // ★ 夜はexposureを下げて全体を暗く
+    float exposure = lerp(0.6, 1.5, dayFactor);
     finalColor = 1.0 - exp(-finalColor * exposure);
-    
-    // ==========================================
-    // ★【新規追加】コントラストと彩度の調整
-    // ==========================================
-    
-    // 1. コントラストの調整（べき乗カーブ）
-    // 値を 1.0 より大きくする（例: 1.2 ～ 1.5）と、中間の色が沈み込んでコントラストが強くなります。
+
     float contrast = 1.5;
     finalColor = pow(finalColor, float3(contrast, contrast, contrast));
-
-    // 2. さらにシネマティックにするためのS字カーブ（お好みで！）
-    // 暗い部分をより暗く、明るい部分をより明るくするS字補正です。
     finalColor = finalColor * finalColor * (3.0 - 2.0 * finalColor);
 
-    // 3. （おまけ）彩度（色の鮮やかさ）の調整
-    // コントラストを上げると色が濃くなりますが、さらに鮮やかにしたい場合に使います。
-    float saturation = 1.2; // 1.0が元の色、大きくすると鮮やかに
-    // グレースケール（明るさ）を計算
+    float saturation = lerp(0.7, 1.2, dayFactor); // ★ 夜は彩度を下げてモノトーンに
     float luminance = dot(finalColor, float3(0.299, 0.587, 0.114));
-    // モノクロと元の色をブレンドして彩度を調整
     finalColor = lerp(float3(luminance, luminance, luminance), finalColor, saturation);
 
-    return float4(finalColor, 1.0);
-    
-    // 背景として描画するため、アルファは 1.0
     return float4(finalColor, 1.0);
 }

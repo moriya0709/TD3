@@ -58,8 +58,11 @@ void Game::Initialize() {
 
 	// ポストエフェクト
 	PostEffect::GetInstance()->Initialize(dxCommon, windowAPI.get(),srvManager.get());
+	
 	// レイマーチング
 	RayMarching::GetInstance()->Initialize(srvManager.get());
+	// 3Dテクスチャに雲を書き込む
+	RayMarching::GetInstance()->ComputeCloud();
 
 
 	// シーンマネージャーの生成
@@ -94,8 +97,6 @@ void Game::Draw() {
 	srvManager->PreDraw();
 	PostEffect::GetInstance()->PreDraw();
 
-	// 3Dテクスチャに雲を書き込む
-	RayMarching::GetInstance()->ComputeCloud();
 	// レイマーチング描画
 	RayMarching::GetInstance()->Draw();
 
