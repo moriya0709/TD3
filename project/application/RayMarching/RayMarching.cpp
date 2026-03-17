@@ -165,10 +165,10 @@ void RayMarching::ComputeCloud() {
 
 	// --------------------------------------------------------
 	// ③ 実行（Dispatch）
-	// ★ スレッドグループ数: 128 / 8 = 16
+	// ★ スレッドグループ数: 256 / 8 = 16
 	// (※HLSL側が [numthreads(8, 8, 8)] になっている前提です)
 	// --------------------------------------------------------
-	commandList->Dispatch(16, 16, 16);
+	commandList->Dispatch(32, 32, 32);
 
 	// --------------------------------------------------------
 	// ④ バリア: UAV(書き込み) から SRV(読み込み) へ戻す
@@ -417,9 +417,9 @@ void RayMarching::Create3DTextureResource() {
 	// 2. リソースの設定（3Dテクスチャ）
 	D3D12_RESOURCE_DESC resDesc{};
 	resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D; // ここが3Dテクスチャの証！
-	resDesc.Width = 128;              // 幅
-	resDesc.Height = 128;             // 高さ
-	resDesc.DepthOrArraySize = 128;   // 奥行き
+	resDesc.Width = 256;              // 幅
+	resDesc.Height = 256;             // 高さ
+	resDesc.DepthOrArraySize = 256;   // 奥行き
 	resDesc.MipLevels = 1;
 	// フォーマット：雲のデータ(float4)を入れるので、精度に余裕のある16bit Floatか、容量重視の8bit UNORMを選びます
 	resDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -457,7 +457,7 @@ void RayMarching::CreateUAVDescriptor() {
 	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
 	uavDesc.Texture3D.MipSlice = 0;
 	uavDesc.Texture3D.FirstWSlice = 0;
-	uavDesc.Texture3D.WSize = 128; // 全ての深度(W)を指定
+	uavDesc.Texture3D.WSize = 256; // 全ての深度(W)を指定
 
 	// ★ ここで先ほど計算した正しいアドレス(uavHandle)を渡す！
 	device->CreateUnorderedAccessView(
