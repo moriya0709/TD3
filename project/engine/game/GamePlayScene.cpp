@@ -80,7 +80,7 @@ void GamePlayScene::Update()
 
 #pragma region レイマーチング
     // レイマーチング
-    RayMarching::GetInstance()->Update(camera.get());
+    RayMarching::GetInstance()->Update(CameraController_->GetCamera());
     //rayMarching->SetTime(rayMarchingTime);
     RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
     RayMarching::GetInstance()->SetCloudCoverage(rayMarchingCloudCoverage);
