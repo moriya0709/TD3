@@ -4,25 +4,33 @@ struct Material
 {
     float4 color;
     int enableLighting;
-    float3 pad1; // バイト合わせ
+    int enableToonShading;
+    float2 pad1;
     float4x4 uvTransform;
     float3 emissive;
-    float pad2; // バイト合わせ
+    float shininess;
+
+    // フレネル反射 / リムライト関連
+    float4 fresnelColor; // トゥーンOFF時のフレネル反射の色
+    float fresnelPower; // フレネル反射の累乗数（値が大きいほどエッジに寄る）
+    float4 rimColor; // トゥーンON時のリムライトの色
+    float rimThreshold; // リムライトの境界（0～1、値が大きいほど細くなる）
+    float pad3[3]; // バイト合わせ
 };
-    
+
 struct DirectionalLight
 {
-    float32_t4 color; // ライトの色 
-    float32_t3 direction; // ライトの向き 
-    float intensity; // 輝度 
-    int isDisplay; // 表示するかどうか 
+    float32_t4 color;
+    float32_t3 direction;
+    float intensity;
+    int isDisplay;
 };
 
 struct AmbientLight
 {
-    float32_t4 color; // ライトの色 
-    float intensity; // 輝度 
-    int isDisplay; // 表示するかどうか 
+    float32_t4 color;
+    float intensity;
+    int isDisplay;
 };
 
 struct PointLight
@@ -40,10 +48,17 @@ struct SpotLight
     float32_t3 position;
     float intensity;
     float32_t3 direction;
-    float range; // 距離減衰用
-    float innerCone; // 内側角度
-    float outerCone; // 外側角度
+    float range;
+    float innerCone;
+    float outerCone;
     int isDisplay;
+};
+
+// ★追加: カメラ座標を受け取る構造体
+struct ViewData
+{
+    float3 cameraPos;
+    float pad;
 };
 
 ConstantBuffer<Material> gMaterial : register(b0);
@@ -51,6 +66,7 @@ ConstantBuffer<DirectionalLight> gDirectionalLight : register(b2);
 ConstantBuffer<AmbientLight> gAmbientLight : register(b3);
 ConstantBuffer<PointLight> gPointLight : register(b4);
 ConstantBuffer<SpotLight> gSpotLight : register(b5);
+ConstantBuffer<ViewData> gView : register(b6); // ★追加: ビュー情報
 
 Texture2D<float32_t4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
@@ -64,24 +80,52 @@ PixelShaderOutput main(VertexShaderOutput input)
     if (gMaterial.enableLighting != 0)
     {
         float3 normal = normalize(input.normal);
+        float3 viewDir = normalize(gView.cameraPos - input.worldPosition);
+
         float4 directional = float4(0, 0, 0, 0);
+        float4 directionalSpecular = float4(0, 0, 0, 0); // 鏡面反射用
         float4 ambient = float4(0, 0, 0, 0);
         float4 pointLight = float4(0, 0, 0, 0);
         float4 spot = float4(0, 0, 0, 0);
-       
-        // 平行光
+        float4 fresnel = float4(0, 0, 0, 0); // フレネル/リムライト用
+        
+        // 平行光 (Directional Light)
         if (gDirectionalLight.isDisplay)
         {
-            float NdotL = dot(normal, -gDirectionalLight.direction);
-            float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
-            directional = gDirectionalLight.color * cos * gDirectionalLight.intensity;
+            float3 lightDir = normalize(-gDirectionalLight.direction);
+            float NdotL = dot(normal, lightDir);
+            float halfLambert = NdotL * 0.5f + 0.5f;
+            
+            float diffuse = 0.0f;
+            if (gMaterial.enableToonShading != 0)
+            {
+                // アニメ調
+                diffuse = smoothstep(0.45f, 0.55f, halfLambert);
+            }
+            else
+            {
+                // 従来
+                diffuse = pow(halfLambert, 2.0f);
+            }
+            directional = gDirectionalLight.color * diffuse * gDirectionalLight.intensity;
+        
+            // --- 鏡面反射 (Specular) ---
+            if (NdotL > 0.0f)
+            {
+                float3 halfwayDir = normalize(lightDir + viewDir);
+                float NdotH = saturate(dot(normal, halfwayDir));
+                float specFactor = pow(NdotH, gMaterial.shininess);
+                directionalSpecular = gDirectionalLight.color * specFactor * gDirectionalLight.intensity;
+            }
         }
-        // 環境光 
+
+        // 環境光 (Ambient Light)
         if (gAmbientLight.isDisplay)
         {
             ambient = gAmbientLight.color * gAmbientLight.intensity;
         }
-        // ポイントライト
+
+        // ポイントライト (Point Light)
         if (gPointLight.isDisplay)
         {
             float3 lightVec = gPointLight.position - input.worldPosition;
@@ -89,33 +133,81 @@ PixelShaderOutput main(VertexShaderOutput input)
             float3 L = normalize(lightVec);
 
             float attenuation = saturate(1.0f - distance / gPointLight.radius);
-
             float NdotL = dot(normal, L);
-            float diffuse = saturate(NdotL);
+            
+            float diffuse = 0.0f;
+            if (gMaterial.enableToonShading != 0)
+            {
+                diffuse = smoothstep(0.01f, 0.1f, NdotL);
+            }
+            else
+            {
+                diffuse = saturate(NdotL);
+            }
 
             pointLight = gPointLight.color * diffuse * attenuation * gPointLight.intensity;
         }
-        // スポットライト
+
+        // スポットライト (Spot Light)
         if (gSpotLight.isDisplay)
         {
             float3 lightVec = gSpotLight.position - input.worldPosition;
             float distance = length(lightVec);
             float3 L = normalize(lightVec);
             
-            // 距離減衰
             float attenuation = saturate(1.0f - distance / gSpotLight.range);
-            // 角度減衰
             float theta = dot(normalize(-L), normalize(gSpotLight.direction));
             float epsilon = gSpotLight.innerCone - gSpotLight.outerCone;
             float angleFactor = saturate((theta - gSpotLight.outerCone) / epsilon);
-            // 拡散反射
-            float NdotL = saturate(dot(normal, L));
+            
+            float NdotL = dot(normal, L);
+            float diffuse = 0.0f;
+            
+            if (gMaterial.enableToonShading != 0)
+            {
+                diffuse = smoothstep(0.01f, 0.1f, NdotL);
+                angleFactor = smoothstep(0.01f, 0.1f, angleFactor);
+            }
+            else
+            {
+                diffuse = saturate(NdotL);
+            }
 
-            spot = gSpotLight.color * NdotL * attenuation * angleFactor * gSpotLight.intensity;
+            spot = gSpotLight.color * diffuse * attenuation * angleFactor * gSpotLight.intensity;
         }
         
-        float4 lighting = directional + ambient + pointLight + spot;
+        // フレネル / リムライトの計算
+        float VdotN = saturate(dot(viewDir, normal));
+        float fresnelTerm = pow(1.0f - VdotN, gMaterial.fresnelPower);
+
+        if (gMaterial.enableToonShading != 0)
+        {
+            // トゥーンON: リムライト (パキッとした輪郭)
+            float rimFactor = smoothstep(gMaterial.rimThreshold, gMaterial.rimThreshold + 0.1f, fresnelTerm);
+            fresnel = gMaterial.rimColor * rimFactor;
+        }
+        else
+        {
+            // トゥーンOFF: フレネル反射 (滑らかな輪郭)
+            fresnel = gMaterial.fresnelColor * fresnelTerm;
+        }
+        
+        
+        if (gDirectionalLight.isDisplay)
+        {
+            // 平行光源の色と輝度を掛けることで、夜になればリムライトも暗くなる
+            fresnel *= gDirectionalLight.color * gDirectionalLight.intensity;
+        }
+        else
+        {
+            // ライトがOFFならリムライトも消す
+            fresnel = float4(0, 0, 0, 0);
+        }
+
+        // ライティングの合成
+        float4 lighting = directional + directionalSpecular + ambient + pointLight + spot + fresnel;
         float4 finalColor = lighting + float4(gMaterial.emissive, 1.0f);
+        
         output.color = gMaterial.color * textureColor * finalColor;
     }
     else

@@ -10,6 +10,7 @@
 #include <dxcapi.h>
 
 #include "Calc.h"
+#include "RayMarching.h"
 
 class Model;
 class Camera;
@@ -52,6 +53,12 @@ struct SpotLight {
 	float outerCone;    // 外側角度
 	int isDisplay;
 };
+// カメラデータ
+struct ViewData {
+	Vector3 cameraPos;
+	float pad;
+};
+
 
 // アウトラインデータ
 struct Outline {
@@ -117,6 +124,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> pointLightResource;
 	Microsoft::WRL::ComPtr<ID3D12Resource> spotLightResource;
 	Microsoft::WRL::ComPtr<ID3D12Resource> outlineResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> viewResource;
 
 	// バッファリソース内のデータを指すポインタ
 	TransformationMatrix* transformationMatrixData = nullptr;
@@ -125,11 +133,13 @@ private:
 	PointLight* pointLightData = nullptr;
 	SpotLight* spotLightData = nullptr;
 	Outline* outlineData = nullptr;
+	ViewData* viewData = nullptr;
 
 	// Transform
 	Transform transform;
 	Transform cameraTransform;
 
+	bool isSunLight = true;
 
 	// モデル
 	Model* model_ = nullptr;
@@ -137,6 +147,9 @@ private:
 	Camera* camera_ = nullptr;
 	// DirectXCommonのポインタ
 	DirectXCommon* dxCommon_ = nullptr;
+
+	// 空の色をモデルに反映
+	void SunLight();
 
 };
 

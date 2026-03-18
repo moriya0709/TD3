@@ -351,6 +351,28 @@ float RaySphereIntersect(const Vector3& rayOrigin, const Vector3& rayDir, const 
 	return (-b - sqrtf(discriminant)) / (2.0f * a); // 近い方の距離
 }
 
+float Smoothstep(float edge0, float edge1, float x) {
+    // ゼロ除算（edge0とedge1が完全に同じ値の場合）の安全対策
+    if (edge0 == edge1) {
+        return (x >= edge0) ? 1.0f : 0.0f;
+    }
+
+    // 割合を 0.0 ～ 1.0 の範囲にクランプする
+    float t = std::clamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+
+    // エルミート補間（緩やかに始まって緩やかに終わるカーブ）を計算
+    return t * t * (3.0f - 2.0f * t);
+}
+
+Vector4 Lerp(const Vector4& a, const Vector4& b, float t) {
+    Vector4 result;
+    result.x = a.x + (b.x - a.x) * t;
+    result.y = a.y + (b.y - a.y) * t;
+    result.z = a.z + (b.z - a.z) * t;
+    result.w = a.w + (b.w - a.w) * t;
+    return result;
+}
+
 float Lerp(float x1, float x2, float t) { return (1.0f - t) * x1 + t * x2; }
 
 float EaseIn(float x1, float x2, float t)
