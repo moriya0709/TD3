@@ -78,6 +78,8 @@ private:
 	Transform transform_;
 	// プレイヤーの3Dオブジェクト
 	std::unique_ptr<Object> playerObject_;
+	//マシン3Dオブジェクト
+	std::unique_ptr<Object> machineObject_;
 	// プレイヤーの2Dスプライト（照準）
 	std::unique_ptr<Sprite> reticle_;
 	std::unique_ptr<Sprite> chargeReticle_;
@@ -132,8 +134,10 @@ private:
 
 	static int cureentStyleStatasLevels[4][2];
 	void StyleLevelUp(Style style, int statas);
-	std::string GetFilePath(int slot) const;
+	std::string GetFilePath() const;
 	void LoadStatas(const std::string& filePath);
+	void SaveStatas(const std::string& filePath) const;
+
 
 };
 
