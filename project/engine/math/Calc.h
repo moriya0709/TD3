@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <algorithm>
 
 /// AL3サンプルプログラム用の数学ライブラリ。
 /// MT3準拠で、KamataEngine内部の数学ライブラリと重複する。
@@ -117,6 +118,10 @@ Vector3 VectorTransform(const Vector3& v, const Matrix4x4& m);
 // レイ
 float RaySphereIntersect(const Vector3& rayOrigin, const Vector3& rayDir,
     const Vector3& sphereCenter, float radius);
+
+float Smoothstep(float edge0, float edge1, float x);
+
+Vector4 Lerp(const Vector4& a, const Vector4& b, float t);
 
 float Lerp(float x1, float x2, float t);
 

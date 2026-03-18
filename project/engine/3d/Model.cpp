@@ -33,7 +33,12 @@ void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, const 
 	// 初期値を書き込む
 	materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialData->enableLighting = true;
+	materialData->enableToonShading = true;
 	materialData->uvTransform = MakeIdentity4x4();
+	materialData->fresnelColor = { 1.0f, 1.0f, 1.0f, 0.5f }; // 白、透明度0.5。モデルに合わせて調整してください。
+	materialData->fresnelPower = 4.0f; // 4乗。エッジに寄せる。
+	materialData->rimColor = { 1.0f, 1.0f, 1.0f, 1.0f };    // 白、パキッと。
+	materialData->rimThreshold = 0.5f;   // 境界0.5。
 
 	// *テクスチャ* //
 
