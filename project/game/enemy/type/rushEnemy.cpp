@@ -52,7 +52,7 @@ void rushEnemy::Update()
         break;
     }
 
-    // BulletUpdate();
+     BulletUpdate();
 
     // ¶‚«‚Ä‚¢‚È‚¢‚È‚ç‚â‚ç‚êƒ‚[ƒVƒ‡ƒ“ˆ—‚ğ“ü‚ê‚é
     if (!isAvile) {
@@ -150,6 +150,7 @@ void rushEnemy::BehaviorWalk()
 {
     // ˆÚ“®
     EnemyMove();
+
 }
 
 void rushEnemy::BulletUpdate()
