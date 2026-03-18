@@ -196,9 +196,12 @@ float3 AnimeLightCloud(float3 p)
 // =====================================================================
 float2 IntersectSphere(float3 ro, float3 rd, float radius)
 {
-    // 球の中心は原点 (0,0,0) と仮定
     float b = dot(ro, rd);
-    float c = dot(ro, ro) - radius * radius;
+    
+    // ★【修正】巨大な数同士の引き算による桁落ち（精度エラー）を防ぐ数学的トリック
+    float len = length(ro);
+    float c = (len - radius) * (len + radius);
+    
     float h = b * b - c;
     
     // 交差しない場合
@@ -218,8 +221,11 @@ float3 CalculateAtmosphere(float3 cameraPos, float3 rayDir, float3 sunDir)
     float planetRadius = 6371000.0; // 地球の半径（約6371km）
     float atmosphereRadius = 6471000.0; // 大気圏の果て（上空100km）
 
+    // カメラが地下に潜っても、計算上の最低高度を0（地上）に保つ
+    float safeCameraY = max(cameraPos.y, 0.0);
+    
     // カメラ位置を「地球の表面付近」として計算空間に合わせる
-    float3 ro = float3(0.0, planetRadius + cameraPos.y, 0.0);
+    float3 ro = float3(0.0, planetRadius + safeCameraY, 0.0);
 
     // 大気圏との交差判定（どこまで計算するか）
     float2 atmosphereHit = IntersectSphere(ro, rayDir, atmosphereRadius);
@@ -229,11 +235,13 @@ float3 CalculateAtmosphere(float3 cameraPos, float3 rayDir, float3 sunDir)
     float tMin = max(0.0, atmosphereHit.x);
     float tMax = atmosphereHit.y;
     
-    // 視線が地面（地球）にぶつかる場合は、そこを終点にする
+    // 視線が地面（地球）にぶつかる、または表面スレスレ（内部判定）の場合
     float2 planetHit = IntersectSphere(ro, rayDir, planetRadius);
-    if (planetHit.x > 0.0)
+    // x(入口)ではなく、y(出口)が前方にあるか(> 0.0)で「地球と重なっているか」を判定する
+    if (planetHit.y > 0.0)
     {
-        tMax = min(tMax, planetHit.x);
+        // 交差点(tMax)を入口(x)に設定するが、マイナス(誤差)の場合は 0.0 にクランプする
+        tMax = min(tMax, max(0.0, planetHit.x));
     }
 
     // 散乱係数（RGBの波長ごとの散乱の強さ）
@@ -479,7 +487,9 @@ float4 main(VSOutput input) : SV_TARGET
     // ★ 夜はexposureを下げて全体を暗く
     float exposure = lerp(0.6, 1.5, dayFactor);
     finalColor = 1.0 - exp(-finalColor * exposure);
-
+    // NaN（黒い点）対策の安全装置：マイナス値を0にカットする
+    finalColor = max(finalColor, 0.0);
+    
     float contrast = 1.5;
     finalColor = pow(finalColor, float3(contrast, contrast, contrast));
     finalColor = finalColor * finalColor * (3.0 - 2.0 * finalColor);
