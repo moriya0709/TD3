@@ -24,10 +24,18 @@ struct ModelData {
 };
 // マテリアルデータ
 struct Material {
-	Vector4 color;
-	int32_t enableLighting;
-	float padding[3];
-	Matrix4x4 uvTransform;
-	Vector3 emissive;
-	float padding2; // バイト合わせ
+    Vector4 color;
+    int enableLighting;
+    int enableToonShading;
+    Vector2 pad1;
+    Matrix4x4 uvTransform;
+    Vector3 emissive;
+    float shininess;
+
+    // フレネル反射 / リムライト関連
+    Vector4 fresnelColor; // トゥーンOFF時のフレネル反射の色
+    float fresnelPower; // フレネル反射の累乗数（値が大きいほどエッジに寄る）
+    Vector4 rimColor; // トゥーンON時のリムライトの色
+    float rimThreshold; // リムライトの境界（0～1、値が大きいほど細くなる）
+    float pad3[3]; // バイト合わせ
 };

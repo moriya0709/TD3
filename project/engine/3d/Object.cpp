@@ -30,17 +30,15 @@ void Object::Initialize(Camera* camera) {
 	directionalLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	directionalLightData->direction = { 0.0f, -1.0f, 0.0f };
 	directionalLightData->intensity = 1.0f;
-	directionalLightData->isDisplay = false;
-	directionalLightResource->Unmap(0, nullptr);
+	directionalLightData->isDisplay = true;
 
 	// *環境光* //
 	ambientLightResource = dxCommon_->CreateBufferResource(sizeof(AmbientLight));
 	ambientLightResource->Map(0, nullptr, reinterpret_cast<void**>(&ambientLightData));
 	// 初期値
-	ambientLightData->color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	ambientLightData->color = { 0.2f, 0.2f, 0.2f, 1.0f };
 	ambientLightData->intensity = 1.0f;
 	ambientLightData->isDisplay = true;
-	ambientLightResource->Unmap(0, nullptr);
 
 	// *ポイントライト* //
 	pointLightResource = dxCommon_->CreateBufferResource(sizeof(PointLight));
@@ -51,7 +49,6 @@ void Object::Initialize(Camera* camera) {
 	pointLightData->intensity = 1.0f;
 	pointLightData->radius = 5.0f;
 	pointLightData->isDisplay = false;
-	pointLightResource->Unmap(0, nullptr);
 
 	// *スポットライト* //
 	spotLightResource = dxCommon_->CreateBufferResource(sizeof(SpotLight));
@@ -65,13 +62,16 @@ void Object::Initialize(Camera* camera) {
 	spotLightData->innerCone = 1.0f;
 	spotLightData->outerCone = 0.0f;
 	spotLightData->isDisplay = false;
-	spotLightResource->Unmap(0, nullptr);
 
 	// アウトライン
 	outlineResource = dxCommon_->CreateBufferResource(sizeof(Outline));
 	outlineResource->Map(0, nullptr, reinterpret_cast<void**>(&outlineData));
 	outlineData->thickness = 0.01f;
 	outlineData->color = {1,0,0,0};
+
+	// カメラ
+	viewResource = dxCommon_->CreateBufferResource(sizeof(ViewData));
+	viewResource->Map(0, nullptr, reinterpret_cast<void**>(&viewData));
 
 	// *Transform* //
 	transform = {
@@ -90,6 +90,7 @@ void Object::Initialize(Camera* camera) {
 void Object::Update() {
 	// Transformの更新
 	camera_ = CameraManager::GetInstance()->GetActiveCamera();
+	viewData->cameraPos = camera_->GetTranslate();
 
 	Matrix4x4 world =
 		MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
@@ -99,6 +100,11 @@ void Object::Update() {
 
 	transformationMatrixData->WVP = wvp;
 	transformationMatrixData->World = world;
+
+	// 太陽ライト
+	if(isSunLight)
+	SunLight();
+	
 }
 
 void Object::Draw() {
@@ -114,6 +120,8 @@ void Object::Draw() {
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(6, pointLightResource->GetGPUVirtualAddress());
 	// スポットライト
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(7, spotLightResource->GetGPUVirtualAddress());
+	// カメラ(ビュー)情報
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(8, viewResource->GetGPUVirtualAddress());
 
 	// 3Dモデルが割り当てられていれば描画する
 	if (model_) {
@@ -125,4 +133,44 @@ void Object::Draw() {
 void Object::SetModel(const std::string& filePath) {
 	// モデルを検索してセットする
 	model_ = ModelManager::GetInstance()->FindModel(filePath);
+}
+
+void Object::SunLight() {
+	// ライトの角度
+	SetDirectionalLightDirection(RayMarching::GetInstance()->GetSunDir());
+
+	// 1. まず方向ベクトルを正規化する（長さを1.0にする）
+// ※お使いのライブラリの関数に合わせてください (例: Normalize, Vector3::Normalize など)
+	Vector3 normalizedSunDir = Normalize(directionalLightData->direction);
+
+	// 2. 正規化したベクトルのY成分を高さとして使う
+	float sunHeight = -normalizedSunDir.y;
+
+	// （以下はこれまでのコードと同じ）
+	float dayFactor = std::clamp(sunHeight * 4.0f, 0.0f, 1.0f);
+	float sunsetTime = Smoothstep(0.3f, 0.0f, sunHeight) * Smoothstep(-0.2f, 0.0f, sunHeight);
+
+	// 1. 平行光源 (Directional Light) の計算
+	// ※代入先と同じ型（Vector4など）を使用してください
+	decltype(directionalLightData->color) daySunColor = { 1.0f,  0.92f, 0.85f, 1.0f };
+	decltype(directionalLightData->color) sunsetSunColor = { 1.0f,  0.45f, 0.05f, 1.0f };
+	decltype(directionalLightData->color) nightSunColor = { 0.08f, 0.10f, 0.18f, 1.0f };
+
+	decltype(directionalLightData->color) currentSunColor = Lerp(daySunColor, sunsetSunColor, sunsetTime);
+	currentSunColor = Lerp(nightSunColor, currentSunColor, dayFactor);
+
+	// バッファに書き込む
+	directionalLightData->color = currentSunColor;
+
+	// 2. 環境光 (Ambient Light) の計算
+	// 直接光だけでなく、影になる部分も夕焼け色に染めると非常に綺麗になります
+	decltype(ambientLightData->color) dayAmbient = { 0.3f,  0.5f,  0.8f,  1.0f }; // 青空
+	decltype(ambientLightData->color) sunsetAmbient = { 0.8f,  0.4f,  0.3f,  1.0f }; // 夕空
+	decltype(ambientLightData->color) nightAmbient = { 0.02f, 0.02f, 0.05f, 1.0f }; // 夜空
+
+	decltype(ambientLightData->color) currentAmbientColor = Lerp(dayAmbient, sunsetAmbient, sunsetTime);
+	currentAmbientColor = Lerp(nightAmbient, currentAmbientColor, dayFactor);
+
+	// バッファに書き込む
+	ambientLightData->color = currentAmbientColor;
 }

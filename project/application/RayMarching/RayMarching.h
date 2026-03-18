@@ -53,6 +53,9 @@ public:
 	void SetRialLight(bool isRialLight){ cloudParam->isRialLight = isRialLight; }
 	void SetAnimeLight(bool isAnimeLight){ cloudParam->isAnimeLight = isAnimeLight; }
 
+	// getter
+	Vector3 GetSunDir() { return cloudParam->sunDir; }
+
 	// シングルトンインスタンスの取得
 	static RayMarching* GetInstance();
 

@@ -53,7 +53,7 @@ private:
 	float DirectionalLightIntensity = 1.0f;
 	// 環境光
 	bool isAmbientLight = true;
-	Vector4 AmbientLightColor = { 0.2f, 0.2f, 0.2f };
+	Vector4 AmbientLightColor = { 0.2f, 0.2f, 0.2f,1.0f};
 	float AmbientLightIntensity = 1.0f;
 	// ポイントライト
 	bool isPointLight = false;
