@@ -78,6 +78,8 @@ private:
 	Transform transform_;
 	// プレイヤーの3Dオブジェクト
 	std::unique_ptr<Object> playerObject_;
+	//マシン3Dオブジェクト
+	std::unique_ptr<Object> machineObject_;
 	// プレイヤーの2Dスプライト（照準）
 	std::unique_ptr<Sprite> reticle_;
 	std::unique_ptr<Sprite> chargeReticle_;

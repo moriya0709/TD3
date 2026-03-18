@@ -98,6 +98,11 @@ void Player::Initialize(Camera* camera, Style style) {
 	playerObject_->SetModel("player.obj");
 	playerObject_->SetTranslate(transform_.translate);
 
+	machineObject_ = std::make_unique<Object>();
+	machineObject_->Initialize(camera_);
+	machineObject_->SetModel("playerC.obj");
+	machineObject_->SetTranslate(transform_.translate);
+
 	statas_[currentStyle].hp = 100;
 	statas_[currentStyle].attack = 20;
 	statas_[currentStyle].speed = 0.2f;
@@ -204,6 +209,11 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	playerObject_->SetScale(transform_.scale);
 	playerObject_->Update();
 
+	machineObject_->SetTranslate(transform_.translate);
+	machineObject_->SetRotate(transform_.rotate);
+	machineObject_->SetScale(transform_.scale);
+	machineObject_->Update();
+
 	if (ishit) {
 		damageTimer--;
 		if (damageTimer <= 0) {
@@ -273,6 +283,7 @@ void Player::Draw3D() {
 		bullet->Draw3D();
 	}
 	playerObject_->Draw();
+	machineObject_->Draw();
 }
 
 Player::~Player() {
