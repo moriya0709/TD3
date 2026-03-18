@@ -48,6 +48,11 @@ void Player::Initialize(Camera* camera, Style style) {
 	playerObject_->SetModel("player.obj");
 	playerObject_->SetTranslate(transform_.translate);
 
+	playerRide_ = std::make_unique<Object>();
+	playerRide_->Initialize(camera_);
+	playerRide_->SetModel("playerH.obj");
+	playerRide_->SetTranslate(transform_.translate);
+
 	switch (style) {
 	case Player::normal:
 		break;
@@ -155,6 +160,11 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	playerObject_->SetScale(transform_.scale);
 	playerObject_->Update();
 
+	playerRide_->SetTranslate(transform_.translate);
+	playerRide_->SetRotate(transform_.rotate);
+	playerRide_->SetScale(transform_.scale);
+	playerRide_->Update();
+
 	if (ishit) {
 		damageTimer--;
 		if (damageTimer <= 0) {
@@ -192,6 +202,7 @@ void Player::Draw3D() {
 		bullet->Draw3D();
 	}
 	playerObject_->Draw();
+	playerRide_->Draw();
 }
 
 Player::~Player() {

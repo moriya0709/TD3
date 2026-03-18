@@ -64,6 +64,8 @@ private:
 	Transform transform_;
 	// プレイヤーの3Dオブジェクト
 	std::unique_ptr<Object> playerObject_;
+	//プレイヤーの乗り物3Dオブジェクト
+	std::unique_ptr<Object> playerRide_;
 	// プレイヤーの2Dスプライト（照準）
 	std::unique_ptr<Sprite> reticle_;
 	// 照準の座標

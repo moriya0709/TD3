@@ -44,9 +44,11 @@ void Game::Initialize() {
 
 	// .objファイルからモデル読み込み
 	ModelManager::GetInstance()->LoadModel("plane.obj");
+	ModelManager::GetInstance()->LoadModel("budoo1.obj");
 	ModelManager::GetInstance()->LoadModel("axis.obj");
 	ModelManager::GetInstance()->LoadModel("emission.obj");
 	ModelManager::GetInstance()->LoadModel("player.obj");
+	ModelManager::GetInstance()->LoadModel("playerH.obj");
 	ModelManager::GetInstance()->LoadModel("cube.obj"); // レールエディター
 	ModelManager::GetInstance()->LoadModel("rail.obj"); // レールエディター
 	//ModelManager::GetInstance()->LoadModel("skydome.obj"); 
