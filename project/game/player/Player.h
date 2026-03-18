@@ -132,8 +132,10 @@ private:
 
 	static int cureentStyleStatasLevels[4][2];
 	void StyleLevelUp(Style style, int statas);
-	std::string GetFilePath(int slot) const;
+	std::string GetFilePath() const;
 	void LoadStatas(const std::string& filePath);
+	void SaveStatas(const std::string& filePath) const;
+
 
 };
 

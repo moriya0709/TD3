@@ -8,11 +8,12 @@
 #include "engine/base/WindowAPI.h"
 #include <algorithm>
 #include <cmath>
-#include <list>
 #include <externals/nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 
+#include <list>
 
 // ベクトルの回転用関数
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
@@ -25,18 +26,19 @@ Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m) {
 
 void to_json(nlohmann::json& j, const Player::Statas& statas) {
 	j = nlohmann::json{
-		{"hp", statas.hp},
-		{"attack", statas.attack},
-		{"speed", statas.speed},
-		{"hommingAccuracy", statas.hommingAccuracy},
-		{"renge", statas.renge},
-		{"chargeTime", statas.chargeTime},
-		{"haste", statas.haste}
-	};
+	    {"Style",
+	     {"hp", statas.hp},
+	     {"attack", statas.attack},
+	     {"speed", statas.speed},
+	     {"hommingAccuracy", statas.hommingAccuracy},
+	     {"renge", statas.renge},
+	     {"chargeTime", statas.chargeTime},
+	     {"haste", statas.haste}}
+    };
 }
 
-
 void from_json(const nlohmann::json& j, Player::Statas& statas) {
+
 	j.at("hp").get_to(statas.hp);
 	j.at("attack").get_to(statas.attack);
 	j.at("speed").get_to(statas.speed);
@@ -46,24 +48,90 @@ void from_json(const nlohmann::json& j, Player::Statas& statas) {
 	j.at("haste").get_to(statas.haste);
 }
 
-void to_json(nlohmann::json& j, const Player::Style& style) {
-	j = nlohmann::json{
-	    {"style", style}
-	};
-}
-
-void from_json(const nlohmann::json& j, Player::Style& style) {
-	j.at("style").get_to(style); }
-
-
-std::string Player::GetFilePath(int slot) const { return "Resource/Data/replay_" + std::to_string(slot) + ".json"; }
+std::string Player::GetFilePath() const { return "Resource/Data/playerStatas.json"; }
 
 void Player::LoadStatas(const std::string& filePath) {
+	
+	std::ifstream inFile(filePath);
+	nlohmann::json j;
+	if (!inFile.is_open() || inFile.peek() == std::ifstream::traits_type::eof()) {
+		j = nlohmann::json{
+			{"Statas",
+			 {
+				 {{"hp", statas_[0].hp},
+				  {"attack", statas_[0].attack},
+				  {"speed", statas_[0].speed},
+				  {"hommingAccuracy", statas_[0].hommingAccuracy},
+				  {"renge", statas_[0].renge},
+				  {"chargeTime", statas_[0].chargeTime},
+				  {"haste", statas_[0].haste}},
+				 {{"hp", statas_[1].hp},
+				  {"attack", statas_[1].attack},
+				  {"speed", statas_[1].speed},
+				  {"hommingAccuracy", statas_[1].hommingAccuracy},
+				  {"renge", statas_[1].renge},
+				  {"chargeTime", statas_[1].chargeTime},
+				  {"haste", statas_[1].haste}},
+				 {{"hp", statas_[2].hp},
+				  {"attack", statas_[2].attack},
+				  {"speed", statas_[2].speed},
+				  {"hommingAccuracy", statas_[2].hommingAccuracy},
+				  {"renge", statas_[2].renge},
+				  {"chargeTime", statas_[2].chargeTime},
+				  {"haste", statas_[2].haste}},
+				 {{"hp", statas_[3].hp},
+				  {"attack", statas_[3].attack},
+				  {"speed", statas_[3].speed},
+				  {"hommingAccuracy", statas_[3].hommingAccuracy},
+				  {"renge", statas_[3].renge},
+				  {"chargeTime", statas_[3].chargeTime},
+				  {"haste", statas_[3].haste}}
+			 }}
+        };
+		std::ofstream outFile(filePath);
+		if (!outFile.is_open()) {
+			// ファイルが開けない場合のエラーハンドリング
+			return;
+		}
+		outFile << j.dump(4); // インデントを4スペースにして保存
+
+		return;
+
+	}
 
 	
+	inFile >> j;
+	for (int i = 0; i < 4; ++i) {
+		statas_[i].hp = j["Statas"][i]["hp"];
+		statas_[i].attack = j["Statas"][i]["attack"];
+		statas_[i].speed = j["Statas"][i]["speed"];
+		statas_[i].hommingAccuracy = j["Statas"][i]["hommingAccuracy"];
+		statas_[i].renge = j["Statas"][i]["renge"];
+		statas_[i].chargeTime = j["Statas"][i]["chargeTime"];
+		statas_[i].haste = j["Statas"][i]["haste"];
+	}
 }
 
+void Player::SaveStatas(const std::string& filePath) const {
+	std::filesystem::create_directories(std::filesystem::path(filePath).parent_path());
 
+	nlohmann::json j;
+	for (int i = 0; i < 4; ++i) {
+		j["Statas"][i]["hp"] = statas_[i].hp;
+		j["Statas"][i]["attack"] = statas_[i].attack;
+		j["Statas"][i]["speed"] = statas_[i].speed;
+		j["Statas"][i]["hommingAccuracy"] = statas_[i].hommingAccuracy;
+		j["Statas"][i]["renge"] = statas_[i].renge;
+		j["Statas"][i]["chargeTime"] = statas_[i].chargeTime;
+		j["Statas"][i]["haste"] = statas_[i].haste;
+	}
+	std::ofstream outFile(filePath);
+	if (!outFile.is_open()) {
+		// ファイルが開けない場合のエラーハンドリング
+		return;
+	}
+	outFile << j.dump(4); // インデントを4スペースにして保存
+}
 
 void Player::Initialize(Camera* camera, Style style) {
 	camera_ = camera;
@@ -105,6 +173,9 @@ void Player::Initialize(Camera* camera, Style style) {
 	statas_[currentStyle].chargeTime = 60;
 	statas_[currentStyle].hommingAccuracy = 0.01f;
 	statas_[currentStyle].renge = 80.0f;
+
+	LoadStatas(GetFilePath());
+
 
 	velocity_ = {0.0f, 0.0f, 0.0f};
 	coolTime = 0;
@@ -244,6 +315,12 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 
 #pragma region ImGui
 	ImGui::Begin("Player Config");
+	ImGui::Text("Style: %d", currentStyle);
+	for (int i = 0; i < 4; i++) {
+		if (ImGui::RadioButton(("Style " + std::to_string(i)).c_str(), currentStyle == i)) {
+			currentStyle = Style(i);
+		}
+	}
 	ImGui::Text("Z-Distance from Camera: 5.0 (Fixed)");
 	ImGui::DragFloat3("World Pos", &transform_.translate.x, 0.1f);
 	ImGui::DragFloat2("Relative Pos", &relativePos_.x, 0.1f);
@@ -252,9 +329,13 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	ImGui::DragFloat("Speed", &statas_[currentStyle].speed, 0.01f);
 	ImGui::DragFloat("Homing Accuracy", &statas_[currentStyle].hommingAccuracy, 0.0001f, 0.0f, 1.0f, "%.4f");
 	ImGui::DragFloat("Reticle Speed", &reticleSpeed, 0.1f);
-	ImGui::DragFloat2("Move Pad", &movePad.x, 0.0f);
+	if (ImGui::Button("■ SaveStatas", ImVec2(240, 30))) {
 
+	ImGui::DragFloat2("Move Pad", &movePad.x, 0.0f);
 	ImGui::DragFloat2("Reticle Pad", &reticlePad.x, 0.0f);
+		SaveStatas(GetFilePath());
+	}
+
 
 	ImGui::End();
 #pragma endregion
@@ -301,8 +382,8 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies);
 			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy + 0.2f, statas_[currentStyle].attack);
-			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
-			chargeTimer = 0;                         // チャージタイマーリセット
+			bullets.push_back(std::move(newBullet));    // 修正: std::moveでunique_ptrをlistに追加
+			chargeTimer = 0;                            // チャージタイマーリセット
 			coolTime = statas_[currentStyle].haste * 2; // チャージ攻撃後のクールタイムも長くする
 		} else {
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
@@ -327,4 +408,3 @@ void Player::UpdateBullets() {
 }
 
 void Player::StyleLevelUp(Style style, int statas) {}
-
