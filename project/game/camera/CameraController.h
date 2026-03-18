@@ -8,8 +8,8 @@ struct CameraState {
 	float time;
 	Vector3 velocity;
 	Vector3 angularVelocity;
-	Vector3 position; // ★ 追加：位置も記録
-	Vector3 rotation; // ★ 追加：回転も記録
+	Vector3 position;
+	Vector3 rotation;
 };
 
 class CameraController {
@@ -17,13 +17,12 @@ public:
 	void Initialize(Camera* camera);
 	void Update();
 	void DrawImGui();
-	void DrawDebugTrace(); // ★ 追加：軌跡を描画する
+	void DrawDebugTrace();
 
 	float GetCurrentReplayTime() const { return timer; }
 	int GetCurrentStage() const { return currentStage; }
 
 private:
-	// ★ 補間用ヘルパー
 	Vector3 CameraLerp(const Vector3& start, const Vector3& end, float t);
 	Vector3 CatmullRom(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
 
@@ -32,6 +31,10 @@ private:
 	void ApplyPhysics(const Vector3& vel, const Vector3& angVel, const Vector3& pos, const Vector3& rat);
 	void StartReplay();
 	void SeekTo(float targetTime);
+
+	// ★ 追加：パンチイン（途中上書き）録画開始
+	void StartOverwriteRecording();
+
 	void SaveToJSON(const std::string& filename);
 	void LoadFromJSON(const std::string& filename);
 	std::string GetFilePath(int slot) const;
@@ -53,19 +56,17 @@ private:
 	bool isReplaying = false;
 	bool isPaused = false;
 	bool isRecording = false;
-	bool isSmoothMode = true;   // スプライン補間フラグ
-	bool showDebugTrace = true; // デバッグライン表示フラグ
+	bool isSmoothMode = true;
+	bool showDebugTrace = true;
 
 	int currentStage = 1;
 	float playbackSpeed = 1.0f;
 
-	Vector3 activeVelocity = {0, 0, 0};
-	Vector3 activeAngularVelocity = {0, 0, 0};
 	Vector3 uiVelocity = {0.0f, 0.0f, 0.0f};
 	Vector3 uiAngularVelocity = {0.0f, 0.0f, 0.0f};
 
-	Vector3 lastRecordedVel = {-1.0f, -1.0f, -1.0f};
-	Vector3 lastRecordedAngVel = {-1.0f, -1.0f, -1.0f};
-	Vector3 lastRecordedPos = {-1.0f, -1.0f, -1.0f};
-	Vector3 lastRecordedRot = {-1.0f, -1.0f, -1.0f};
+	Vector3 lastRecordedVel = {-999.0f, -999.0f, -999.0f};
+	Vector3 lastRecordedAngVel = {-999.0f, -999.0f, -999.0f};
+	Vector3 lastRecordedPos = {-999.0f, -999.0f, -999.0f};
+	Vector3 lastRecordedRot = {-999.0f, -999.0f, -999.0f};
 };
