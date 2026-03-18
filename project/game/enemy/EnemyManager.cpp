@@ -8,6 +8,7 @@
 #include "type/HomingEnemy.h"
 #include "type/NormalEnemy.h"
 #include "type/TargetEnemy.h"
+#include "type/rushEnemy.h"
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
@@ -206,6 +207,8 @@ void EnemyManager::SpawnEnemy(const EnemyPopData& data)
         newEnemy = std::make_unique<HomingEnemy>();
     } else if (data.type == "TargetEnemy") {
         newEnemy = std::make_unique<TargetEnemy>();
+    } else if (data.type == "rushEnemy") {
+        newEnemy = std::make_unique<rushEnemy>();
     }
 
     if (newEnemy) {

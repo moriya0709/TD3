@@ -87,6 +87,7 @@
     <ClCompile Include="game\player\PlayerChargeBullet.cpp" />
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
     <ClCompile Include="application\rayMarching\RayMarching.cpp" />
+    <ClCompile Include="game\enemy\type\rushEnemy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\shaders\RayMarching.CS.hlsl">
@@ -240,6 +241,7 @@
     <ClInclude Include="game\player\PlayerChargeBullet.h" />
     <ClInclude Include="application\railCamera\RailCamera.h" />
     <ClInclude Include="application\rayMarching\RayMarching.h" />
+    <ClInclude Include="game\enemy\type\rushEnemy.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
