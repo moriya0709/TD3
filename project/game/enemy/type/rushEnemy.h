@@ -35,7 +35,7 @@ public:
 
 private:
     void EnemyMove();
-    // void BulletUpdate();
+    void BulletUpdate();
 
     void BehaviorWalk();
     void BehaviorAway();

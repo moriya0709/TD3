@@ -1,4 +1,5 @@
 #include "rushEnemy.h"
+#include "../Bullet/rushEnemyBullet.h"
 #include "Player.h"
 
 void rushEnemy::Initialize(Camera* camera, Vector3 pos, int health)
@@ -149,6 +150,34 @@ void rushEnemy::BehaviorWalk()
 {
     // ˆÚ“®
     EnemyMove();
+}
+
+void rushEnemy::BulletUpdate()
+{
+    // ’e‚ğ¶¬‚·‚éŠÔ‚ğŒ¸‚ç‚·
+    if (behavior_ == Behavior::kWalk) {
+        interval -= 1.0f / 60.0f;
+    }
+
+    if (interval <= 0.0f) {
+        // ’e‚Ì¶¬
+        std::unique_ptr<rushEnemyBullet> newBulletEnemy = std::make_unique<rushEnemyBullet>();
+        newBulletEnemy->Initialize(camera_, transform_.translate);
+        newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.08f));
+        newBulletEnemy->SetTargetPosition(player_->GetPosition());
+
+        enemyBullet_.push_back(std::move(newBulletEnemy));
+        interval = maxInterval;
+    }
+    // XVˆ—
+    for (auto& bullet : enemyBullet_) {
+        bullet->Update();
+    }
+
+    // ’e‚Ìíœ
+    std::erase_if(enemyBullet_, [](const std::unique_ptr<EnemyBullet>& bullet) {
+        return !bullet->GetIsActive(); // GetIsActive ‚ª false ‚È‚çíœ
+    });
 }
 
 void rushEnemy::BehaviorAway()
