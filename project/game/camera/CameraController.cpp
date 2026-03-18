@@ -4,15 +4,13 @@
 #include <filesystem>
 #include <fstream>
 #include <imgui.h>
-#include <iostream>
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
 
-// 3分間の定数
 const float kMaxDuration = 180.0f;
 
-// --- 描画関数 
+// --- 描画関数 (環境に合わせて実装してください) ---
 void DrawLine(const Vector3& s, const Vector3& e, uint32_t color) { /* 描画処理の実装 */ }
 
 // --- nlohmann/json 変換定義 ---
@@ -28,17 +26,22 @@ void from_json(const json& j, Vector3& v) {
 	j.at("y").get_to(v.y);
 	j.at("z").get_to(v.z);
 }
+
 void to_json(json& j, const CameraState& s) {
 	j = json{
 	    {"time",   s.time           },
         {"vel",    s.velocity       },
-        {"angVel", s.angularVelocity}
+        {"angVel", s.angularVelocity},
+        {"pos",    s.position       },
+        {"rot",    s.rotation       }
     };
 }
 void from_json(const json& j, CameraState& s) {
 	j.at("time").get_to(s.time);
 	j.at("vel").get_to(s.velocity);
 	j.at("angVel").get_to(s.angularVelocity);
+	j.at("pos").get_to(s.position);
+	j.at("rot").get_to(s.rotation);
 }
 
 // --- 補間ヘルパー ---
@@ -47,10 +50,8 @@ Vector3 CameraController::CameraLerp(const Vector3& start, const Vector3& end, f
 Vector3 CameraController::CatmullRom(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t) {
 	float t2 = t * t;
 	float t3 = t2 * t;
-	return {
-	    0.5f * (2.0f * p1.x + (-p0.x + p2.x) * t + (2.0f * p0.x - 5.0f * p1.x + 4.0f * p2.x - p3.x) * t2 + (-p0.x + 3.0f * p1.x - 3.0f * p2.x + p3.x) * t3),
-	    0.5f * (2.0f * p1.y + (-p0.y + p2.y) * t + (2.0f * p0.y - 5.0f * p1.y + 4.0f * p2.y - p3.y) * t2 + (-p0.y + 3.0f * p1.y - 3.0f * p2.y + p3.y) * t3),
-	    0.5f * (2.0f * p1.z + (-p0.z + p2.z) * t + (2.0f * p0.z - 5.0f * p1.z + 4.0f * p2.z - p3.z) * t2 + (-p0.z + 3.0f * p1.z - 3.0f * p2.z + p3.z) * t3)};
+	auto calc = [&](float v0, float v1, float v2, float v3) { return 0.5f * (2.0f * v1 + (-v0 + v2) * t + (2.0f * v0 - 5.0f * v1 + 4.0f * v2 - v3) * t2 + (-v0 + 3.0f * v1 - 3.0f * v2 + v3) * t3); };
+	return {calc(p0.x, p1.x, p2.x, p3.x), calc(p0.y, p1.y, p2.y, p3.y), calc(p0.z, p1.z, p2.z, p3.z)};
 }
 
 void CameraController::Initialize(Camera* targetCamera) {
@@ -59,7 +60,6 @@ void CameraController::Initialize(Camera* targetCamera) {
 	isReplaying = isPaused = isRecording = false;
 	currentStage = 1;
 	playbackSpeed = 1.0f;
-
 	if (camera) {
 		initialTransform.rotate = camera->GetRotate();
 		initialTransform.translate = camera->GetTranslate();
@@ -95,36 +95,34 @@ void CameraController::Update() {
 	float deltaTime = 1.0f / 60.0f;
 	Vector3 currentVel = {0, 0, 0};
 	Vector3 currentAngVel = {0, 0, 0};
+	Vector3 currentPos = cameraTransform.translate;
+	Vector3 currentRot = cameraTransform.rotate;
 
 	if (isReplaying) {
 		if (!isPaused) {
 			timer += deltaTime * playbackSpeed;
-
-			// ★ 3分制限ガード
 			if (timer >= kMaxDuration) {
 				timer = kMaxDuration;
 				isPaused = true;
 			}
 
-			ApplyReplayState(currentVel, currentAngVel);
-			ApplyPhysics(
-			    {currentVel.x * playbackSpeed, currentVel.y * playbackSpeed, currentVel.z * playbackSpeed},
-			    {currentAngVel.x * playbackSpeed, currentAngVel.y * playbackSpeed, currentAngVel.z * playbackSpeed});
+			// 再生中は補間座標を取得して適用
+			ApplyReplayState(currentVel, currentAngVel, currentPos, currentRot);
+			ApplyPhysics(currentVel, currentAngVel, currentPos, currentRot);
 		}
+		// ★ 一時停止中は ApplyPhysics を呼ばないことで、ImGuiからの手動座標変更を維持する
 	} else if (isRecording) {
 		timer += deltaTime;
-
-		// ★ 3分経過で自動停止・保存
 		if (timer >= kMaxDuration) {
 			timer = kMaxDuration;
 			isRecording = false;
 			SaveToJSON(GetFilePath(currentStage));
 		}
-
 		currentVel = uiVelocity;
 		currentAngVel = uiAngularVelocity;
-		RecordStateIfChanged(currentVel, currentAngVel);
-		ApplyPhysics(currentVel, currentAngVel);
+
+		RecordStateIfChanged(currentVel, currentAngVel, cameraTransform.translate, cameraTransform.rotate);
+		ApplyPhysics(currentVel, currentAngVel, cameraTransform.translate, cameraTransform.rotate);
 	} else {
 		cameraTransform = initialTransform;
 	}
@@ -137,14 +135,12 @@ void CameraController::Update() {
 
 void CameraController::DrawImGui() {
 	ImGui::Begin("Camera Recording Studio");
-
-	ImGui::Checkbox("Show Trace Line", &showDebugTrace);
+	ImGui::Checkbox("Show Trace", &showDebugTrace);
 	ImGui::SameLine();
 	ImGui::Checkbox("Spline Mode", &isSmoothMode);
-
 	ImGui::Separator();
 
-	ImGui::Text("StageData: %d", currentStage);
+	ImGui::Text("Stage: %d", currentStage);
 	for (int i = 1; i <= 5; ++i) {
 		if (ImGui::RadioButton(std::to_string(i).c_str(), currentStage == i)) {
 			currentStage = i;
@@ -157,23 +153,20 @@ void CameraController::DrawImGui() {
 			ImGui::SameLine();
 	}
 
-	if (ImGui::CollapsingHeader("Initial Transform Setup", ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader("Initial Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::DragFloat3("Start Pos", &initialTransform.translate.x, 0.1f);
 		ImGui::DragFloat3("Start Rot", &initialTransform.rotate.x, 0.01f);
-		if (ImGui::Button("Set Current Pos as Initial"))
+		if (ImGui::Button("Set Current as Initial"))
 			initialTransform = cameraTransform;
 	}
 
 	ImGui::Separator();
 
 	if (isReplaying) {
-		ImGui::TextColored(ImVec4(0, 1, 1, 1), "STATUS: REPLAYING");
+		ImGui::TextColored(ImVec4(0, 1, 1, 1), "STATUS: REPLAYING %s", isPaused ? "(PAUSED)" : "");
 		ImGui::SliderFloat("Speed", &playbackSpeed, 0.0f, 3.0f, "%.1fx");
-
-		// ★ 180秒（3分）で固定されたシークバー
-		if (ImGui::SliderFloat("Seek", &timer, 0.0f, kMaxDuration, "%.2f / 180.0s")) {
+		if (ImGui::SliderFloat("Seek", &timer, 0.0f, kMaxDuration, "%.2f / 180s"))
 			SeekTo(timer);
-		}
 
 		if (ImGui::Button(isPaused ? "Play" : "Pause"))
 			isPaused = !isPaused;
@@ -181,31 +174,37 @@ void CameraController::DrawImGui() {
 		if (ImGui::Button("Stop"))
 			isReplaying = false;
 
-	} else {
-		const char* statusStr = isRecording ? "RECORDING..." : "WAITING (Initial Applied)";
-		ImGui::Text("STATUS: %s", statusStr);
-
-		if (isRecording) {
-			// 録画中の進捗をわかりやすく表示
-			ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(1, 0, 0, 1));
-			ImGui::ProgressBar(timer / kMaxDuration, ImVec2(-1, 0), "Recording Time");
-			ImGui::PopStyleColor();
+		// ★ 一時停止中のみ表示される上書き録画メニュー
+		if (isPaused) {
+			ImGui::Separator();
+			ImGui::TextColored(ImVec4(1, 0.8f, 0, 1), "Edit Mode: Manual Tweak Available");
+			ImGui::DragFloat3("Tweak Pos", &cameraTransform.translate.x, 0.1f);
+			ImGui::DragFloat3("Tweak Rot", &cameraTransform.rotate.x, 0.01f);
+			if (ImGui::Button("● Start Overwrite Recording from Here", ImVec2(-1, 30))) {
+				StartOverwriteRecording();
+			}
 		}
+	} else {
+		ImGui::Text("STATUS: %s", isRecording ? "RECORDING..." : "WAITING");
+		if (isRecording)
+			ImGui::ProgressBar(timer / kMaxDuration);
 
 		ImGui::DragFloat3("Input Vel", &uiVelocity.x, 0.01f, -1.0f, 1.0f);
 		ImGui::DragFloat3("Input Rot", &uiAngularVelocity.x, 0.005f, -0.05f, 0.05f);
+		ImGui::DragFloat3("Current Pos", &cameraTransform.translate.x, 0.1f);
+		ImGui::DragFloat3("Current Rot", &cameraTransform.rotate.x, 0.01f);
 
 		if (!isRecording) {
-			if (ImGui::Button("● Start Recording (Max 3min)", ImVec2(240, 30))) {
+			if (ImGui::Button("● Start New Recording", ImVec2(-1, 30))) {
 				stateHistory.clear();
 				timer = 0.0f;
 				isRecording = true;
 				cameraTransform = initialTransform;
-				RecordStateIfChanged(uiVelocity, uiAngularVelocity);
+				RecordStateIfChanged(uiVelocity, uiAngularVelocity, cameraTransform.translate, cameraTransform.rotate);
 			}
 		} else {
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
-			if (ImGui::Button("■ Stop & Save", ImVec2(240, 30))) {
+			if (ImGui::Button("■ Stop & Save", ImVec2(-1, 30))) {
 				isRecording = false;
 				SaveToJSON(GetFilePath(currentStage));
 			}
@@ -218,19 +217,17 @@ void CameraController::DrawImGui() {
 void CameraController::DrawDebugTrace() {
 	if (!showDebugTrace || stateHistory.empty())
 		return;
-
 	Vector3 prevPos = initialTransform.translate;
 	Vector3 currentPos = initialTransform.translate;
 	float simTime = 0.0f;
-	float maxDataTime = stateHistory.back().time; // データが存在する範囲まで描画
+	float maxDataTime = stateHistory.back().time;
 	float step = 1.0f / 60.0f;
-
 	float backupTimer = timer;
 
 	while (simTime <= maxDataTime && simTime <= kMaxDuration) {
 		timer = simTime;
-		Vector3 v, av;
-		ApplyReplayState(v, av);
+		Vector3 v, av, p, r;
+		ApplyReplayState(v, av, p, r);
 		currentPos.x += v.x;
 		currentPos.y += v.y;
 		currentPos.z += v.z;
@@ -238,60 +235,90 @@ void CameraController::DrawDebugTrace() {
 		prevPos = currentPos;
 		simTime += step;
 	}
-
 	timer = backupTimer;
 }
 
-void CameraController::ApplyReplayState(Vector3& vel, Vector3& angVel) {
+void CameraController::ApplyReplayState(Vector3& vel, Vector3& angVel, Vector3& pos, Vector3& rat) {
 	if (stateHistory.empty())
 		return;
-
 	size_t n = stateHistory.size();
 	size_t i1 = 0;
-	while (i1 < n && timer > stateHistory[i1].time) {
+	while (i1 < n && timer > stateHistory[i1].time)
 		i1++;
-	}
 
 	if (i1 == 0) {
 		vel = stateHistory[0].velocity;
 		angVel = stateHistory[0].angularVelocity;
+		pos = stateHistory[0].position;
+		rat = stateHistory[0].rotation;
 	} else if (i1 >= n) {
 		vel = stateHistory.back().velocity;
 		angVel = stateHistory.back().angularVelocity;
-		// データ末尾に到達しても timer は 180s まで進めるため、ここでは一時停止しない
+		pos = stateHistory.back().position;
+		rat = stateHistory.back().rotation;
 	} else {
 		size_t i0 = i1 - 1;
 		float t = (timer - stateHistory[i0].time) / (stateHistory[i1].time - stateHistory[i0].time);
-
 		if (isSmoothMode && n >= 4) {
 			size_t im1 = (i0 == 0) ? i0 : i0 - 1;
 			size_t i2 = (i1 + 1 >= n) ? i1 : i1 + 1;
 			vel = CatmullRom(stateHistory[im1].velocity, stateHistory[i0].velocity, stateHistory[i1].velocity, stateHistory[i2].velocity, t);
 			angVel = CatmullRom(stateHistory[im1].angularVelocity, stateHistory[i0].angularVelocity, stateHistory[i1].angularVelocity, stateHistory[i2].angularVelocity, t);
+			pos = CatmullRom(stateHistory[im1].position, stateHistory[i0].position, stateHistory[i1].position, stateHistory[i2].position, t);
+			rat = CatmullRom(stateHistory[im1].rotation, stateHistory[i0].rotation, stateHistory[i1].rotation, stateHistory[i2].rotation, t);
 		} else {
 			vel = CameraLerp(stateHistory[i0].velocity, stateHistory[i1].velocity, t);
 			angVel = CameraLerp(stateHistory[i0].angularVelocity, stateHistory[i1].angularVelocity, t);
+			pos = CameraLerp(stateHistory[i0].position, stateHistory[i1].position, t);
+			rat = CameraLerp(stateHistory[i0].rotation, stateHistory[i1].rotation, t);
 		}
 	}
 }
 
-// --- 他の関数 (ApplyPhysics, RecordStateIfChanged, StartReplay, SeekTo, Save/Load) は維持 ---
-void CameraController::ApplyPhysics(const Vector3& vel, const Vector3& angVel) {
-	cameraTransform.translate.x += vel.x;
-	cameraTransform.translate.y += vel.y;
-	cameraTransform.translate.z += vel.z;
-	cameraTransform.rotate.x += angVel.x;
-	cameraTransform.rotate.y += angVel.y;
-	cameraTransform.rotate.z += angVel.z;
-}
-void CameraController::RecordStateIfChanged(const Vector3& vel, const Vector3& angVel) {
-	if (vel.x != lastRecordedVel.x || vel.y != lastRecordedVel.y || vel.z != lastRecordedVel.z || angVel.x != lastRecordedAngVel.x || angVel.y != lastRecordedAngVel.y ||
-	    angVel.z != lastRecordedAngVel.z) {
-		stateHistory.push_back({timer, vel, angVel});
-		lastRecordedVel = vel;
-		lastRecordedAngVel = angVel;
+void CameraController::ApplyPhysics(const Vector3& vel, const Vector3& angVel, const Vector3& pos, const Vector3& rat) {
+	if (isReplaying) {
+		cameraTransform.translate = pos;
+		cameraTransform.rotate = rat;
+	} else {
+		cameraTransform.translate.x += vel.x;
+		cameraTransform.translate.y += vel.y;
+		cameraTransform.translate.z += vel.z;
+		cameraTransform.rotate.x += angVel.x;
+		cameraTransform.rotate.y += angVel.y;
+		cameraTransform.rotate.z += angVel.z;
 	}
 }
+
+void CameraController::RecordStateIfChanged(const Vector3& vel, const Vector3& angVel, const Vector3& pos, const Vector3& rat) {
+	bool changed = vel.x != lastRecordedVel.x || vel.y != lastRecordedVel.y || vel.z != lastRecordedVel.z || angVel.x != lastRecordedAngVel.x || angVel.y != lastRecordedAngVel.y ||
+	               angVel.z != lastRecordedAngVel.z || pos.x != lastRecordedPos.x || pos.y != lastRecordedPos.y || pos.z != lastRecordedPos.z || rat.x != lastRecordedRot.x ||
+	               rat.y != lastRecordedRot.y || rat.z != lastRecordedRot.z;
+
+	if (changed) {
+		stateHistory.push_back({timer, vel, angVel, pos, rat});
+		lastRecordedVel = vel;
+		lastRecordedAngVel = angVel;
+		lastRecordedPos = pos;
+		lastRecordedRot = rat;
+	}
+}
+
+void CameraController::StartOverwriteRecording() {
+	if (!isReplaying || !isPaused)
+		return;
+
+	// 現在のタイマー以降のデータを削除
+	stateHistory.erase(std::remove_if(stateHistory.begin(), stateHistory.end(), [this](const CameraState& s) { return s.time > timer; }), stateHistory.end());
+
+	isReplaying = isPaused = false;
+	isRecording = true;
+
+	// 強制的に初動を記録させるためにリセット
+	lastRecordedVel = {-999, -999, -999};
+	lastRecordedPos = {-999, -999, -999};
+	RecordStateIfChanged(uiVelocity, uiAngularVelocity, cameraTransform.translate, cameraTransform.rotate);
+}
+
 void CameraController::StartReplay() {
 	if (stateHistory.empty())
 		return;
@@ -300,18 +327,19 @@ void CameraController::StartReplay() {
 	timer = 0.0f;
 	cameraTransform = initialTransform;
 }
+
 void CameraController::SeekTo(float targetTime) {
-	cameraTransform = initialTransform;
-	const float simDelta = 1.0f / 60.0f;
-	float backupTimer = timer;
-	for (float t = 0.0f; t < targetTime; t += simDelta) {
-		Vector3 v, av;
-		timer = t;
-		ApplyReplayState(v, av);
-		ApplyPhysics(v, av);
+	timer = targetTime;
+	if (stateHistory.empty()) {
+		cameraTransform = initialTransform;
+		return;
 	}
-	timer = backupTimer;
+	Vector3 v, av, p, r;
+	ApplyReplayState(v, av, p, r);
+	cameraTransform.translate = p;
+	cameraTransform.rotate = r;
 }
+
 void CameraController::SaveToJSON(const std::string& filename) {
 	fs::create_directories(fs::path(filename).parent_path());
 	json j;
@@ -324,6 +352,7 @@ void CameraController::SaveToJSON(const std::string& filename) {
 	if (file.is_open())
 		file << j.dump(4);
 }
+
 void CameraController::LoadFromJSON(const std::string& filename) {
 	stateHistory.clear();
 	if (!fs::exists(filename))

@@ -97,7 +97,7 @@ void HomingEnemyBullet::CheckCameraCulling()
     float dotProduct = cameraForward.x * toBullet.x + cameraForward.y * toBullet.y + cameraForward.z * toBullet.z;
 
     // ƒJƒƒ‰‚©‚ç—£‚ê‚Ä‚¢‚é‚È‚ç
-    if (dotProduct < -2.0f) {
+    if (dotProduct < -1.0f) {
         isAvile = false;
     }
 }

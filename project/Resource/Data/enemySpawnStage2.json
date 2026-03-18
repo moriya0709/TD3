@@ -2,7 +2,7 @@
     "enemies": [
         {
             "popTime": 1.0,
-            "type": "NormalEnemy",
+            "type": "rushEnemy",
             "hp": 100,
             "position": {
                 "x": 30.0,
@@ -17,7 +17,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -26,7 +26,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -35,7 +35,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 }
             ],
             "flee": {
@@ -64,7 +64,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -73,7 +73,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -82,7 +82,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 }
             ],
             "flee": {
@@ -111,7 +111,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -120,7 +120,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -129,7 +129,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 }
             ],
             "flee": {
@@ -158,7 +158,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -167,7 +167,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -176,7 +176,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 }
             ],
             "flee": {
@@ -205,7 +205,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -214,7 +214,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -223,7 +223,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 }
             ],
             "flee": {
@@ -252,7 +252,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -261,7 +261,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -270,7 +270,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 }
             ],
             "flee": {
@@ -299,7 +299,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -308,7 +308,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
                 },
                 {
                     "target": {
@@ -317,7 +317,36 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 5.0
+                    "timeToStop" : 1.0
+                }
+            ],
+            "flee": {
+                "target": {
+                    "x": 0.0,
+                    "y": 100.0,
+                    "z": -100.0
+                },
+                "timeToReach": 3.0
+            }
+        },
+        {
+            "popTime": 11.0,
+            "type": "rushEnemy",
+            "hp": 150,
+            "position": {
+                "x": -19.0,
+                "y": 0.0,
+                "z": 60.0
+            },
+            "movePattern": [
+                {
+                    "target": {
+                        "x": -5.0,
+                        "y": -2.0,
+                        "z": 50.0
+                    },
+                    "timeToReach": 3.0,
+                    "timeToStop" : 0.0
                 }
             ],
             "flee": {
