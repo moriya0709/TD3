@@ -21,7 +21,6 @@ public:
 
 	float GetCurrentReplayTime() const { return timer; }
 	int GetCurrentStage() const { return currentStage; }
-	Camera* GetCamera() const { return camera; }
 
 private:
 	Vector3 CameraLerp(const Vector3& start, const Vector3& end, float t);
