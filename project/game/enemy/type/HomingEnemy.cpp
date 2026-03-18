@@ -134,7 +134,7 @@ void HomingEnemy::EnemyMove()
 
         transform_.translate = startPos_ + (currentWP.target - startPos_) * t;
 
-        if (t >= 1.0f) {
+        if (t >= 1.0f && !isStop_) {
             // ’âŽ~ŽžŠÔ
             wayStopTimer_ = currentWP.timeToStop;
             isStop_ = true;
