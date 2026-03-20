@@ -101,6 +101,11 @@ private:
 	float focusRange = 5.0f;
 	float bokehRadius = 5.0f;
 
+	// ブルーム
+	float bloomThreshold = 1.0f;
+	float bloomIntensity = 2.0f;
+	float bloomBlurRadius = 1.0f;
+
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };

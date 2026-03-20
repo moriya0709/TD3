@@ -29,11 +29,11 @@ void TitleScene::Initialize() {
 	particleEmitter->Emit();
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
-	object[0]->SetModel("plane.obj");
+	object[0]->SetModel("emission.obj");
 	object[1]->SetModel("skydome.obj");
 
 	// 音声再生
-	SoundManager::GetInstance()->Play("bgm");
+	//SoundManager::GetInstance()->Play("bgm");
 
 }
 
@@ -135,6 +135,10 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetFocusDistance(focusDistance);
 	PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
 	PostEffect::GetInstance()->SetFocusRange(focusRange);
+	// ブルーム
+	PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
+	PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
+	PostEffect::GetInstance()->SetBloomBlurRadius(bloomBlurRadius);
 
 #pragma endregion
 
@@ -270,6 +274,14 @@ void TitleScene::Update() {
 			ImGui::DragFloat("bokehRadius", &bokehRadius, 0.1f, 0.0f, 100.0f);
 			ImGui::DragFloat("focusRange", &focusRange, 0.1f, 0.0f, 100.0f);
 		}
+
+		ImGui::TreePop();
+	}
+	// ブルーム
+	if (ImGui::TreeNode("Bloom")) {
+		ImGui::DragFloat("bloomThreshold", &bloomThreshold, 0.01f, 0.0f, 10.0f);
+		ImGui::DragFloat("bloomIntensity", &bloomIntensity, 0.01f, 0.0f, 10.0f);
+		ImGui::DragFloat("bloomRadius", &bloomBlurRadius, 0.01f, 0.0f, 10.0f);
 
 		ImGui::TreePop();
 	}
