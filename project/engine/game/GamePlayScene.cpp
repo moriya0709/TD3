@@ -75,6 +75,9 @@ void GamePlayScene::Update()
     PostEffect::GetInstance()->SetFocusDistance(focusDistance);
     PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
     PostEffect::GetInstance()->SetFocusRange(focusRange);
+    // ブルーム
+    PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
+    PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
 
 #pragma endregion
 
@@ -216,6 +219,13 @@ void GamePlayScene::Update()
             ImGui::DragFloat("bokehRadius", &bokehRadius, 0.1f, 0.0f, 100.0f);
             ImGui::DragFloat("focusRange", &focusRange, 0.1f, 0.0f, 100.0f);
         }
+
+        ImGui::TreePop();
+    }
+    // ブルーム
+    if (ImGui::TreeNode("Bloom")) {
+        ImGui::DragFloat("bloomThreshold", &bloomThreshold, 0.01f, 0.0f, 10.0f);
+        ImGui::DragFloat("bloomIntensity", &bloomIntensity, 0.01f, 0.0f, 10.0f);
 
         ImGui::TreePop();
     }

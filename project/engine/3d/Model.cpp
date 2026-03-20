@@ -35,10 +35,16 @@ void Model::Initialize(ModelCommon* modelCommon, DirectXCommon* dxCommon, const 
 	materialData->enableLighting = true;
 	materialData->enableToonShading = true;
 	materialData->uvTransform = MakeIdentity4x4();
-	materialData->fresnelColor = { 1.0f, 1.0f, 1.0f, 0.5f }; // 白、透明度0.5。モデルに合わせて調整してください。
-	materialData->fresnelPower = 4.0f; // 4乗。エッジに寄せる。
-	materialData->rimColor = { 1.0f, 1.0f, 1.0f, 1.0f };    // 白、パキッと。
-	materialData->rimThreshold = 0.5f;   // 境界0.5。
+	// ★ mtlから読んだ自己発光カラーを代入！
+	materialData->emissive = modelData.material.emissive;
+
+	// ★ 追加：shininessの初期化忘れを防ぐ（適当な光沢具合を入れる）
+	materialData->shininess = 70.0f;
+
+	materialData->fresnelColor = { 1.0f, 1.0f, 1.0f, 0.5f };
+	materialData->fresnelPower = 4.0f;
+	materialData->rimColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	materialData->rimThreshold = 0.5f;
 
 	// *テクスチャ* //
 

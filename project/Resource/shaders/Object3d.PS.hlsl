@@ -204,11 +204,17 @@ PixelShaderOutput main(VertexShaderOutput input)
             fresnel = float4(0, 0, 0, 0);
         }
 
-        // ライティングの合成
+       // ライティングの合成
         float4 lighting = directional + directionalSpecular + ambient + pointLight + spot + fresnel;
-        float4 finalColor = lighting + float4(gMaterial.emissive, 1.0f);
         
-        output.color = gMaterial.color * textureColor * finalColor;
+        // ベースカラー（マテリアルカラー × テクスチャカラー）を計算
+        float4 baseColor = gMaterial.color * textureColor;
+        
+        // ベースカラーにライティング（光の当たり具合）を掛け算し、一番最後にエミッシブを加算する
+        output.color.rgb = (baseColor.rgb * lighting.rgb) + gMaterial.emissive;
+        
+        // アルファ値（透明度）はベースカラーのものをそのまま使う
+        output.color.a = baseColor.a;
     }
     else
     {
