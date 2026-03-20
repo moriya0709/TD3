@@ -68,7 +68,7 @@ void WindowAPI::Initialize() {
 	);
 
 	// フルスクリーン
-	SetFullscreen(true);
+	//SetFullscreen(true);
 	// マウスカーソル表示
 	ShowCursor(true);
 
