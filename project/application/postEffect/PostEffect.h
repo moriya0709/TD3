@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "Calc.h"
+#include "RayMarching.h"
 
 class DirectXCommon;
 class WindowAPI;
@@ -73,8 +74,19 @@ struct EffectData {
 	float bloomBlurRadius;
 	float pad4;
 
+	// 16byte (Row 13) レンズフレア用
+	int32_t isLensFlare;           // レンズフレアのON/OFF
+	int32_t lensFlareGhostCount;   // ゴーストの数（例: 4～8）
+	float lensFlareGhostDispersal; // ゴーストの広がり具合
+	float lensFlareHaloWidth;      // ヘイロー（輪っか）の大きさ
+
+	// ▼▼▼ ここから追加 (Row 14) ▼▼▼
+	int32_t isACES;                // ACESトーンマッピングのON/OFF
+	float caIntensity;             // 色収差の強さ (0.001f とかが綺麗)
+	float pad5[2];              // パディング
+
 	// Row 13-15 (48byte) - HLSL側の finalPad[3] に合わせる
-	float   finalPad[12];
+	float   finalPad[4];
 };
 
 // 各パスのレンダーターゲットとSRVインデックスをまとめる構造体
@@ -90,6 +102,8 @@ class PostEffect {
 public:
 	// 初期化
 	void Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvManager* srvManager);
+	// 更新
+	void Update(Camera* camera);
 	// 描画
 	void Draw();
 
@@ -133,6 +147,16 @@ public:
 	void SetBloomThreshold(float bloomThreshold) {effectData->bloomThreshold = bloomThreshold;}
 	void SetBloomIntensity(float bloomIntensity) {effectData->bloomIntensity = bloomIntensity;}
 	void SetBloomBlurRadius(float bloomBlurRadius) { effectData->bloomBlurRadius = bloomBlurRadius; }
+	// レンズフレア
+	void SetLensFlare(bool isLensFlare) { effectData->isLensFlare = isLensFlare; }
+	void SetLensFlareGhostCount(int count) { effectData->lensFlareGhostCount = count; }
+	void SetLensFlareGhostDispersal(float dispersal) { effectData->lensFlareGhostDispersal = dispersal; }
+	void SetLensFlareHaloWidth(float width) { effectData->lensFlareHaloWidth = width; }
+	void SetCAIntensity(float intensity) { effectData->caIntensity = intensity; } // 色収差
+	void SetIsACES(bool isACES) { effectData->isACES = isACES; } // ACES
+
+	// getter
+	float GetLensFlareGhostDispersal() { return effectData->lensFlareGhostDispersal; }
 
 	// シングルトンインスタンスの取得
 	static PostEffect* GetInstance();
@@ -154,13 +178,14 @@ private:
 	RenderTarget renderTarget_;
 	RenderTarget lumRenderTarget_;     // 高輝度抽出用
 	RenderTarget blurRenderTarget_[2]; // ぼかし用（Ping-Pong処理用）
+	RenderTarget lensFlareRenderTarget_; // レンズフレア
 	// ビューポート
 	D3D12_VIEWPORT viewport_;
 	// シザー矩形
 	D3D12_RECT scissorRect_;
 
 	// クリアカラー
-	float clearColor[4] = { 0.5f, 0.8f, 0.9f, 1.0f };
+	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	D3D12_RESOURCE_STATES currentState_;
 
 	// *エフェクト切り換え用* //
@@ -181,6 +206,9 @@ private:
 	static const int kBloomPassCount = 3;
 	// 3段階分のバッファ配列
 	BloomBuffer bloomBuffers_[kBloomPassCount];
+
+	// レンズフレア
+	uint32_t lensFlareSrvIndex_ = 0;
 
 	// ポインター
 	DirectXCommon* dxCommon_ = nullptr;

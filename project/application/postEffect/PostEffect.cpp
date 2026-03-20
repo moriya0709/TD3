@@ -78,6 +78,19 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 		);
 	}
 
+	// レンズフレア
+	// ブルームの最初のパス(1/2サイズ)と同じ解像度で作成する
+	uint32_t lfWidth = (uint32_t)(windowAPI_->kClientWidth / 2.0f);
+	uint32_t lfHeight = (uint32_t)(windowAPI_->kClientHeight / 2.0f);
+
+	lensFlareSrvIndex_ = srvManager_->Allocate(1);
+	lensFlareRenderTarget_ = CreateRenderTarget(
+		dxCommon_->GetDevice(), lfWidth, lfHeight,
+		DXGI_FORMAT_R16G16B16A16_FLOAT, clearColor,
+		dxCommon_->GetRtvHeap(), currentRtvIndex++, // 空いている次のインデックスを自動使用
+		dxCommon_->GetSrvHeap(), lensFlareSrvIndex_
+	);
+
 	currentState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
 	// エフェクト
@@ -112,8 +125,44 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	effectData->bloomThreshold = 1.0f;
 	effectData->bloomIntensity = 1.0f;
 	effectData->bloomBlurRadius = 1.0f;
+	// レンズフレア
+	effectData->isLensFlare = true;            // とりあえずONにしておく
+	effectData->lensFlareGhostCount = 8;       // ゴーストの数（4?8くらいが綺麗）
+	effectData->lensFlareGhostDispersal = 0.3f; // ゴーストが広がる間隔
+	effectData->lensFlareHaloWidth = 0.4f;      // ヘイロー（光の輪）の大きさ
+	effectData->isACES = true;                 // ACESトーンマッピングをONにする
+	effectData->caIntensity = 0.003f;          // 色収差の強さ（最初は弱めに）
 
 	effectData->intensity = 1.0f; // エフェクトの強さ
+}
+
+void PostEffect::Update(Camera* camera) {
+	// -----------------------------------------------------------
+	// ★★★ 動的ディスパーサル（Dynamic Dispersal）のC++実装 ★★★
+	// -----------------------------------------------------------
+
+	// 1. カメラの「注視点方向（前方向）」を取得
+	// Inverseを使わず、View行列から直接ワールド空間のZ軸（前方向）を抜き出します
+	Matrix4x4 viewMat = camera->GetViewMatrix();
+	Vector3 camForward = { viewMat.m[0][2], viewMat.m[1][2], viewMat.m[2][2] }; // ★縦方向から取得
+
+	// ★ Normalizeの計算結果をしっかり「代入」して上書きする
+	camForward = Normalize(camForward);
+
+	// 2. 太陽の方向（ワールド空間）を取得
+	Vector3 sunDir = RayMarching::GetInstance()->GetSunDir();
+	sunDir = Normalize(sunDir); // ★ここも念のため代入
+
+	// 3. カメラの向きと「太陽の逆方向」の内積をとる
+	float dot = Dot(camForward, -sunDir);
+
+	// 4. 0.0 ～ 1.0 の係数に変換
+	float lerpFactor = std::clamp((1.0f - dot) * 15.0f, 0.0f, 1.0f);
+
+	// 5. 最終的な dispersal を決定して代入
+	float baseDist = 0.3f; // 太陽が中央のとき（密集）
+	float maxDist = 0.7f;  // 太陽が端のとき（拡散）
+	effectData->lensFlareGhostDispersal = baseDist + (maxDist - baseDist) * lerpFactor;
 }
 
 void PostEffect::Draw() {
@@ -213,11 +262,50 @@ void PostEffect::Draw() {
 	}
 
 	// ==========================================
+	// ★新規追加：パス4：レンズフレア（ゴースト）生成
+	// ==========================================
+	passId = 4; // レンズフレア用のパスID
+	cmdList->SetGraphicsRoot32BitConstants(6, 1, &passId, 0);
+
+	// レンズフレア用レンダーターゲットは 1/2 サイズ
+	float lfWidth = (float)windowAPI_->kClientWidth / 2.0f;
+	float lfHeight = (float)windowAPI_->kClientHeight / 2.0f;
+	D3D12_VIEWPORT lfViewport = { 0.0f, 0.0f, lfWidth, lfHeight, 0.0f, 1.0f };
+	D3D12_RECT lfScissor = { 0, 0, (long)lfWidth, (long)lfHeight };
+
+	cmdList->RSSetViewports(1, &lfViewport);
+	cmdList->RSSetScissorRects(1, &lfScissor);
+
+	// 書き込み準備
+	TransitionResource(lensFlareRenderTarget_.resource.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	cmdList->OMSetRenderTargets(1, &lensFlareRenderTarget_.rtvHandle, FALSE, nullptr);
+
+	// 黒でクリア（前のフレームの残像を消す）
+	float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	cmdList->ClearRenderTargetView(lensFlareRenderTarget_.rtvHandle, clearColorBlack, 0, nullptr);
+
+	// ★入力画像として「高輝度抽出したテクスチャ(ブルームの最初の画像)」を t0 に渡す
+	cmdList->SetGraphicsRootDescriptorTable(0, bloomBuffers_[0].lumRenderTarget.srvGpuHandle);
+
+	// ▼▼▼ ここを追加！ RayMarchingから太陽と雲のパラメータを渡す ▼▼▼
+	D3D12_GPU_VIRTUAL_ADDRESS cloudCbAddress = RayMarching::GetInstance()->GetCloudParamGPUVirtualAddress();
+
+	// 【??ポイント2：ルートパラメータのインデックス】
+	// 現在のDraw()を見ると、インデックス0～7まで使われています。
+	// b1 (SunAndCloudParam) 用に新しくルートパラメータを追加した場合、インデックスは「8」になるはずです。
+	cmdList->SetGraphicsRootConstantBufferView(8, cloudCbAddress);
+
+	cmdList->DrawInstanced(3, 1, 0, 0);
+
+	// 読み込み状態に戻す
+	TransitionResource(lensFlareRenderTarget_.resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
+	// ==========================================
 	// パス4：最終合成 (バックバッファへ描画)
 	// ==========================================
-	passId = 0;
+	passId = 0; // 最終合成は 0 のまま
 	cmdList->SetGraphicsRoot32BitConstants(6, 1, &passId, 0);
-	cmdList->SetPipelineState(graphicsPipelineStateFinal.Get()); // UNORM_SRGB対応のPSO
+	cmdList->SetPipelineState(graphicsPipelineStateFinal.Get());
 
 	cmdList->RSSetViewports(1, &viewport_);
 	cmdList->RSSetScissorRects(1, &scissorRect_);
@@ -232,6 +320,7 @@ void PostEffect::Draw() {
 	cmdList->SetGraphicsRootDescriptorTable(3, bloomBuffers_[1].blurRenderTarget[1].srvGpuHandle); // t2: 1/4ぼかし
 	cmdList->SetGraphicsRootDescriptorTable(4, bloomBuffers_[2].blurRenderTarget[1].srvGpuHandle); // t3: 1/8ぼかし
 	cmdList->SetGraphicsRootDescriptorTable(5, dxCommon_->GetSRVGPUDescriptorHandle(depthSrvIndex_)); // t4: 深度
+	cmdList->SetGraphicsRootDescriptorTable(7, lensFlareRenderTarget_.srvGpuHandle); // t5: レンズフレア
 
 	cmdList->DrawInstanced(3, 1, 0, 0);
 
@@ -459,18 +548,39 @@ void PostEffect::CreateRootSignature() {
 	D3D12_DESCRIPTOR_RANGE range2[1] = {}; range2[0].BaseShaderRegister = 2; range2[0].NumDescriptors = 1; range2[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; range2[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	D3D12_DESCRIPTOR_RANGE range3[1] = {}; range3[0].BaseShaderRegister = 3; range3[0].NumDescriptors = 1; range3[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; range3[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	D3D12_DESCRIPTOR_RANGE range4[1] = {}; range4[0].BaseShaderRegister = 4; range4[0].NumDescriptors = 1; range4[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; range4[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	// レンズフレア用 (t5) のディスクリプタレンジ
+	D3D12_DESCRIPTOR_RANGE range5[1] = {};
+	range5[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	range5[0].NumDescriptors = 1;
+	range5[0].BaseShaderRegister = 5; // ★ t5 レジスタにバインド！
+	range5[0].RegisterSpace = 0;
+	range5[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// RootParameter を 7つ に拡張
-	D3D12_ROOT_PARAMETER rootParameters[7] = {};
+	D3D12_ROOT_PARAMETER rootParameters[9] = {};
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; rootParameters[0].DescriptorTable.pDescriptorRanges = range0; rootParameters[0].DescriptorTable.NumDescriptorRanges = 1; // t0: メイン画像
 	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; rootParameters[1].Descriptor.ShaderRegister = 0; // b0: 定数バッファ
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; rootParameters[2].DescriptorTable.pDescriptorRanges = range1; rootParameters[2].DescriptorTable.NumDescriptorRanges = 1; // t1: 1/2ブルーム
 	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; rootParameters[3].DescriptorTable.pDescriptorRanges = range2; rootParameters[3].DescriptorTable.NumDescriptorRanges = 1; // t2: 1/4ブルーム
 	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; rootParameters[4].DescriptorTable.pDescriptorRanges = range3; rootParameters[4].DescriptorTable.NumDescriptorRanges = 1; // t3: 1/8ブルーム
 	rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; rootParameters[5].DescriptorTable.pDescriptorRanges = range4; rootParameters[5].DescriptorTable.NumDescriptorRanges = 1; // t4: 深度
+	// b1用 (パス番号) = インデックス6
+	rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[6].Constants.ShaderRegister = 1;
+	rootParameters[6].Constants.Num32BitValues = 1;
+	rootParameters[6].Constants.RegisterSpace = 0;
 
-	// b1用 (パス番号)
-	rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS; rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; rootParameters[6].Constants.ShaderRegister = 1; rootParameters[6].Constants.Num32BitValues = 1; rootParameters[6].Constants.RegisterSpace = 0;
+	// ▼▼▼ ここを追加 (レンズフレア画像 t5) = インデックス7 ▼▼▼
+	rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[7].DescriptorTable.pDescriptorRanges = range5;
+	rootParameters[7].DescriptorTable.NumDescriptorRanges = 1;
+	// PostEffectのルートパラメータ配列の要素数を増やす (例: 8 -> 9個)
+	rootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[8].Descriptor.ShaderRegister = 2; // b1レジスタ
+	rootParameters[8].Descriptor.RegisterSpace = 0;
+	rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダーで使う
 
 	// Sampler設定
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
