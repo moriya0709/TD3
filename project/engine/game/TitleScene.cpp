@@ -108,6 +108,7 @@ void TitleScene::Update() {
 
 #pragma region ポストエフェクト
 	// *ポストエフェクト* //
+	PostEffect::GetInstance()->Update(railCamera->camera.get());
 
 	// 反転
 	PostEffect::GetInstance()->SetInversion(isInversion);
@@ -139,6 +140,12 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
 	PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
 	PostEffect::GetInstance()->SetBloomBlurRadius(bloomBlurRadius);
+	// レンズフレア
+	PostEffect::GetInstance()->SetLensFlare(isLensFlare);
+	PostEffect::GetInstance()->SetLensFlareGhostCount(lensFlareGhostCount);
+	PostEffect::GetInstance()->SetLensFlareHaloWidth(lensFlareHaloWidth);
+	PostEffect::GetInstance()->SetIsACES(isACES);
+	PostEffect::GetInstance()->SetCAIntensity(caIntensity);
 
 #pragma endregion
 
@@ -282,6 +289,20 @@ void TitleScene::Update() {
 		ImGui::DragFloat("bloomThreshold", &bloomThreshold, 0.01f, 0.0f, 10.0f);
 		ImGui::DragFloat("bloomIntensity", &bloomIntensity, 0.01f, 0.0f, 10.0f);
 		ImGui::DragFloat("bloomRadius", &bloomBlurRadius, 0.01f, 0.0f, 10.0f);
+
+		ImGui::TreePop();
+	}
+	// レンズフレア
+	if (ImGui::TreeNode("LensFlare")) {
+		ImGui::Checkbox("OnOff", &isLensFlare);
+
+		if (isLensFlare) {
+			ImGui::DragInt("lensFlareGhostCount", &lensFlareGhostCount, 1, 0,10);
+			ImGui::DragFloat("lensFlareHaloWidth", &lensFlareHaloWidth, 0.01f, 0.0f, 10.0f);
+			ImGui::Checkbox("isACES", &isACES);
+			ImGui::DragFloat("caIntensity", &caIntensity, 0.001f, 0.0f, 10.0f);
+		}
+		ImGui::Text("%.3f", PostEffect::GetInstance()->GetLensFlareGhostDispersal());
 
 		ImGui::TreePop();
 	}

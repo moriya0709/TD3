@@ -106,6 +106,13 @@ private:
 	float bloomIntensity = 2.0f;
 	float bloomBlurRadius = 1.0f;
 
+	// レンズフレア
+	bool isLensFlare = true;           // レンズフレアのON/OFF
+	int lensFlareGhostCount = 6;   // ゴーストの数（例: 4～8）
+	float lensFlareHaloWidth = 0.57f;      // ヘイロー（輪っか）の大きさ
+	bool isACES = true;                 // ACESトーンマッピングをONにする
+	float caIntensity = 0.05f;          // 色収差の強さ（最初は弱めに）
+
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
