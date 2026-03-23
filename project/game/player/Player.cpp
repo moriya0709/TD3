@@ -1,4 +1,4 @@
-﻿#include "Player.h"
+#include "Player.h"
 #include "../enemy/Enemy.h"
 #include "ObjectCommon.h"
 #include "PlayerChargeBullet.h"
@@ -339,6 +339,8 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 #pragma region ImGui
 
 
+
+
 	ImGui::Begin("Player Config");
 	ImGui::Text("Style: %d", currentStyle);
 	for (int i = 0; i < 4; i++) {
@@ -379,7 +381,7 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 		playerObject_->SetModel("normalMachine.obj");
 		break;
 	}
-//  Debug
+
 #pragma endregion
 }
 
