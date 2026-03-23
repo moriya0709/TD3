@@ -62,7 +62,7 @@ void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, con
 	object_->SetScale(transform_.scale);
 	object_->SetTranslate(transform_.translate);
 }
-void PlayerChargeBullet::Update(Vector3 cmrvel) {
+void PlayerChargeBullet::Update() {
 	std::shared_ptr<Enemy> target = targetEnemy_.lock();
 
 	if (target) {
@@ -89,7 +89,9 @@ void PlayerChargeBullet::Update(Vector3 cmrvel) {
 	}
 
 	// 3. 座標更新（共通）
-	transform_.translate += velocity_+cmrvel;
+	transform_.translate.x += velocity_.x;
+	transform_.translate.y += velocity_.y;
+	transform_.translate.z += velocity_.z;
 
 	object_->SetTranslate(transform_.translate);
 	object_->Update();
