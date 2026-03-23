@@ -62,6 +62,7 @@ void NormalEnemy::Update()
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);
+    object_->SetRotate(transform_.rotate);
 
     // ここにIMGUI
 
@@ -84,7 +85,8 @@ void NormalEnemy::OnCollision(int Damage)
     health_ -= Damage;
 
     if (health_ <= 0) {
-        isAvile = false;
+        behaviorRequest_ = Behavior::kDefeated;
+        deadTimer_ = kdeadTimer_;
     }
 }
 
@@ -216,6 +218,11 @@ void NormalEnemy::BehaviorAway()
 
 void NormalEnemy::BehaviorDefeated()
 {
+    transform_.rotate.z += 0.15f;
+    deadTimer_ -= 1.0f / 60.0f;
+
     // 上に断末のコードを角
-    isDead_ = true;
+    if (deadTimer_ <= 0.0f) {
+        isDead_ = true;
+    }
 }
