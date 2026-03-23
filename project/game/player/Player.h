@@ -37,7 +37,7 @@ public:
 		int haste = 0;                // UŒ‚•p“x
 	};
 	void Initialize(Camera* camera ,Style style);
-	void Update(const std::list<std::shared_ptr<Enemy>>& enemies);
+	void Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cmrvel);
 	void Draw2D();
 	void Draw3D();
 	Vector3 GetPosition() const { return transform_.translate; }
@@ -95,7 +95,7 @@ private:
 	// ƒvƒŒƒCƒ„[‚Ì’e
 	std::list<std::unique_ptr<PlayerBullet>> bullets;
 	void Attack(const std::list<std::shared_ptr<Enemy>>& enemies);
-	void UpdateBullets();
+	void UpdateBullets(Vector3 cmrvel);
 	// Ÿ‚Ì”­Ë‚Ü‚Å
 	int coolTime = 0;
 	bool isSpecialAttack = false;
