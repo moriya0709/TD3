@@ -1,16 +1,15 @@
 #pragma once
 #include "../Enemy.h"
-#include "../EnemyBullet.h"
 
 class Player;
 
-class TargetEnemy : public Enemy {
+class ShieldEnemy : public Enemy {
 public:
     enum class Behavior {
         kUnknown = -1,
         kWalk, // í“¬ó‘Ô
         kAway, // “¦‘–ó‘Ô
-       
+        kShield, // ƒoƒŠƒAó‘Ô
         kDefeated, // ÀË
     };
 
@@ -37,6 +36,7 @@ private:
 
     void BehaviorWalk();
     void BehaviorAway();
+    void BehaviorShield();
     void BehaviorDefeated();
 
 private:
@@ -51,10 +51,15 @@ private:
     Vector3 velocity_ = {}; // ‘¬“x
     Vector3 acceleration; // ’e‚Ì‘¬‚³(ŒÂ•Ê‚Åİ’è)
 
+    float leap; // U‚èŒü‚«
+    float BehaviorchangeTimer;
+    static inline const float kBehaviorchangeTimer = 5.0f;
+
     float activeTimer; // ‘¶İ‚·‚éŠÔ
     float isAvile; // ¶‘¶‚µ‚Ä‚¢‚é‚©
     int health_; // ‘Ì—Í
     float interval; // ’e‚ğ”­Ë‚·‚éŠÔŠu
+    Vector3 startRotate;
     static inline const float maxInterval = 2.0f; // ŠÔŠu
 
     // ƒtƒ‰ƒO

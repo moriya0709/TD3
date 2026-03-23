@@ -1,9 +1,11 @@
-#include "TargetEnemy.h"
-#include "../bullet/TargetEnemyBullet.h"
-#include "Player.h"
+#include "ShieldEnemy.h"
+#include "../../engine/math/Calc.h"
+#include "../../player/Player.h"
+#include "../Bullet/TargetEnemyBullet.h"
 
-void TargetEnemy::Initialize(Camera* camera, Vector3 pos, int health)
+void ShieldEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 {
+
     camera_ = camera;
 
     transform_.scale = { 1.0f, 1.0f, 1.0f };
@@ -12,24 +14,26 @@ void TargetEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
-    object_->SetModel("tometo.obj");
+    object_->SetModel("player.obj");
     object_->SetScale(transform_.scale);
     object_->SetRotate(transform_.rotate);
     object_->SetTranslate(transform_.translate);
 
     health_ = health;
     isAvile = true;
+    BehaviorchangeTimer = kBehaviorchangeTimer;
 
     interval = maxInterval;
 }
 
-void TargetEnemy::Update()
+void ShieldEnemy::Update()
 {
+
     if (behaviorRequest_ != Behavior::kUnknown) {
         behavior_ = behaviorRequest_;
 
         switch (behavior_) {
-        case TargetEnemy::Behavior::kDefeated:
+        case ShieldEnemy::Behavior::kDefeated:
         default:
 
             break;
@@ -45,6 +49,9 @@ void TargetEnemy::Update()
     case Behavior::kAway:
         BehaviorAway();
         break;
+    case Behavior::kShield:
+        BehaviorShield();
+        break;
     case Behavior::kDefeated:
         BehaviorDefeated();
         break;
@@ -52,22 +59,13 @@ void TargetEnemy::Update()
         break;
     }
 
-    // 射撃
+    // 発射
     BulletUpdate();
 
     // 生きていないならやられモーション処理を入れる
     if (!isAvile) {
         behaviorRequest_ = Behavior::kDefeated;
     }
-
-    // 敵に対して向きを合わせる
-    Vector3 playerPos = player_->GetPosition();
-
-    Vector3 pToE = playerPos - transform_.translate;
-    transform_.rotate.y = std::atan2(pToE.x, pToE.z);
-
-    float heightDifference = std::sqrt(pToE.x * pToE.x + pToE.z * pToE.z);
-    transform_.rotate.x = std::atan2(-pToE.y, heightDifference);
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);
@@ -77,7 +75,7 @@ void TargetEnemy::Update()
     // ここにIMGUI
 }
 
-void TargetEnemy::Draw3D()
+void ShieldEnemy::Draw3D()
 {
     // 3Dオブジェクト描画
     object_->Draw();
@@ -88,8 +86,12 @@ void TargetEnemy::Draw3D()
     }
 }
 
-void TargetEnemy::OnCollision(int Damage)
+void ShieldEnemy::OnCollision(int Damage)
 {
+    if (behavior_ == Behavior::kShield) {
+        return;
+    }
+
     health_ -= Damage;
 
     if (health_ <= 0) {
@@ -98,7 +100,7 @@ void TargetEnemy::OnCollision(int Damage)
     }
 }
 
-void TargetEnemy::SetWayPoints(const std::vector<WayPoint>& waypoints)
+void ShieldEnemy::SetWayPoints(const std::vector<WayPoint>& waypoints)
 {
     wayPoints_ = waypoints;
     currentWayPointIndex_ = 0;
@@ -108,13 +110,13 @@ void TargetEnemy::SetWayPoints(const std::vector<WayPoint>& waypoints)
     startPos_ = transform_.translate;
 }
 
-void TargetEnemy::SetFleeWaypoint(const WayPoint& fleeWP, bool hasFleeData)
+void ShieldEnemy::SetFleeWaypoint(const WayPoint& fleeWP, bool hasFleeData)
 {
     fleeWaypoint_ = fleeWP;
     hasFleeData_ = hasFleeData;
 }
 
-void TargetEnemy::EnemyMove()
+void ShieldEnemy::EnemyMove()
 {
     float deltaTime = 1.0f / 60.0f;
 
@@ -159,8 +161,7 @@ void TargetEnemy::EnemyMove()
         fleeStartPos_ = transform_.translate; // 現在地を逃走のスタート地点にする
     }
 }
-
-void TargetEnemy::BulletUpdate()
+void ShieldEnemy::BulletUpdate()
 {
     // 弾を生成する時間を減らす
     if (behavior_ == Behavior::kWalk) {
@@ -188,13 +189,7 @@ void TargetEnemy::BulletUpdate()
     });
 }
 
-void TargetEnemy::BehaviorWalk()
-{
-    // 移動
-    EnemyMove();
-}
-
-void TargetEnemy::BehaviorAway()
+void ShieldEnemy::BehaviorAway()
 {
     if (hasFleeData_) {
         float deltaTime = 1.0f / 60.0f;
@@ -225,7 +220,63 @@ void TargetEnemy::BehaviorAway()
     }
 }
 
-void TargetEnemy::BehaviorDefeated()
+void ShieldEnemy::BehaviorShield()
+{
+    // 振り向き処理
+    leap += 0.05f;
+    if (leap >= 1.0f) {
+        leap = 1.0f;
+    }
+    float targetRotate = startRotate.y + (float)std::numbers::pi;
+    transform_.rotate.y = Lerp(startRotate.y, targetRotate, leap);
+
+    // 移動
+    EnemyMove();
+
+    // 切り替えまで
+    BehaviorchangeTimer -= 1.0f / 60.0f;
+    if (BehaviorchangeTimer <= 0.0f) {
+        behaviorRequest_ = Behavior::kWalk;
+        BehaviorchangeTimer = kBehaviorchangeTimer;
+        leap = 0.0f;
+        startRotate = transform_.rotate;
+    }
+}
+
+void ShieldEnemy::BehaviorWalk()
+{
+    // 振り向き処理
+    leap += 0.05f;
+    if (leap >= 1.0f) {
+        leap = 1.0f;
+
+        // 敵に対して向きを合わせる
+        Vector3 playerPos = player_->GetPosition();
+
+        Vector3 pToE = playerPos - transform_.translate;
+        transform_.rotate.y = std::atan2(pToE.x, pToE.z);
+
+        float heightDifference = std::sqrt(pToE.x * pToE.x + pToE.z * pToE.z);
+        transform_.rotate.x = std::atan2(-pToE.y, heightDifference);
+    } else {
+        float targetRotate = 0.0f;
+        transform_.rotate.y = Lerp(startRotate.y, targetRotate, leap);
+    }
+
+    // 移動
+    EnemyMove();
+
+    // 切り替えまで
+    BehaviorchangeTimer -= 1.0f / 60.0f;
+    if (BehaviorchangeTimer <= 0.0f) {
+        behaviorRequest_ = Behavior::kShield;
+        BehaviorchangeTimer = kBehaviorchangeTimer;
+        leap = 0.0f;
+        startRotate = transform_.rotate;
+    }
+}
+
+void ShieldEnemy::BehaviorDefeated()
 {
     transform_.rotate.z += 0.15f;
     deadTimer_ -= 1.0f / 60.0f;
