@@ -168,7 +168,7 @@ void Player::Initialize(Camera* camera, Style style) {
 
 	machineObject_ = std::make_unique<Object>();
 	machineObject_->Initialize(camera_);
-	machineObject_->SetModel("playerC.obj");
+	machineObject_->SetModel("playerH.obj");
 	machineObject_->SetTranslate(transform_.translate);
 
 	statas_[currentStyle].hp = 100;
