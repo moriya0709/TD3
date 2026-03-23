@@ -147,7 +147,8 @@ void SpriteCommon::CreateGraphicsPipeline() {
 
 	// DepthStencil‚Ìİ’èz
 	graphicsPipelineStateDesc.DepthStencilState = dxCommon_->depthStencilDesc;
-	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	graphicsPipelineStateDesc.DepthStencilState.DepthEnable = FALSE;
+	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
 
 	// ‘‚«‚ŞRTV‚Ìî•ñ
 	graphicsPipelineStateDesc.NumRenderTargets = 1;

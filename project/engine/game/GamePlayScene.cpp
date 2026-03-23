@@ -48,6 +48,7 @@ void GamePlayScene::Update()
 
 #pragma region ポストエフェクト
     // *ポストエフェクト* //
+    PostEffect::GetInstance()->Update(camera.get());
 
     // 反転
     PostEffect::GetInstance()->SetInversion(isInversion);
@@ -75,6 +76,16 @@ void GamePlayScene::Update()
     PostEffect::GetInstance()->SetFocusDistance(focusDistance);
     PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
     PostEffect::GetInstance()->SetFocusRange(focusRange);
+    // ブルーム
+    PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
+    PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
+    // レンズフレア
+    PostEffect::GetInstance()->SetLensFlare(isLensFlare);
+    PostEffect::GetInstance()->SetLensFlareGhostCount(lensFlareGhostCount);
+    PostEffect::GetInstance()->SetLensFlareHaloWidth(lensFlareHaloWidth);
+    PostEffect::GetInstance()->SetIsACES(isACES);
+    PostEffect::GetInstance()->SetCAIntensity(caIntensity);
+
 
 #pragma endregion
 
@@ -215,6 +226,28 @@ void GamePlayScene::Update()
             ImGui::DragFloat("focusDistance", &focusDistance, 0.1f, 0.0f, 100.0f);
             ImGui::DragFloat("bokehRadius", &bokehRadius, 0.1f, 0.0f, 100.0f);
             ImGui::DragFloat("focusRange", &focusRange, 0.1f, 0.0f, 100.0f);
+        }
+
+        ImGui::TreePop();
+    }
+    // ブルーム
+    if (ImGui::TreeNode("Bloom")) {
+        ImGui::DragFloat("bloomThreshold", &bloomThreshold, 0.01f, 0.0f, 10.0f);
+        ImGui::DragFloat("bloomIntensity", &bloomIntensity, 0.01f, 0.0f, 10.0f);
+        ImGui::DragFloat("bloomRadius", &bloomBlurRadius, 0.01f, 0.0f, 10.0f);
+
+        ImGui::TreePop();
+    }
+    // レンズフレア
+    if (ImGui::TreeNode("LensFlare")) {
+        ImGui::Checkbox("OnOff", &isLensFlare);
+
+        if (isLensFlare) {
+            ImGui::DragInt("lensFlareGhostCount", &lensFlareGhostCount, 1, 0, 10);
+            ImGui::DragFloat("lensFlareHaloWidth", &lensFlareHaloWidth, 0.01f, 0.0f, 10.0f);
+            ImGui::Checkbox("isACES", &isACES);
+            ImGui::DragFloat("caIntensity", &caIntensity, 0.001f, 0.0f, 10.0f);
+
         }
 
         ImGui::TreePop();

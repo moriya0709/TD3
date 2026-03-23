@@ -22,6 +22,7 @@ public:
 	float GetCurrentReplayTime() const { return timer; }
 	int GetCurrentStage() const { return currentStage; }
 
+
 private:
 	Vector3 CameraLerp(const Vector3& start, const Vector3& end, float t);
 	Vector3 CatmullRom(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t);
@@ -58,6 +59,7 @@ private:
 	bool isRecording = false;
 	bool isSmoothMode = true;
 	bool showDebugTrace = true;
+	bool newRecordingStarted = false;
 
 	int currentStage = 1;
 	float playbackSpeed = 1.0f;
