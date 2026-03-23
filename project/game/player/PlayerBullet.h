@@ -16,7 +16,7 @@
 class PlayerBullet {
 public:
 	virtual void Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies);
-	virtual void Update();
+	virtual void Update(Vector3 cmrvel);
 	virtual void Draw3D();
 	virtual void Draw2D();
 	virtual void SetStatus(const float hommingAccuracy,const int damage);
