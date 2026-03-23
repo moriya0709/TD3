@@ -51,6 +51,7 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/machine/kamihikouki", "playerK.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/houki", "playerH.obj");
 	//ModelManager::GetInstance()->LoadModel("Resource/machine/nasu", "playerN.obj");制作予定
+	ModelManager::GetInstance()->LoadModel("Resource/enemy/tometo", "tometo.obj");
     ModelManager::GetInstance()->LoadModel("Resource/test", "test.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.obj"); // レールエディター
 	ModelManager::GetInstance()->LoadModel("Resource/rail", "rail.obj"); // レールエディター
