@@ -1,4 +1,4 @@
-#include "PlayerBullet.h"
+﻿#include "PlayerBullet.h"
 
 void PlayerBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies) {};
 void PlayerBullet::Update(Vector3 cmrvel) {};
