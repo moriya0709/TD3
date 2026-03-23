@@ -55,6 +55,7 @@ public:
 
 	// getter
 	Vector3 GetSunDir() { return cloudParam->sunDir; }
+	D3D12_GPU_VIRTUAL_ADDRESS GetCloudParamGPUVirtualAddress() const { return cloudParamResource->GetGPUVirtualAddress(); }
 
 	// シングルトンインスタンスの取得
 	static RayMarching* GetInstance();

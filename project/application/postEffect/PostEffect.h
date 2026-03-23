@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "Calc.h"
+#include "RayMarching.h"
 
 class DirectXCommon;
 class WindowAPI;
@@ -22,63 +23,87 @@ struct RenderTarget {
 };
 
 struct EffectData {
-	// [Block 0] 16 bytes
-	int isInversion;   // 4
-	int isGrayscale;   // 4
-	int isRadialBlur;  // 4
-	int isDistanceFog; // 4
+	// 16byte (Row 0)
+	int32_t isInversion;
+	int32_t isGrayscale;
+	int32_t isRadialBlur;
+	int32_t isDistanceFog;
 
-	// [Block 1] 16 bytes
-	int isDOF;         // 4
-	int isHeightFog;   // 4
-	float intensity;   // 4
-	float pad0;        // 4 (16バイトに合わせる)
+	// 16byte (Row 1)
+	int32_t isDOF;
+	int32_t isHeightFog;
+	float intensity;
+	float pad0;
 
-	// [Block 2] 16 bytes
-	Vector2 blurCenter; // 8
-	float blurWidth;              // 4
-	int blurSamples;              // 4
+	// 16byte (Row 2)
+	Vector2 blurCenter;
+	float blurWidth;
+	int32_t blurSamples;
 
-	// [Block 3] 16 bytes
-	Vector3 distanceFogColor; // 12
-	float distanceFogStart;             // 4
+	// 16byte (Row 3)
+	Vector3 distanceFogColor;
+	float distanceFogStart;
 
-	// [Block 4] 16 bytes
-	float distanceFogEnd; // 4
-	float zNear;          // 4
-	float zFar;           // 4
-	float pad1;           // 4 (16バイトに合わせる)
+	// 16byte (Row 4)
+	float distanceFogEnd;
+	float zNear;
+	float zFar;
+	float pad1;
 
-	// [Block 5] 16 bytes
-	Vector3 heightFogColor; // 12
-	float heightFogTop;               // 4
+	// 16byte (Row 5)
+	Vector3 heightFogColor;
+	float heightFogTop;
 
-	// [Block 6] 16 bytes
-	float heightFogBottom;  // 4
-	float heightFogDensity; // 4
-	float pad2_0;           // 4 (行列前の調整)
-	float pad2_1;           // 4 (行列を16バイト境界から開始させる)
+	// 16byte (Row 6)
+	float heightFogBottom;
+	float heightFogDensity;
+	Vector2 pad2;
 
-	// [Block 7-10] 64 bytes
-	Matrix4x4 matInverseViewProjection; // 64
+	// 64byte (Row 7-10)
+	Matrix4x4 matInverseViewProjection;
 
-	// [Block 11] 16 bytes (行列の直後)
-	float focusDistance; // 4
-	float focusRange;    // 4
-	float bokehRadius;   // 4
-	float pad3;          // 4 (16バイトに合わせる)
+	// 16byte (Row 11)
+	float focusDistance;
+	float focusRange;
+	float bokehRadius;
+	float pad3;
 
-	// [Padding to 256 bytes]
-	// ここまでで 16*7 + 64 + 16 = 192 bytes
-	// 256 - 192 = 64 bytes => float4 が 4個分
-	float finalPad[16];
+	// 16byte (Row 12) ★ここがズレていた可能性大
+	float bloomThreshold;
+	float bloomIntensity;
+	float bloomBlurRadius;
+	float pad4;
+
+	// 16byte (Row 13) レンズフレア用
+	int32_t isLensFlare;           // レンズフレアのON/OFF
+	int32_t lensFlareGhostCount;   // ゴーストの数（例: 4～8）
+	float lensFlareGhostDispersal; // ゴーストの広がり具合
+	float lensFlareHaloWidth;      // ヘイロー（輪っか）の大きさ
+
+	// ▼▼▼ ここから追加 (Row 14) ▼▼▼
+	int32_t isACES;                // ACESトーンマッピングのON/OFF
+	float caIntensity;             // 色収差の強さ (0.001f とかが綺麗)
+	float pad5[2];              // パディング
+
+	// Row 13-15 (48byte) - HLSL側の finalPad[3] に合わせる
+	float   finalPad[4];
 };
-static_assert(sizeof(EffectData) == 256, "Size must be 256 bytes");
+
+// 各パスのレンダーターゲットとSRVインデックスをまとめる構造体
+struct BloomBuffer {
+	RenderTarget lumRenderTarget;
+	uint32_t lumSrvIndex;
+
+	RenderTarget blurRenderTarget[2];
+	uint32_t blurSrvIndex[2];
+};
 
 class PostEffect {
 public:
 	// 初期化
 	void Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvManager* srvManager);
+	// 更新
+	void Update(Camera* camera);
 	// 描画
 	void Draw();
 
@@ -118,8 +143,26 @@ public:
 	void SetFocusRange(float range) { effectData->focusRange = range; }
 	void SetBokehRadius(float radius) { effectData->bokehRadius = radius; }
 
+	// ブルーム
+	void SetBloomThreshold(float bloomThreshold) {effectData->bloomThreshold = bloomThreshold;}
+	void SetBloomIntensity(float bloomIntensity) {effectData->bloomIntensity = bloomIntensity;}
+	void SetBloomBlurRadius(float bloomBlurRadius) { effectData->bloomBlurRadius = bloomBlurRadius; }
+	// レンズフレア
+	void SetLensFlare(bool isLensFlare) { effectData->isLensFlare = isLensFlare; }
+	void SetLensFlareGhostCount(int count) { effectData->lensFlareGhostCount = count; }
+	void SetLensFlareGhostDispersal(float dispersal) { effectData->lensFlareGhostDispersal = dispersal; }
+	void SetLensFlareHaloWidth(float width) { effectData->lensFlareHaloWidth = width; }
+	void SetCAIntensity(float intensity) { effectData->caIntensity = intensity; } // 色収差
+	void SetIsACES(bool isACES) { effectData->isACES = isACES; } // ACES
+
+	// getter
+	float GetLensFlareGhostDispersal() { return effectData->lensFlareGhostDispersal; }
+
 	// シングルトンインスタンスの取得
 	static PostEffect* GetInstance();
+
+	// 深度バッファを指定の状態に遷移
+	void TransitionDepthBuffer(D3D12_RESOURCE_STATES newState);
 
 private:
 	// ルートシグネイチャ
@@ -129,16 +172,20 @@ private:
 
 	// グラフィックスパイプライン
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineStateFinal;
 
 	// レンダーターゲット
 	RenderTarget renderTarget_;
+	RenderTarget lumRenderTarget_;     // 高輝度抽出用
+	RenderTarget blurRenderTarget_[2]; // ぼかし用（Ping-Pong処理用）
+	RenderTarget lensFlareRenderTarget_; // レンズフレア
 	// ビューポート
 	D3D12_VIEWPORT viewport_;
 	// シザー矩形
 	D3D12_RECT scissorRect_;
 
 	// クリアカラー
-	float clearColor[4] = { 0.1f, 0.25f, 0.5f, 1.0f };
+	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	D3D12_RESOURCE_STATES currentState_;
 
 	// *エフェクト切り換え用* //
@@ -149,9 +196,19 @@ private:
 
 	// index
 	uint32_t srvIndex_;
+	// PostEffect.h の private メンバ変数などに以下を追加
+	uint32_t depthSrvIndex_ = 0;
 
 	// シングルトンインスタンス
 	static std::unique_ptr <PostEffect> instance;
+
+	// ブルームのパス数（1/2, 1/4, 1/8 の3段階）
+	static const int kBloomPassCount = 3;
+	// 3段階分のバッファ配列
+	BloomBuffer bloomBuffers_[kBloomPassCount];
+
+	// レンズフレア
+	uint32_t lensFlareSrvIndex_ = 0;
 
 	// ポインター
 	DirectXCommon* dxCommon_ = nullptr;
@@ -175,8 +232,9 @@ private:
 	void Transition(D3D12_RESOURCE_STATES newState);
 	// バックバッファを指定の状態に遷移
 	void TransitionBackBuffer(D3D12_RESOURCE_STATES newState);
-	// 深度バッファを指定の状態に遷移
-	void TransitionDepthBuffer(D3D12_RESOURCE_STATES newState);
+
+	// --- リソースの状態を切り替える便利関数 ---
+	void TransitionResource(ID3D12Resource* resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
 
 	// ルートシグネイチャ生成
 	void CreateRootSignature();

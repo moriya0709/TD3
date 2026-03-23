@@ -498,5 +498,42 @@ float4 main(VSOutput input) : SV_TARGET
     float luminance = dot(finalColor, float3(0.299, 0.587, 0.114));
     finalColor = lerp(float3(luminance, luminance, luminance), finalColor, saturation);
 
+   // ==========================================
+    // 5. 太陽ディスク（HDR）の描画（角度による動的な色変化）
+    // ==========================================
+    
+    // 1. 各時間帯の太陽の色を定義（HDRなので大きな値を入れる）
+    float3 colDay = float3(60.0, 55.0, 45.0); // 真昼：白に近い黄色
+    float3 colGolden = float3(80.0, 45.0, 5.0); // 夕方手前：強い黄金色
+    float3 colSunset = float3(100.0, 15.0, 2.0); // 日没直前：燃えるような赤橙
+    float3 colMoon = float3(0.5, 0.8, 2.0); // 夜：淡い月光（青白い）
+
+    // 2. 太陽の高さ（sunHeight）に基づいて色をブレンド
+    float3 dynamicSunColor;
+    if (sunHeight > 0.2)
+    {
+        // 真昼からゴールデンアワーへ
+        dynamicSunColor = lerp(colGolden, colDay, smoothstep(0.2, 0.6, sunHeight));
+    }
+    else if (sunHeight > 0.0)
+    {
+        // ゴールデンアワーから日没（真っ赤）へ
+        dynamicSunColor = lerp(colSunset, colGolden, smoothstep(0.0, 0.2, sunHeight));
+    }
+    else
+    {
+        // 日没から夜（月）へ
+        dynamicSunColor = lerp(colMoon, colSunset, smoothstep(-0.1, 0.0, sunHeight));
+    }
+
+    // 3. 太陽の円（ディスク）の計算
+    float sunDot = dot(rayDir, normalizedSunDir);
+    float sunDisc = smoothstep(0.9998f, 0.99995f, sunDot);
+
+    // 4. 最終合成
+    // 夜間（sunHeight < 0）は太陽を少し小さく、暗くすると月らしくなります
+    float sunAlpha = (sunHeight > 0.0) ? 1.0 : 0.2;
+    finalColor += dynamicSunColor * sunDisc * transmittance * sunAlpha;
+
     return float4(finalColor, 1.0);
 }
