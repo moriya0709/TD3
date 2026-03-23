@@ -96,7 +96,7 @@
         },
         {
             "popTime": 3.0,
-            "type": "NormalEnemy",
+            "type": "HomingEnemy",
             "hp": 80,
             "position": {
                 "x": 100.0,
@@ -190,7 +190,7 @@
         },
         {
             "popTime": 5.0,
-            "type": "NormalEnemy",
+            "type": "HomingEnemy",
             "hp": 150,
             "position": {
                 "x": -100.0,

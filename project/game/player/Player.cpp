@@ -163,13 +163,15 @@ void Player::Initialize(Camera* camera, Style style) {
 	// モデルの生成
 	playerObject_ = std::make_unique<Object>();
 	playerObject_->Initialize(camera_);
-	playerObject_->SetModel("player.obj");
+	playerObject_->SetModel("speedMachine.obj");
+	playerObject_->SetModel("normalMachine.obj");
+
 	playerObject_->SetTranslate(transform_.translate);
 
-	machineObject_ = std::make_unique<Object>();
-	machineObject_->Initialize(camera_);
-	machineObject_->SetModel("playerH.obj");
-	machineObject_->SetTranslate(transform_.translate);
+	//machineObject_ = std::make_unique<Object>();
+	//machineObject_->Initialize(camera_);
+	//machineObject_->SetModel("playerH.obj");
+	//machineObject_->SetTranslate(transform_.translate);
 
 	statas_[currentStyle].hp = 100;
 	statas_[currentStyle].attack = 20;
@@ -280,10 +282,10 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	playerObject_->SetScale(transform_.scale);
 	playerObject_->Update();
 
-	machineObject_->SetTranslate(transform_.translate);
-	machineObject_->SetRotate(transform_.rotate);
-	machineObject_->SetScale(transform_.scale);
-	machineObject_->Update();
+	//machineObject_->SetTranslate(transform_.translate);
+	//machineObject_->SetRotate(transform_.rotate);
+	//machineObject_->SetScale(transform_.scale);
+	//machineObject_->Update();
 
 	if (ishit) {
 		damageTimer--;
@@ -364,7 +366,7 @@ void Player::Draw3D() {
 		bullet->Draw3D();
 	}
 	playerObject_->Draw();
-	machineObject_->Draw();
+	//machineObject_->Draw();
 }
 
 Player::~Player() {
