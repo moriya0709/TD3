@@ -337,7 +337,9 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 #pragma endregion
 
 #pragma region ImGui
-#ifdef Debug
+
+
+
 
 	ImGui::Begin("Player Config");
 	ImGui::Text("Style: %d", currentStyle);
@@ -380,7 +382,6 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 		break;
 	}
 
-#endif //  Debug
 #pragma endregion
 }
 
