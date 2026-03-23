@@ -1,4 +1,4 @@
-﻿#include "Player.h"
+#include "Player.h"
 #include "../enemy/Enemy.h"
 #include "ObjectCommon.h"
 #include "PlayerChargeBullet.h"
@@ -51,42 +51,40 @@ void from_json(const nlohmann::json& j, Player::Statas& statas) {
 std::string Player::GetFilePath() const { return "Resource/Data/playerStatas.json"; }
 
 void Player::LoadStatas(const std::string& filePath) {
-	
+
 	std::ifstream inFile(filePath);
 	nlohmann::json j;
 	if (!inFile.is_open() || inFile.peek() == std::ifstream::traits_type::eof()) {
 		j = nlohmann::json{
-			{"Statas",
-			 {
-				 {{"hp", statas_[0].hp},
-				  {"attack", statas_[0].attack},
-				  {"speed", statas_[0].speed},
-				  {"hommingAccuracy", statas_[0].hommingAccuracy},
-				  {"renge", statas_[0].renge},
-				  {"chargeTime", statas_[0].chargeTime},
-				  {"haste", statas_[0].haste}},
-				 {{"hp", statas_[1].hp},
-				  {"attack", statas_[1].attack},
-				  {"speed", statas_[1].speed},
-				  {"hommingAccuracy", statas_[1].hommingAccuracy},
-				  {"renge", statas_[1].renge},
-				  {"chargeTime", statas_[1].chargeTime},
-				  {"haste", statas_[1].haste}},
-				 {{"hp", statas_[2].hp},
-				  {"attack", statas_[2].attack},
-				  {"speed", statas_[2].speed},
-				  {"hommingAccuracy", statas_[2].hommingAccuracy},
-				  {"renge", statas_[2].renge},
-				  {"chargeTime", statas_[2].chargeTime},
-				  {"haste", statas_[2].haste}},
-				 {{"hp", statas_[3].hp},
-				  {"attack", statas_[3].attack},
-				  {"speed", statas_[3].speed},
-				  {"hommingAccuracy", statas_[3].hommingAccuracy},
-				  {"renge", statas_[3].renge},
-				  {"chargeTime", statas_[3].chargeTime},
-				  {"haste", statas_[3].haste}}
-			 }}
+		    {"Statas",
+		     {{{"hp", statas_[0].hp},
+		       {"attack", statas_[0].attack},
+		       {"speed", statas_[0].speed},
+		       {"hommingAccuracy", statas_[0].hommingAccuracy},
+		       {"renge", statas_[0].renge},
+		       {"chargeTime", statas_[0].chargeTime},
+		       {"haste", statas_[0].haste}},
+		      {{"hp", statas_[1].hp},
+		       {"attack", statas_[1].attack},
+		       {"speed", statas_[1].speed},
+		       {"hommingAccuracy", statas_[1].hommingAccuracy},
+		       {"renge", statas_[1].renge},
+		       {"chargeTime", statas_[1].chargeTime},
+		       {"haste", statas_[1].haste}},
+		      {{"hp", statas_[2].hp},
+		       {"attack", statas_[2].attack},
+		       {"speed", statas_[2].speed},
+		       {"hommingAccuracy", statas_[2].hommingAccuracy},
+		       {"renge", statas_[2].renge},
+		       {"chargeTime", statas_[2].chargeTime},
+		       {"haste", statas_[2].haste}},
+		      {{"hp", statas_[3].hp},
+		       {"attack", statas_[3].attack},
+		       {"speed", statas_[3].speed},
+		       {"hommingAccuracy", statas_[3].hommingAccuracy},
+		       {"renge", statas_[3].renge},
+		       {"chargeTime", statas_[3].chargeTime},
+		       {"haste", statas_[3].haste}}}}
         };
 		std::ofstream outFile(filePath);
 		if (!outFile.is_open()) {
@@ -96,10 +94,8 @@ void Player::LoadStatas(const std::string& filePath) {
 		outFile << j.dump(4); // インデントを4スペースにして保存
 
 		return;
-
 	}
 
-	
 	inFile >> j;
 	for (int i = 0; i < 4; ++i) {
 		statas_[i].hp = j["Statas"][i]["hp"];
@@ -160,18 +156,34 @@ void Player::Initialize(Camera* camera, Style style) {
 	chargeReticle_->Initialize("Resource/reticle/chargeReticle.png");
 	chargeReticle_->SetPosition(reticlePosition_);
 
+	currentStyle = style;
 	// モデルの生成
 	playerObject_ = std::make_unique<Object>();
 	playerObject_->Initialize(camera_);
-	playerObject_->SetModel("speedMachine.obj");
-	playerObject_->SetModel("normalMachine.obj");
+	switch (style) {
+	case Player::normal:
+		playerObject_->SetModel("normalMachine.obj");
+		break;
+	case Player::speed:
+		playerObject_->SetModel("speedMachine.obj");
+		break;
+	case Player::power:
+		playerObject_->SetModel("powerMachine.obj");
+		break;
+	case Player::sniper:
+		playerObject_->SetModel("normalMachine.obj");
+		break;
+	default:
+		playerObject_->SetModel("normalMachine.obj");
+		break;
+	}
 
 	playerObject_->SetTranslate(transform_.translate);
 
-	//machineObject_ = std::make_unique<Object>();
-	//machineObject_->Initialize(camera_);
-	//machineObject_->SetModel("playerH.obj");
-	//machineObject_->SetTranslate(transform_.translate);
+	// machineObject_ = std::make_unique<Object>();
+	// machineObject_->Initialize(camera_);
+	// machineObject_->SetModel("playerH.obj");
+	// machineObject_->SetTranslate(transform_.translate);
 
 	statas_[currentStyle].hp = 100;
 	statas_[currentStyle].attack = 20;
@@ -183,7 +195,6 @@ void Player::Initialize(Camera* camera, Style style) {
 
 	LoadStatas(GetFilePath());
 
-
 	velocity_ = {0.0f, 0.0f, 0.0f};
 	coolTime = 0;
 	chargeTimer = 0;
@@ -192,7 +203,7 @@ void Player::Initialize(Camera* camera, Style style) {
 	damageTimer = 0;
 }
 
-void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
+void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cmrvel) {
 	auto input = Input::GetInstance();
 
 	camera_->Update();
@@ -282,10 +293,10 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	playerObject_->SetScale(transform_.scale);
 	playerObject_->Update();
 
-	//machineObject_->SetTranslate(transform_.translate);
-	//machineObject_->SetRotate(transform_.rotate);
-	//machineObject_->SetScale(transform_.scale);
-	//machineObject_->Update();
+	// machineObject_->SetTranslate(transform_.translate);
+	// machineObject_->SetRotate(transform_.rotate);
+	// machineObject_->SetScale(transform_.scale);
+	// machineObject_->Update();
 
 	if (ishit) {
 		damageTimer--;
@@ -322,10 +333,12 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	reticle_->Update();
 
 	Attack(enemies);
-	UpdateBullets();
+	UpdateBullets(cmrvel);
 #pragma endregion
 
 #pragma region ImGui
+#ifdef Debug
+
 	ImGui::Begin("Player Config");
 	ImGui::Text("Style: %d", currentStyle);
 	for (int i = 0; i < 4; i++) {
@@ -343,13 +356,31 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	ImGui::DragFloat("Reticle Speed", &reticleSpeed, 0.1f);
 	if (ImGui::Button("■ SaveStatas", ImVec2(240, 30))) {
 
-	ImGui::DragFloat2("Move Pad", &movePad.x, 0.0f);
-	ImGui::DragFloat2("Reticle Pad", &reticlePad.x, 0.0f);
+		ImGui::DragFloat2("Move Pad", &movePad.x, 0.0f);
+		ImGui::DragFloat2("Reticle Pad", &reticlePad.x, 0.0f);
 		SaveStatas(GetFilePath());
 	}
 
-
 	ImGui::End();
+	switch (currentStyle) {
+	case Player::normal:
+		playerObject_->SetModel("normalMachine.obj");
+		break;
+	case Player::speed:
+		playerObject_->SetModel("speedMachine.obj");
+		break;
+	case Player::power:
+		playerObject_->SetModel("powerMachine.obj");
+		break;
+	case Player::sniper:
+		playerObject_->SetModel("normalMachine.obj");
+		break;
+	default:
+		playerObject_->SetModel("normalMachine.obj");
+		break;
+	}
+
+#endif //  Debug
 #pragma endregion
 }
 
@@ -366,7 +397,7 @@ void Player::Draw3D() {
 		bullet->Draw3D();
 	}
 	playerObject_->Draw();
-	//machineObject_->Draw();
+	// machineObject_->Draw();
 }
 
 Player::~Player() {
@@ -409,12 +440,12 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	}
 }
 
-void Player::UpdateBullets() {
+void Player::UpdateBullets(Vector3 cmrvel) {
 	for (auto it = bullets.begin(); it != bullets.end();) {
 		if (!(*it)->IsActive()) {
 			it = bullets.erase(it);
 		} else {
-			(*it)->Update();
+			(*it)->Update(cmrvel);
 			++it;
 		}
 	}
