@@ -356,6 +356,7 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 	ImGui::DragFloat("Speed", &statas_[currentStyle].speed, 0.01f);
 	ImGui::DragFloat("Homing Accuracy", &statas_[currentStyle].hommingAccuracy, 0.0001f, 0.0f, 1.0f, "%.4f");
 	ImGui::DragFloat("Reticle Speed", &reticleSpeed, 0.1f);
+	ImGui::DragFloat("Renge", &statas_[currentStyle].renge, 0.1f);
 	if (ImGui::Button("■ SaveStatas", ImVec2(240, 30))) {
 
 		ImGui::DragFloat2("Move Pad", &movePad.x, 0.0f);
