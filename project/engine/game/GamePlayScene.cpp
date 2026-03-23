@@ -28,6 +28,8 @@ void GamePlayScene::Initialize()
     particleEmitter->Initialize("group1", transformParticle, 5, 1.0f);
     particleEmitter->Emit();
 
+    CameraController_->StartReplay();
+
 
 
 }
