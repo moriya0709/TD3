@@ -171,7 +171,7 @@ void Player::Initialize(Camera* camera, Style style) {
 		playerObject_->SetModel("powerMachine.obj");
 		break;
 	case Player::sniper:
-		playerObject_->SetModel("normalMachine.obj");
+		playerObject_->SetModel("sniperMachine.obj");
 		break;
 	default:
 		playerObject_->SetModel("normalMachine.obj");
@@ -376,7 +376,7 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 		playerObject_->SetModel("powerMachine.obj");
 		break;
 	case Player::sniper:
-		playerObject_->SetModel("normalMachine.obj");
+		playerObject_->SetModel("sniperMachine.obj");
 		break;
 	default:
 		playerObject_->SetModel("normalMachine.obj");
