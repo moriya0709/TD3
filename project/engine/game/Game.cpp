@@ -50,7 +50,7 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/machine/cloud", "normalMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/kamihikouki", "speedMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/houki", "powerMachine.obj");
-	//ModelManager::GetInstance()->LoadModel("Resource/machine/nasu", "playerN.obj");制作予定
+	ModelManager::GetInstance()->LoadModel("Resource/machine/nasu", "sniperMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/enemy/tometo", "tometo.obj");
     ModelManager::GetInstance()->LoadModel("Resource/test", "test.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.obj"); // レールエディター
