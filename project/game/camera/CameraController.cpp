@@ -178,6 +178,8 @@ void CameraController::DrawImGui() {
 		if (isPaused) {
 			ImGui::Separator();
 			ImGui::TextColored(ImVec4(1, 0.8f, 0, 1), "Edit Mode: Manual Tweak Available");
+			ImGui::DragFloat3("Tweak Vel", &uiVelocity.x, 0.01f, -1.0f, 1.0f);
+			ImGui::DragFloat3("Tweak Rot Vel", &uiAngularVelocity.x, 0.005f, -0.05f, 0.05f);
 			ImGui::DragFloat3("Tweak Pos", &cameraTransform.translate.x, 0.1f);
 			ImGui::DragFloat3("Tweak Rot", &cameraTransform.rotate.x, 0.01f);
 			if (ImGui::Button("● Start Overwrite Recording from Here", ImVec2(-1, 30))) {
@@ -195,13 +197,32 @@ void CameraController::DrawImGui() {
 		ImGui::DragFloat3("Current Rot", &cameraTransform.rotate.x, 0.01f);
 
 		if (!isRecording) {
-			if (ImGui::Button("● Start New Recording", ImVec2(-1, 30))) {
-				stateHistory.clear();
-				timer = 0.0f;
-				isRecording = true;
-				cameraTransform = initialTransform;
-				RecordStateIfChanged(uiVelocity, uiAngularVelocity, cameraTransform.translate, cameraTransform.rotate);
+			ImGui::Checkbox("Recording new Data ", &newRecordingStarted);
+			if (newRecordingStarted) {
+				// ★ 既存データがある場合は警告表示
+				if (!stateHistory.empty()) {
+					ImGui::TextColored(ImVec4(1, 0, 0, 1), "Warning: Existing replay data will be overwritten!");
+				}
+				if (ImGui::Button("● Start New Recording", ImVec2(-1, 30))) {
+					stateHistory.clear();
+					timer = 0.0f;
+					isRecording = true;
+					cameraTransform = initialTransform;
+					RecordStateIfChanged(uiVelocity, uiAngularVelocity, cameraTransform.translate, cameraTransform.rotate);
+				}
+			} else {
+				ImGui::Text("Starting a new recording will overwrite the existing replay data for this stage.");
+				
+				// 保存されているデータを再生
+				if (ImGui::Button("Play Existing Recording", ImVec2(-1, 30))) {
+					if (!stateHistory.empty()) {
+						StartReplay();
+					} else {
+						ImGui::TextColored(ImVec4(1, 0, 0, 1), "No replay data found for this stage!");
+					}
+				}
 			}
+			
 		} else {
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
 			if (ImGui::Button("■ Stop & Save", ImVec2(-1, 30))) {
