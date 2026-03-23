@@ -58,6 +58,8 @@ private:
 
     // フラグ
     bool isDead_ = false;
+    float deadTimer_;
+    static inline const float kdeadTimer_ = 0.1f;
 
     // キャラクターの当たり判定サイズ
     static inline const float radius = 5.0f;

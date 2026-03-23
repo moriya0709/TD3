@@ -59,12 +59,21 @@ void TargetEnemy::Update()
         behaviorRequest_ = Behavior::kDefeated;
     }
 
+    // 敵に対して向きを合わせる
+    Vector3 playerPos = player_->GetPosition();
+
+    Vector3 pToE = playerPos - transform_.translate;
+    transform_.rotate.y = std::atan2(pToE.x, pToE.z);
+
+    float heightDifference = std::sqrt(pToE.x * pToE.x + pToE.z * pToE.z);
+    transform_.rotate.x = std::atan2(-pToE.y, heightDifference);
+
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);
+    object_->SetRotate(transform_.rotate);
+    object_->Update();
 
     // ここにIMGUI
-
-    object_->Update();
 }
 
 void TargetEnemy::Draw3D()
@@ -83,7 +92,8 @@ void TargetEnemy::OnCollision(int Damage)
     health_ -= Damage;
 
     if (health_ <= 0) {
-        isAvile = false;
+        behaviorRequest_ = Behavior::kDefeated;
+        deadTimer_ = kdeadTimer_;
     }
 }
 
@@ -216,6 +226,11 @@ void TargetEnemy::BehaviorAway()
 
 void TargetEnemy::BehaviorDefeated()
 {
+    transform_.rotate.z += 0.15f;
+    deadTimer_ -= 1.0f / 60.0f;
+
     // 上に断末のコードを角
-    isDead_ = true;
+    if (deadTimer_ <= 0.0f) {
+        isDead_ = true;
+    }
 }
