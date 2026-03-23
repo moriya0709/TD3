@@ -7,6 +7,7 @@
 #include "../camera/CameraController.h"
 #include "type/HomingEnemy.h"
 #include "type/NormalEnemy.h"
+#include "type/ShieldEnemy.h"
 #include "type/TargetEnemy.h"
 #include "type/rushEnemy.h"
 
@@ -207,8 +208,10 @@ void EnemyManager::SpawnEnemy(const EnemyPopData& data)
         newEnemy = std::make_unique<HomingEnemy>();
     } else if (data.type == "TargetEnemy") {
         newEnemy = std::make_unique<TargetEnemy>();
-    } else if (data.type == "rushEnemy") {
+    } else if (data.type == "RushEnemy") {
         newEnemy = std::make_unique<rushEnemy>();
+    } else if (data.type == "ShieldEnemy") {
+        newEnemy = std::make_unique<ShieldEnemy>();
     }
 
     if (newEnemy) {
