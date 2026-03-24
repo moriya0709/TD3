@@ -113,6 +113,11 @@ private:
 	bool isACES = true;                 // ACESトーンマッピングをONにする
 	float caIntensity = 0.05f;          // 色収差の強さ（最初は弱めに）
 
+	// モーションブラー
+	bool isMotionBlur = true;    // モーションブラーのON/OFF
+	int motionBlurSamples = 16; // サンプル数（例：8〜16）
+	float motionBlurScale = 1.0f;   // ブラーの強さ
+
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };

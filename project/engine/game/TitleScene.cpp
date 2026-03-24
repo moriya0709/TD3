@@ -146,6 +146,10 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetLensFlareHaloWidth(lensFlareHaloWidth);
 	PostEffect::GetInstance()->SetIsACES(isACES);
 	PostEffect::GetInstance()->SetCAIntensity(caIntensity);
+	// モーションブラー
+	PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
+	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
+	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
 
 #pragma endregion
 
@@ -303,6 +307,17 @@ void TitleScene::Update() {
 			ImGui::DragFloat("caIntensity", &caIntensity, 0.001f, 0.0f, 10.0f);
 		}
 		ImGui::Text("%.3f", PostEffect::GetInstance()->GetLensFlareGhostDispersal());
+
+		ImGui::TreePop();
+	}
+	// モーションブラー
+	if (ImGui::TreeNode("MotionBlur")) {
+		ImGui::Checkbox("OnOff", &isMotionBlur);
+
+		if (isLensFlare) {
+			ImGui::DragInt("motionBlurSamples", &motionBlurSamples, 1, 0, 20);
+			ImGui::DragFloat("motionBlurScale", &motionBlurScale, 0.01f, 0.0f, 10.0f);
+		}
 
 		ImGui::TreePop();
 	}

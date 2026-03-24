@@ -9,10 +9,16 @@ struct PSInput
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD0;
 };
+struct PSOutput
+{
+    float4 Color : SV_TARGET0;
+    float2 Velocity : SV_TARGET1; // ← ★追加 (Velocityバッファへの出力)
+};
 
 cbuffer CloudParam : register(b0)
 {
     float4x4 invViewProj;
+    float4x4 prevViewProj;
 
     float3 cameraPos;
     float time;
@@ -313,7 +319,7 @@ float3 CalculateAtmosphere(float3 cameraPos, float3 rayDir, float3 sunDir)
     return skyColor;
 }
 
-float4 main(VSOutput input) : SV_TARGET
+PSOutput main(VSOutput input)
 {
     float2 ndcXY = input.uv * 2.0f - 1.0f;
     ndcXY.y *= -1.0f;
@@ -535,5 +541,24 @@ float4 main(VSOutput input) : SV_TARGET
     float sunAlpha = (sunHeight > 0.0) ? 1.0 : 0.2;
     finalColor += dynamicSunColor * sunDisc * transmittance * sunAlpha;
 
-    return float4(finalColor, 1.0);
+    // ==========================================
+    // ★ 追加: Velocityの計算と出力
+    // ==========================================
+    
+    // 前フレームのクリップ空間座標を計算（背景は無限遠として扱うため、算出したworld座標をそのまま使う）
+    float4 prevClip = mul(prevViewProj, float4(world.xyz, 1.0));
+    prevClip.xyz /= prevClip.w;
+
+    // 前フレームのUV座標に変換
+    float2 prevUV = prevClip.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
+
+    // Velocity = 現在のUV - 過去のUV
+    float2 velocity = input.uv - prevUV;
+
+    // 出力構造体にセットして返す
+    PSOutput output;
+    output.Color = float4(finalColor, 1.0);
+    output.Velocity = velocity;
+
+    return output;
 }
