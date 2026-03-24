@@ -256,7 +256,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resource\shaders\rayMarching.hlsli" />
+    <None Include="Resource\shaders\RayMarching.hlsli" />
     <None Include="Resource\shaders\PostEffect.hlsli" />
     <None Include="Resource\shaders\Outline.hlsli" />
     <None Include="Resource\shaders\Object3d.hlsli">

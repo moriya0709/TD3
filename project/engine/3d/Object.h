@@ -20,6 +20,7 @@ class DirectXCommon;
 struct TransformationMatrix {
 	Matrix4x4 WVP;
 	Matrix4x4 World;
+	Matrix4x4 prevWVP;
 };
 // 平行光源データ
 struct DirectionalLight {
@@ -139,7 +140,12 @@ private:
 	Transform transform;
 	Transform cameraTransform;
 
+	// 太陽のライティングを適応
 	bool isSunLight = true;
+
+	// モーションブラー
+	Matrix4x4 currentWVP_;
+
 
 	// モデル
 	Model* model_ = nullptr;

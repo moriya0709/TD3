@@ -226,5 +226,19 @@ PixelShaderOutput main(VertexShaderOutput input)
         discard;
     }
     
+    // ==========================================
+    // ★追加: ベロシティ（速度）の計算と SV_TARGET1 へのセット
+    // ==========================================
+    // パースペクティブ除算（wで割る）を行って NDC（-1.0 ～ 1.0）座標系にする
+    float2 currentNDC = input.currentClipPos.xy / input.currentClipPos.w;
+    float2 prevNDC = input.prevClipPos.xy / input.prevClipPos.w;
+
+    // NDCの差分から、UV座標系での移動量を計算する
+    // ※DirectXはUVのY軸が下向き正なので、Y成分だけ反転（-0.5）させるのがポイントです！
+    float2 velocity = (currentNDC - prevNDC) * float2(0.5f, -0.5f);
+
+    // 速度を SV_TARGET1 に書き込む
+    output.velocity = velocity;
+    
     return output;
 }
