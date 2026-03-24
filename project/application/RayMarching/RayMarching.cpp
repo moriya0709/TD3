@@ -101,11 +101,25 @@ void RayMarching::Update(Camera* camera) {
 	Vector3 currentPosVec = camera->GetTranslate();
 	DirectX::XMFLOAT3 currentPos = { currentPosVec.x, currentPosVec.y, currentPosVec.z };
 
+	// --- ★追加: Velocity用の現在のViewProjection行列の計算 ---
+	DirectX::XMMATRIX mCamView = DirectX::XMMatrixInverse(&det, mCamWorld);
+	
+	// 現在のViewProjection行列
+	DirectX::XMMATRIX currentVP = mCamView * mProj;
+
 	// 初回フレームはワープを防ぐため、現在地を記録して処理をスキップ
 	if (isFirstFrame) {
 		previousCameraPos = currentPos;
+		prevViewProjMat = currentVP;
 		isFirstFrame = false;
 	}
+
+	// --- ★追加: 前フレームのViewProjをHLSLに転送 ---
+	DirectX::XMMATRIX transposedPrevVP = DirectX::XMMatrixTranspose(prevViewProjMat);
+	DirectX::XMStoreFloat4x4(reinterpret_cast<DirectX::XMFLOAT4X4*>(&cloudParam->prevViewProj), transposedPrevVP);
+
+	// 次フレームのために現在のViewProjを保存
+	prevViewProjMat = currentVP;
 
 	// 1. 前回からの移動量（差分）を計算
 	DirectX::XMFLOAT3 deltaPos;
@@ -309,6 +323,13 @@ void RayMarching::CreateGraphicsPipeline() {
 	pixelShaderBlob->GetBufferSize() }; // PixelShader
 	graphicsPipelineStateDesc.BlendState = blendDesc; // BlendState
 	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc; // RasterizerState
+	graphicsPipelineStateDesc.BlendState.IndependentBlendEnable = TRUE;
+	// [0] メインカラー用のブレンド設定
+	graphicsPipelineStateDesc.BlendState.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	// ★追加：[1] Velocityバッファ用の書き込みを許可する
+	graphicsPipelineStateDesc.BlendState.RenderTarget[1].BlendEnable = FALSE; // Velocityはブレンド(半透明合成)せず上書き
+	graphicsPipelineStateDesc.BlendState.RenderTarget[1].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
 
 	// DepthStencilの設定
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
@@ -319,8 +340,9 @@ void RayMarching::CreateGraphicsPipeline() {
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	// 書き込むRTVの情報
-	graphicsPipelineStateDesc.NumRenderTargets = 1;
+	graphicsPipelineStateDesc.NumRenderTargets = 2;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	graphicsPipelineStateDesc.RTVFormats[1] = DXGI_FORMAT_R16G16_FLOAT;
 	// 利用するトポロジ（形状）のタイプ。三角形
 	graphicsPipelineStateDesc.PrimitiveTopologyType =
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;

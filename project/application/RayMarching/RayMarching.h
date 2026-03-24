@@ -15,6 +15,7 @@ class Camera;
 
 struct CloudParam {
 	Matrix4x4 invViewProj;
+	Matrix4x4 prevViewProj;
 
 	Vector3 cameraPos;
 	float time;
@@ -101,6 +102,8 @@ private:
 
 	// 前フレームのカメラ座標
 	DirectX::XMFLOAT3 previousCameraPos = { 0.0f, 0.0f, 0.0f };
+	// 前フレームのViewProjection行列を保持する変数
+	DirectX::XMMATRIX prevViewProjMat;
 	// 雲のUVをずらすための蓄積オフセット
 	DirectX::XMFLOAT3 cloudOffset = { 0.0f, 0.0f, 0.0f };
 	// 初回実行判定用フラグ

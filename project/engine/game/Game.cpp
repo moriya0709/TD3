@@ -111,7 +111,6 @@ void Game::Draw() {
 	// ポストエフェクト描画
 	PostEffect::GetInstance()->PostDraw();
 	// ② 深度バッファをPSR状態へ
-	PostEffect::GetInstance()->TransitionDepthBuffer(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 	PostEffect::GetInstance()->Draw();
 
 	// シーンマネージャー描画(2D)
