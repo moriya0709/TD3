@@ -151,6 +151,7 @@ void ObjectCommon::CreateGraphicsPipeline() {
 	// BlendStateの設定
 	// 全ての色要素を書き込む
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[1].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	// RasiterzerStateの設定
 	// カリングしない（裏面も表示させる）
@@ -182,8 +183,9 @@ void ObjectCommon::CreateGraphicsPipeline() {
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	// 書き込むRTVの情報
-	graphicsPipelineStateDesc.NumRenderTargets = 1;
+	graphicsPipelineStateDesc.NumRenderTargets = 2;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	graphicsPipelineStateDesc.RTVFormats[1] = DXGI_FORMAT_R16G16_FLOAT;
 	// 利用するトポロジ（形状）のタイプ。三角形
 	graphicsPipelineStateDesc.PrimitiveTopologyType =
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
@@ -204,6 +206,7 @@ void ObjectCommon::CreateGraphicsOutlinePipeline() {
 	// BlendStateの設定
 	// 全ての色要素を書き込む
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	blendDesc.RenderTarget[1].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	// RasiterzerStateの設定
 	// 裏面だけ
@@ -237,8 +240,9 @@ void ObjectCommon::CreateGraphicsOutlinePipeline() {
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	// 書き込むRTVの情報
-	graphicsPipelineStateDesc.NumRenderTargets = 1;
+	graphicsPipelineStateDesc.NumRenderTargets = 2;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	graphicsPipelineStateDesc.RTVFormats[1] = DXGI_FORMAT_R16G16_FLOAT;
 	// 利用するトポロジ（形状）のタイプ。三角形
 	graphicsPipelineStateDesc.PrimitiveTopologyType =
 		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;

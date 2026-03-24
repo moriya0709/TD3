@@ -1,4 +1,4 @@
-#include "rayMarching.hlsli"
+#include "RayMarching.hlsli"
 
 VSOutput main(uint vertexID : SV_VertexID)
 {

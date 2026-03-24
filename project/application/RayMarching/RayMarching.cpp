@@ -450,7 +450,7 @@ void RayMarching::CreateUAVDescriptor() {
 
 	// 2. マネージャーから直接 CPUハンドル をもらう！
 	D3D12_CPU_DESCRIPTOR_HANDLE uavHandle = srvManager_->GetCPUDescriptorHandle(uavIndex_);
-	
+
 	// UAVの設定
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
 	uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
@@ -489,4 +489,3 @@ void RayMarching::CreateSRVDescriptor() {
 	// さっき計算した srvHandleに書き込む！
 	device->CreateShaderResourceView(cloud3DTexture.Get(), &srvDesc, srvHandle);
 }
-

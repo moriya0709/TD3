@@ -92,14 +92,16 @@ void Object::Update() {
 	camera_ = CameraManager::GetInstance()->GetActiveCamera();
 	viewData->cameraPos = camera_->GetTranslate();
 
-	Matrix4x4 world =
-		MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	// 新しいWVPを計算する前に、現在のWVPを「過去のWVP」として退避させる
+	transformationMatrixData->prevWVP = currentWVP_;
 
-	Matrix4x4 wvp =
-		Multiply(world, camera_->GetViewProjectionMatrix());
+	// 通常通り、現在のワールド行列を計算
+	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	transformationMatrixData->World = worldMatrix;
 
-	transformationMatrixData->WVP = wvp;
-	transformationMatrixData->World = world;
+	// 現在のWVP行列を計算
+	currentWVP_ = Multiply(worldMatrix, camera_->GetViewProjectionMatrix());
+	transformationMatrixData->WVP = currentWVP_;
 
 	// 太陽ライト
 	if(isSunLight)

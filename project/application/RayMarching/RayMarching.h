@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 #include <D3d12.h>
 #include <cassert>
 #include <wrl.h>
@@ -48,10 +49,10 @@ public:
 	void SetTime(float time) { cloudParam->time = time; }
 	void SetSunDir(Vector3 sunDir) { cloudParam->sunDir = sunDir; }
 	void SetCloudCoverage(float cloudCoverage) { cloudParam->cloudCoverage = cloudCoverage; }
-	void SetCloudBottom(float cloudBottom) {cloudParam->cloudBottom = cloudBottom;}
-	void SetCloudTop(float cloudTop) {cloudParam->cloudTop = cloudTop;}
-	void SetRialLight(bool isRialLight){ cloudParam->isRialLight = isRialLight; }
-	void SetAnimeLight(bool isAnimeLight){ cloudParam->isAnimeLight = isAnimeLight; }
+	void SetCloudBottom(float cloudBottom) { cloudParam->cloudBottom = cloudBottom; }
+	void SetCloudTop(float cloudTop) { cloudParam->cloudTop = cloudTop; }
+	void SetRialLight(bool isRialLight) { cloudParam->isRialLight = isRialLight; }
+	void SetAnimeLight(bool isAnimeLight) { cloudParam->isAnimeLight = isAnimeLight; }
 
 	// getter
 	Vector3 GetSunDir() { return cloudParam->sunDir; }
@@ -119,7 +120,7 @@ private:
 	void CreateComputeRootSignature();
 	// コンピュートパイプラインの生成
 	void CreateComputePipeline();
-	
+
 	// 3Dテクスチャリソースの生成
 	void Create3DTextureResource();
 	// UAVの生成
@@ -128,4 +129,3 @@ private:
 	void CreateSRVDescriptor();
 
 };
-

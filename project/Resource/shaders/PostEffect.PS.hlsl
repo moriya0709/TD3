@@ -6,6 +6,7 @@ Texture2D<float4> gBloom2Texture : register(t2); // 1/4ぼかし
 Texture2D<float4> gBloom3Texture : register(t3); // 1/8ぼかし
 Texture2D<float> gDepthTexture : register(t4); // 深度はt4に移動
 Texture2D<float4> gLensFlareTexture : register(t5); // レンズフレア
+Texture2D<float2> gVelocityTexture : register(t6); // RGチャンネルのみの想定
 
 SamplerState gSampler : register(s0);
 
@@ -69,9 +70,13 @@ struct EffectData
     
     int isACES; // ACESトーンマッピングのON/OFF
     float caIntensity; // 色収差の強さ (0.001f とかが綺麗)
-    float pad5[2]; // パディング
-
-    float4 finalPad[1]; // 残りのパディング (16byte * 2 = 32byte に減らす！)
+    float2 pad5; // パディング
+    
+    // *モーションブラー* //
+    int isMotionBlur;
+    int motionBlurSamples;
+    float motionBlurScale;
+    float pad6;
 };
 ConstantBuffer<EffectData> gEffectData : register(b0);
 
@@ -159,9 +164,7 @@ float3 SampleWithCA(Texture2D<float4> tex, SamplerState samp,
 float4 main(VSOutput input) : SV_TARGET
 {
     float4 color = gCurrentTexture.Sample(gSampler, input.uv);
-
-    // ★ 削除：もう input.passId は使いません！(gPassId を直接使います)
-
+    
     // ==========================================
     // パス1：高輝度抽出
     // ==========================================
@@ -398,6 +401,42 @@ float4 main(VSOutput input) : SV_TARGET
                     totalWeight += weight;
                 }
                 color = accumColor / totalWeight;
+            }
+        }
+        
+         // =======================================================
+    // ★ モーションブラー処理
+    // =======================================================
+        if (gEffectData.isMotionBlur)
+        {
+        // 現在のピクセルの速度ベクトルを取得 (RG16Fなどを想定)
+            float2 velocity = gVelocityTexture.Sample(gSampler, input.uv).rg;
+        
+        // 速度のスケール調整（強すぎる場合はここで抑える）
+            velocity *= gEffectData.motionBlurScale;
+
+        // 速度が極端に小さい場合は処理をスキップ（軽量化）
+            if (length(velocity) > 0.0001f)
+            {
+            // サンプル1回あたりの移動量
+                float2 texelStep = velocity / (float) gEffectData.motionBlurSamples;
+            
+                float4 accumColor = color;
+                float2 currentUV = input.uv;
+
+            // 速度ベクトルの方向に向かって複数回サンプリング
+                for (int i = 1; i < gEffectData.motionBlurSamples; ++i)
+                {
+                    currentUV -= texelStep;
+                
+                // 画面外のサンプリングを防ぐためのクランプ
+                    currentUV = saturate(currentUV);
+                
+                    accumColor += gCurrentTexture.Sample(gSampler, currentUV);
+                }
+            
+            // 平均化
+                color = accumColor / (float) gEffectData.motionBlurSamples;
             }
         }
         
