@@ -1,15 +1,15 @@
 #pragma once
 #include "../Enemy.h"
-#include <memory>
 
 class Player;
 
-class rushEnemy : public Enemy {
+class ShieldEnemy : public Enemy {
 public:
     enum class Behavior {
         kUnknown = -1,
         kWalk, // 戦闘状態
         kAway, // 逃走状態
+        kShield, // バリア状態
         kDefeated, // ﾀﾋ
     };
 
@@ -18,9 +18,6 @@ public:
     void Update() override;
 
     void Draw3D() override;
-
-    // カリング処理
-    void CheckCameraCulling();
 
     // Set
     void SetTargetPlayer(Player* target) override { player_ = target; }
@@ -39,6 +36,7 @@ private:
 
     void BehaviorWalk();
     void BehaviorAway();
+    void BehaviorShield();
     void BehaviorDefeated();
 
 private:
@@ -51,14 +49,18 @@ private:
     Transform transform_; // 座標系
     static inline const float kwalkSpeed = 0.02f; // 歩きの速さ
     Vector3 velocity_ = {}; // 速度
-    Vector3 acceleration_; // 弾の速さ(個別で設定)
+    Vector3 acceleration; // 弾の速さ(個別で設定)
+
+    float leap; // 振り向き
+    float BehaviorchangeTimer;
+    static inline const float kBehaviorchangeTimer = 5.0f;
 
     float activeTimer; // 存在する時間
     float isAvile; // 生存しているか
     int health_; // 体力
     float interval; // 弾を発射する間隔
+    Vector3 startRotate;
     static inline const float maxInterval = 2.0f; // 間隔
-    static inline const float maxSpeed = 0.75f; // 突進の速度
 
     // フラグ
     bool isDead_ = false;
@@ -70,7 +72,6 @@ private:
 
     // プレイヤーの情報
     Player* player_ = nullptr;
-    Vector3 targetPos_; // 追跡対象、または狙う場所
 
     /* ウェイポイント移動の変数 */
     std::vector<WayPoint> wayPoints_;

@@ -18,9 +18,11 @@ public:
 	void Update();
 	void DrawImGui();
 	void DrawDebugTrace();
-
+	Vector3 GetVelocity() const { return uiVelocity; }
 	float GetCurrentReplayTime() const { return timer; }
 	int GetCurrentStage() const { return currentStage; }
+	void StartReplay();
+	void SetCurrentStage(int stage) { currentStage = stage; };
 
 
 private:
@@ -30,7 +32,6 @@ private:
 	void RecordStateIfChanged(const Vector3& vel, const Vector3& angVel, const Vector3& pos, const Vector3& rat);
 	void ApplyReplayState(Vector3& vel, Vector3& angVel, Vector3& pos, Vector3& rat);
 	void ApplyPhysics(const Vector3& vel, const Vector3& angVel, const Vector3& pos, const Vector3& rat);
-	void StartReplay();
 	void SeekTo(float targetTime);
 
 	// ★ 追加：パンチイン（途中上書き）録画開始
