@@ -14,7 +14,6 @@
 #include "BaseScene.h"
 #include "PostEffect.h"
 #include "RailCamera.h"
-#include "RayMarching.h"
 
 using namespace DirectX;
 
@@ -34,7 +33,11 @@ public:
 	void Finalize() override;
 
 private:
-	
+	Transform cameraTransform{
+	   { 1.0f, 1.0f, 1.0f }, // scale
+	   { 0.0f, 0.0f, 0.0f }, // rotate
+	   { 0.0f, 0.0f, -5.0f } // translate
+	};
 	// パーティクル
 	Transform transformParticle
 	{
@@ -132,14 +135,12 @@ private:
 	int padX;
 	int padY;
 	
-
+	// カメラ
+	std::unique_ptr<Camera> camera = nullptr;
 	// スプライト
 	std::unique_ptr <Sprite> sprite = nullptr;
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
 	// パーティクルエミッタ
 	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
-	// レールカメラ
-	std::unique_ptr <RailCamera> railCamera = nullptr;
-
 };

@@ -5,13 +5,14 @@
 
 void TitleScene::Initialize() {
 
-	// レールカメラ初期化
-	railCamera = std::make_unique <RailCamera>();
-	railCamera->Initialize();
+	// カメラ初期化
+	camera = std::make_unique<Camera>();
+	camera->SetRotate({ cameraTransform.rotate });
+	camera->SetTranslate({ cameraTransform.translate });
 
 	// カメラマネージャ登録
-	//CameraManager::GetInstance()->AddCamera("main", camera.get());
-	//CameraManager::GetInstance()->SetActiveCamera("main");
+	CameraManager::GetInstance()->AddCamera("main", camera.get());
+	CameraManager::GetInstance()->SetActiveCamera("main");
 
 	// スプライト
 	sprite = std::make_unique <Sprite>();
@@ -20,7 +21,7 @@ void TitleScene::Initialize() {
 	// 3Dオブジェクト
 	for (int i = 0; i < 2; i++) {
 		object[i] = std::make_unique <Object>();
-		object[i]->Initialize(railCamera->camera.get());
+		object[i]->Initialize(camera.get());
 	}
 
 	// Emitパーティクル発生
@@ -30,7 +31,7 @@ void TitleScene::Initialize() {
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	object[0]->SetModel("emission.obj");
-	object[1]->SetModel("skydome.obj");
+	object[1]->SetModel("plane.obj");
 
 	// 音声再生
 	//SoundManager::GetInstance()->Play("bgm");
@@ -41,10 +42,7 @@ void TitleScene::Update() {
 	// 入力取得
 	auto input = Input::GetInstance();
 	// カメラ更新
-	//CameraManager::GetInstance()->Update();
-
-	railCamera->Update();
-	railCamera->EditorUpdate();
+	CameraManager::GetInstance()->Update();
 
 	// ENTERキーを押したら
 	if (input->TriggerKey(DIK_RETURN)) {
@@ -64,7 +62,6 @@ void TitleScene::Update() {
 		// エフェクト有効化(色反転)
 		PostEffect::GetInstance()->SetInversion(true);
 	}
-
 
 	// * 3Dオブジェクト* //
 	for (int i = 0; i < 2; i++) {
@@ -108,7 +105,7 @@ void TitleScene::Update() {
 
 #pragma region ポストエフェクト
 	// *ポストエフェクト* //
-	PostEffect::GetInstance()->Update(railCamera->camera.get());
+	PostEffect::GetInstance()->Update(camera.get());
 
 	// 反転
 	PostEffect::GetInstance()->SetInversion(isInversion);
@@ -130,7 +127,7 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetHeightFogTop(heightFogTop);
 	PostEffect::GetInstance()->SetHeightFogBottom(heightFogBottom);
 	PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
-	PostEffect::GetInstance()->HightFogUpdate(railCamera->camera.get());
+	PostEffect::GetInstance()->HightFogUpdate(camera.get());
 	// DOF
 	PostEffect::GetInstance()->SetDOF(isDOF);
 	PostEffect::GetInstance()->SetFocusDistance(focusDistance);
@@ -155,7 +152,7 @@ void TitleScene::Update() {
 
 #pragma region レイマーチング
 	// レイマーチング
-	RayMarching::GetInstance()->Update(railCamera->camera.get());
+	RayMarching::GetInstance()->Update(camera.get());
 	//rayMarching->SetTime(rayMarchingTime);
 	RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
 	RayMarching::GetInstance()->SetCloudCoverage(rayMarchingCloudCoverage);
@@ -173,6 +170,11 @@ void TitleScene::Update() {
 	// フレームレートの取得と表示
 	float fps = ImGui::GetIO().Framerate;
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
+
+	ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.1f, -500.0f, 500.0f);
+	ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -10.0f, 10.0f);
+	camera->SetTranslate(cameraTransform.translate);
+	camera->SetRotate(cameraTransform.rotate);
 
 #pragma region ライティング
 	// *ライティング* //
@@ -355,9 +357,7 @@ void TitleScene::Draw3D() {
 	// 3Dオブジェクトの描画準備
 	ObjectCommon::GetInstance()->SetCommonPipelineState();
 
-	// レールカメラエディター
-	railCamera->EditorDraw();
-
+	
 	// 3Dオブジェクト描画
 	for (int i = 0; i < 2; i++) {
 		object[i]->Draw();
