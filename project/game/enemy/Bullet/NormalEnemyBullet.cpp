@@ -1,4 +1,4 @@
-#include "NormalEnemyBullet.h"
+ï»¿#include "NormalEnemyBullet.h"
 
 void NormalEnemyBullet::Initialize(Camera* camera, Vector3 Pos)
 {
@@ -29,19 +29,19 @@ void NormalEnemyBullet::Update()
 
     velocity_ += acceleration;
 
-    // Å‘å’l‚ð‰z‚¦‚È‚¢‚æ‚¤‚É’²®
+    // æœ€å¤§å€¤ã‚’è¶Šãˆãªã„ã‚ˆã†ã«èª¿æ•´
     velocity_.z = std::clamp(velocity_.z, -maxSpeed, maxSpeed);
 
     transform_.translate += velocity_;
     object_->SetTranslate(transform_.translate);
 
-    // XV
+    // æ›´æ–°
     object_->Update();
 }
 
 void NormalEnemyBullet::Draw3D()
 {
-    // 3DƒIƒuƒWƒFƒNƒg•`‰æ
+    // 3Dã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆæç”»
     object_->Draw();
 }
 
