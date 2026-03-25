@@ -126,6 +126,8 @@ private:
 	float rayMarchingCloudTop = -300.0f;
 	bool rayMarchingIsRialLight = false;
 	bool rayMarchingIsAnimeLight = true;
+	bool  rayMarchingIsMotionBlur = true;
+	float  rayMarchingCloudOpacity = 0.04f;
 
 	int padX;
 	int padY;

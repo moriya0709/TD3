@@ -68,6 +68,12 @@ struct Outline {
 	float padding[3];   // 16バイト合わせ（重要）
 };
 
+struct MotionBlur {
+	int isMotionBlur;
+	float pad[3];
+};
+
+
 class Object {
 public:
 	// 初期化
@@ -110,7 +116,9 @@ public:
 	void SetSpotLightDirection(Vector3 direction) { spotLightData->direction = direction; }
 	void SetSpotLightRange(float range) { spotLightData->range = range; }
 	void SetSpotLightIntensity(float intensity) { spotLightData->intensity = intensity; }
-	
+	// モーションブラー
+	void SetMotionBlur(bool isMotionBlur) { motionBlurData->isMotionBlur = isMotionBlur; }
+
 	// getter
 	const Vector3& GetScale() const { return transform.scale; }
 	const Vector3& GetRotate() const { return transform.rotate; }
@@ -126,6 +134,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> spotLightResource;
 	Microsoft::WRL::ComPtr<ID3D12Resource> outlineResource;
 	Microsoft::WRL::ComPtr<ID3D12Resource> viewResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> motionBlurResource;
 
 	// バッファリソース内のデータを指すポインタ
 	TransformationMatrix* transformationMatrixData = nullptr;
@@ -135,6 +144,7 @@ private:
 	SpotLight* spotLightData = nullptr;
 	Outline* outlineData = nullptr;
 	ViewData* viewData = nullptr;
+	MotionBlur* motionBlurData = nullptr;
 
 	// Transform
 	Transform transform;

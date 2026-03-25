@@ -163,6 +163,8 @@ void TitleScene::Update() {
 	RayMarching::GetInstance()->SetCloudBottom(rayMarchingCloudTop);
 	RayMarching::GetInstance()->SetRialLight(rayMarchingIsRialLight);
 	RayMarching::GetInstance()->SetAnimeLight(rayMarchingIsAnimeLight);
+	RayMarching::GetInstance()->SetMotionBlur(rayMarchingIsMotionBlur);
+	RayMarching::GetInstance()->SetCloudOpacity(rayMarchingCloudOpacity);
 
 #pragma endregion
 
@@ -333,6 +335,8 @@ void TitleScene::Update() {
 	ImGui::DragFloat("rayMarchingCloudTop", &rayMarchingCloudTop, 10.0f, -5000.0f, 5000.0f);
 	ImGui::Checkbox("rayMarchingIsRialLight", &rayMarchingIsRialLight);
 	ImGui::Checkbox("rayMarchingIsAnimeLight", &rayMarchingIsAnimeLight);
+	ImGui::Checkbox("rayMarchingIsMotionBlur", &rayMarchingIsMotionBlur);
+	ImGui::DragFloat("rayMarchingCloudOpacity", &rayMarchingCloudOpacity, 0.001f, 0.0f, 0.1f);
 
 #pragma endregion
 

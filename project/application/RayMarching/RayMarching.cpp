@@ -38,6 +38,8 @@ void RayMarching::Initialize(SrvManager* srvManager) {
 	cloudParam->cloudTop = 300.0f; // 雲の上端
 	cloudParam->isRialLight = false; // リアル調ライティング
 	cloudParam->isAnimeLight = true; // アニメ調ライティング
+	cloudParam->isMotionBlur = false; // モーションブラー
+	cloudParam->cloudOpacity = 0.04f; // 不透明度
 
 }
 
