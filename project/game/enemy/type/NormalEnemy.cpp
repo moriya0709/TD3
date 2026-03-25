@@ -80,7 +80,7 @@ void NormalEnemy::Draw3D()
     }
 }
 
-void NormalEnemy::OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos)
+void NormalEnemy::OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity)
 {
     health_ -= Damage;
 

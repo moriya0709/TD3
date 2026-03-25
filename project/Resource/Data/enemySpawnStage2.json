@@ -3,7 +3,7 @@
         {
             "popTime": 1.0,
             "type": "ShieldEnemy",
-            "hp": 100,
+            "hp": 10000,
             "position": {
                 "x": 30.0,
                 "y": 0.0,
@@ -12,12 +12,12 @@
             "movePattern": [
                 {
                     "target": {
-                        "x": 20.0,
-                        "y": 2.0,
+                        "x": 0.0,
+                        "y": 0.0,
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop" : 1.0
+                    "timeToStop" : 70.0
                 },
                 {
                     "target": {

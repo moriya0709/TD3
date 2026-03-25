@@ -1,8 +1,8 @@
 ﻿#include "ShieldEnemy.h"
 #include "../../engine/math/Calc.h"
 #include "../../player/Player.h"
-#include "../Bullet/TargetEnemyBullet.h"
 #include "../Bullet/NormalEnemyBullet.h"
+#include "../Bullet/TargetEnemyBullet.h"
 
 void ShieldEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 {
@@ -87,11 +87,11 @@ void ShieldEnemy::Draw3D()
     }
 }
 
-void ShieldEnemy::OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos)
+void ShieldEnemy::OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity)
 {
     if (behavior_ == Behavior::kShield) {
         // 反射する
-        BulletMirror(bulletPos);
+        BulletMirror(bulletPos, Velocity);
         return;
     }
 
@@ -192,7 +192,7 @@ void ShieldEnemy::BulletUpdate()
     });
 }
 
-void ShieldEnemy::BulletMirror(Vector3 bulletPos)
+void ShieldEnemy::BulletMirror(Vector3 bulletPos, Vector3 Velocity)
 {
     Vector3 bulletPos_ = bulletPos;
     Vector3 enemyPos = transform_.translate;
@@ -201,16 +201,28 @@ void ShieldEnemy::BulletMirror(Vector3 bulletPos)
     Vector3 normal = bulletPos - enemyPos;
 
     // 正規化
+    normal.x *= 0.01f;
+    normal.y *= 0.01f;
+    normal.z *= 1.0f;
+
     normal = Normalize(normal);
 
     // 弾のベクトルを入手
+    Vector3 bulletVelocity = Velocity;
 
     // 反射ベクトルの計算
+    float dot = bulletVelocity.x * normal.x + bulletVelocity.y * normal.y + bulletVelocity.z * normal.z;
+
+    Vector3 reflectVelocity;
+    reflectVelocity.x = bulletVelocity.x - 2.0f * dot * normal.x;
+    reflectVelocity.y = bulletVelocity.y - 2.0f * dot * normal.y;
+    reflectVelocity.z = bulletVelocity.z - 2.0f * dot * normal.z;
 
     // 弾を追加
     std::unique_ptr<NormalEnemyBullet> newBulletEnemy = std::make_unique<NormalEnemyBullet>();
     newBulletEnemy->Initialize(camera_, transform_.translate);
-    newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.1f));
+    newBulletEnemy->SetBulletAcceleration(reflectVelocity);
+    newBulletEnemy->Update();
 
     enemyBullet_.push_back(std::move(newBulletEnemy));
 }
