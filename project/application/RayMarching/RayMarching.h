@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 #include <D3d12.h>
 #include <cassert>
 #include <wrl.h>
@@ -14,6 +15,7 @@ class Camera;
 
 struct CloudParam {
 	Matrix4x4 invViewProj;
+	Matrix4x4 prevViewProj;
 
 	Vector3 cameraPos;
 	float time;
@@ -27,7 +29,10 @@ struct CloudParam {
 	int isAnimeLight;
 
 	DirectX::XMFLOAT3 cloudOffset;
-	int pad;
+	int isMotionBlur;
+
+	float cloudOpacity;
+	float pad[3];
 
 };
 
@@ -48,10 +53,12 @@ public:
 	void SetTime(float time) { cloudParam->time = time; }
 	void SetSunDir(Vector3 sunDir) { cloudParam->sunDir = sunDir; }
 	void SetCloudCoverage(float cloudCoverage) { cloudParam->cloudCoverage = cloudCoverage; }
-	void SetCloudBottom(float cloudBottom) {cloudParam->cloudBottom = cloudBottom;}
-	void SetCloudTop(float cloudTop) {cloudParam->cloudTop = cloudTop;}
-	void SetRialLight(bool isRialLight){ cloudParam->isRialLight = isRialLight; }
-	void SetAnimeLight(bool isAnimeLight){ cloudParam->isAnimeLight = isAnimeLight; }
+	void SetCloudBottom(float cloudBottom) { cloudParam->cloudBottom = cloudBottom; }
+	void SetCloudTop(float cloudTop) { cloudParam->cloudTop = cloudTop; }
+	void SetRialLight(bool isRialLight) { cloudParam->isRialLight = isRialLight; }
+	void SetAnimeLight(bool isAnimeLight) { cloudParam->isAnimeLight = isAnimeLight; }
+	void SetMotionBlur(bool isMotionBlur) { cloudParam->isMotionBlur = isMotionBlur; }
+	void SetCloudOpacity(float cloudOpacity) { cloudParam->cloudOpacity = cloudOpacity; }
 
 	// getter
 	Vector3 GetSunDir() { return cloudParam->sunDir; }
@@ -100,6 +107,8 @@ private:
 
 	// 前フレームのカメラ座標
 	DirectX::XMFLOAT3 previousCameraPos = { 0.0f, 0.0f, 0.0f };
+	// 前フレームのViewProjection行列を保持する変数
+	DirectX::XMMATRIX prevViewProjMat;
 	// 雲のUVをずらすための蓄積オフセット
 	DirectX::XMFLOAT3 cloudOffset = { 0.0f, 0.0f, 0.0f };
 	// 初回実行判定用フラグ
@@ -119,7 +128,7 @@ private:
 	void CreateComputeRootSignature();
 	// コンピュートパイプラインの生成
 	void CreateComputePipeline();
-	
+
 	// 3Dテクスチャリソースの生成
 	void Create3DTextureResource();
 	// UAVの生成
@@ -128,4 +137,3 @@ private:
 	void CreateSRVDescriptor();
 
 };
-

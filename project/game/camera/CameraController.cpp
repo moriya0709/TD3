@@ -3,7 +3,6 @@
 #include <externals/nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
-#include <imgui.h>
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
@@ -134,6 +133,7 @@ void CameraController::Update() {
 }
 
 void CameraController::DrawImGui() {
+#ifdef USE_IMGUI
 	ImGui::Begin("Camera Recording Studio");
 	ImGui::Checkbox("Show Trace", &showDebugTrace);
 	ImGui::SameLine();
@@ -233,6 +233,8 @@ void CameraController::DrawImGui() {
 		}
 	}
 	ImGui::End();
+
+#endif 
 }
 
 void CameraController::DrawDebugTrace() {

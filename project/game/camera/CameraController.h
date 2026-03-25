@@ -1,8 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #include "Camera.h"
 #include "Input.h"
 #include <string>
 #include <vector>
+#include "ImGuiManager.h"
 
 struct CameraState {
 	float time;
@@ -34,7 +35,7 @@ private:
 	void ApplyPhysics(const Vector3& vel, const Vector3& angVel, const Vector3& pos, const Vector3& rat);
 	void SeekTo(float targetTime);
 
-	// š ’Ç‰ÁFƒpƒ“ƒ`ƒCƒ“i“r’†ã‘‚«j˜^‰æŠJn
+	// â˜… è¿½åŠ ï¼šãƒ‘ãƒ³ãƒã‚¤ãƒ³ï¼ˆé€”ä¸­ä¸Šæ›¸ãï¼‰éŒ²ç”»é–‹å§‹
 	void StartOverwriteRecording();
 
 	void SaveToJSON(const std::string& filename);

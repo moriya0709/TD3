@@ -1,3 +1,4 @@
+#ifdef USE_IMGUI
 // https://github.com/CedricGuillemet/ImGuizmo
 // v1.92.5 WIP
 //
@@ -304,3 +305,4 @@ namespace IMGUIZMO_NAMESPACE
 
    IMGUI_API Style& GetStyle();
 }
+#endif

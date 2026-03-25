@@ -1,4 +1,4 @@
-#include <cassert>
+﻿#include <cassert>
 
 #include "CameraManager.h"
 #include "Camera.h"
@@ -27,7 +27,7 @@ Camera* CameraManager::GetActiveCamera() const {
     return activeCamera_;
 }
 
-// �폜
+// 削除
 void CameraManager::RemoveCamera(const std::string& name) {
     cameras_.erase(name);
 }

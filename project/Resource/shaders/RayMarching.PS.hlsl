@@ -9,10 +9,16 @@ struct PSInput
     float4 pos : SV_POSITION;
     float2 uv : TEXCOORD0;
 };
+struct PSOutput
+{
+    float4 Color : SV_TARGET0;
+    float2 Velocity : SV_TARGET1; // ← ★追加 (Velocityバッファへの出力)
+};
 
 cbuffer CloudParam : register(b0)
 {
     float4x4 invViewProj;
+    float4x4 prevViewProj;
 
     float3 cameraPos;
     float time;
@@ -26,7 +32,11 @@ cbuffer CloudParam : register(b0)
     int isAnimeLight;
     
     float3 cloudOffset;
-    int pad;
+    int isMotionBlur;
+    
+    float cloudOpacity;
+    float pad[3];
+
 }
 
 float hash(float3 p)
@@ -93,7 +103,7 @@ float CloudDensity(float3 p)
         return 0.0;
 
     float3 uv = p * 0.001;
-    uv += cloudOffset;
+    uv += cloudOffset * 3.0;
 
     // まず、1つ目のノイズ（ベース形状）だけを取得
     float base = fbm(uv);
@@ -313,7 +323,7 @@ float3 CalculateAtmosphere(float3 cameraPos, float3 rayDir, float3 sunDir)
     return skyColor;
 }
 
-float4 main(VSOutput input) : SV_TARGET
+PSOutput main(VSOutput input)
 {
     float2 ndcXY = input.uv * 2.0f - 1.0f;
     ndcXY.y *= -1.0f;
@@ -418,7 +428,7 @@ float4 main(VSOutput input) : SV_TARGET
 
             // 3段階ステップ
             float stepLen = (d < 0.01) ? maxStep : minStep;
-            float opticalDepth = d * stepLen * 0.04;
+            float opticalDepth = d * stepLen * cloudOpacity;
 
             if (opticalDepth > 0.001)
             {
@@ -535,5 +545,37 @@ float4 main(VSOutput input) : SV_TARGET
     float sunAlpha = (sunHeight > 0.0) ? 1.0 : 0.2;
     finalColor += dynamicSunColor * sunDisc * transmittance * sunAlpha;
 
-    return float4(finalColor, 1.0);
+   // ==========================================
+    // ★ 追加: Velocityの計算と出力
+    // ==========================================
+    
+    PSOutput output;
+    
+    // モーションブラー
+    if (isMotionBlur)
+    {
+    // 前フレームのクリップ空間座標を計算（背景は無限遠として扱うため、算出したworld座標をそのまま使う）
+        float4 prevClip = mul(prevViewProj, float4(world.xyz, 1.0));
+        prevClip.xyz /= prevClip.w;
+
+    // 前フレームのUV座標に変換
+        float2 prevUV = prevClip.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
+
+    // Velocity = 現在のUV - 過去のUV
+        float2 velocity = input.uv - prevUV;
+        
+        // 倍率
+        float cloudBlurStrength = 5.0;
+        velocity *= (1.0 - transmittance) * cloudBlurStrength;
+        // 出力構造体にセットして返す
+        output.Velocity = velocity;
+    }
+    else
+    {
+        output.Velocity = float2(0, 0);
+
+    }
+    output.Color = float4(finalColor, 1.0);
+
+    return output;
 }

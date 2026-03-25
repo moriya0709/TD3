@@ -44,44 +44,49 @@ void GamePlayScene::Update() {
 	ChekeAllCollision();
 
 #pragma region ポストエフェクト
-	// *ポストエフェクト* //
-	PostEffect::GetInstance()->Update(camera.get());
 
-	// 反転
-	PostEffect::GetInstance()->SetInversion(isInversion);
-	// グレースケール
-	PostEffect::GetInstance()->SetGrayscale(isGrayscale);
-	// 放射線ブラー
-	PostEffect::GetInstance()->SetRadialBlur(isRadialBlur);
-	PostEffect::GetInstance()->SetBlurCenter(blurCenter);
-	PostEffect::GetInstance()->SetBlurWidth(blurWidth);
-	PostEffect::GetInstance()->SetBlurSamples(blurSamples);
-	// ディスタンスフォグ
-	PostEffect::GetInstance()->SetDistanceFog(isDistanceFog);
-	PostEffect::GetInstance()->SetDistanceFogColor(distanceFogColor);
-	PostEffect::GetInstance()->SetDistanceFogStart(distanceStart);
-	PostEffect::GetInstance()->SetDistanceFogEnd(distanceEnd);
-	// ハイトフォグ
-	PostEffect::GetInstance()->SetHeightFog(isHeightFog);
-	PostEffect::GetInstance()->SetHeightFogColor(heightFogColor);
-	PostEffect::GetInstance()->SetHeightFogTop(heightFogTop);
-	PostEffect::GetInstance()->SetHeightFogBottom(heightFogBottom);
-	PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
-	PostEffect::GetInstance()->HightFogUpdate(camera.get());
-	// DOF
-	PostEffect::GetInstance()->SetDOF(isDOF);
-	PostEffect::GetInstance()->SetFocusDistance(focusDistance);
-	PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
-	PostEffect::GetInstance()->SetFocusRange(focusRange);
-	// ブルーム
-	PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
-	PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
-	// レンズフレア
-	PostEffect::GetInstance()->SetLensFlare(isLensFlare);
-	PostEffect::GetInstance()->SetLensFlareGhostCount(lensFlareGhostCount);
-	PostEffect::GetInstance()->SetLensFlareHaloWidth(lensFlareHaloWidth);
-	PostEffect::GetInstance()->SetIsACES(isACES);
-	PostEffect::GetInstance()->SetCAIntensity(caIntensity);
+    // *ポストエフェクト* //
+    PostEffect::GetInstance()->Update(camera.get());
+
+    // 反転
+    PostEffect::GetInstance()->SetInversion(isInversion);
+    // グレースケール
+    PostEffect::GetInstance()->SetGrayscale(isGrayscale);
+    // 放射線ブラー
+    PostEffect::GetInstance()->SetRadialBlur(isRadialBlur);
+    PostEffect::GetInstance()->SetBlurCenter(blurCenter);
+    PostEffect::GetInstance()->SetBlurWidth(blurWidth);
+    PostEffect::GetInstance()->SetBlurSamples(blurSamples);
+    // ディスタンスフォグ
+    PostEffect::GetInstance()->SetDistanceFog(isDistanceFog);
+    PostEffect::GetInstance()->SetDistanceFogColor(distanceFogColor);
+    PostEffect::GetInstance()->SetDistanceFogStart(distanceStart);
+    PostEffect::GetInstance()->SetDistanceFogEnd(distanceEnd);
+    // ハイトフォグ
+    PostEffect::GetInstance()->SetHeightFog(isHeightFog);
+    PostEffect::GetInstance()->SetHeightFogColor(heightFogColor);
+    PostEffect::GetInstance()->SetHeightFogTop(heightFogTop);
+    PostEffect::GetInstance()->SetHeightFogBottom(heightFogBottom);
+    PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
+    PostEffect::GetInstance()->HightFogUpdate(camera.get());
+    // DOF
+    PostEffect::GetInstance()->SetDOF(isDOF);
+    PostEffect::GetInstance()->SetFocusDistance(focusDistance);
+    PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
+    PostEffect::GetInstance()->SetFocusRange(focusRange);
+    // ブルーム
+    PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
+    PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
+    // レンズフレア
+    PostEffect::GetInstance()->SetLensFlare(isLensFlare);
+    PostEffect::GetInstance()->SetLensFlareGhostCount(lensFlareGhostCount);
+    PostEffect::GetInstance()->SetLensFlareHaloWidth(lensFlareHaloWidth);
+    PostEffect::GetInstance()->SetIsACES(isACES);
+    PostEffect::GetInstance()->SetCAIntensity(caIntensity);
+    // モーションブラー
+    PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
+    PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
+    PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
 
 #pragma endregion
 
@@ -95,6 +100,9 @@ void GamePlayScene::Update() {
 	RayMarching::GetInstance()->SetCloudBottom(rayMarchingCloudTop);
 	RayMarching::GetInstance()->SetRialLight(rayMarchingIsRialLight);
 	RayMarching::GetInstance()->SetAnimeLight(rayMarchingIsAnimeLight);
+    RayMarching::GetInstance()->SetMotionBlur(rayMarchingIsMotionBlur);
+    RayMarching::GetInstance()->SetCloudOpacity(rayMarchingCloudOpacity);
+
 
 #pragma endregion
 
@@ -162,94 +170,106 @@ void GamePlayScene::Update() {
 #pragma endregion
 
 #pragma region ポストエフェクト
-	// *ポストエフェクト* //
-	ImGui::Text("PostEffect"); // ポストエフェクトのテキスト
+    // *ポストエフェクト* //
+    ImGui::Text("PostEffect"); // ポストエフェクトのテキスト
 
-	// 反転
-	if (ImGui::TreeNode("inversion")) {
-		ImGui::Checkbox("OnOff", &isInversion);
+    // 反転
+    if (ImGui::TreeNode("inversion")) {
+        ImGui::Checkbox("OnOff", &isInversion);
 
-		ImGui::TreePop();
-	}
-	// グレースケール
-	if (ImGui::TreeNode("grayscale")) {
-		ImGui::Checkbox("OnOff", &isGrayscale);
+        ImGui::TreePop();
+    }
+    // グレースケール
+    if (ImGui::TreeNode("grayscale")) {
+        ImGui::Checkbox("OnOff", &isGrayscale);
 
-		ImGui::TreePop();
-	}
-	// 放射線ブラー
-	if (ImGui::TreeNode("radialBlur")) {
-		ImGui::Checkbox("OnOff", &isRadialBlur);
+        ImGui::TreePop();
+    }
+    // 放射線ブラー
+    if (ImGui::TreeNode("radialBlur")) {
+        ImGui::Checkbox("OnOff", &isRadialBlur);
 
-		if (isRadialBlur) {
-			ImGui::DragFloat2("blurCenter", &blurCenter.x, 0.01f, 0.0f, 1.0f);
-			ImGui::DragFloat("blurWidth", &blurWidth, 0.001f, 0.0f, 0.1f);
-			ImGui::DragInt("blurSamples", &blurSamples, 1, 1, 100);
-		}
+        if (isRadialBlur) {
+            ImGui::DragFloat2("blurCenter", &blurCenter.x, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat("blurWidth", &blurWidth, 0.001f, 0.0f, 0.1f);
+            ImGui::DragInt("blurSamples", &blurSamples, 1, 1, 100);
+        }
 
-		ImGui::TreePop();
-	}
-	// ディスタンスフォグ
-	if (ImGui::TreeNode("distanceFog")) {
-		ImGui::Checkbox("OnOff", &isDistanceFog);
+        ImGui::TreePop();
+    }
+    // ディスタンスフォグ
+    if (ImGui::TreeNode("distanceFog")) {
+        ImGui::Checkbox("OnOff", &isDistanceFog);
 
-		if (isDistanceFog) {
-			ImGui::ColorEdit3("fogColor", &distanceFogColor.x);
-			ImGui::DragFloat("fogStart", &distanceStart, 0.1f, 0.0f, 100.0f);
-			ImGui::DragFloat("fogEnd", &distanceEnd, 0.1f, 0.0f, 100.0f);
-		}
+        if (isDistanceFog) {
+            ImGui::ColorEdit3("fogColor", &distanceFogColor.x);
+            ImGui::DragFloat("fogStart", &distanceStart, 0.1f, 0.0f, 100.0f);
+            ImGui::DragFloat("fogEnd", &distanceEnd, 0.1f, 0.0f, 100.0f);
+        }
 
-		ImGui::TreePop();
-	}
-	// ハイトフォグ
-	if (ImGui::TreeNode("heightFog")) {
-		ImGui::Checkbox("OnOff", &isHeightFog);
+        ImGui::TreePop();
+    }
+    // ハイトフォグ
+    if (ImGui::TreeNode("heightFog")) {
+        ImGui::Checkbox("OnOff", &isHeightFog);
 
-		if (isHeightFog) {
-			ImGui::ColorEdit3("heightFogColor", &heightFogColor.x);
-			ImGui::DragFloat("heightFogTop", &heightFogTop, 0.1f, -100.0f, 100.0f);
-			ImGui::DragFloat("heightFogBottom", &heightFogBottom, 0.1f, -100.0f, 100.0f);
-			ImGui::DragFloat("heightFogDensity", &heightFogDensity, 0.01f, 0.0f, 10.0f);
-		}
+        if (isHeightFog) {
+            ImGui::ColorEdit3("heightFogColor", &heightFogColor.x);
+            ImGui::DragFloat("heightFogTop", &heightFogTop, 0.1f, -100.0f, 100.0f);
+            ImGui::DragFloat("heightFogBottom", &heightFogBottom, 0.1f, -100.0f, 100.0f);
+            ImGui::DragFloat("heightFogDensity", &heightFogDensity, 0.01f, 0.0f, 10.0f);
+        }
 
-		ImGui::TreePop();
-	}
-	// DOF
-	if (ImGui::TreeNode("DOF")) {
-		ImGui::Checkbox("OnOff", &isDOF);
+        ImGui::TreePop();
+    }
+    // DOF
+    if (ImGui::TreeNode("DOF")) {
+        ImGui::Checkbox("OnOff", &isDOF);
 
-		if (isDOF) {
-			ImGui::DragFloat("focusDistance", &focusDistance, 0.1f, 0.0f, 100.0f);
-			ImGui::DragFloat("bokehRadius", &bokehRadius, 0.1f, 0.0f, 100.0f);
-			ImGui::DragFloat("focusRange", &focusRange, 0.1f, 0.0f, 100.0f);
-		}
+        if (isDOF) {
+            ImGui::DragFloat("focusDistance", &focusDistance, 0.1f, 0.0f, 100.0f);
+            ImGui::DragFloat("bokehRadius", &bokehRadius, 0.1f, 0.0f, 100.0f);
+            ImGui::DragFloat("focusRange", &focusRange, 0.1f, 0.0f, 100.0f);
+        }
 
-		ImGui::TreePop();
-	}
-	// ブルーム
-	if (ImGui::TreeNode("Bloom")) {
-		ImGui::DragFloat("bloomThreshold", &bloomThreshold, 0.01f, 0.0f, 10.0f);
-		ImGui::DragFloat("bloomIntensity", &bloomIntensity, 0.01f, 0.0f, 10.0f);
-		ImGui::DragFloat("bloomRadius", &bloomBlurRadius, 0.01f, 0.0f, 10.0f);
+        ImGui::TreePop();
+    }
+    // ブルーム
+    if (ImGui::TreeNode("Bloom")) {
+        ImGui::DragFloat("bloomThreshold", &bloomThreshold, 0.01f, 0.0f, 10.0f);
+        ImGui::DragFloat("bloomIntensity", &bloomIntensity, 0.01f, 0.0f, 10.0f);
+        ImGui::DragFloat("bloomRadius", &bloomBlurRadius, 0.01f, 0.0f, 10.0f);
 
-		ImGui::TreePop();
-	}
-	// レンズフレア
-	if (ImGui::TreeNode("LensFlare")) {
-		ImGui::Checkbox("OnOff", &isLensFlare);
+        ImGui::TreePop();
+    }
+    // レンズフレア
+    if (ImGui::TreeNode("LensFlare")) {
+        ImGui::Checkbox("OnOff", &isLensFlare);
 
-		if (isLensFlare) {
-			ImGui::DragInt("lensFlareGhostCount", &lensFlareGhostCount, 1, 0, 10);
-			ImGui::DragFloat("lensFlareHaloWidth", &lensFlareHaloWidth, 0.01f, 0.0f, 10.0f);
-			ImGui::Checkbox("isACES", &isACES);
-			ImGui::DragFloat("caIntensity", &caIntensity, 0.001f, 0.0f, 10.0f);
-		}
+        if (isLensFlare) {
+            ImGui::DragInt("lensFlareGhostCount", &lensFlareGhostCount, 1, 0, 10);
+            ImGui::DragFloat("lensFlareHaloWidth", &lensFlareHaloWidth, 0.01f, 0.0f, 10.0f);
+            ImGui::Checkbox("isACES", &isACES);
+            ImGui::DragFloat("caIntensity", &caIntensity, 0.001f, 0.0f, 10.0f);
 
-		ImGui::TreePop();
-	}
+        }
 
-	CameraController_->DrawImGui();
-	enemy_->DrawImGui();
+        ImGui::TreePop();
+    }
+    // モーションブラー
+    if (ImGui::TreeNode("MotionBlur")) {
+        ImGui::Checkbox("OnOff", &isMotionBlur);
+
+        if (isLensFlare) {
+            ImGui::DragInt("motionBlurSamples", &motionBlurSamples, 1, 0, 20);
+            ImGui::DragFloat("motionBlurScale", &motionBlurScale, 0.01f, 0.0f, 10.0f);
+        }
+
+        ImGui::TreePop();
+    }
+
+    CameraController_->DrawImGui();
+    enemy_->DrawImGui();
 
 #pragma endregion
 
@@ -262,6 +282,8 @@ void GamePlayScene::Update() {
 	ImGui::DragFloat("rayMarchingCloudTop", &rayMarchingCloudTop, 10.0f, -5000.0f, 5000.0f);
 	ImGui::Checkbox("rayMarchingIsRialLight", &rayMarchingIsRialLight);
 	ImGui::Checkbox("rayMarchingIsAnimeLight", &rayMarchingIsAnimeLight);
+    ImGui::Checkbox("rayMarchingIsMotionBlur", &rayMarchingIsMotionBlur);
+    ImGui::DragFloat("rayMarchingCloudOpacity", &rayMarchingCloudOpacity, 0.001f, 0.0f, 0.1f);
 
 #pragma endregion
 

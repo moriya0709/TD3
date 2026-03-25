@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 class DirectXCommon;
 class Camera;
@@ -6,14 +6,14 @@ class SceneManager;
 
 class BaseScene {
 public:
-    // ‰Šú‰»
+    // åˆæœŸåŒ–
     virtual void Initialize() = 0;
-    // XV
+    // æ›´æ–°
     virtual void Update() = 0;
-    // •`‰æ
+    // æç”»
     virtual void Draw2D() = 0;
     virtual void Draw3D() = 0;
-    // I—¹
+    // çµ‚äº†
     virtual void Finalize() = 0;
 
     // setter
@@ -22,6 +22,6 @@ public:
     virtual ~BaseScene() = default;
 
 private:
-    // ƒV[ƒ“ƒ}ƒl[ƒWƒƒ[
+    // ã‚·ãƒ¼ãƒ³ãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼
     SceneManager* sceneManager_ = nullptr;
 };

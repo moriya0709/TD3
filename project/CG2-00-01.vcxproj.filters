@@ -69,11 +69,11 @@
     <ClCompile Include="game\enemy\Bullet\TargetEnemyBullet.cpp" />
     <ClCompile Include="game\player\PlayerNormalBullet.cpp" />
     <ClCompile Include="game\player\PlayerChargeBullet.cpp" />
-    <ClCompile Include="application\railCamera\RailCamera.cpp" />
     <ClCompile Include="application\rayMarching\RayMarching.cpp" />
     <ClCompile Include="game\enemy\type\rushEnemy.cpp" />
     <ClCompile Include="game\enemy\Bullet\rushEnemyBullet.cpp" />
     <ClCompile Include="game\enemy\type\ShieldEnemy.cpp" />
+    <ClCompile Include="application\railCamera\RailCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />
@@ -134,14 +134,14 @@
     <ClInclude Include="game\enemy\Bullet\TargetEnemyBullet.h" />
     <ClInclude Include="game\player\PlayerNormalBullet.h" />
     <ClInclude Include="game\player\PlayerChargeBullet.h" />
-    <ClInclude Include="application\railCamera\RailCamera.h" />
     <ClInclude Include="application\rayMarching\RayMarching.h" />
     <ClInclude Include="game\enemy\type\rushEnemy.h" />
     <ClInclude Include="game\enemy\Bullet\rushEnemyBullet.h" />
     <ClInclude Include="game\enemy\type\ShieldEnemy.h" />
+    <ClInclude Include="application\railCamera\RailCamera.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resource\shaders\rayMarching.hlsli" />
+    <None Include="Resource\shaders\RayMarching.hlsli" />
     <None Include="Resource\shaders\PostEffect.hlsli" />
     <None Include="Resource\shaders\Outline.hlsli" />
     <None Include="Resource\shaders\Object3d.hlsli" />
