@@ -109,7 +109,7 @@ private:
     float bokehRadius = 5.0f;
 
     // ブルーム
-    float bloomThreshold = 1.0f;
+    float bloomThreshold = 1.5f;
     float bloomIntensity = 1.0f;
     float bloomBlurRadius = 1.0f;
 
@@ -127,12 +127,14 @@ private:
 
     // レイマーチング
     //float rayMarchingTime = 0.0f; ;
-    Vector3 rayMarchingSunDir = { 0.01f, -0.04f, -0.6f };
+    Vector3 rayMarchingSunDir = { 0.07f, -0.17f, -0.75f };
     float rayMarchingCloudCoverage = 0.22f;
     float rayMarchingCloudBottom = 70.0f;
     float rayMarchingCloudTop = -300.0f;
     bool rayMarchingIsRialLight = false;
     bool rayMarchingIsAnimeLight = true;
+    bool  rayMarchingIsMotionBlur = false;
+    float  rayMarchingCloudOpacity = 0.04f;
 
     // カメラ
     std::unique_ptr<Camera> camera = nullptr;

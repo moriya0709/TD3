@@ -61,12 +61,19 @@ struct ViewData
     float pad;
 };
 
+struct MotionBlur
+{
+    int isMotionBlur;
+    float pad[3];
+};
+
 ConstantBuffer<Material> gMaterial : register(b0);
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b2);
 ConstantBuffer<AmbientLight> gAmbientLight : register(b3);
 ConstantBuffer<PointLight> gPointLight : register(b4);
 ConstantBuffer<SpotLight> gSpotLight : register(b5);
 ConstantBuffer<ViewData> gView : register(b6); // ★追加: ビュー情報
+ConstantBuffer<MotionBlur> gMotionBlur : register(b7);
 
 Texture2D<float32_t4> gTexture : register(t0);
 SamplerState gSampler : register(s0);
@@ -226,19 +233,28 @@ PixelShaderOutput main(VertexShaderOutput input)
         discard;
     }
     
-    // ==========================================
+  
+    // 速度を書き込む
+    if (gMotionBlur.isMotionBlur)
+    {
+          // ==========================================
     // ★追加: ベロシティ（速度）の計算と SV_TARGET1 へのセット
     // ==========================================
     // パースペクティブ除算（wで割る）を行って NDC（-1.0 ～ 1.0）座標系にする
-    float2 currentNDC = input.currentClipPos.xy / input.currentClipPos.w;
-    float2 prevNDC = input.prevClipPos.xy / input.prevClipPos.w;
+        float2 currentNDC = input.currentClipPos.xy / input.currentClipPos.w;
+        float2 prevNDC = input.prevClipPos.xy / input.prevClipPos.w;
 
     // NDCの差分から、UV座標系での移動量を計算する
     // ※DirectXはUVのY軸が下向き正なので、Y成分だけ反転（-0.5）させるのがポイントです！
-    float2 velocity = (currentNDC - prevNDC) * float2(0.5f, -0.5f);
+        float2 velocity = (currentNDC - prevNDC) * float2(0.5f, -0.5f);
+        
+        output.velocity = velocity;
+    }
+    else
+    {
+        output.velocity = float2(0, 0);
 
-    // 速度を SV_TARGET1 に書き込む
-    output.velocity = velocity;
+    }
     
     return output;
 }

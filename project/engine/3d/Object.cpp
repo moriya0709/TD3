@@ -73,6 +73,11 @@ void Object::Initialize(Camera* camera) {
 	viewResource = dxCommon_->CreateBufferResource(sizeof(ViewData));
 	viewResource->Map(0, nullptr, reinterpret_cast<void**>(&viewData));
 
+	// モーションブラー
+	motionBlurResource = dxCommon_->CreateBufferResource(sizeof(MotionBlur));
+	motionBlurResource->Map(0, nullptr, reinterpret_cast<void**>(&motionBlurData));
+	motionBlurData->isMotionBlur = false;
+
 	// *Transform* //
 	transform = {
 		{1.0f,1.0f,1.0f},
@@ -124,6 +129,8 @@ void Object::Draw() {
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(7, spotLightResource->GetGPUVirtualAddress());
 	// カメラ(ビュー)情報
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(8, viewResource->GetGPUVirtualAddress());
+	// モーションブラー
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(9, motionBlurResource->GetGPUVirtualAddress());
 
 	// 3Dモデルが割り当てられていれば描画する
 	if (model_) {

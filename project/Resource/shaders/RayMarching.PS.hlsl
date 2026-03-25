@@ -32,7 +32,11 @@ cbuffer CloudParam : register(b0)
     int isAnimeLight;
     
     float3 cloudOffset;
-    int pad;
+    int isMotionBlur;
+    
+    float cloudOpacity;
+    float pad[3];
+
 }
 
 float hash(float3 p)
@@ -99,7 +103,7 @@ float CloudDensity(float3 p)
         return 0.0;
 
     float3 uv = p * 0.001;
-    uv += cloudOffset;
+    uv += cloudOffset * 3.0;
 
     // まず、1つ目のノイズ（ベース形状）だけを取得
     float base = fbm(uv);
@@ -424,7 +428,7 @@ PSOutput main(VSOutput input)
 
             // 3段階ステップ
             float stepLen = (d < 0.01) ? maxStep : minStep;
-            float opticalDepth = d * stepLen * 0.04;
+            float opticalDepth = d * stepLen * cloudOpacity;
 
             if (opticalDepth > 0.001)
             {
@@ -541,24 +545,37 @@ PSOutput main(VSOutput input)
     float sunAlpha = (sunHeight > 0.0) ? 1.0 : 0.2;
     finalColor += dynamicSunColor * sunDisc * transmittance * sunAlpha;
 
-    // ==========================================
+   // ==========================================
     // ★ 追加: Velocityの計算と出力
     // ==========================================
     
+    PSOutput output;
+    
+    // モーションブラー
+    if (isMotionBlur)
+    {
     // 前フレームのクリップ空間座標を計算（背景は無限遠として扱うため、算出したworld座標をそのまま使う）
-    float4 prevClip = mul(prevViewProj, float4(world.xyz, 1.0));
-    prevClip.xyz /= prevClip.w;
+        float4 prevClip = mul(prevViewProj, float4(world.xyz, 1.0));
+        prevClip.xyz /= prevClip.w;
 
     // 前フレームのUV座標に変換
-    float2 prevUV = prevClip.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
+        float2 prevUV = prevClip.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
 
     // Velocity = 現在のUV - 過去のUV
-    float2 velocity = input.uv - prevUV;
+        float2 velocity = input.uv - prevUV;
+        
+        // 倍率
+        float cloudBlurStrength = 5.0;
+        velocity *= (1.0 - transmittance) * cloudBlurStrength;
+        // 出力構造体にセットして返す
+        output.Velocity = velocity;
+    }
+    else
+    {
+        output.Velocity = float2(0, 0);
 
-    // 出力構造体にセットして返す
-    PSOutput output;
+    }
     output.Color = float4(finalColor, 1.0);
-    output.Velocity = velocity;
 
     return output;
 }

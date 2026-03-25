@@ -61,6 +61,9 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 
 	object_->SetScale(transform_.scale);
 	object_->SetTranslate(transform_.translate);
+
+	// モーションブラー
+	object_->SetMotionBlur(isMotionBlur);
 }
 void PlayerNormalBullet::Update(Vector3 cmrvel) {
 	std::shared_ptr<Enemy> target = targetEnemy_.lock();
