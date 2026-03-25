@@ -91,7 +91,10 @@ void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared
             if (distance <= bulletSize + enemySize) {
                 // --- 修正ポイント ---
                 bullet->SetActive(false); // 弾側のフラグをisActive = falseにするメソッド
-                enemy->OnCollision(int(bullet->GetDamage()), bulletPos); // 敵側のダメージ処理を呼び出す（例としてプレイヤーの弾の数を渡す）
+
+                Vector3 bulletVelocity = bullet->GetVelocity();
+
+                enemy->OnCollision(int(bullet->GetDamage()), bulletPos, bulletVelocity); // 敵側のダメージ処理を呼び出す（例としてプレイヤーの弾の数を渡す）
 
                 break; // この弾は消えるので、他の敵との判定は不要
             }

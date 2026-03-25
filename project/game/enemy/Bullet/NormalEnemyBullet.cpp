@@ -29,8 +29,14 @@ void NormalEnemyBullet::Update()
 
     velocity_ += acceleration;
 
-    // 最大値を越えないように調整
-    velocity_.z = std::clamp(velocity_.z, -maxSpeed, maxSpeed);
+    float currentSpeed = sqrtf(velocity_.x * velocity_.x + velocity_.y * velocity_.y + velocity_.z * velocity_.z);
+
+    // 弾の速さが最高速度を超えていたら、最高速度に制限する
+    if (currentSpeed >= maxSpeed) {
+        // 現在の進行方向（長さ1）を計算し、それに最高速度を掛ける
+        Vector3 currentDir = Normalize(velocity_);
+        velocity_ = currentDir * maxSpeed;
+    }
 
     transform_.translate += velocity_;
     object_->SetTranslate(transform_.translate);
