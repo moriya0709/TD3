@@ -26,6 +26,12 @@ public:
 	// アクティブ設定
 	void SetActive(const std::string& name);
 
+	//座標更新
+	void SetTranslate(const Vector3& translate)
+	{
+		emitter.transform.translate = translate;
+	}
+
 private:
 	// パーティクルエミッタの設定
 	Emitter emitter;

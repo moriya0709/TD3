@@ -41,6 +41,7 @@ void Game::Initialize() {
 	// パーティクルマネージャ初期化
 	ParticleManager::GetInstance()->CreateParticleGroup("group1", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("group2", "Resource/uvChecker.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("bBullet", "Resource/uvChecker.png");//弾
 
 	// .objファイルからモデル読み込み
 	ModelManager::GetInstance()->LoadModel("Resource/plane","plane.obj");
@@ -107,6 +108,9 @@ void Game::Draw() {
 
 	// シーンマネージャー描画(3D)
 	SceneManager::GetInstance()->Draw3D();
+
+	// パーティクル描画
+	ParticleManager::GetInstance()->Draw();
 
 	// ポストエフェクト描画
 	PostEffect::GetInstance()->PostDraw();

@@ -12,7 +12,7 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	transform_.translate = position;
 	object_ = std::make_unique<Object>();
 	object_->Initialize(camera);
-	object_->SetModel("plane.obj");
+	object_->SetModel("player.obj");
 	camera_ = camera;
 	lifeTime_ = 0;
 	isActive_ = true;
@@ -58,6 +58,16 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 			break;
 		}
 	}
+	Transform ptrans = transform_;
+	ptrans.scale = { 1,1,1 };
+
+	particleEmitter= std::make_unique<ParticleEmitter>();
+	particleEmitter->Initialize("bBullet", ptrans, 50, 0.2f);
+
+	
+	particleEmitter->Emit();
+	particleEmitter->SetActive("bBullet");
+
 
 	object_->SetScale(transform_.scale);
 	object_->SetTranslate(transform_.translate);
@@ -65,15 +75,15 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 void PlayerNormalBullet::Update(Vector3 cmrvel) {
 	std::shared_ptr<Enemy> target = targetEnemy_.lock();
 
-	if (target){
+	if (target) {
 		// 1. 敵への方向を計算
 		Vector3 enemyPos = target->GetWorldPosition();
-		Vector3 toEnemy = {enemyPos.x - transform_.translate.x, enemyPos.y - transform_.translate.y, enemyPos.z - transform_.translate.z};
+		Vector3 toEnemy = { enemyPos.x - transform_.translate.x, enemyPos.y - transform_.translate.y, enemyPos.z - transform_.translate.z };
 		float dist = std::sqrt(toEnemy.x * toEnemy.x + toEnemy.y * toEnemy.y + toEnemy.z * toEnemy.z);
 
 		if (dist > 0.1f) {
 			// 敵への理想的な速度ベクトル
-			Vector3 targetVelocity = {(toEnemy.x / dist) * bulletSpeed_, (toEnemy.y / dist) * bulletSpeed_, (toEnemy.z / dist) * bulletSpeed_};
+			Vector3 targetVelocity = { (toEnemy.x / dist) * bulletSpeed_, (toEnemy.y / dist) * bulletSpeed_, (toEnemy.z / dist) * bulletSpeed_ };
 
 			// 2. 現在の速度を理想の速度に近づける (Lerp)
 			velocity_.x += (targetVelocity.x - velocity_.x) * hommingAccuracy_;
@@ -89,7 +99,7 @@ void PlayerNormalBullet::Update(Vector3 cmrvel) {
 	}
 
 	// 3. 座標更新（共通）
-	transform_.translate += velocity_+cmrvel;
+	transform_.translate += velocity_ + cmrvel;
 
 	object_->SetTranslate(transform_.translate);
 	object_->Update();
@@ -98,11 +108,16 @@ void PlayerNormalBullet::Update(Vector3 cmrvel) {
 		isActive_ = false;
 	} else {
 		lifeTime_++;
+		// パーティクルエミッタ更新
+		particleEmitter->Update();
 	}
+
 }
 void PlayerNormalBullet::Draw3D() {
 	if (isActive_) {
 		object_->Draw();
 	}
 }
-void PlayerNormalBullet::Draw2D() {};
+
+void PlayerNormalBullet::Draw2D() {
+};
