@@ -15,30 +15,30 @@
 class EnemyBullet {
 public:
     /// <summary>
-    /// ‰Šú‰»
+    /// åˆæœŸåŒ–
     /// </summary>
-    /// <param name="camera">ƒJƒƒ‰</param>
-    /// <param name="Pos">‰ŠúÀ•W</param>
+    /// <param name="camera">ã‚«ãƒ¡ãƒ©</param>
+    /// <param name="Pos">åˆæœŸåº§æ¨™</param>
     virtual void Initialize(Camera* camera, Vector3 Pos);
 
     /// <summary>
-    /// XV
+    /// æ›´æ–°
     /// </summary>
     virtual void Update();
 
     /// <summary>
-    /// •`‰æ
+    /// æç”»
     /// </summary>
     virtual void Draw3D();
 
-    /* GetŠÖ” */
-    // ¶‘¶Šm”F—p‚Ì‰¼‘zŠÖ”‚ğ’Ç‰Á
+    /* Geté–¢æ•° */
+    // ç”Ÿå­˜ç¢ºèªç”¨ã®ä»®æƒ³é–¢æ•°ã‚’è¿½åŠ 
     virtual bool GetIsActive() const = 0;
     virtual Vector3 GetWorldPosition() const = 0;
     virtual float GetRadius() const = 0;
 
-    /* SetŠÖ” */
-    // À•W‚ğƒZƒbƒg‚·‚éŠÖ”
+    /* Seté–¢æ•° */
+    // åº§æ¨™ã‚’ã‚»ãƒƒãƒˆã™ã‚‹é–¢æ•°
     virtual void SetPosition(Vector3 Pos) = 0;
     virtual void SetBulletAcceleration(Vector3 num) = 0;
     virtual void SetactiveTimer(float num) = 0;
@@ -46,10 +46,10 @@ public:
     virtual void OnCollision() = 0;
 
 private:
-    // Transform transform_; // À•WŒn
-    // float isAvile; // ¶‘¶‚µ‚Ä‚¢‚é‚©
-    // float acceleration; // ’e‚Ì‘¬‚³(ŒÂ•Ê‚Åİ’è)
-    // float vector; // ƒxƒNƒgƒ‹(‘¬‚³)
+    // Transform transform_; // åº§æ¨™ç³»
+    // float isAvile; // ç”Ÿå­˜ã—ã¦ã„ã‚‹ã‹
+    // float acceleration; // å¼¾ã®é€Ÿã•(å€‹åˆ¥ã§è¨­å®š)
+    // float vector; // ãƒ™ã‚¯ãƒˆãƒ«(é€Ÿã•)
 
-    // Camera* camera_ = nullptr; // ƒJƒƒ‰
+    // Camera* camera_ = nullptr; // ã‚«ãƒ¡ãƒ©
 };
