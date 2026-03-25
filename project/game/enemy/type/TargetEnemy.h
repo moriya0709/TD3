@@ -22,7 +22,7 @@ public:
 
     // Set
     void SetTargetPlayer(Player* target) override { player_ = target; }
-    void OnCollision(int Damage) override;
+    void OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos) override;
     void SetWayPoints(const std::vector<WayPoint>& waypoints) override;
     void SetFleeWaypoint(const WayPoint& fleeWP, bool hasFleeData) override;
 

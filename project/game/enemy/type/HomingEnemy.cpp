@@ -88,7 +88,7 @@ void HomingEnemy::Draw3D()
     }
 }
 
-void HomingEnemy::OnCollision(int Damage)
+void HomingEnemy::OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos)
 {
     health_ -= Damage;
 
