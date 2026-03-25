@@ -29,6 +29,7 @@ public:
 	Vector3 GetPosition() const override { return transform_.translate; }
 	float GetHitSize() const override { return 0.5f; } // 例: ヒットサイズ0.5
 	virtual int GetDamage() const override { return damage_; }
+	Vector3 GetVelocity() const override { return velocity_; }
 
 private:
 	// プレイヤーの弾のステータス
