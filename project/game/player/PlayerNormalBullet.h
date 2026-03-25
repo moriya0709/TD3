@@ -46,7 +46,12 @@ private:
 	float bulletSpeed_;                // 弾の速さ
 	int damage_ = 0;                   // 弾のダメージ量
 
+	// パーティクルエミッタ
+	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
+
+
 	// モーションブラー
 	bool isMotionBlur = true;
+
 
 };
