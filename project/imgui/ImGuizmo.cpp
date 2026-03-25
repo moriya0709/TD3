@@ -1,3 +1,4 @@
+#ifdef USE_IMGUI
 // https://github.com/CedricGuillemet/ImGuizmo
 // v1.92.5 WIP
 //
@@ -3162,3 +3163,4 @@ namespace IMGUIZMO_NAMESPACE
       ComputeContext(svgView.m16, svgProjection.m16, gContext.mModelSource.m16, gContext.mMode);
    }
 };
+#endif

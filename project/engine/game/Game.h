@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <Windows.h>
 #include <dxgidebug.h>
 #include <strsafe.h>
@@ -22,21 +22,21 @@
 
 class Game : public M_Framework {
 public:
-	// ‰Šú‰»
+	// åˆæœŸåŒ–
 	void Initialize() override;
-	// XV
+	// æ›´æ–°
 	void Update() override;
-	// •`‰æ
+	// æç”»
 	void Draw() override;
-	// I—¹
+	// çµ‚äº†
 	void Finalize() override;
 
 private:
 
-	// SRVƒ}ƒl[ƒWƒƒ
+	// SRVãƒãƒãƒ¼ã‚¸ãƒ£
 	std::unique_ptr<SrvManager> srvManager = nullptr;
-	// ImGuiƒ}ƒl[ƒWƒƒ
+	// ImGuiãƒãƒãƒ¼ã‚¸ãƒ£
 	std::unique_ptr <ImGuiManager> imGuiManager = nullptr;
-	// ƒV[ƒ“ƒtƒ@ƒNƒgƒŠ[
+	// ã‚·ãƒ¼ãƒ³ãƒ•ã‚¡ã‚¯ãƒˆãƒªãƒ¼
 	std::unique_ptr <SceneFactory> sceneFactory_ = nullptr;
 };

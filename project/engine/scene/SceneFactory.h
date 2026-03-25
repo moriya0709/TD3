@@ -1,11 +1,11 @@
-#pragma once
+ï»¿#pragma once
 #include "AbstractSceneFactory.h"
 #include "TitleScene.h"
 #include "GamePlayScene.h"
 
 class SceneFactory : public AbstractSceneFactory{
 public:
-	// ƒV[ƒ“¶¬
+	// ã‚·ãƒ¼ãƒ³ç”Ÿæˆ
 	std::unique_ptr <BaseScene> CreateScene(const std::string& sceneName) override;
 
 };

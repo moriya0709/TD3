@@ -338,7 +338,7 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 
 #pragma region ImGui
 
-
+#ifdef USE_IMGUI
 
 
 	ImGui::Begin("Player Config");
@@ -384,6 +384,8 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 	}
 
 #pragma endregion
+
+#endif 
 }
 
 void Player::Draw2D() {
