@@ -8,11 +8,11 @@
 // Initializeに必要な引数を追加しています（レティクルの位置、最大距離、寿命）
 void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies) {
 	// --- 1. 基本設定（既存） ---
-	transform_.scale = {0.2f, 0.2f, 0.2f};
+	transform_.scale = {1.0f, 1.0f, 1.0f};
 	transform_.translate = position;
 	object_ = std::make_unique<Object>();
 	object_->Initialize(camera);
-	object_->SetModel("plane.obj");
+	object_->SetModel("normalNBullet.obj");
 	camera_ = camera;
 	lifeTime_ = 0;
 	isActive_ = true;

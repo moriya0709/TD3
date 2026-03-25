@@ -49,6 +49,7 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/emission", "emission.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/player", "player.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/cloud", "normalMachine.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/machine/cloud", "normalNBullet.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/kamihikouki", "speedMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/houki", "powerMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/nasu", "sniperMachine.obj");
