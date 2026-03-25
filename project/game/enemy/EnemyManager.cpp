@@ -131,9 +131,9 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
             // 座標(Vector3)の読み込み（ネストされている場合）
             if (enemyData.contains("position")) {
                 const auto& posData = enemyData["position"];
-                data.position.x = posData.value("x", 0.0f);
-                data.position.y = posData.value("y", 0.0f);
-                data.position.z = posData.value("z", 0.0f);
+                data.position.x = posData.value("x", 0.0f) + camera_->GetTranslate().x;
+                data.position.y = posData.value("y", 0.0f) + camera_->GetTranslate().y;
+                data.position.z = posData.value("z", 0.0f) + camera_->GetTranslate().z;
             } else {
                 // positionタグ自体が無い場合は原点にする
                 data.position = { 0.0f, 0.0f, 0.0f };
@@ -151,9 +151,9 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
                     // 目標座標の取得
                     if (wpData.contains("target")) {
                         const auto& tData = wpData["target"];
-                        wp.target.x = tData.value("x", 0.0f);
-                        wp.target.y = tData.value("y", 0.0f);
-                        wp.target.z = tData.value("z", 0.0f);
+                        wp.target.x = tData.value("x", 0.0f) + camera_->GetTranslate().x;
+                        wp.target.y = tData.value("y", 0.0f) + camera_->GetTranslate().x;
+                        wp.target.z = tData.value("z", 0.0f) + camera_->GetTranslate().x;
                     } else {
                         // 座標がなければ原点をセット
                         wp.target = { 0.0f, 0.0f, 0.0f };
@@ -172,9 +172,9 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
 
                 if (fleeData.contains("target")) {
                     const auto& tData = fleeData["target"];
-                    data.fleeWaypoint.target.x = tData.value("x", 0.0f);
-                    data.fleeWaypoint.target.y = tData.value("y", 0.0f);
-                    data.fleeWaypoint.target.z = tData.value("z", 0.0f);
+                    data.fleeWaypoint.target.x = tData.value("x", 0.0f) + camera_->GetTranslate().x;
+                    data.fleeWaypoint.target.y = tData.value("y", 0.0f) + camera_->GetTranslate().x;
+                    data.fleeWaypoint.target.z = tData.value("z", 0.0f) + camera_->GetTranslate().x;
                 } else {
                     data.fleeWaypoint.target = { 0.0f, 0.0f, 0.0f };
                 }
