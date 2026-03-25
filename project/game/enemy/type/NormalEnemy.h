@@ -31,7 +31,7 @@ public:
     void Draw3D() override;
 
     // Set
-    void OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos) override;
+    void OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity) override;
     void SetWayPoints(const std::vector<WayPoint>& waypoints) override;
     void SetFleeWaypoint(const WayPoint& fleeWP, bool hasFleeData) override;
 

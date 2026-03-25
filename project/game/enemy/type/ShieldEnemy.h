@@ -21,7 +21,7 @@ public:
 
     // Set
     void SetTargetPlayer(Player* target) override { player_ = target; }
-    void OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos) override;
+    void OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity) override;
     void SetWayPoints(const std::vector<WayPoint>& waypoints) override;
     void SetFleeWaypoint(const WayPoint& fleeWP, bool hasFleeData) override;
 
@@ -34,7 +34,7 @@ private:
     void EnemyMove();
     
     void BulletUpdate();
-    void BulletMirror(Vector3 bulletPos);
+    void BulletMirror(Vector3 bulletPos, Vector3 Velocity);
 
 
     void BehaviorWalk();
