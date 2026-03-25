@@ -65,38 +65,37 @@ void CheckCollisionPlayerEnemyBullet(Player* player, const std::list<std::shared
     }
 }
 
+void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared_ptr<Enemy>>& enemies)
+{
 
-void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared_ptr<Enemy>>& enemies) {
+    for (const auto& bullet : player->GetBullets()) {
+        // すでに当たって消える予定の弾はスキップ
+        if (!bullet->IsActive())
+            continue;
 
-	for (const auto& bullet : player->GetBullets()) {
-		// すでに当たって消える予定の弾はスキップ
-		if (!bullet->IsActive())
-			continue;
+        Vector3 bulletPos = bullet->GetPosition();
+        float bulletSize = bullet->GetHitSize();
 
-		Vector3 bulletPos = bullet->GetPosition();
-		float bulletSize = bullet->GetHitSize();
+        for (const auto& enemy : enemies) {
+            // 敵が死んでいる場合はスキップ（敵側にAliveフラグ等がある前提）
+            // if (!enemy->IsAlive()) continue;
 
-		for (const auto& enemy : enemies) {
-			// 敵が死んでいる場合はスキップ（敵側にAliveフラグ等がある前提）
-			// if (!enemy->IsAlive()) continue;
+            Vector3 enemyPos = enemy->GetWorldPosition();
+            float enemySize = enemy->GetRadius();
 
-			Vector3 enemyPos = enemy->GetWorldPosition();
-			float enemySize = enemy->GetRadius();
+            // 距離の計算
+            Vector3 diff = { bulletPos.x - enemyPos.x, bulletPos.y - enemyPos.y, bulletPos.z - enemyPos.z };
+            float distance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
 
-			// 距離の計算
-			Vector3 diff = {bulletPos.x - enemyPos.x, bulletPos.y - enemyPos.y, bulletPos.z - enemyPos.z};
-			float distance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+            // 衝突判定
+            if (distance <= bulletSize + enemySize) {
+                // --- 修正ポイント ---
+                bullet->SetActive(false); // 弾側のフラグをisActive = falseにするメソッド
+                enemy->OnCollision(int(bullet->GetDamage()), bulletPos); // 敵側のダメージ処理を呼び出す（例としてプレイヤーの弾の数を渡す）
 
-			// 衝突判定
-			if (distance <= bulletSize + enemySize) {
-				// --- 修正ポイント ---
-				bullet->SetActive(false); // 弾側のフラグをisActive = falseにするメソッド
-				enemy->OnCollision(int(bullet->GetDamage())); // 敵側のダメージ処理を呼び出す（例としてプレイヤーの弾の数を渡す）
-
-				break; // この弾は消えるので、他の敵との判定は不要
-			}
-		}
-	}
+                break; // この弾は消えるので、他の敵との判定は不要
+            }
+        }
+    }
 }
-void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet) {}
-
+void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet) { }

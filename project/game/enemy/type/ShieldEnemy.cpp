@@ -2,6 +2,7 @@
 #include "../../engine/math/Calc.h"
 #include "../../player/Player.h"
 #include "../Bullet/TargetEnemyBullet.h"
+#include "../Bullet/NormalEnemyBullet.h"
 
 void ShieldEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 {
@@ -86,9 +87,11 @@ void ShieldEnemy::Draw3D()
     }
 }
 
-void ShieldEnemy::OnCollision(int Damage)
+void ShieldEnemy::OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos)
 {
     if (behavior_ == Behavior::kShield) {
+        // 反射する
+        BulletMirror(bulletPos);
         return;
     }
 
@@ -187,6 +190,29 @@ void ShieldEnemy::BulletUpdate()
     std::erase_if(enemyBullet_, [](const std::unique_ptr<EnemyBullet>& bullet) {
         return !bullet->GetIsActive(); // GetIsActive が false なら削除
     });
+}
+
+void ShieldEnemy::BulletMirror(Vector3 bulletPos)
+{
+    Vector3 bulletPos_ = bulletPos;
+    Vector3 enemyPos = transform_.translate;
+
+    // ベクトル
+    Vector3 normal = bulletPos - enemyPos;
+
+    // 正規化
+    normal = Normalize(normal);
+
+    // 弾のベクトルを入手
+
+    // 反射ベクトルの計算
+
+    // 弾を追加
+    std::unique_ptr<NormalEnemyBullet> newBulletEnemy = std::make_unique<NormalEnemyBullet>();
+    newBulletEnemy->Initialize(camera_, transform_.translate);
+    newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.1f));
+
+    enemyBullet_.push_back(std::move(newBulletEnemy));
 }
 
 void ShieldEnemy::BehaviorAway()
