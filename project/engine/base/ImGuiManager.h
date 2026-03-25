@@ -1,9 +1,9 @@
-#pragma once
+ï»¿#pragma once
 #ifdef USE_IMGUI
-#include <externals/imgui\imgui.h>
+#include <externals/imgui/imgui.h>
 #include <externals/imgui/imgui_impl_dx12.h>
 #include <externals/imgui/imgui_impl_win32.h>
-#include "ImGuizmo.h"
+#include <externals/imgui/ImGuizmo.h>
 #endif
 
 class WindowAPI;
@@ -12,22 +12,22 @@ class SrvManager;
 
 class ImGuiManager {
 public:
-	// ‰Šú‰»
+	// åˆæœŸåŒ–
 	void Initialize(WindowAPI* windowAPI,DirectXCommon* dxCommon, SrvManager* srvManager);
-	// •`‰æ
+	// æç”»
 	void Draw();
-	// I—¹
+	// çµ‚äº†
 	void Finalize();
 
-	// ó•tŠJn
+	// å—ä»˜é–‹å§‹
 	void Begin();
-	// ó•tI—¹
+	// å—ä»˜çµ‚äº†
 	void End();
 
 private:
-	// DirectXCommonƒ|ƒCƒ“ƒ^
+	// DirectXCommonãƒã‚¤ãƒ³ã‚¿
 	DirectXCommon* dxCommon_;
-	// SRVƒ}ƒl[ƒWƒƒ[ƒ|ƒCƒ“ƒ^
+	// SRVãƒãƒãƒ¼ã‚¸ãƒ£ãƒ¼ãƒã‚¤ãƒ³ã‚¿
 	SrvManager* srvManager_;
 
 };

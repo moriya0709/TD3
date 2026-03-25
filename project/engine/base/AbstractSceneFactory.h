@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <string>
 #include <memory>
 
@@ -6,9 +6,9 @@
 
 class AbstractSceneFactory {
 public:
-	// ‰¼‘zƒfƒXƒgƒ‰ƒNƒ^
+	// ä»®æƒ³ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
 	virtual ~AbstractSceneFactory() = default;
-	// ƒV[ƒ“¶¬
+	// ã‚·ãƒ¼ãƒ³ç”Ÿæˆ
 	virtual std::unique_ptr <BaseScene> CreateScene(const std::string& sceneNama) = 0;
 
 
