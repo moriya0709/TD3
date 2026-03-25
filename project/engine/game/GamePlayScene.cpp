@@ -33,6 +33,8 @@ void GamePlayScene::Initialize() {
 void GamePlayScene::Update() {
 	CameraController_->Update();
 
+    particleEmitter->Update();
+
 	// プレイヤー更新
 	player_->Update(enemy_->GetEnemies(), CameraController_->GetVelocity());
 

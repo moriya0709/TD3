@@ -5,6 +5,7 @@
 #include "DirectXCommon.h"
 #include "SrvManager.h"
 #include "Camera.h"
+#include "CameraManager.h"
 
 std::unique_ptr <ParticleManager> ParticleManager::instance = nullptr;
 constexpr uint32_t kMaxParticleInstance = 1024;
@@ -56,69 +57,68 @@ void ParticleManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager
 }
 
 void ParticleManager::Update() {
-	// 表面がカメラの方を向くようにする
+	// 毎フレーム、今アクティブなカメラを取得する
+	Camera* activeCamera = CameraManager::GetInstance()->GetActiveCamera();
+
+	// 万が一カメラが無い場合は安全のために抜ける
+	if (!activeCamera) return;
+
 	Matrix4x4 backToFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
-	// カメラの向きに合わせる
-	  // カメラの View 行列
-	Matrix4x4 view = camera_->GetViewMatrix();
 
-	// 平行移動を消す
-	view.m[3][0] = 0.0f;
-	view.m[3][1] = 0.0f;
-	view.m[3][2] = 0.0f;
-
-	// ビルボード行列（回転のみ）
+	// 取得した activeCamera からビュー行列をもらう
+	Matrix4x4 view = activeCamera->GetViewMatrix();
+	view.m[3][0] = 0.0f; view.m[3][1] = 0.0f; view.m[3][2] = 0.0f;
 	Matrix4x4 billboardMatrix = Inverse(view);
 
-	// 全てのパーティクルグループについて処理する
 	for (auto& groupPair : particleGroups) {
 		ParticleGroup& group = groupPair.second;
-	
+
 		if (group.particles.empty()) continue;
 
 		ParticleForGPU* mapped = nullptr;
 		group.instancingResource->Map(0, nullptr, (void**)&mapped);
 
 		uint32_t index = 0;
-		for (auto& particle : group.particles) {
-			if (index >= kNumMaxInstance) break;
+		for (auto it = group.particles.begin(); it != group.particles.end(); ) {
+			if (it->currentTime >= it->lifeTime) {
+				it = group.particles.erase(it);
+				continue;
+			}
 
-			// 場の影響を計算
+			if (index >= kMaxParticleInstance) {
+				break;
+			}
+
 			if (useField) {
-				if (IsCollision(accelerationField.area, particle.transform.translate)) {
-					particle.velocity += accelerationField.acceleration * kDeltaTime;
+				if (IsCollision(accelerationField.area, it->transform.translate)) {
+					it->velocity += accelerationField.acceleration * kDeltaTime;
 				}
 			}
 
-			// 移動処理
-			particle.transform.translate += particle.velocity * kDeltaTime;
+			it->transform.translate += it->velocity * kDeltaTime;
 
-			// 徐々に透明にする
-			float alpha = 1.0f - (particle.currentTime / particle.lifeTime);
-			particle.color.w = alpha;
+			float alpha = 1.0f - (it->currentTime / it->lifeTime);
+			it->color.w = alpha;
 
-			// 経過時間を足す
-			particle.currentTime += kDeltaTime;
+			it->currentTime += kDeltaTime;
 
-			Matrix4x4 scale = MakeScaleMatrix(particle.transform.scale);
-			Matrix4x4 translate = MakeTranslateMatrix(particle.transform.translate);
-			Matrix4x4 world =
-				Multiply(Multiply(scale, billboardMatrix), translate);
+			Matrix4x4 scale = MakeScaleMatrix(it->transform.scale);
+			Matrix4x4 translate = MakeTranslateMatrix(it->transform.translate);
+			Matrix4x4 world = Multiply(Multiply(scale, billboardMatrix), translate);
 
-			Matrix4x4 viewProj =
-				Multiply(camera_->GetViewMatrix(), camera_->GetProjectionMatrix());
+			// 取得した activeCamera からビュープロジェクション行列をもらう
+			Matrix4x4 viewProj = Multiply(activeCamera->GetViewMatrix(), activeCamera->GetProjectionMatrix());
 
 			mapped[index].world = world;
 			mapped[index].WVP = Multiply(world, viewProj);
-			mapped[index].color = particle.color;
+			mapped[index].color = it->color;
 
 			++index;
+			++it;
 		}
 
 		group.instancingResource->Unmap(0, nullptr);
-
 	}
-
 }
 
 void ParticleManager::Draw() {
