@@ -152,8 +152,8 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
                     if (wpData.contains("target")) {
                         const auto& tData = wpData["target"];
                         wp.target.x = tData.value("x", 0.0f) + camera_->GetTranslate().x;
-                        wp.target.y = tData.value("y", 0.0f) + camera_->GetTranslate().x;
-                        wp.target.z = tData.value("z", 0.0f) + camera_->GetTranslate().x;
+                        wp.target.y = tData.value("y", 0.0f) + camera_->GetTranslate().y;
+                        wp.target.z = tData.value("z", 0.0f) + camera_->GetTranslate().z;
                     } else {
                         // 座標がなければ原点をセット
                         wp.target = { 0.0f, 0.0f, 0.0f };
@@ -173,8 +173,8 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
                 if (fleeData.contains("target")) {
                     const auto& tData = fleeData["target"];
                     data.fleeWaypoint.target.x = tData.value("x", 0.0f) + camera_->GetTranslate().x;
-                    data.fleeWaypoint.target.y = tData.value("y", 0.0f) + camera_->GetTranslate().x;
-                    data.fleeWaypoint.target.z = tData.value("z", 0.0f) + camera_->GetTranslate().x;
+                    data.fleeWaypoint.target.y = tData.value("y", 0.0f) + camera_->GetTranslate().y;
+                    data.fleeWaypoint.target.z = tData.value("z", 0.0f) + camera_->GetTranslate().z;
                 } else {
                     data.fleeWaypoint.target = { 0.0f, 0.0f, 0.0f };
                 }
