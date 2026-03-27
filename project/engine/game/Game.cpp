@@ -54,6 +54,8 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/machine/houki", "powerMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/nasu", "sniperMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/enemy/tometo", "tometo.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/enemy/bossGrape", "bossGrapesOnly.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/enemy/bossGrape", "bossGrapesBranch.obj");
     ModelManager::GetInstance()->LoadModel("Resource/test", "test.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.obj"); // レールエディター
 	ModelManager::GetInstance()->LoadModel("Resource/rail", "rail.obj"); // レールエディター
