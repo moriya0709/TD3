@@ -1,5 +1,5 @@
 ﻿#include "Player.h"
-#include "../enemy/Enemy.h"
+#include "../enemy/Normal/Enemy.h"
 #include "ObjectCommon.h"
 #include "PlayerChargeBullet.h"
 #include "PlayerNormalBullet.h"

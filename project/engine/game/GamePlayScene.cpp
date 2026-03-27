@@ -26,6 +26,7 @@ void GamePlayScene::Initialize() {
 	particleEmitter = std::make_unique<ParticleEmitter>();
 	particleEmitter->Initialize("group1", transformParticle, 5, 1.0f);
 	particleEmitter->Emit();
+	particleEmitter->LoadParticle("Resource/particle/fire.csv");
 
 	cameraController_->StartReplay();
 }
@@ -33,6 +34,7 @@ void GamePlayScene::Initialize() {
 void GamePlayScene::Update() {
 	cameraController_->Update();
 
+    particleEmitter->Editor();
     particleEmitter->Update();
 
 	// プレイヤー更新
@@ -312,7 +314,7 @@ void GamePlayScene::Draw3D() {
 	enemy_->Draw3D();
 
 	// パーティクル描画
-	ParticleManager::GetInstance()->Draw();
+	//ParticleManager::GetInstance()->Draw();
 
 	// アウトライン描画準備
 	ObjectCommon::GetInstance()->SetOutlinePipelineState();

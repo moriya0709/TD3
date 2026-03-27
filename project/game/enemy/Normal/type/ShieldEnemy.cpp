@@ -1,6 +1,6 @@
 ﻿#include "ShieldEnemy.h"
 #include "../../engine/math/Calc.h"
-#include "../../player/Player.h"
+#include "../../../player/Player.h"
 #include "../Bullet/NormalEnemyBullet.h"
 #include "../Bullet/TargetEnemyBullet.h"
 
@@ -210,8 +210,8 @@ void ShieldEnemy::BulletMirror(Vector3 bulletPos, Vector3 Velocity)
     Vector3 normal = bulletPos - enemyPos;
 
     // 正規化
-    normal.x *= 0.01f;
-    normal.y *= 0.01f;
+    normal.x *= 0.1f;
+    normal.y *= 0.1f;
     normal.z *= 1.0f;
 
     normal = Normalize(normal);
@@ -226,6 +226,8 @@ void ShieldEnemy::BulletMirror(Vector3 bulletPos, Vector3 Velocity)
     reflectVelocity.x = bulletVelocity.x - 2.0f * dot * normal.x;
     reflectVelocity.y = bulletVelocity.y - 2.0f * dot * normal.y;
     reflectVelocity.z = bulletVelocity.z - 2.0f * dot * normal.z;
+
+    reflectVelocity.z *= 1.3f;
 
     // 弾を追加
     std::unique_ptr<NormalEnemyBullet> newBulletEnemy = std::make_unique<NormalEnemyBullet>();
