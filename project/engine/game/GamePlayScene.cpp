@@ -322,8 +322,11 @@ void GamePlayScene::Draw3D()
     // アウトライン描画準備
     ObjectCommon::GetInstance()->SetOutlinePipelineState();
 
-    // アウトライン描画
-    // object->Draw();
+    player_->Draw3D();
+
+	// アウトライン描画
+	// object->Draw();
+
 }
 
 void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
