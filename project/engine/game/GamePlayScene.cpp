@@ -312,7 +312,7 @@ void GamePlayScene::Draw3D() {
 	enemy_->Draw3D();
 
 	// パーティクル描画
-	ParticleManager::GetInstance()->Draw();
+	//ParticleManager::GetInstance()->Draw();
 
 	// アウトライン描画準備
 	ObjectCommon::GetInstance()->SetOutlinePipelineState();
