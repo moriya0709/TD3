@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-#include "Enemy.h"
+#include "Normal/Enemy.h"
 
 class Player;
 class CameraController;
