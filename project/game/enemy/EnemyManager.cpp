@@ -5,11 +5,11 @@
 #include <iostream> // エラー出力用
 
 #include "../camera/CameraController.h"
-#include "type/HomingEnemy.h"
-#include "type/NormalEnemy.h"
-#include "type/ShieldEnemy.h"
-#include "type/TargetEnemy.h"
-#include "type/rushEnemy.h"
+#include "Normal/type/HomingEnemy.h"
+#include "Normal/type/NormalEnemy.h"
+#include "Normal/type/ShieldEnemy.h"
+#include "Normal/type/TargetEnemy.h"
+#include "Normal/type/rushEnemy.h"
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;

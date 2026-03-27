@@ -115,27 +115,36 @@ void NormalEnemy::EnemyMove()
         if (wayStopTimer_ <= 0.0f) {
             isStop_ = false;
 
-            currentWayPointIndex_++; // 次の地点へ
-            wayPointTimer_ = 0.0f; // タイマーリセット
-            startPos_ = transform_.translate; // 現在地を次の「出発点」にする
+            currentWayPointIndex_++;
+            wayPointTimer_ = 0.0f;
+
+            // --- 【修正ポイント2】 ---
+            // 現在の「カメラからの相対位置」を出発点として記録する
+            Vector3 cameraPos = camera_->GetTranslate();
+            startPos_ = transform_.translate - cameraPos;
+            // ------------------------
         }
     }
 
+    Vector3 cameraPos = camera_->GetTranslate();
+
     if (currentWayPointIndex_ < wayPoints_.size()) {
-
-        // タイマーを進める
         wayPointTimer_ += deltaTime;
-
-        // 現在目指しているウェイポイントの情報を取得
         const WayPoint& currentWP = wayPoints_[currentWayPointIndex_];
-
         float t = wayPointTimer_ / currentWP.timeToReach;
-
-        if (t > 1.0f) {
+        if (t > 1.0f)
             t = 1.0f;
-        }
 
-        transform_.translate = startPos_ + (currentWP.target - startPos_) * t;
+        // --- 【修正ポイント1】 ---
+        // カメラの現在の座標を取得
+        Vector3 cameraPos = camera_->GetTranslate();
+
+        // 1. Lerpで計算するのは「カメラからの相対的な位置」
+        Vector3 relativePos = startPos_ + (currentWP.target - startPos_) * t;
+
+        // 2. それにカメラのワールド座標を足して、敵の最終的な位置にする
+        transform_.translate = relativePos + cameraPos;
+        // ------------------------
 
         if (t >= 1.0f && !isStop_) {
             wayStopTimer_ = currentWP.timeToStop;

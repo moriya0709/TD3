@@ -1,0 +1,54 @@
+#pragma once
+#include "BaseScene.h"
+#include "Camera.h"
+#include "CameraManager.h"
+#include "ImGuiManager.h"
+#include "Input.h"
+#include "ModelManager.h"
+#include "Object.h"
+#include "ParticleEmitter.h"
+#include "ParticleManager.h"
+#include "PostEffect.h"
+#include "SoundManager.h"
+#include "Sprite.h"
+
+#include "../Normal/EnemyBullet.h"
+
+class Player;
+
+class BossEnemy {
+public:
+    /// <summary>
+    /// èâä˙âª
+    /// </summary>
+    /// <param name="camera"></param>
+    virtual void Initialize(Camera* camera, Vector3 pos, int health);
+
+    /// <summary>
+    /// çXêV
+    /// </summary>
+    virtual void Update();
+
+    /// <summary>
+    /// ï`âÊ
+    /// </summary>
+    virtual void Draw3D();
+
+    /* Getä÷êî */
+    virtual Vector3 GetWorldPosition() const = 0;
+    virtual float GetRadius() const = 0;
+    const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
+    virtual bool GetIsDead() const = 0;
+
+    /* Setä÷êî */
+    virtual void SetTargetPlayer(Player* target) { };
+    virtual void OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity) = 0;
+    // virtual void SetWayPoints(const std::vector<WayPoint>& waypoints) { };
+    // virtual void SetFleeWaypoint(const WayPoint& fleeWP, bool hasFleeData) { };
+
+protected:
+    // íe
+    std::vector<std::unique_ptr<EnemyBullet>> enemyBullet_;
+
+private:
+};

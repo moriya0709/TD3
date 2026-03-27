@@ -1,6 +1,6 @@
 ﻿#include "Collision.h"
-#include "../enemy/Enemy.h"
-#include "../enemy/EnemyBullet.h"
+#include "../enemy/Normal/Enemy.h"
+#include "../enemy/Normal/EnemyBullet.h"
 #include "Player.h"
 #include "PlayerBullet.h"
 #include <cmath>

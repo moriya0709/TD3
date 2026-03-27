@@ -41,7 +41,7 @@ void Game::Initialize() {
 	// パーティクルマネージャ初期化
 	ParticleManager::GetInstance()->CreateParticleGroup("group1", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("group2", "Resource/uvChecker.png");
-	ParticleManager::GetInstance()->CreateParticleGroup("bBullet", "Resource/uvChecker.png");//弾
+	ParticleManager::GetInstance()->CreateParticleGroup("bBullet", "Resource/particle/particle.png");//弾
 
 	// .objファイルからモデル読み込み
 	ModelManager::GetInstance()->LoadModel("Resource/plane","plane.obj");
@@ -49,6 +49,7 @@ void Game::Initialize() {
 	//ModelManager::GetInstance()->LoadModel("Resource/emission", "emission.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/player", "player.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/cloud", "normalMachine.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/machine/cloud", "normalNBullet.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/kamihikouki", "speedMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/houki", "powerMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/nasu", "sniperMachine.obj");
@@ -110,7 +111,7 @@ void Game::Draw() {
 	SceneManager::GetInstance()->Draw3D();
 
 	// パーティクル描画
-	ParticleManager::GetInstance()->Draw();
+	//ParticleManager::GetInstance()->Draw();
 
 	// ポストエフェクト描画
 	PostEffect::GetInstance()->PostDraw();
