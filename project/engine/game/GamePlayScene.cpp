@@ -24,7 +24,7 @@ void GamePlayScene::Initialize() {
 
 	// Emitパーティクル発生
 	particleEmitter = std::make_unique<ParticleEmitter>();
-	particleEmitter->Initialize("group1", transformParticle, 5, 1.0f);
+	particleEmitter->Initialize("group1", cameraTransform, 5, 1.0f);
 	particleEmitter->Emit();
 	particleEmitter->LoadParticle("Resource/particle/fire.csv");
 
