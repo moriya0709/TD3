@@ -38,7 +38,7 @@ void GamePlayScene::Update() {
     particleEmitter->Update();
 
 	// プレイヤー更新
-	player_->Update(enemy_->GetEnemies(), camera->GetTranslate());
+	player_->Update(enemy_->GetEnemies(), cameraController_->GetVelocity());
 
 	// 敵更新
 	enemy_->SetcurrentTimer_(cameraController_->GetCurrentReplayTime());

@@ -2,11 +2,11 @@
     "Statas": [
         {
             "attack": 20,
-            "chargeTime": 60,
-            "haste": 10,
+            "chargeTime": 40,
+            "haste": 9,
             "hommingAccuracy": 0.009999999776482582,
-            "hp": 100,
-            "renge": 80.0,
+            "hp": 91,
+            "renge": 140.8000030517578,
             "speed": 0.20000000298023224
         },
         {
