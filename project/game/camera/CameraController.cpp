@@ -72,16 +72,16 @@ std::string CameraController::GetFilePath(int slot) const { return "Resource/Dat
 void CameraController::Update() {
 	auto input = Input::GetInstance();
 	int newSlot = -1;
-	if (input->TriggerKey(DIK_1))
-		newSlot = 1;
-	else if (input->TriggerKey(DIK_2))
-		newSlot = 2;
-	else if (input->TriggerKey(DIK_3))
-		newSlot = 3;
-	else if (input->TriggerKey(DIK_4))
-		newSlot = 4;
-	else if (input->TriggerKey(DIK_5))
-		newSlot = 5;
+	//if (input->TriggerKey(DIK_1))
+	//	newSlot = 1;
+	//else if (input->TriggerKey(DIK_2))
+	//	newSlot = 2;
+	//else if (input->TriggerKey(DIK_3))
+	//	newSlot = 3;
+	//else if (input->TriggerKey(DIK_4))
+	//	newSlot = 4;
+	//else if (input->TriggerKey(DIK_5))
+	//	newSlot = 5;
 
 	if (newSlot != -1 && newSlot != currentStage) {
 		currentStage = newSlot;

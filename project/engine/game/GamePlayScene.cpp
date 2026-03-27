@@ -14,35 +14,39 @@ void GamePlayScene::Initialize()
     CameraManager::GetInstance()->AddCamera("main", camera.get());
     CameraManager::GetInstance()->SetActiveCamera("main");
 
-    CameraController_ = std::make_unique<CameraController>();
-    CameraController_->Initialize(camera.get());
+	cameraController_ = std::make_unique<CameraController>();
+	cameraController_->Initialize(camera.get());
+
 
     player_ = std::make_unique<Player>();
     player_->Initialize(camera.get(), Player::Style::normal);
 
-    enemy_ = std::make_unique<EnemyManager>();
-    enemy_->Initialize(player_.get(), camera.get(), CameraController_.get());
 
-    // Emitパーティクル発生
-    particleEmitter = std::make_unique<ParticleEmitter>();
-    particleEmitter->Initialize("group1", transformParticle, 5, 1.0f);
-    particleEmitter->Emit();
+	enemy_ = std::make_unique<EnemyManager>();
+	enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
 
-    CameraController_->StartReplay();
+	// Emitパーティクル発生
+	particleEmitter = std::make_unique<ParticleEmitter>();
+	particleEmitter->Initialize("group1", cameraTransform, 5, 1.0f);
+	particleEmitter->Emit();
+	particleEmitter->LoadParticle("Resource/particle/fire.csv");
+
+	cameraController_->StartReplay();
 }
 
-void GamePlayScene::Update()
-{
-    CameraController_->Update();
+void GamePlayScene::Update() {
+	cameraController_->Update();
 
+    particleEmitter->Editor();
     particleEmitter->Update();
 
-    // プレイヤー更新
-    player_->Update(enemy_->GetEnemies(), CameraController_->GetVelocity());
 
-    // 敵更新
-    enemy_->SetcurrentTimer_(CameraController_->GetCurrentReplayTime());
-    enemy_->Update();
+	// プレイヤー更新
+	player_->Update(enemy_->GetEnemies(), cameraController_->GetVelocity());
+
+	// 敵更新
+	enemy_->SetcurrentTimer_(cameraController_->GetCurrentReplayTime());
+	enemy_->Update();
 
     // 当たり判定
     ChekeAllCollision();
@@ -270,7 +274,7 @@ void GamePlayScene::Update()
         ImGui::TreePop();
     }
 
-    CameraController_->DrawImGui();
+    cameraController_->DrawImGui();
     enemy_->DrawImGui();
 
 #pragma endregion

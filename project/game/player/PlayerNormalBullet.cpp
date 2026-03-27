@@ -62,11 +62,12 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	ptrans.scale = { 1,1,1 };
 
 	particleEmitter= std::make_unique<ParticleEmitter>();
-	particleEmitter->Initialize("bBullet", ptrans, 1, 0.2f);
+	particleEmitter->Initialize("bBullet", ptrans, 5, 0.2f);
 
 	
 	particleEmitter->Emit();
 	particleEmitter->SetActive("bBullet");
+	particleEmitter->LoadParticle("Resource/particle/fire.csv");
 
 
 	object_->SetScale(transform_.scale);
@@ -77,7 +78,7 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 }
 void PlayerNormalBullet::Update(Vector3 cmrvel) {
 	std::shared_ptr<Enemy> target = targetEnemy_.lock();
-
+	Vector3 cvel = {0};
 	if (target) {
 		// 1. 敵への方向を計算
 		Vector3 enemyPos = target->GetWorldPosition();
@@ -95,14 +96,15 @@ void PlayerNormalBullet::Update(Vector3 cmrvel) {
 
 			// 速度の大きさを一定に保つ（曲がっても加速しないように）
 			float currentSpeed = std::sqrt(velocity_.x * velocity_.x + velocity_.y * velocity_.y + velocity_.z * velocity_.z);
-			velocity_.x = (velocity_.x / currentSpeed) * bulletSpeed_;
-			velocity_.y = (velocity_.y / currentSpeed) * bulletSpeed_;
-			velocity_.z = (velocity_.z / currentSpeed) * bulletSpeed_;
+			velocity_ = (velocity_ / currentSpeed) * bulletSpeed_;
 		}
+		cvel = {0};
+	} else {
+		cvel = {cmrvel.x, cmrvel.y, cmrvel.z};
 	}
 
 	// 3. 座標更新（共通）
-	transform_.translate += velocity_ + cmrvel;
+	transform_.translate += velocity_+cvel;
 
 	object_->SetTranslate(transform_.translate);
 	object_->Update();

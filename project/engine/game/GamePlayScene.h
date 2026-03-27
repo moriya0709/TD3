@@ -134,7 +134,7 @@ private:
     bool rayMarchingIsRialLight = false;
     bool rayMarchingIsAnimeLight = true;
     bool  rayMarchingIsMotionBlur = false;
-    float  rayMarchingCloudOpacity = 0.04f;
+    float  rayMarchingCloudOpacity = 0.01f;
 
     // カメラ
     std::unique_ptr<Camera> camera = nullptr;
@@ -148,6 +148,6 @@ private:
     std::unique_ptr<Player> player_ = nullptr;
     // リスト
     std::unique_ptr<EnemyManager> enemy_ = nullptr;
-    std::unique_ptr<CameraController> CameraController_ = nullptr;
+    std::unique_ptr<CameraController> cameraController_ = nullptr;
 
 };
