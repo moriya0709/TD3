@@ -28,10 +28,11 @@ void TitleScene::Initialize() {
 	particleEmitter = std::make_unique <ParticleEmitter>();
 	particleEmitter->Initialize("group1", transformParticle, 5, 1.0f);
 	particleEmitter->Emit();
+	particleEmitter->LoadParticle("Resource/particle/fire.csv");
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	object[0]->SetModel("emission.obj");
-	object[1]->SetModel("plane.obj");
+	object[1]->SetModel("skydome.obj");
 
 	// 音声再生
 	//SoundManager::GetInstance()->Play("bgm");
@@ -69,6 +70,7 @@ void TitleScene::Update() {
 	}
 
 	// パーティクルエミッタ更新
+	particleEmitter->Editor();
 	particleEmitter->Update();
 
 

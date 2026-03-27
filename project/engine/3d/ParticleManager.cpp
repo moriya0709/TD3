@@ -42,7 +42,7 @@ void ParticleManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	// 初期値を書き込む
 	materialData->color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData->enableLighting = true;
+	materialData->enableLighting = false;
 	materialData->uvTransform = MakeIdentity4x4();
 
 	// フィールドの設定
@@ -100,6 +100,29 @@ void ParticleManager::Update() {
 			float alpha = 1.0f - (it->currentTime / it->lifeTime);
 			it->color.w = alpha;
 
+			// 色を徐々に変化させる
+			float progress = it->currentTime / it->lifeTime;
+			if (isColorChange_[0]) {
+				it->color.x = 0.5f - (it->currentTime / it->lifeTime);
+			}
+			if (isColorChange_[1]) {
+				it->color.y = 0.5f - (it->currentTime / it->lifeTime);
+			}
+			if (isColorChange_[2]) {
+				it->color.z = 0.5f - (it->currentTime / it->lifeTime);
+			}
+
+			// サイズを徐々に変化させる
+			if (isScaleChange_[0]) {
+				it->transform.scale.x += scaleAdd_;
+			}
+			if (isScaleChange_[1]) {
+				it->transform.scale.y += scaleAdd_;
+			}
+			if (isScaleChange_[2]) {
+				it->transform.scale.z += scaleAdd_;
+			}
+			
 			it->currentTime += kDeltaTime;
 
 			Matrix4x4 scale = MakeScaleMatrix(it->transform.scale);
@@ -150,7 +173,6 @@ void ParticleManager::Draw() {
 	
 }
 
-
 // パーティクルグループの生成
 void ParticleManager::CreateParticleGroup(const std::string name, const std::string textureFilePath) {
 	assert(!particleGroups.count(name));
@@ -161,7 +183,6 @@ void ParticleManager::CreateParticleGroup(const std::string name, const std::str
 
 	// マテリアルデータにテクスチャファイルパスを設定
 	group.material.textureFilePath = textureFilePath;
-
 	// テクスチャの読み込み
 	TextureManager::GetInstance()->LoadTexture(group.material.textureFilePath);
 	
@@ -468,8 +489,51 @@ Particle ParticleManager::MakeNewParticle(std::mt19937& randomEngine, const Vect
 	return particle;
 }
 
+Particle ParticleManager::MakeNewParticleEditor(
+	std::mt19937& randomEngine, 
+	const Vector3& translate,
+	std::uniform_real_distribution<float> distTransform,
+	std::uniform_real_distribution<float> distVelocity,
+	std::uniform_real_distribution<float> distTime, 
+	Vector3 ifTranslate, Vector3 velocity, Vector4 color
+) {
+	Particle particle;
+	particle.transform.scale = { 1.0f,1.0f,1.0f };
+	particle.transform.rotate = { 0.0f,0.0f,0.0f };
+	Vector3 randomTranslate{ distTransform(randomEngine),distTransform(randomEngine),distTransform(randomEngine) };
+
+	// ランダム座標を使用するかどうか(ifTranslateは 0または１)
+	randomTranslate.x *= ifTranslate.x;
+	randomTranslate.y *= ifTranslate.y;
+	randomTranslate.z *= ifTranslate.z;
+
+	particle.transform.translate = translate + randomTranslate;
+	particle.velocity = { distVelocity(randomEngine),distVelocity(randomEngine),distVelocity(randomEngine) };
+
+	// 速度を使用するかどうか(velocityは 0または１)
+	particle.velocity.x *= velocity.x;
+	particle.velocity.y *= velocity.y;
+	particle.velocity.z *= velocity.z;
+
+	// 色
+	particle.color = color;
+
+	// ランダムに1~3秒の間生存するようにする
+	particle.lifeTime = distTime(randomEngine);
+	particle.currentTime = 0.0f;
+
+	return particle;
+}
+
 // パーティクルの発生
-void ParticleManager::Emit(const std::string& name, const Vector3& position, uint32_t count) {
+void ParticleManager::Emit(
+	const std::string& name, 
+	const Vector3& position,uint32_t count,
+	std::uniform_real_distribution<float>distTransform,
+	std::uniform_real_distribution<float>distVelocity,
+	std::uniform_real_distribution<float>distTime,
+	Vector3 ifTranslate, Vector3 velocity, Vector4 color
+) {
 	assert(particleGroups.count(name));
 
 	// パーティクルグループを追加
@@ -479,7 +543,7 @@ void ParticleManager::Emit(const std::string& name, const Vector3& position, uin
 		if (group.particles.size() >= kMaxParticleInstance) {
 			break;
 		}
-		group.particles.push_back(MakeNewParticle(randomEngine, position));
+		group.particles.push_back(MakeNewParticleEditor(randomEngine, position, distTransform, distVelocity, distTime, ifTranslate, velocity, color));
 	}
 }
 
