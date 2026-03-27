@@ -62,11 +62,12 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	ptrans.scale = { 1,1,1 };
 
 	particleEmitter= std::make_unique<ParticleEmitter>();
-	particleEmitter->Initialize("bBullet", ptrans, 1, 0.2f);
+	particleEmitter->Initialize("bBullet", ptrans, 5, 0.2f);
 
 	
 	particleEmitter->Emit();
 	particleEmitter->SetActive("bBullet");
+	particleEmitter->LoadParticle("Resource/particle/fire.csv");
 
 
 	object_->SetScale(transform_.scale);
