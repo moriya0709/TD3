@@ -11,7 +11,7 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
-#include "../enemy/Normal/Enemy.h"
+#include "../enemy/Enemy.h"
 
 class PlayerBullet {
 public:

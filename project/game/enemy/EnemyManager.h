@@ -6,7 +6,8 @@
 #include <memory>
 #include <string>
 
-#include "Normal/Enemy.h"
+#include "Boss/BossEnemy.h"
+#include "Enemy.h"
 
 class Player;
 class CameraController;
@@ -52,6 +53,7 @@ public:
     /* Get関数 */
     // 【当たり判定用】生きている敵のリストを取得する
     const std::list<std::shared_ptr<Enemy>>& GetEnemies() const { return enemies_; }
+    const std::list<std::shared_ptr<BossEnemy>>& GetBoss() const { return boss_; }
 
 private:
     /// <summary>
@@ -89,6 +91,7 @@ private:
     float currentTimer_ = 0.0f; // ゲーム開始からの経過時間（または進行距離）
     float precurrenTimer = 0.0f;
     std::list<std::shared_ptr<Enemy>> enemies_; // 生きている敵のリスト
+    std::list<std::shared_ptr<BossEnemy>> boss_; // 生きている敵のリスト
 
     Player* player_ = nullptr; // ターゲット用のプレイヤーポインタ
     Camera* camera_ = nullptr; // カメラポインタ
