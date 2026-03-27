@@ -13,14 +13,14 @@ void GamePlayScene::Initialize() {
 	CameraManager::GetInstance()->AddCamera("main", camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
-	CameraController_ = std::make_unique<CameraController>();
-	CameraController_->Initialize(camera.get());
+	cameraController_ = std::make_unique<CameraController>();
+	cameraController_->Initialize(camera.get());
 
 	player_ = std::make_unique<Player>();
 	player_->Initialize(camera.get(), Player::Style::normal);
 
 	enemy_ = std::make_unique<EnemyManager>();
-	enemy_->Initialize(player_.get(), camera.get(), CameraController_.get());
+	enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
 
 	// Emitパーティクル発生
 	particleEmitter = std::make_unique<ParticleEmitter>();
@@ -28,20 +28,20 @@ void GamePlayScene::Initialize() {
 	particleEmitter->Emit();
 	particleEmitter->LoadParticle("Resource/particle/fire.csv");
 
-	CameraController_->StartReplay();
+	cameraController_->StartReplay();
 }
 
 void GamePlayScene::Update() {
-	CameraController_->Update();
+	cameraController_->Update();
 
     particleEmitter->Editor();
     particleEmitter->Update();
 
 	// プレイヤー更新
-	player_->Update(enemy_->GetEnemies(), CameraController_->GetVelocity());
+	player_->Update(enemy_->GetEnemies(), camera->GetTranslate());
 
 	// 敵更新
-	enemy_->SetcurrentTimer_(CameraController_->GetCurrentReplayTime());
+	enemy_->SetcurrentTimer_(cameraController_->GetCurrentReplayTime());
 	enemy_->Update();
 
 	// 当たり判定
@@ -272,7 +272,7 @@ void GamePlayScene::Update() {
         ImGui::TreePop();
     }
 
-    CameraController_->DrawImGui();
+    cameraController_->DrawImGui();
     enemy_->DrawImGui();
 
 #pragma endregion

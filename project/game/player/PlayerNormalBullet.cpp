@@ -102,7 +102,7 @@ void PlayerNormalBullet::Update(Vector3 cmrvel) {
 	}
 
 	// 3. 座標更新（共通）
-	transform_.translate += velocity_ + cmrvel;
+	transform_.translate += velocity_;
 
 	object_->SetTranslate(transform_.translate);
 	object_->Update();

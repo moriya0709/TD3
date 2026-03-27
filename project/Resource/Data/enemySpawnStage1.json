@@ -3,7 +3,7 @@
         {
             "popTime": 1.0,
             "type": "NormalEnemy",
-            "hp": 50,
+            "hp": 30,
             "position": {
                 "x": -100.0,
                 "y": 0.0,
@@ -50,7 +50,7 @@
         {
             "popTime": 2.0,
             "type": "TargetEnemy",
-            "hp": 100,
+            "hp": 50,
             "position": {
                 "x": -100.0,
                 "y": 0.0,
@@ -97,7 +97,7 @@
         {
             "popTime": 3.0,
             "type": "HomingEnemy",
-            "hp": 80,
+            "hp": 30,
             "position": {
                 "x": 100.0,
                 "y": 0.0,
@@ -189,9 +189,38 @@
             }
         },
         {
-            "popTime": 5.0,
+            "popTime": 4.0,
+            "type": "NormalEnemy",
+            "hp": 40,
+            "position": {
+                "x": 60.0,
+                "y": 0.0,
+                "z": 60.0
+            },
+            "movePattern": [
+                {
+                    "target": {
+                        "x": 60.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "timeToReach": 3.0,
+                    "timeToStop": 10.0
+                }
+            ],
+            "flee": {
+                "target": {
+                    "x": 100.0,
+                    "y": 0.0,
+                    "z": -100.0
+                },
+                "timeToReach": 1.0
+            }
+        },
+        {
+            "popTime": 6.0,
             "type": "ShieldEnemy",
-            "hp": 150,
+            "hp": 70,
             "position": {
                 "x": -100.0,
                 "y": 0.0,
@@ -238,36 +267,7 @@
         {
             "popTime": 6.0,
             "type": "NormalEnemy",
-            "hp": 100,
-            "position": {
-                "x": 100.0,
-                "y": 0.0,
-                "z": 60.0
-            },
-            "movePattern": [
-                {
-                    "target": {
-                        "x": 3.0,
-                        "y": 0.0,
-                        "z": 60.0
-                    },
-                    "timeToReach": 3.0,
-                    "timeToStop": 10.0
-                }
-            ],
-            "flee": {
-                "target": {
-                    "x": 100.0,
-                    "y": 0.0,
-                    "z": -100.0
-                },
-                "timeToReach": 1.0
-            }
-        },
-        {
-            "popTime": 6.0,
-            "type": "NormalEnemy",
-            "hp": 100,
+            "hp": 50,
             "position": {
                 "x": -100.0,
                 "y": 0.0,
