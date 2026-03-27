@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "BaseScene.h"
 #include "Camera.h"
 #include "CameraManager.h"
@@ -19,35 +19,35 @@ class Player;
 class BossEnemy {
 public:
     /// <summary>
-    /// ‰Šú‰»
+    /// åˆæœŸåŒ–
     /// </summary>
     /// <param name="camera"></param>
     virtual void Initialize(Camera* camera, Vector3 pos, int health);
 
     /// <summary>
-    /// XV
+    /// æ›´æ–°
     /// </summary>
     virtual void Update();
 
     /// <summary>
-    /// •`‰æ
+    /// æç”»
     /// </summary>
     virtual void Draw3D();
 
-    /* GetŠÖ” */
+    /* Geté–¢æ•° */
     virtual Vector3 GetWorldPosition() const = 0;
     virtual float GetRadius() const = 0;
     const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
     virtual bool GetIsDead() const = 0;
 
-    /* SetŠÖ” */
+    /* Seté–¢æ•° */
     virtual void SetTargetPlayer(Player* target) { };
     virtual void OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity) = 0;
     // virtual void SetWayPoints(const std::vector<WayPoint>& waypoints) { };
     // virtual void SetFleeWaypoint(const WayPoint& fleeWP, bool hasFleeData) { };
 
 protected:
-    // ’e
+    // å¼¾
     std::vector<std::unique_ptr<EnemyBullet>> enemyBullet_;
 
 private:
