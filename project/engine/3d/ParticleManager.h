@@ -77,11 +77,37 @@ public:
 
 	// パーティクル生成関数
 	Particle MakeNewParticle(std::mt19937& randomEngine, const Vector3& translate);
+	// Particle生成関数(エディタ用)
+	Particle MakeNewParticleEditor(
+		std::mt19937& randomEngine,
+		const Vector3& translate,
+		std::uniform_real_distribution<float>distTransform,
+		std::uniform_real_distribution<float>distVelocity,
+		std::uniform_real_distribution<float>distTime,
+		Vector3 ifTranslate, Vector3 velocity, Vector4 color
+	);
+
 	// パーティクルの発生
-	void Emit(const std::string& name, const Vector3& position, uint32_t const);
+	void Emit(const std::string& name,
+		const Vector3& position,uint32_t count,
+		std::uniform_real_distribution<float>distTransform,
+		std::uniform_real_distribution<float>distVelocity,
+		std::uniform_real_distribution<float>distTime,
+		Vector3 ifTranslate, Vector3 velocity, Vector4 color);
 
 	// シングルトンインスタンスの取得
 	static ParticleManager* GetInstance();
+
+	// setter
+	void SetColorChange(bool isColorChange[3]) {
+		for(int i = 0; i < 3; i++)
+		isColorChange_[i] = isColorChange[i]; 
+	}
+	void SetScaleChange_(bool isScaleChange[3]) {
+		for (int i = 0; i < 3; i++)
+		isScaleChange_[i] = isScaleChange[i];
+	}
+	void SetScaleAdd(float scaleAdd) { scaleAdd_ = scaleAdd;}
 
 	ParticleManager() = default;
 	~ParticleManager() = default;
@@ -99,7 +125,7 @@ private:
 		kBlendModeScreen,	// スクリーン
 		kCountOfBlendMode,	// ブレンドモードの数
 	};
-	BlendMode blendMode = kBlendModeNormal;
+	BlendMode blendMode = kBlendModeAdd;
 
 	// シングルトンインスタンス
 	static std::unique_ptr <ParticleManager> instance;
@@ -140,6 +166,12 @@ private:
 
 	// インスタンス数
 	const uint32_t kNumMaxInstance = 100;
+
+	// パーティクル共通データ
+	bool isColorChange_[3] = { false }; // 色変更するかどうか
+	bool isScaleChange_[3] = { false }; // スケール変更するかどうか
+	float scaleAdd_ = 0.0f; // スケール変更量
+
 
 	// DirectXCommonのポインタ
 	DirectXCommon* dxCommon_ = nullptr;

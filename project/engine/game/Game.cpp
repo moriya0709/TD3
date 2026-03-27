@@ -46,7 +46,7 @@ void Game::Initialize() {
 	// .objファイルからモデル読み込み
 	ModelManager::GetInstance()->LoadModel("Resource/plane","plane.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/axis", "axis.obj");
-	ModelManager::GetInstance()->LoadModel("Resource/emission", "emission.obj");
+	//ModelManager::GetInstance()->LoadModel("Resource/emission", "emission.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/player", "player.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/cloud", "normalMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/cloud", "normalNBullet.obj");
