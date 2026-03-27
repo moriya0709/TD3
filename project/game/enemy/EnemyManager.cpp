@@ -84,15 +84,7 @@ void EnemyManager::Update()
 
     // --- 修正ポイント：引数を std::shared_ptr に変更 ---
     enemies_.remove_if([](const std::shared_ptr<Enemy>& enemy) { return enemy->GetIsDead(); });
-
-    for (auto it = boss_.begin(); it != boss_.end();) {
-        if ((*it)->GetIsDead()) {
-            // ここでボス撃破後の特別な演出フラグを立てることも可能
-            it = boss_.erase(it);
-        } else {
-            ++it;
-        }
-    }
+    boss_.remove_if([](const std::shared_ptr<BossEnemy>& enemy) { return enemy->GetIsDead(); });
 }
 void EnemyManager::Draw3D()
 {
@@ -240,7 +232,13 @@ void EnemyManager::SpawnEnemy(const EnemyPopData& data)
         newEnemy = std::make_unique<NormalEnemy>();
     } else if (data.type == "HomingEnemy") {
         newEnemy = std::make_unique<HomingEnemy>();
-    } // ... 他のタイプ ...
+    } else if (data.type == "TargetEnemy") {
+        newEnemy = std::make_unique<TargetEnemy>();
+    } else if (data.type == "RushEnemy") {
+        newEnemy = std::make_unique<rushEnemy>();
+    } else if (data.type == "ShieldEnemy") {
+        newEnemy = std::make_unique<ShieldEnemy>();
+    }
 
     if (newEnemy) {
         newEnemy->Initialize(camera_, data.position, data.hp);

@@ -6,6 +6,8 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
 {
     camera_ = camera;
 
+    health_ = health;
+
     Vector3 cameraPos = camera_->GetTranslate();
 
     baseTransform_.scale = { 5.0f, 5.0f, 5.0f };
@@ -123,7 +125,7 @@ float grapesBoss::GetRadius() const
 
 bool grapesBoss::GetIsDead() const
 {
-    return false;
+    return isDead_;
 }
 
 bool grapesBoss::OnHit(const CollisionVolume& volume, PlayerBullet* bullet)
