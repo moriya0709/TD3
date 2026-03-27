@@ -1,6 +1,7 @@
 ﻿#include "Collision.h"
-#include "../enemy/Normal/Enemy.h"
-#include "../enemy/Normal/EnemyBullet.h"
+#include "../enemy/Boss/BossEnemy.h"
+#include "../enemy/Enemy.h"
+#include "../enemy/EnemyBullet.h"
 #include "Player.h"
 #include "PlayerBullet.h"
 #include <cmath>
@@ -67,7 +68,6 @@ void CheckCollisionPlayerEnemyBullet(Player* player, const std::list<std::shared
 
 void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared_ptr<Enemy>>& enemies)
 {
-
     for (const auto& bullet : player->GetBullets()) {
         // すでに当たって消える予定の弾はスキップ
         if (!bullet->IsActive())
@@ -98,6 +98,42 @@ void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared
 
                 break; // この弾は消えるので、他の敵との判定は不要
             }
+        }
+    }
+}
+
+void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::shared_ptr<BossEnemy>>& enemies)
+{
+    for (const auto& bullet : player->GetBullets()) {
+        if (!bullet->IsActive())
+            continue;
+
+        Vector3 bulletPos = bullet->GetPosition();
+        float bulletSize = bullet->GetHitSize();
+
+        for (const auto& enemy : enemies) {
+            // ボスから「今チェックすべき判定の球」を全部もらう
+            auto volumes = enemy->GetCollisionVolumes();
+
+            for (const auto& volume : volumes) {
+
+                Vector3 diff = { bulletPos.x - volume.position.x, bulletPos.y - volume.position.y, bulletPos.z - volume.position.z };
+                float distance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+                float rSum = bullet->GetHitSize() + volume.radius;
+
+                // 当たった場合
+                if (distance <= rSum * rSum) {
+
+                    // ボスに「このパーツに当たったぞ」と報告し、リアクションを任せる
+                    if (enemy->OnHit(volume, bullet.get())) {
+                        bullet->SetActive(false); // 弾を消す
+
+                        break; // この弾の判定は終了
+                    }
+                }
+            }
+            if (!bullet->IsActive())
+                break;
         }
     }
 }

@@ -5,6 +5,7 @@
 #include <iostream> // エラー出力用
 
 #include "../camera/CameraController.h"
+#include "Boss/type/grapesBoss.h"
 #include "Normal/type/HomingEnemy.h"
 #include "Normal/type/NormalEnemy.h"
 #include "Normal/type/ShieldEnemy.h"
@@ -77,13 +78,30 @@ void EnemyManager::Update()
         enemy->Update();
     }
 
+    for (auto& boss : boss_) {
+        boss->Update();
+    }
+
     // --- 修正ポイント：引数を std::shared_ptr に変更 ---
     enemies_.remove_if([](const std::shared_ptr<Enemy>& enemy) { return enemy->GetIsDead(); });
+
+    for (auto it = boss_.begin(); it != boss_.end();) {
+        if ((*it)->GetIsDead()) {
+            // ここでボス撃破後の特別な演出フラグを立てることも可能
+            it = boss_.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 void EnemyManager::Draw3D()
 {
     for (auto& enemy : enemies_) {
         enemy->Draw3D();
+    }
+
+    for (auto& boss : boss_) {
+        boss->Draw3D();
     }
 }
 
@@ -94,6 +112,7 @@ void EnemyManager::SetcurrentTimer_(float timer)
     if (currentTimer_ > timer) {
         currentSpawnIndex_ = 0;
         enemies_.remove_if([](const std::shared_ptr<Enemy>& enemy) { return true; });
+        boss_.remove_if([](const std::shared_ptr<BossEnemy>& enemy) { return true; });
     }
     currentTimer_ = timer;
 }
@@ -104,7 +123,7 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
     if (!file.is_open())
         return;
 
-    json data;
+    json data; // ← 注意: ここの変数名も data
     try {
         file >> data;
         // 読み込みに成功したら、最終更新日時を更新
@@ -118,73 +137,74 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
 
     if (data.contains("enemies") && data["enemies"].is_array()) {
         for (const auto& enemyData : data["enemies"]) {
-            EnemyPopData data;
+            EnemyPopData popData; // ★ 変数名被りを避けるため popData に変更推奨
 
             // --- 安全なデータ取得 ---
-            // .value("キー名", デフォルト値) を使うことで、
-            // JSONに書き忘れていてもゲームが落ちずにデフォルト値が入ります。
+            popData.popTime = enemyData.value("popTime", 0.0f);
+            popData.type = enemyData.value("type", "NormalEnemy");
+            popData.hp = enemyData.value("hp", 10);
 
-            data.popTime = enemyData.value("popTime", 0.0f);
-            data.type = enemyData.value("type", "NormalEnemy");
-            data.hp = enemyData.value("hp", 10);
-
-            // 座標(Vector3)の読み込み（ネストされている場合）
+            // 座標(Vector3)の読み込み
             if (enemyData.contains("position")) {
                 const auto& posData = enemyData["position"];
-                data.position.x = posData.value("x", 0.0f);
-                data.position.y = posData.value("y", 0.0f);
-                data.position.z = posData.value("z", 0.0f);
+                popData.position.x = posData.value("x", 0.0f);
+                popData.position.y = posData.value("y", 0.0f);
+                popData.position.z = posData.value("z", 0.0f);
             } else {
-                // positionタグ自体が無い場合は原点にする
-                data.position = { 0.0f, 0.0f, 0.0f };
+                popData.position = { 0.0f, 0.0f, 0.0f };
             }
 
-            if (enemyData.contains("movePattern") && enemyData["movePattern"].is_array()) {
+            // ==========================================
+            // ★ 修正ポイント：ボス以外の時だけ移動・逃走を読み込む
+            // ==========================================
+            if (popData.type != "grapesBoss") {
 
-                for (const auto& wpData : enemyData["movePattern"]) {
-                    WayPoint wp;
+                // --- movePattern の読み込み ---
+                if (enemyData.contains("movePattern") && enemyData["movePattern"].is_array()) {
+                    for (const auto& wpData : enemyData["movePattern"]) {
+                        WayPoint wp;
+                        wp.timeToReach = wpData.value("timeToReach", 1.0f);
+                        wp.timeToStop = wpData.value("timeToStop", 1.0f);
 
-                    // 到達時間の取得（書き忘れ対策でデフォルト1.0秒）
-                    wp.timeToReach = wpData.value("timeToReach", 1.0f);
-                    wp.timeToStop = wpData.value("timeToStop", 1.0f);
-
-                    // 目標座標の取得
-                    if (wpData.contains("target")) {
-                        const auto& tData = wpData["target"];
-                        wp.target.x = tData.value("x", 0.0f);
-                        wp.target.y = tData.value("y", 0.0f);
-                        wp.target.z = tData.value("z", 0.0f);
-                    } else {
-                        // 座標がなければ原点をセット
-                        wp.target = { 0.0f, 0.0f, 0.0f };
+                        if (wpData.contains("target")) {
+                            const auto& tData = wpData["target"];
+                            wp.target.x = tData.value("x", 0.0f);
+                            wp.target.y = tData.value("y", 0.0f);
+                            wp.target.z = tData.value("z", 0.0f);
+                        } else {
+                            wp.target = { 0.0f, 0.0f, 0.0f };
+                        }
+                        popData.movePattern.push_back(wp);
                     }
-
-                    // 経路リストに追加
-                    data.movePattern.push_back(wp);
                 }
-            }
 
-            if (enemyData.contains("flee")) {
-                const auto& fleeData = enemyData["flee"];
+                // --- flee の読み込み ---
+                if (enemyData.contains("flee")) {
+                    const auto& fleeData = enemyData["flee"];
+                    popData.fleeWaypoint.timeToReach = fleeData.value("timeToReach", 2.0f);
+                    popData.fleeWaypoint.timeToStop = 0.0f;
 
-                data.fleeWaypoint.timeToReach = fleeData.value("timeToReach", 2.0f);
-                data.fleeWaypoint.timeToStop = 0.0f; // 逃走時間に停止はない
-
-                if (fleeData.contains("target")) {
-                    const auto& tData = fleeData["target"];
-                    data.fleeWaypoint.target.x = tData.value("x", 0.0f);
-                    data.fleeWaypoint.target.y = tData.value("y", 0.0f);
-                    data.fleeWaypoint.target.z = tData.value("z", 0.0f);
+                    if (fleeData.contains("target")) {
+                        const auto& tData = fleeData["target"];
+                        popData.fleeWaypoint.target.x = tData.value("x", 0.0f);
+                        popData.fleeWaypoint.target.y = tData.value("y", 0.0f);
+                        popData.fleeWaypoint.target.z = tData.value("z", 0.0f);
+                    } else {
+                        popData.fleeWaypoint.target = { 0.0f, 0.0f, 0.0f };
+                    }
+                    popData.hasFleeData = true;
                 } else {
-                    data.fleeWaypoint.target = { 0.0f, 0.0f, 0.0f };
+                    popData.hasFleeData = false;
                 }
-                data.hasFleeData = true; // 逃走データあり
+
             } else {
-                data.hasFleeData = false; // 逃走データなし（後でデフォルトの逃げ方をする）
+                // grapesBoss の場合の初期化処理（念のため）
+                popData.hasFleeData = false;
             }
+            // ==========================================
 
             // 取得したデータをリストに追加
-            popDatas_.push_back(data);
+            popDatas_.push_back(popData);
         }
     }
 
@@ -199,20 +219,28 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
 
 void EnemyManager::SpawnEnemy(const EnemyPopData& data)
 {
-    // unique_ptr で生成する（
+    // --- 1. ボス（grapesBoss）の場合 ---
+    if (data.type == "grapesBoss") {
+        auto newBoss = std::make_unique<grapesBoss>();
+
+        // ボス専用の初期化（テクスチャHandleを渡す）
+        // ※ JSONにtexture項目がない場合は暫定で0を渡すか、dataに追加してください
+        newBoss->Initialize(camera_, data.position, data.hp);
+        newBoss->SetTargetPlayer(player_);
+
+        // ボスリストに追加
+        boss_.push_back(std::move(newBoss));
+        return; // ボスとして生成したのでここで終了
+    }
+
+    // --- 2. ザコ敵（Enemy）の場合 ---
     std::unique_ptr<Enemy> newEnemy = nullptr;
 
     if (data.type == "NormalEnemy") {
         newEnemy = std::make_unique<NormalEnemy>();
     } else if (data.type == "HomingEnemy") {
         newEnemy = std::make_unique<HomingEnemy>();
-    } else if (data.type == "TargetEnemy") {
-        newEnemy = std::make_unique<TargetEnemy>();
-    } else if (data.type == "RushEnemy") {
-        newEnemy = std::make_unique<rushEnemy>();
-    } else if (data.type == "ShieldEnemy") {
-        newEnemy = std::make_unique<ShieldEnemy>();
-    }
+    } // ... 他のタイプ ...
 
     if (newEnemy) {
         newEnemy->Initialize(camera_, data.position, data.hp);
@@ -220,8 +248,7 @@ void EnemyManager::SpawnEnemy(const EnemyPopData& data)
         newEnemy->SetWayPoints(data.movePattern);
         newEnemy->SetFleeWaypoint(data.fleeWaypoint, data.hasFleeData);
 
-        // --- 修正ポイント：unique_ptr から shared_ptr への転送 ---
-        // unique_ptr は shared_ptr にそのまま move して渡せます
+        // ザコ敵リストに追加
         enemies_.push_back(std::move(newEnemy));
     }
 }
@@ -240,22 +267,25 @@ void EnemyManager::SaveToJson(const std::string& filePath)
         enemyData["hp"] = data.hp;
         enemyData["position"] = Vector3ToJson(data.position);
 
-        // 移動パターン
-        enemyData["movePattern"] = nlohmann::ordered_json::array();
-        for (const auto& wp : data.movePattern) {
-            nlohmann::ordered_json wpData;
-            wpData["target"] = Vector3ToJson(wp.target);
-            wpData["timeToReach"] = wp.timeToReach;
-            wpData["timeToStop"] = wp.timeToStop;
-            enemyData["movePattern"].push_back(wpData);
-        }
+        // ★ 修正ポイント：ボス以外の時だけ移動・逃走データを保存する
+        if (data.type != "grapesBoss") {
+            // 移動パターン
+            enemyData["movePattern"] = nlohmann::ordered_json::array();
+            for (const auto& wp : data.movePattern) {
+                nlohmann::ordered_json wpData;
+                wpData["target"] = Vector3ToJson(wp.target);
+                wpData["timeToReach"] = wp.timeToReach;
+                wpData["timeToStop"] = wp.timeToStop;
+                enemyData["movePattern"].push_back(wpData);
+            }
 
-        // 逃走データ
-        if (data.hasFleeData) {
-            nlohmann::ordered_json fleeData;
-            fleeData["target"] = Vector3ToJson(data.fleeWaypoint.target);
-            fleeData["timeToReach"] = data.fleeWaypoint.timeToReach;
-            enemyData["flee"] = fleeData;
+            // 逃走データ
+            if (data.hasFleeData) {
+                nlohmann::ordered_json fleeData;
+                fleeData["target"] = Vector3ToJson(data.fleeWaypoint.target);
+                fleeData["timeToReach"] = data.fleeWaypoint.timeToReach;
+                enemyData["flee"] = fleeData;
+            }
         }
 
         jsonData["enemies"].push_back(enemyData);
@@ -263,7 +293,7 @@ void EnemyManager::SaveToJson(const std::string& filePath)
 
     std::ofstream file(filePath);
     if (file.is_open()) {
-        file << jsonData.dump(4); // インデント4文字で綺麗に保存
+        file << jsonData.dump(4);
         file.close();
 
         lastWriteTime_ = fs::last_write_time(filePath);
@@ -375,51 +405,54 @@ void EnemyManager::DrawImGui()
         if (ImGui::InputFloat3("Spawn Pos", &data.position.x))
             isEditing_ = true;
 
-        ImGui::Separator();
+        // ★ 修正ポイント：ボス以外の時だけ移動・逃走の編集UIを表示する
+        if (data.type != "grapesBoss") {
+            ImGui::Separator();
 
-        // 移動経路（movePattern）編集
-        if (ImGui::CollapsingHeader("Move Pattern Waypoints")) {
-            for (int j = 0; j < (int)data.movePattern.size(); ++j) {
-                ImGui::PushID(j); // WP用のID
-                auto& wp = data.movePattern[j];
-                std::string wpLabel = "WP [" + std::to_string(j) + "]";
-                if (ImGui::InputFloat3(wpLabel.c_str(), &wp.target.x))
-                    isEditing_ = true;
-                ImGui::SameLine();
-                ImGui::SetNextItemWidth(100);
-                if (ImGui::InputFloat("timeToReach", &wp.timeToReach))
-                    isEditing_ = true;
-                if (ImGui::InputFloat("timeToStop", &wp.timeToStop))
-                    isEditing_ = true;
+            // 移動経路（movePattern）編集
+            if (ImGui::CollapsingHeader("Move Pattern Waypoints")) {
+                for (int j = 0; j < (int)data.movePattern.size(); ++j) {
+                    ImGui::PushID(j); // WP用のID
+                    auto& wp = data.movePattern[j];
+                    std::string wpLabel = "WP [" + std::to_string(j) + "]";
+                    if (ImGui::InputFloat3(wpLabel.c_str(), &wp.target.x))
+                        isEditing_ = true;
+                    ImGui::SameLine();
+                    ImGui::SetNextItemWidth(100);
+                    if (ImGui::InputFloat("timeToReach", &wp.timeToReach))
+                        isEditing_ = true;
+                    if (ImGui::InputFloat("timeToStop", &wp.timeToStop))
+                        isEditing_ = true;
 
-                ImGui::SameLine();
-                if (ImGui::Button("Delete")) {
-                    data.movePattern.erase(data.movePattern.begin() + j);
+                    ImGui::SameLine();
+                    if (ImGui::Button("Delete")) {
+                        data.movePattern.erase(data.movePattern.begin() + j);
+                        isEditing_ = true;
+                    }
+                    ImGui::PopID(); // WP ID
+                }
+                if (ImGui::Button("Add Waypoint")) {
+                    WayPoint newWP;
+                    newWP.target = data.position; // スポーン地点から開始
+                    newWP.timeToReach = 2.0f;
+                    newWP.timeToStop = 1.0f;
+                    data.movePattern.push_back(newWP);
                     isEditing_ = true;
                 }
-                ImGui::PopID(); // WP ID
             }
-            if (ImGui::Button("Add Waypoint")) {
-                WayPoint newWP;
-                newWP.target = data.position; // スポーン地点から開始
-                newWP.timeToReach = 2.0f;
-                newWP.timeToStop = 1.0f;
-                data.movePattern.push_back(newWP);
+
+            ImGui::Separator();
+
+            // 逃走（flee）データ編集
+            if (ImGui::Checkbox("Has Flee Data", &data.hasFleeData))
                 isEditing_ = true;
+            if (data.hasFleeData) {
+                if (ImGui::InputFloat3("Flee Target", &data.fleeWaypoint.target.x))
+                    isEditing_ = true;
+                if (ImGui::InputFloat("Flee Time", &data.fleeWaypoint.timeToReach))
+                    isEditing_ = true;
             }
-        }
-
-        ImGui::Separator();
-
-        // 逃走（flee）データ編集
-        if (ImGui::Checkbox("Has Flee Data", &data.hasFleeData))
-            isEditing_ = true;
-        if (data.hasFleeData) {
-            if (ImGui::InputFloat3("Flee Target", &data.fleeWaypoint.target.x))
-                isEditing_ = true;
-            if (ImGui::InputFloat("Flee Time", &data.fleeWaypoint.timeToReach))
-                isEditing_ = true;
-        }
+        } // ★ ボス除外ここまで
 
         ImGui::Separator();
         if (ImGui::Button("Delete This Enemy")) {

@@ -12,9 +12,16 @@
 #include "SoundManager.h"
 #include "Sprite.h"
 
-#include "../Normal/EnemyBullet.h"
+#include "../EnemyBullet.h"
 
 class Player;
+class PlayerBullet;
+
+struct CollisionVolume {
+    Vector3 position;
+    float radius;
+    uint32_t partId;
+};
 
 class BossEnemy {
 public:
@@ -38,6 +45,12 @@ public:
     virtual Vector3 GetWorldPosition() const = 0;
     virtual float GetRadius() const = 0;
     const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
+    // --- 共通の当たり判定インターフェース ---
+    virtual std::vector<CollisionVolume> GetCollisionVolumes() = 0;
+
+    // 弾を受け取り、弾を消滅させるなら true を返す
+    virtual bool OnHit(const CollisionVolume& volume, PlayerBullet* bullet) = 0;
+
     virtual bool GetIsDead() const = 0;
 
     /* Set関数 */

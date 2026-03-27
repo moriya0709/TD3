@@ -3,21 +3,24 @@
 #include "SceneManager.h"
 #include "SpriteCommon.h"
 
-void GamePlayScene::Initialize() {
-	// カメラ初期化
-	camera = std::make_unique<Camera>();
-	camera->SetRotate({cameraTransform.rotate});
-	camera->SetTranslate({cameraTransform.translate});
+void GamePlayScene::Initialize()
+{
+    // カメラ初期化
+    camera = std::make_unique<Camera>();
+    camera->SetRotate({ cameraTransform.rotate });
+    camera->SetTranslate({ cameraTransform.translate });
 
-	// カメラマネージャ登録
-	CameraManager::GetInstance()->AddCamera("main", camera.get());
-	CameraManager::GetInstance()->SetActiveCamera("main");
+    // カメラマネージャ登録
+    CameraManager::GetInstance()->AddCamera("main", camera.get());
+    CameraManager::GetInstance()->SetActiveCamera("main");
 
 	cameraController_ = std::make_unique<CameraController>();
 	cameraController_->Initialize(camera.get());
 
-	player_ = std::make_unique<Player>();
-	player_->Initialize(camera.get(), Player::Style::normal);
+
+    player_ = std::make_unique<Player>();
+    player_->Initialize(camera.get(), Player::Style::normal);
+
 
 	enemy_ = std::make_unique<EnemyManager>();
 	enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
@@ -37,15 +40,16 @@ void GamePlayScene::Update() {
     particleEmitter->Editor();
     particleEmitter->Update();
 
+
 	// プレイヤー更新
-	player_->Update(enemy_->GetEnemies(), camera->GetTranslate());
+	player_->Update(enemy_->GetEnemies(), cameraController_->GetVelocity());
 
 	// 敵更新
 	enemy_->SetcurrentTimer_(cameraController_->GetCurrentReplayTime());
 	enemy_->Update();
 
-	// 当たり判定
-	ChekeAllCollision();
+    // 当たり判定
+    ChekeAllCollision();
 
 #pragma region ポストエフェクト
 
@@ -95,81 +99,80 @@ void GamePlayScene::Update() {
 #pragma endregion
 
 #pragma region レイマーチング
-	// レイマーチング
-	RayMarching::GetInstance()->Update(camera.get());
-	// rayMarching->SetTime(rayMarchingTime);
-	RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
-	RayMarching::GetInstance()->SetCloudCoverage(rayMarchingCloudCoverage);
-	RayMarching::GetInstance()->SetCloudTop(rayMarchingCloudBottom);
-	RayMarching::GetInstance()->SetCloudBottom(rayMarchingCloudTop);
-	RayMarching::GetInstance()->SetRialLight(rayMarchingIsRialLight);
-	RayMarching::GetInstance()->SetAnimeLight(rayMarchingIsAnimeLight);
+    // レイマーチング
+    RayMarching::GetInstance()->Update(camera.get());
+    // rayMarching->SetTime(rayMarchingTime);
+    RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
+    RayMarching::GetInstance()->SetCloudCoverage(rayMarchingCloudCoverage);
+    RayMarching::GetInstance()->SetCloudTop(rayMarchingCloudBottom);
+    RayMarching::GetInstance()->SetCloudBottom(rayMarchingCloudTop);
+    RayMarching::GetInstance()->SetRialLight(rayMarchingIsRialLight);
+    RayMarching::GetInstance()->SetAnimeLight(rayMarchingIsAnimeLight);
     RayMarching::GetInstance()->SetMotionBlur(rayMarchingIsMotionBlur);
     RayMarching::GetInstance()->SetCloudOpacity(rayMarchingCloudOpacity);
-
 
 #pragma endregion
 
 #ifdef USE_IMGUI
-	// ImGui
-	// フレームレートの取得と表示
-	float fps = ImGui::GetIO().Framerate;
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
+    // ImGui
+    // フレームレートの取得と表示
+    float fps = ImGui::GetIO().Framerate;
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
 
-	// カメラ
-	ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f, -100.0f, 100.0f);
-	ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -180.0f, 180.0f);
-	camera->SetTranslate({cameraTransform.translate});
-	camera->SetRotate({cameraTransform.rotate});
+    // カメラ
+    ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f, -100.0f, 100.0f);
+    ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -180.0f, 180.0f);
+    camera->SetTranslate({ cameraTransform.translate });
+    camera->SetRotate({ cameraTransform.rotate });
 
 #pragma region ライティング
-	// *ライティング* //
-	ImGui::Text("Lighting"); // ライティングのテキスト
+    // *ライティング* //
+    ImGui::Text("Lighting"); // ライティングのテキスト
 
-	// 平行光
-	if (ImGui::TreeNode("DirectionalLight")) {
-		ImGui::Checkbox("OnOff", &isDirectionalLight);
-		if (isDirectionalLight) {
-			ImGui::ColorEdit4("Color", &DirectionalLightColor.x);
-			ImGui::DragFloat3("Direction", &DirectionalLightDirection.x, 0.01f, -100.0f, 100.0f);
-			ImGui::DragFloat("Intensity", &DirectionalLightIntensity, 0.01f, 0.0f, 10.0f);
-		}
-		ImGui::TreePop();
-	}
-	// 環境光
-	if (ImGui::TreeNode("AmbientLight")) {
-		ImGui::Checkbox("OnOff", &isAmbientLight);
-		if (isAmbientLight) {
-			ImGui::ColorEdit4("Color", &AmbientLightColor.x);
-			ImGui::DragFloat("Intensity", &AmbientLightIntensity, 0.01f, 0.0f, 10.0f);
-		}
+    // 平行光
+    if (ImGui::TreeNode("DirectionalLight")) {
+        ImGui::Checkbox("OnOff", &isDirectionalLight);
+        if (isDirectionalLight) {
+            ImGui::ColorEdit4("Color", &DirectionalLightColor.x);
+            ImGui::DragFloat3("Direction", &DirectionalLightDirection.x, 0.01f, -100.0f, 100.0f);
+            ImGui::DragFloat("Intensity", &DirectionalLightIntensity, 0.01f, 0.0f, 10.0f);
+        }
+        ImGui::TreePop();
+    }
+    // 環境光
+    if (ImGui::TreeNode("AmbientLight")) {
+        ImGui::Checkbox("OnOff", &isAmbientLight);
+        if (isAmbientLight) {
+            ImGui::ColorEdit4("Color", &AmbientLightColor.x);
+            ImGui::DragFloat("Intensity", &AmbientLightIntensity, 0.01f, 0.0f, 10.0f);
+        }
 
-		ImGui::TreePop();
-	}
-	// ポイントライト
-	if (ImGui::TreeNode("PointLight")) {
-		ImGui::Checkbox("OnOff", &isPointLight);
-		if (isPointLight) {
-			ImGui::ColorEdit4("Color", &PointLightColor.x);
-			ImGui::DragFloat3("Position", &PointLightPosition.x, 0.01f, -100.0f, 100.0f);
-			ImGui::DragFloat("Intensity", &PointLightIntensity, 0.01f, 0.0f, 10.0f);
-		}
+        ImGui::TreePop();
+    }
+    // ポイントライト
+    if (ImGui::TreeNode("PointLight")) {
+        ImGui::Checkbox("OnOff", &isPointLight);
+        if (isPointLight) {
+            ImGui::ColorEdit4("Color", &PointLightColor.x);
+            ImGui::DragFloat3("Position", &PointLightPosition.x, 0.01f, -100.0f, 100.0f);
+            ImGui::DragFloat("Intensity", &PointLightIntensity, 0.01f, 0.0f, 10.0f);
+        }
 
-		ImGui::TreePop();
-	}
-	// スポットライト
-	if (ImGui::TreeNode("SpotLight")) {
-		ImGui::Checkbox("OnOff", &isSpotLight);
-		if (isSpotLight) {
-			ImGui::ColorEdit4("Color", &SpotLightColor.x);
-			ImGui::DragFloat3("Position", &SpotLightPosition.x, 0.01f, -100.0f, 100.0f);
-			ImGui::DragFloat3("Direction", &SpotLightDirection.x, 0.01f, -100.0f, 100.0f);
-			ImGui::DragFloat("Range", &SpotLightRange, 0.01f, 0.0f, 100.0f);
-			ImGui::DragFloat("Intensity", &SpotLightIntensity, 0.01f, 0.0f, 10.0f);
-		}
+        ImGui::TreePop();
+    }
+    // スポットライト
+    if (ImGui::TreeNode("SpotLight")) {
+        ImGui::Checkbox("OnOff", &isSpotLight);
+        if (isSpotLight) {
+            ImGui::ColorEdit4("Color", &SpotLightColor.x);
+            ImGui::DragFloat3("Position", &SpotLightPosition.x, 0.01f, -100.0f, 100.0f);
+            ImGui::DragFloat3("Direction", &SpotLightDirection.x, 0.01f, -100.0f, 100.0f);
+            ImGui::DragFloat("Range", &SpotLightRange, 0.01f, 0.0f, 100.0f);
+            ImGui::DragFloat("Intensity", &SpotLightIntensity, 0.01f, 0.0f, 10.0f);
+        }
 
-		ImGui::TreePop();
-	}
+        ImGui::TreePop();
+    }
 
 #pragma endregion
 
@@ -255,7 +258,6 @@ void GamePlayScene::Update() {
             ImGui::DragFloat("lensFlareHaloWidth", &lensFlareHaloWidth, 0.01f, 0.0f, 10.0f);
             ImGui::Checkbox("isACES", &isACES);
             ImGui::DragFloat("caIntensity", &caIntensity, 0.001f, 0.0f, 10.0f);
-
         }
 
         ImGui::TreePop();
@@ -278,58 +280,63 @@ void GamePlayScene::Update() {
 #pragma endregion
 
 #pragma region レイマーチング
-	// レイマーチング
-	// ImGui::DragFloat("rayMarchingTime", &rayMarchingTime, 0.1f,0.0f,10.0f);
-	ImGui::DragFloat3("rayMarchingSunDir", &rayMarchingSunDir.x, 0.01f, -1.0f, 1.0f);
-	ImGui::DragFloat("rayMarchingCloudCoverage", &rayMarchingCloudCoverage, 0.01f, -5.0f, 10.0f);
-	ImGui::DragFloat("rayMarchingCloudBottom", &rayMarchingCloudBottom, 10.0f, -5000.0f, 5000.0f);
-	ImGui::DragFloat("rayMarchingCloudTop", &rayMarchingCloudTop, 10.0f, -5000.0f, 5000.0f);
-	ImGui::Checkbox("rayMarchingIsRialLight", &rayMarchingIsRialLight);
-	ImGui::Checkbox("rayMarchingIsAnimeLight", &rayMarchingIsAnimeLight);
+    // レイマーチング
+    // ImGui::DragFloat("rayMarchingTime", &rayMarchingTime, 0.1f,0.0f,10.0f);
+    ImGui::DragFloat3("rayMarchingSunDir", &rayMarchingSunDir.x, 0.01f, -1.0f, 1.0f);
+    ImGui::DragFloat("rayMarchingCloudCoverage", &rayMarchingCloudCoverage, 0.01f, -5.0f, 10.0f);
+    ImGui::DragFloat("rayMarchingCloudBottom", &rayMarchingCloudBottom, 10.0f, -5000.0f, 5000.0f);
+    ImGui::DragFloat("rayMarchingCloudTop", &rayMarchingCloudTop, 10.0f, -5000.0f, 5000.0f);
+    ImGui::Checkbox("rayMarchingIsRialLight", &rayMarchingIsRialLight);
+    ImGui::Checkbox("rayMarchingIsAnimeLight", &rayMarchingIsAnimeLight);
     ImGui::Checkbox("rayMarchingIsMotionBlur", &rayMarchingIsMotionBlur);
     ImGui::DragFloat("rayMarchingCloudOpacity", &rayMarchingCloudOpacity, 0.001f, 0.0f, 0.1f);
 
 #pragma endregion
 
-#endif 
-
+#endif
 }
 
-void GamePlayScene::Draw2D() {
-	// 2Dオブジェクトの描画準備
-	SpriteCommon::GetInstance()->SetCommonPipelineState();
+void GamePlayScene::Draw2D()
+{
+    // 2Dオブジェクトの描画準備
+    SpriteCommon::GetInstance()->SetCommonPipelineState();
 
-	player_->Draw2D();
+    player_->Draw2D();
 
-	// スプライト描画
-	// sprite->Draw();
+    // スプライト描画
+    // sprite->Draw();
 }
 
-void GamePlayScene::Draw3D() {
-	// 3Dオブジェクトの描画準備
-	ObjectCommon::GetInstance()->SetCommonPipelineState();
-	// 3Dオブジェクト描画
-	player_->Draw3D();
+void GamePlayScene::Draw3D()
+{
+    // 3Dオブジェクトの描画準備
+    ObjectCommon::GetInstance()->SetCommonPipelineState();
+    // 3Dオブジェクト描画
+    player_->Draw3D();
 
-	enemy_->Draw3D();
+    enemy_->Draw3D();
 
-	// パーティクル描画
-	//ParticleManager::GetInstance()->Draw();
+    // パーティクル描画
+    // ParticleManager::GetInstance()->Draw();
 
-	// アウトライン描画準備
-	ObjectCommon::GetInstance()->SetOutlinePipelineState();
+    // アウトライン描画準備
+    ObjectCommon::GetInstance()->SetOutlinePipelineState();
 
     player_->Draw3D();
 
 	// アウトライン描画
 	// object->Draw();
+
 }
 
 void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
 
-void GamePlayScene::ChekeAllCollision() {
-	const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
-	CheckCollisionPlayerEnemy(player_.get(), enemies);
-	CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
-	CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
+void GamePlayScene::ChekeAllCollision()
+{
+    const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
+    const std::list<std::shared_ptr<BossEnemy>>& Boss = enemy_->GetBoss();
+    CheckCollisionPlayerEnemy(player_.get(), enemies);
+    CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
+    CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
+    CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss);
 }
