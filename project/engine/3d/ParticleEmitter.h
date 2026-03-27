@@ -34,6 +34,9 @@ public:
 	// エディター
 	void Editor();
 
+	// setter
+	void SetTranslate(Vector3 translate) { emitter.transform.translate = translate; }
+
 private:
 	// パーティクルエミッタの設定
 	Emitter emitter;
