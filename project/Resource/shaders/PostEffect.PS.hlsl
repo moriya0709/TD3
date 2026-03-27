@@ -447,14 +447,7 @@ float4 main(VSOutput input) : SV_TARGET
 
         float3 totalBloom = b1 + b2 + b3;
 
-    // =======================================================
-    // ★★★ ここを追加！ Pass 4 で作ったレンズフレアを読み込む ★★★
-    // ※「gLensFlareTexture」の部分は、ご自身のHLSLで宣言している
-    // 　 レンズフレア用テクスチャ変数名（t4など）に合わせてください。
-    // =======================================================
-        float3 lensFlare = gLensFlareTexture.Sample(gSampler, input.uv).rgb;
-
-
+      
     // ブルーム強度を掛けて加算
         color.rgb += totalBloom * gEffectData.bloomIntensity;
 
@@ -463,7 +456,9 @@ float4 main(VSOutput input) : SV_TARGET
     // =======================================================
         if (gEffectData.isLensFlare)
         {
-            color.rgb += lensFlare; // ここで初めて画面にフレアが乗ります！
+           // ★ if文の中に移動する！
+            float3 lensFlare = gLensFlareTexture.Sample(gSampler, input.uv).rgb;
+            color.rgb += lensFlare;
         }
 
         color.rgb *= gEffectData.intensity;

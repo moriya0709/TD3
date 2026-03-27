@@ -29,6 +29,27 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	uint32_t emptySrvIndex = srvManager_->Allocate(1);  // 空っぽの画像(t1)用
 	depthSrvIndex_ = srvManager_->Allocate(1);          // 深度バッファ(t2)用 ★メンバ変数に保存！
 
+	// ▼▼▼ ここに深度バッファのSRV作成を追加 ▼▼▼
+	D3D12_SHADER_RESOURCE_VIEW_DESC depthSrvDesc{};
+	// ⚠️ ここはDirectXCommonで作ったDepthStencilリソースのフォーマットに合わせる必要があります
+	// 一般的には D32_FLOAT で作っているなら R32_FLOAT、
+	// D24_UNORM_S8_UINT なら R24_UNORM_X8_TYPELESS になります。
+	depthSrvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS; // ★もしエラーが出たらここを確認！
+	depthSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	depthSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	depthSrvDesc.Texture2D.MipLevels = 1;
+
+	// CPUハンドルを取得して、上で確保したインデックスの場所までポインタを進める
+	D3D12_CPU_DESCRIPTOR_HANDLE depthSrvCpuHandle = dxCommon_->GetSrvHeap()->GetCPUDescriptorHandleForHeapStart();
+	depthSrvCpuHandle.ptr += depthSrvIndex_ * dxCommon_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	// SRVを生成！
+	dxCommon_->GetDevice()->CreateShaderResourceView(
+		dxCommon_->GetDepthStencilResource(), // DirectXCommonから深度バッファをもらう
+		&depthSrvDesc,
+		depthSrvCpuHandle
+	);
+
 	// レンダーターゲット
 	renderTarget_ =
 		CreateRenderTarget(
@@ -224,6 +245,8 @@ void PostEffect::Draw() {
 	cmdList->SetGraphicsRootDescriptorTable(3, renderTarget_.srvGpuHandle); // t2: ダミー
 	cmdList->SetGraphicsRootDescriptorTable(4, renderTarget_.srvGpuHandle); // t3: ダミー
 	cmdList->SetGraphicsRootDescriptorTable(5, dxCommon_->GetSRVGPUDescriptorHandle(depthSrvIndex_)); // t4: 深度
+	cmdList->SetGraphicsRootDescriptorTable(7, renderTarget_.srvGpuHandle); // t5: ダミー
+	cmdList->SetGraphicsRootDescriptorTable(9, renderTarget_.srvGpuHandle); // t6: ダミー
 
 	cmdList->DrawInstanced(3, 1, 0, 0);
 
@@ -263,6 +286,9 @@ void PostEffect::Draw() {
 			cmdList->SetGraphicsRootDescriptorTable(3, inputSrvX); // t2: ダミー
 			cmdList->SetGraphicsRootDescriptorTable(4, inputSrvX); // t3: ダミー
 			cmdList->SetGraphicsRootDescriptorTable(5, dxCommon_->GetSRVGPUDescriptorHandle(depthSrvIndex_)); // t4: 深度
+			cmdList->SetGraphicsRootDescriptorTable(7, inputSrvX); // t4: 深度
+			cmdList->SetGraphicsRootDescriptorTable(9, inputSrvX); // t4: 深度		
+			
 			cmdList->DrawInstanced(3, 1, 0, 0);
 			TransitionResource(bloomBuffers_[i].blurRenderTarget[0].resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
@@ -277,6 +303,9 @@ void PostEffect::Draw() {
 			cmdList->SetGraphicsRootDescriptorTable(3, bloomBuffers_[i].blurRenderTarget[0].srvGpuHandle); // t2: ダミー
 			cmdList->SetGraphicsRootDescriptorTable(4, bloomBuffers_[i].blurRenderTarget[0].srvGpuHandle); // t3: ダミー
 			cmdList->SetGraphicsRootDescriptorTable(5, dxCommon_->GetSRVGPUDescriptorHandle(depthSrvIndex_)); // t4: 深度
+			cmdList->SetGraphicsRootDescriptorTable(7, bloomBuffers_[i].blurRenderTarget[0].srvGpuHandle); // t4: 深度
+			cmdList->SetGraphicsRootDescriptorTable(9, bloomBuffers_[i].blurRenderTarget[0].srvGpuHandle); // t4: 深度
+			
 			cmdList->DrawInstanced(3, 1, 0, 0);
 
 			TransitionResource(bloomBuffers_[i].blurRenderTarget[1].resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);

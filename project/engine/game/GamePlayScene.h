@@ -134,7 +134,7 @@ private:
     bool rayMarchingIsRialLight = false;
     bool rayMarchingIsAnimeLight = true;
     bool  rayMarchingIsMotionBlur = false;
-    float  rayMarchingCloudOpacity = 0.04f;
+    float  rayMarchingCloudOpacity = 0.01f;
 
     // カメラ
     std::unique_ptr<Camera> camera = nullptr;
