@@ -41,7 +41,11 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
             p.object->Initialize(camera_);
             p.object->SetModel("bossGrapesOnly.obj");
             p.object->SetScale(baseTransform_.scale);
-            p.object->SetRotate(baseTransform_.rotate);
+            if (rowIndex == 0 && i == 1) {
+                p.object->SetRotate(baseTransform_.rotate);
+            } else {
+                p.object->SetRotate(Vector3(0, (float)std::numbers::pi, 0));
+            }
             p.object->SetTranslate(baseTransform_.translate + p.transform.translate + cameraPos);
             // object->SetModel(texture); テクスチャを直で変えられるコードが今はない
             p.object->Update();
