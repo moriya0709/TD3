@@ -1,5 +1,6 @@
 {
     "initialTransform": {
+        "fov": 45.0,
         "rotate": {
             "x": 0.05000000074505806,
             "y": 0.0,
