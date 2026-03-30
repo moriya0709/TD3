@@ -31,7 +31,7 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
             // 相対座標の計算
             float xOffset = (i - (countInRow - 1) * 0.5f) * spacingX;
             float yOffset = (1 - rowIndex) * spacingY;
-            p.transform.translate = { xOffset, yOffset, baseTransform_.translate.z };
+            p.transform.translate = { xOffset, yOffset, 0.0f };
 
             // 最初は一番上の段の真ん中（index 1）を本体にする
             p.isWeakPoint = (rowIndex == 0 && i == 1);
@@ -39,7 +39,7 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
             // モデル生成
             p.object = std::make_unique<Object>();
             p.object->Initialize(camera_);
-            p.object->SetModel("player.obj");
+            p.object->SetModel("bossGrapesOnly.obj");
             p.object->SetScale(baseTransform_.scale);
             p.object->SetRotate(baseTransform_.rotate);
             p.object->SetTranslate(baseTransform_.translate + p.transform.translate + cameraPos);
@@ -54,6 +54,11 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
 
 void grapesBoss::Update()
 {
+  /*  WeakPointchangeTimer -= 1.0f / 60.0f;
+    if (WeakPointchangeTimer <= 0.0f) {
+        WeakPointChange();
+        WeakPointchangeTimer = kBehaviorchangeTimer;
+    }*/
 
     if (behaviorRequest_ != Behavior::kUnknown) {
         behavior_ = behaviorRequest_;
@@ -91,7 +96,7 @@ void grapesBoss::Update()
 
     Vector3 cameraPos = camera_->GetTranslate();
     for (auto& part : parts_) {
-        Vector3 worldPos = part.transform.translate + cameraPos;
+        Vector3 worldPos = part.transform.translate + baseTransform_.translate + cameraPos;
         part.object->SetTranslate(worldPos);
         part.object->Update();
     }
@@ -109,8 +114,73 @@ void grapesBoss::Draw3D()
     }
 }
 
-void grapesBoss::BulletMirror(Vector3 bulletPos, Vector3 Velocity)
+void grapesBoss::BulletMirror(const CollisionVolume& volume, PlayerBullet* bullet)
 {
+
+    // ==========================================
+    // 【ダミーに当たった場合：反射弾を新規生成】
+    // ==========================================
+
+    Vector3 bulletPos = bullet->GetPosition();
+    Vector3 bulletVelocity = bullet->GetVelocity();
+    Vector3 enemyPos = volume.position; // 当たったパーツの座標を起点にする
+
+    // ベクトル
+    Vector3 normal = {
+        bulletPos.x - enemyPos.x,
+        bulletPos.y - enemyPos.y,
+        bulletPos.z - enemyPos.z
+    };
+
+    // 正規化
+    normal.x *= 0.01f;
+    normal.y *= 0.01f;
+    normal.z *= 1.0f;
+
+    normal = Normalize(normal);
+
+    // 反射ベクトルの計算
+    float dot = bulletVelocity.x * normal.x + bulletVelocity.y * normal.y + bulletVelocity.z * normal.z;
+
+    Vector3 reflectVelocity;
+    reflectVelocity.x = bulletVelocity.x - 2.0f * dot * normal.x;
+    reflectVelocity.y = bulletVelocity.y - 2.0f * dot * normal.y;
+    reflectVelocity.z = bulletVelocity.z - 2.0f * dot * normal.z;
+
+    reflectVelocity.z *= 1.3f;
+
+    // 敵の弾（反射弾）を新しく追加
+    std::unique_ptr<HomingEnemyBullet> newBulletEnemy = std::make_unique<HomingEnemyBullet>();
+    // 弾の発生位置は「当たったダミーパーツの座標」にする
+    newBulletEnemy->Initialize(camera_, enemyPos);
+    newBulletEnemy->SetBulletAcceleration(reflectVelocity);
+    newBulletEnemy->SetTargetPosition(player_->GetPosition());
+    newBulletEnemy->Update();
+
+    // GrapesBossクラスが持つ enemyBullet_ リストに追加
+    enemyBullet_.push_back(std::move(newBulletEnemy));
+}
+
+void grapesBoss::WeakPointChange()
+{
+    if (parts_.size() < 2)
+        return;
+
+    // 座標だけを抜き出したリストを作る
+    std::vector<Vector3> positions;
+    for (const auto& part : parts_) {
+        positions.push_back(part.transform.translate);
+    }
+
+    // 座標リストをランダムに並び替える（<algorithm>のshuffleを使用）
+    static std::random_device seed_gen;
+    static std::mt19937 engine(seed_gen());
+    std::shuffle(positions.begin(), positions.end(), engine);
+
+    // 並び替えた座標をパーツに再割り当て
+    for (int i = 0; i < (int)parts_.size(); ++i) {
+        parts_[i].transform.translate = positions[i];
+    }
 }
 
 Vector3 grapesBoss::GetWorldPosition() const
@@ -155,49 +225,7 @@ bool grapesBoss::OnHit(const CollisionVolume& volume, PlayerBullet* bullet)
         return true; // プレイヤーの弾を消滅させる
 
     } else {
-        // ==========================================
-        // 【ダミーに当たった場合：反射弾を新規生成】
-        // ==========================================
-
-        Vector3 bulletPos = bullet->GetPosition();
-        Vector3 bulletVelocity = bullet->GetVelocity();
-        Vector3 enemyPos = volume.position; // 当たったパーツの座標を起点にする
-
-        // ベクトル
-        Vector3 normal = {
-            bulletPos.x - enemyPos.x,
-            bulletPos.y - enemyPos.y,
-            bulletPos.z - enemyPos.z
-        };
-
-        // 正規化
-        normal.x *= 0.01f;
-        normal.y *= 0.01f;
-        normal.z *= 1.0f;
-
-        normal = Normalize(normal);
-
-        // 反射ベクトルの計算
-        float dot = bulletVelocity.x * normal.x + bulletVelocity.y * normal.y + bulletVelocity.z * normal.z;
-
-        Vector3 reflectVelocity;
-        reflectVelocity.x = bulletVelocity.x - 2.0f * dot * normal.x;
-        reflectVelocity.y = bulletVelocity.y - 2.0f * dot * normal.y;
-        reflectVelocity.z = bulletVelocity.z - 2.0f * dot * normal.z;
-
-        reflectVelocity.z *= 1.3f;
-
-        // 敵の弾（反射弾）を新しく追加
-        std::unique_ptr<HomingEnemyBullet> newBulletEnemy = std::make_unique<HomingEnemyBullet>();
-        // 弾の発生位置は「当たったダミーパーツの座標」にする
-        newBulletEnemy->Initialize(camera_, enemyPos);
-        newBulletEnemy->SetBulletAcceleration(reflectVelocity);
-        newBulletEnemy->SetTargetPosition(player_->GetPosition());
-        newBulletEnemy->Update();
-
-        // GrapesBossクラスが持つ enemyBullet_ リストに追加
-        enemyBullet_.push_back(std::move(newBulletEnemy));
-
+        BulletMirror(volume, bullet);
         // ★ プレイヤーの弾自体はここで「消滅」させるため true を返す
         return true;
     }
@@ -215,9 +243,9 @@ std::vector<CollisionVolume> grapesBoss::GetCollisionVolumes()
         // 1. パーツのワールド座標を計算
         // ボスの中心座標に、パーツごとの配置オフセット（ローカル座標）を足す
         Vector3 partWorldPos = {
-            parts_[i].transform.translate.x,
-            parts_[i].transform.translate.y,
-            parts_[i].transform.translate.z
+            parts_[i].transform.translate.x + bossPos.x,
+            parts_[i].transform.translate.y + bossPos.y,
+            parts_[i].transform.translate.z + bossPos.z
         };
 
         // 2. 判定用のボリューム構造体を作成
