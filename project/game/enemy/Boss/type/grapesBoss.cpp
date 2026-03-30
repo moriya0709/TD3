@@ -44,7 +44,7 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
             if (rowIndex == 0 && i == 1) {
                 p.object->SetRotate(baseTransform_.rotate);
             } else {
-                p.object->SetRotate(Vector3(0, (float)std::numbers::pi, 0));
+                p.object->SetRotate(Vector3(0.0f, (float)std::numbers::pi, 0.0f));
             }
             p.object->SetTranslate(baseTransform_.translate + p.transform.translate + cameraPos);
             // object->SetModel(texture); テクスチャを直で変えられるコードが今はない
@@ -102,6 +102,7 @@ void grapesBoss::Update()
     for (auto& part : parts_) {
         Vector3 worldPos = part.transform.translate + baseTransform_.translate + cameraPos;
         part.object->SetTranslate(worldPos);
+        part.object->SetRotate(part.transform.rotate);
         part.object->Update();
     }
 }
@@ -167,23 +168,45 @@ void grapesBoss::BulletMirror(const CollisionVolume& volume, PlayerBullet* bulle
 
 void grapesBoss::WeakPointChange()
 {
-    if (parts_.size() < 2)
-        return;
+    // ↓未確認です
+    // 1. 現在の本体（WeakPoint）と、入れ替え候補のダミーをリストアップ
+    int currentWeakIdx = -1;
+    std::vector<int> dummyIndices;
 
-    // 座標だけを抜き出したリストを作る
-    std::vector<Vector3> positions;
-    for (const auto& part : parts_) {
-        positions.push_back(part.transform.translate);
+    for (int i = 0; i < (int)parts_.size(); ++i) {
+
+        if (parts_[i].isWeakPoint) {
+            currentWeakIdx = i;
+        } else {
+            dummyIndices.push_back(i);
+        }
     }
 
-    // 座標リストをランダムに並び替える（<algorithm>のshuffleを使用）
-    static std::random_device seed_gen;
-    static std::mt19937 engine(seed_gen());
-    std::shuffle(positions.begin(), positions.end(), engine);
+    // 入れ替え対象がいない場合は何もしない
+    if (currentWeakIdx == -1 || dummyIndices.empty())
+        return;
 
-    // 並び替えた座標をパーツに再割り当て
-    for (int i = 0; i < (int)parts_.size(); ++i) {
-        parts_[i].transform.translate = positions[i];
+    // 2. ダミーの中からランダムに新しい本体を1つ選ぶ
+    std::random_device seed_gen;
+    std::mt19937 engine(seed_gen());
+    std::uniform_int_distribution<size_t> dist(0, dummyIndices.size() - 1);
+    int newWeakIdx = dummyIndices[dist(engine)];
+
+    // 3. 役割の入れ替え
+    parts_[currentWeakIdx].isWeakPoint = false;
+    parts_[newWeakIdx].isWeakPoint = true;
+
+    // 4. 回転の設定
+    // 元本体（今後はダミー）を Y軸180度回転(PI) させて裏返す
+    parts_[currentWeakIdx].transform.rotate = { 0.0f, (float)std::numbers::pi, 0.0f };
+
+    // 新本体（今後は弱点）を Y軸0度回転 にして表に向ける
+    parts_[newWeakIdx].transform.rotate = { 0.0f, 0.0f, 0.0f };
+
+    for (auto& part : parts_) {
+        if (!part.isWeakPoint) {
+            part.transform.rotate = { 0.0f, (float)std::numbers::pi, 0.0f };
+        }
     }
 }
 
