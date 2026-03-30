@@ -113,7 +113,7 @@ void Game::Draw() {
 	SceneManager::GetInstance()->Draw3D();
 
 	// パーティクル描画
-	//ParticleManager::GetInstance()->Draw();
+	ParticleManager::GetInstance()->Draw();
 
 	// ポストエフェクト描画
 	PostEffect::GetInstance()->PostDraw();

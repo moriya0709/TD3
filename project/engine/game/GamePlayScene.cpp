@@ -28,7 +28,6 @@ void GamePlayScene::Initialize()
 	// Emitパーティクル発生
 	particleEmitter = std::make_unique<ParticleEmitter>();
 	particleEmitter->Initialize("group1", cameraTransform, 5, 1.0f);
-	particleEmitter->Emit();
 	particleEmitter->LoadParticle("Resource/particle/fire.csv");
 
 	cameraController_->StartReplay();
@@ -322,7 +321,7 @@ void GamePlayScene::Draw3D()
     // アウトライン描画準備
     ObjectCommon::GetInstance()->SetOutlinePipelineState();
 
-    player_->Draw3D();
+    //player_->Draw3D();
 
 	// アウトライン描画
 	// object->Draw();
