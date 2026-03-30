@@ -54,11 +54,11 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
 
 void grapesBoss::Update()
 {
-  /*  WeakPointchangeTimer -= 1.0f / 60.0f;
+    WeakPointchangeTimer -= 1.0f / 60.0f;
     if (WeakPointchangeTimer <= 0.0f) {
         WeakPointChange();
-        WeakPointchangeTimer = kBehaviorchangeTimer;
-    }*/
+        WeakPointchangeTimer = ktWeakPointchangeTimer;
+    }
 
     if (behaviorRequest_ != Behavior::kUnknown) {
         behavior_ = behaviorRequest_;
@@ -242,10 +242,12 @@ std::vector<CollisionVolume> grapesBoss::GetCollisionVolumes()
 
         // 1. パーツのワールド座標を計算
         // ボスの中心座標に、パーツごとの配置オフセット（ローカル座標）を足す
+        Vector3 cameraPos = camera_->GetTranslate();
+
         Vector3 partWorldPos = {
-            parts_[i].transform.translate.x + bossPos.x,
-            parts_[i].transform.translate.y + bossPos.y,
-            parts_[i].transform.translate.z + bossPos.z
+            parts_[i].transform.translate.x + bossPos.x + cameraPos.x,
+            parts_[i].transform.translate.y + bossPos.y + cameraPos.y,
+            parts_[i].transform.translate.z + bossPos.z + cameraPos.z
         };
 
         // 2. 判定用のボリューム構造体を作成
