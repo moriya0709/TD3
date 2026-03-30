@@ -130,7 +130,8 @@ private:
 	Vector2 mouseMove;
 	float reticleSpeed = 30.0f; // 移動速度
 	Style currentStyle = normal;
-
+	bool cameraFollow = true;
+	Vector3 camPos;
 
 	static int cureentStyleStatasLevels[4][2];
 	void StyleLevelUp(Style style, int statas);

@@ -207,7 +207,9 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 	auto input = Input::GetInstance();
 
 	camera_->Update();
-	Vector3 camPos = camera_->GetTranslate();
+	if (cameraFollow) {
+		camPos = camera_->GetTranslate();
+	}
 	Matrix4x4 camRotMat = MakeRotateMatrix(camera_->GetRotate());
 
 #pragma region 移動処理 (動的画面内制限)
@@ -340,8 +342,8 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 
 #ifdef USE_IMGUI
 
-
 	ImGui::Begin("Player Config");
+	ImGui::Checkbox("Camera Follow", &cameraFollow);
 	ImGui::Text("Style: %d", currentStyle);
 	for (int i = 0; i < 4; i++) {
 		if (ImGui::RadioButton(("Style " + std::to_string(i)).c_str(), currentStyle == i)) {
@@ -387,7 +389,7 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 
 #pragma endregion
 
-#endif 
+#endif
 }
 
 void Player::Draw2D() {
