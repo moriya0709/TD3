@@ -142,8 +142,6 @@ private:
     std::unique_ptr<Sprite> sprite = nullptr;
     // 3Dオブジェクト
     std::unique_ptr<Object> object {};
-    // パーティクルエミッタ
-    std::unique_ptr<ParticleEmitter> particleEmitter = nullptr;
 
     std::unique_ptr<Player> player_ = nullptr;
     // リスト
