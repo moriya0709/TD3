@@ -22,8 +22,8 @@
     <ClCompile Include="engine\base\DirectXCommon.cpp" />
     <ClCompile Include="engine\camera\DebugCamera.cpp" />
     <ClCompile Include="game\camera\CameraController.cpp" />
-    <ClCompile Include="game\enemy\Normal\Enemy.cpp" />
-    <ClCompile Include="game\enemy\Normal\EnemyBullet.cpp" />
+    <ClCompile Include="game\enemy\Enemy.cpp" />
+    <ClCompile Include="game\enemy\EnemyBullet.cpp" />
     <ClCompile Include="game\enemy\EnemyManager.cpp" />
     <ClCompile Include="game\enemy\Normal\type\HomingEnemy.cpp" />
     <ClCompile Include="game\enemy\Normal\Bullet\HomingEnemyBullet.cpp" />
@@ -74,15 +74,15 @@
     <ClCompile Include="game\enemy\Normal\Bullet\rushEnemyBullet.cpp" />
     <ClCompile Include="game\enemy\Normal\type\ShieldEnemy.cpp" />
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
-    <ClCompile Include="game\enemy\Boss\BossEnemy.cpp" />
     <ClCompile Include="game\enemy\Boss\type\grapesBoss.cpp" />
     <ClCompile Include="engine\game\StageSelect.cpp" />
+    <ClCompile Include="game\enemy\Boss\BossEnemy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />
     <ClInclude Include="game\camera\CameraController.h" />
-    <ClInclude Include="game\enemy\Normal\Enemy.h" />
-    <ClInclude Include="game\enemy\Normal\EnemyBullet.h" />
+    <ClInclude Include="game\enemy\Enemy.h" />
+    <ClInclude Include="game\enemy\EnemyBullet.h" />
     <ClInclude Include="engine\base\AbstractSceneFactory.h" />
     <ClInclude Include="engine\base\BaseScene.h" />
     <ClInclude Include="engine\camera\Camera.h" />
@@ -142,9 +142,9 @@
     <ClInclude Include="game\enemy\Normal\Bullet\rushEnemyBullet.h" />
     <ClInclude Include="game\enemy\Normal\type\ShieldEnemy.h" />
     <ClInclude Include="application\railCamera\RailCamera.h" />
-    <ClInclude Include="game\enemy\Boss\BossEnemy.h" />
     <ClInclude Include="game\enemy\Boss\type\grapesBoss.h" />
     <ClInclude Include="engine\game\StageSelect.h" />
+    <ClInclude Include="game\enemy\Boss\BossEnemy.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\RayMarching.hlsli" />

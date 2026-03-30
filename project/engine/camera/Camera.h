@@ -24,6 +24,7 @@ public:
 	const Matrix4x4& GetViewProjectionMatrix() const { return viewProjectionMatrix; }
 	const Vector3& GetRotate() const { return transform.rotate; }
 	const Vector3& GetTranslate() const { return transform.translate; }
+	const float GetFovY() const { return fovY_; }
 
 	// シングルトンインスタンスの取得
 	static Camera* GetInstance();

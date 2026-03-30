@@ -23,18 +23,14 @@ struct VertexShaderInput
 
 VertexShaderOutput main(VertexShaderInput input)
 {
-    VertexShaderOutput output;
+  VertexShaderOutput output;
 
-    // ワールド空間で押し出す
-    float32_t4 worldPos = mul(input.position, gTransformationMatrix.World);
-    float32_t3 worldNormal = normalize(mul(input.outlineNormal, (float32_t3x3) gTransformationMatrix.World));
+    // 1. ローカル空間でそのまま法線方向に押し出す
+    float32_t4 localPos = input.position;
+    localPos.xyz += input.outlineNormal * thickness;
     
-    // 押し出し
-    worldPos.xyz += worldNormal * thickness;
-    
-    // WVPをかける
-    output.position = mul(worldPos, gTransformationMatrix.WVP);
-
+    // 2. 押し出した座標に対して、一気にWVPをかける（これで画面上の座標になる）
+    output.position = mul(localPos, gTransformationMatrix.WVP);
 
     return output;
 }

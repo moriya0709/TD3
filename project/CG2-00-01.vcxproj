@@ -16,15 +16,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
-    <ClCompile Include="game\enemy\Boss\BossEnemy.cpp" />
     <ClCompile Include="game\collision\Collision.cpp" />
     <ClCompile Include="engine\camera\Camera.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />
     <ClCompile Include="engine\base\DirectXCommon.cpp" />
     <ClCompile Include="engine\camera\DebugCamera.cpp" />
     <ClCompile Include="game\camera\CameraController.cpp" />
-    <ClCompile Include="game\enemy\Normal\Enemy.cpp" />
-    <ClCompile Include="game\enemy\Normal\EnemyBullet.cpp" />
+    <ClCompile Include="game\enemy\Boss\BossEnemy.cpp" />
+    <ClCompile Include="game\enemy\Enemy.cpp" />
+    <ClCompile Include="game\enemy\EnemyBullet.cpp" />
     <ClCompile Include="game\enemy\EnemyManager.cpp" />
     <ClCompile Include="game\enemy\Normal\type\HomingEnemy.cpp" />
     <ClCompile Include="game\enemy\Normal\Bullet\HomingEnemyBullet.cpp" />
@@ -189,11 +189,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\railCamera\RailCamera.h" />
-    <ClInclude Include="game\enemy\Boss\BossEnemy.h" />
     <ClInclude Include="game\collision\Collision.h" />
     <ClInclude Include="game\camera\CameraController.h" />
-    <ClInclude Include="game\enemy\Normal\Enemy.h" />
-    <ClInclude Include="game\enemy\Normal\EnemyBullet.h" />
+    <ClInclude Include="game\enemy\Boss\BossEnemy.h" />
+    <ClInclude Include="game\enemy\Enemy.h" />
+    <ClInclude Include="game\enemy\EnemyBullet.h" />
     <ClInclude Include="engine\base\AbstractSceneFactory.h" />
     <ClInclude Include="engine\base\BaseScene.h" />
     <ClInclude Include="engine\camera\Camera.h" />
@@ -285,7 +285,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{7bb8afe6-b31b-47c5-be6e-0be0a9cd17df}</ProjectGuid>
     <RootNamespace>CG20001</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

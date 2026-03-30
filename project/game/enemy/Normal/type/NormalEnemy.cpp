@@ -1,6 +1,6 @@
 ﻿#include "NormalEnemy.h"
 #include "../Bullet/NormalEnemyBullet.h"
-#include "NormalEnemy.h"
+
 
 void NormalEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 {
