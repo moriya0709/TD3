@@ -119,10 +119,9 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
 
                 Vector3 diff = { bulletPos.x - volume.position.x, bulletPos.y - volume.position.y, bulletPos.z - volume.position.z };
                 float distance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
-                float rSum = bullet->GetHitSize() + volume.radius;
 
                 // 当たった場合
-                if (distance <= rSum * rSum) {
+                if (distance <= bulletSize + volume.radius) {
 
                     // ボスに「このパーツに当たったぞ」と報告し、リアクションを任せる
                     if (enemy->OnHit(volume, bullet.get())) {

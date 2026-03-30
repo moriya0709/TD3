@@ -2,7 +2,7 @@
     "enemies": [
         {
             "popTime": 1.0,
-            "type": "ShieldEnemy",
+            "type": "NormalEnemy",
             "hp": 10000,
             "position": {
                 "x": 30.0,

@@ -26,7 +26,9 @@ public:
 
     void Draw3D() override;
 
-    void BulletMirror(Vector3 bulletPos, Vector3 Velocity);
+    void BulletMirror(const CollisionVolume& volume,PlayerBullet* bullet);
+
+    void WeakPointChange();
 
 public:
     // Get
@@ -58,6 +60,8 @@ private:
     std::vector<BossPart> parts_; // 7つのパーツを格納するリスト（vector）
 
     int currentWeakPointIndex_ = 0; // 現在、何番目が「本体」か
+    float WeakPointchangeTimer; // 弱点入れ替え時間
+    static inline const float ktWeakPointchangeTimer = 10.0f;
 
     int health_; // 体力
     float isAvile; // 生存しているか
@@ -78,5 +82,5 @@ private:
     static inline const float kdeadTimer_ = 10.0f;
 
     // キャラクターの個々の当たり判定サイズ
-    static inline const float radius = 1.0f;
+    static inline const float radius = 2.0f;
 };
