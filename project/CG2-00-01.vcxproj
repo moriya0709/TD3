@@ -94,6 +94,7 @@
     <ClCompile Include="game\enemy\Normal\type\rushEnemy.cpp" />
     <ClCompile Include="game\enemy\Normal\Bullet\rushEnemyBullet.cpp" />
     <ClCompile Include="game\enemy\Normal\type\ShieldEnemy.cpp" />
+    <ClCompile Include="StageSelect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\shaders\RayMarching.CS.hlsl">
@@ -254,6 +255,7 @@
     <ClInclude Include="game\enemy\Normal\Bullet\rushEnemyBullet.h" />
     <ClInclude Include="game\enemy\Normal\type\ShieldEnemy.h" />
     <ClInclude Include="game\enemy\Boss\type\grapesBoss.h" />
+    <ClInclude Include="StageSelect.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

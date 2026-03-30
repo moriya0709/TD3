@@ -76,6 +76,7 @@
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
     <ClCompile Include="game\enemy\Boss\BossEnemy.cpp" />
     <ClCompile Include="game\enemy\Boss\type\grapesBoss.cpp" />
+    <ClCompile Include="StageSelect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />
@@ -143,6 +144,7 @@
     <ClInclude Include="application\railCamera\RailCamera.h" />
     <ClInclude Include="game\enemy\Boss\BossEnemy.h" />
     <ClInclude Include="game\enemy\Boss\type\grapesBoss.h" />
+    <ClInclude Include="StageSelect.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\RayMarching.hlsli" />
