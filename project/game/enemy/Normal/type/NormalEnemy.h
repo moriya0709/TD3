@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "../Enemy.h"
-#include "../EnemyBullet.h"
+#include "../../Enemy.h"
+#include "../../EnemyBullet.h"
 #include <vector>
 
 class NormalEnemy : public Enemy {
