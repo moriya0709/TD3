@@ -6,6 +6,8 @@ std::unique_ptr <BaseScene> SceneFactory::CreateScene(const std::string& sceneNa
 
 	if (sceneName == "TITLE") {
 		newScene = std::make_unique <TitleScene>();
+	} else if (sceneName == "GAMESELECT") {
+		newScene = std::make_unique <StageSelect>();
 	} else if (sceneName == "GAMEPLAY") {
 		newScene = std::make_unique <GamePlayScene>();
 	}

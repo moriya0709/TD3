@@ -48,7 +48,7 @@ void TitleScene::Update() {
 	// ENTERキーを押したら
 	if (input->TriggerKey(DIK_RETURN)) {
 		// ゲームプレイシーン(次シーン)を生成
-		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		// 音声再生
 		SoundManager::GetInstance()->Stop("bgm");
 	}
