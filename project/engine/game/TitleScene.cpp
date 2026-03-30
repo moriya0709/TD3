@@ -365,8 +365,6 @@ void TitleScene::Draw3D() {
 		object[i]->Draw();
 	}
 
-	// パーティクル描画
-	ParticleManager::GetInstance()->Draw();
 
 	// アウトライン描画準備
 	ObjectCommon::GetInstance()->SetOutlinePipelineState();
