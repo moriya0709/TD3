@@ -30,6 +30,9 @@ public:
 	void Draw3D()override;
 
 	void Finalize()override;
+    Player::Style GetPlayerStyle()override {
+        return currentStyle;
+    };
 
 private:
 

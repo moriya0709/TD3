@@ -19,7 +19,7 @@ void GamePlayScene::Initialize()
 
 
     player_ = std::make_unique<Player>();
-    player_->Initialize(camera.get(), Player::Style::normal);
+    player_->Initialize(camera.get(), style_);
 
 
 	enemy_ = std::make_unique<EnemyManager>();
@@ -330,6 +330,11 @@ void GamePlayScene::Draw3D()
 }
 
 void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
+
+void GamePlayScene::SetPlayerStyle(Player::Style style)
+{
+    style_ = style;
+}
 
 void GamePlayScene::ChekeAllCollision()
 {

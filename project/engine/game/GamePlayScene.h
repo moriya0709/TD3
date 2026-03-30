@@ -33,6 +33,7 @@ public:
     void Draw3D() override;
     // 終了
     void Finalize() override;
+    void SetPlayerStyle(Player::Style style) override;
 
     void ChekeAllCollision() ;
 
@@ -146,6 +147,7 @@ private:
     std::unique_ptr<ParticleEmitter> particleEmitter = nullptr;
 
     std::unique_ptr<Player> player_ = nullptr;
+    Player::Style style_ = Player::Style::normal;
     // リスト
     std::unique_ptr<EnemyManager> enemy_ = nullptr;
     std::unique_ptr<CameraController> cameraController_ = nullptr;

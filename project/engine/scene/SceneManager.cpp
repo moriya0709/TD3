@@ -7,6 +7,7 @@ void SceneManager::Update() {
 	if (nextScene_) {
 		// 旧シーン終了
 		if (scene_) {
+			currentStyle=scene_->GetPlayerStyle();
 			scene_->Finalize();
 		}
 
@@ -45,6 +46,7 @@ void SceneManager::ChangeScene(const std::string& sceneName) {
 	assert(nextScene_ == nullptr);
 
 	// 次シーンを生成
+	sceneFactory_->SetPlayerStyle(currentStyle);
 	nextScene_ = sceneFactory_->CreateScene(sceneName);
 
 }

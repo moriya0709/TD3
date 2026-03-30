@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "BaseScene.h"
 #include "Camera.h"
 #include "CameraManager.h"
 #include "ImGuiManager.h"
@@ -142,4 +141,4 @@ private:
 
 };
 
-Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
+Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);

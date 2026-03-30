@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Player.h"
 
 class DirectXCommon;
 class Camera;
@@ -19,6 +20,8 @@ public:
     // setter
     virtual void SetSceneManager(SceneManager* sceneManager) { sceneManager_ = sceneManager; }
 
+    virtual void SetPlayerStyle(Player::Style style);
+    virtual Player::Style GetPlayerStyle();
     virtual ~BaseScene() = default;
 
 private:
