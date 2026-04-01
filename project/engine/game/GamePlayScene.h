@@ -149,5 +149,6 @@ private:
     // リスト
     std::unique_ptr<EnemyManager> enemy_ = nullptr;
     std::unique_ptr<CameraController> cameraController_ = nullptr;
+	int specialAttackTimer = 0;
 
 };

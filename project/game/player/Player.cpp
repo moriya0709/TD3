@@ -423,6 +423,12 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 		isCharging = false;
 		chargeTimer++;
 	}
+	if (input->TriggerKey(DIK_SPACE) || input->IsPadButtonPressed(0, 6)) {
+		isSpecialAttack = true;
+		coolTime = 60;
+	
+	}
+
 
 	if (input->IsMouseButtonPressed(0) || input->IsPadButtonPressed(0, 5)) {
 		if (isCharging) {
