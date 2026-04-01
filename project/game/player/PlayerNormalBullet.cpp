@@ -3,6 +3,7 @@
 #include "ObjectCommon.h"
 #include "SceneManager.h"
 #include "SpriteCommon.h"
+#include "TrailEffectManager.h"
 #include <cmath> // sqrt用
 
 // Initializeに必要な引数を追加しています（レティクルの位置、最大距離、寿命）
@@ -68,6 +69,10 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	particleEmitter->SetActive("bBullet");
 	particleEmitter->LoadParticle("Resource/particle/bullet.csv");
 
+	// トレイルエフェクト
+	trailEffect->Initialize("Resource/trail/trail.png", transform_, 1.0f, 1.5f);
+	trailEffect->SetColor(Vector4(1.0f,1.0f,1.0f,1.0f));
+	TrailEffectManager::GetInstance()->AddTrail(trailEffect);
 
 	object_->SetScale(transform_.scale);
 	object_->SetTranslate(transform_.translate);
@@ -117,6 +122,9 @@ void PlayerNormalBullet::Update(Vector3 cmrvel) {
 	// パーティクルエミッタ更新
 	particleEmitter->Update();
 	particleEmitter->SetTranslate(transform_.translate);
+
+	// トレイルエフェクト更新
+	trailEffect->SetTranslate(transform_.translate);
 
 }
 void PlayerNormalBullet::Draw3D() {

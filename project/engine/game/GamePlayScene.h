@@ -37,6 +37,11 @@ public:
 
     void ChekeAllCollision() ;
 
+    void PauseSelect();
+
+    //ポーズ選択
+    enum Pause { kResume, kRetry, kSelect };
+
 private:
     Transform cameraTransform {
         { 1.0f, 1.0f, 1.0f }, // scale
@@ -149,5 +154,11 @@ private:
     // リスト
     std::unique_ptr<EnemyManager> enemy_ = nullptr;
     std::unique_ptr<CameraController> cameraController_ = nullptr;
+	int specialAttackTimer = 0;
+
+    //ポーズかどうか
+    bool isPause_ = false;
+
+    Pause currentPause_ = kResume;
 
 };

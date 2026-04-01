@@ -60,6 +60,8 @@ public:
 		cureentStyleStatasLevels[style][statas] = level;
 		return cureentStyleStatasLevels[style][statas];
 	}
+	bool GetIsSpecialAttack() const { return isSpecialAttack; }
+	void SetIsSpecialAttack(bool isSpecial) { isSpecialAttack = isSpecial; }
 
 private:
 	// プレイヤーのステータス

@@ -17,3 +17,4 @@ void CheckCollisionPlayerEnemyBullet(Player* player, const std::list<std::shared
 void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared_ptr<Enemy>>& enemies);
 void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::shared_ptr<BossEnemy>>& enemies);
 void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet);
+void CheckCollisionSpecialAtackEnemy(const std::list<std::shared_ptr<Enemy>>& enemies);

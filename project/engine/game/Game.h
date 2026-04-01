@@ -3,7 +3,6 @@
 #include <dxgidebug.h>
 #include <strsafe.h>
 #include <minidumpapiset.h>
-
 #include "SpriteCommon.h"
 #include "ObjectCommon.h"
 #include "SrvManager.h"
@@ -16,7 +15,7 @@
 #include "ModelManager.h"
 #include "PostEffect.h"
 #include "RayMarching.h"
-
+#include "TrailEffectManager.h"
 #include "SceneManager.h"
 #include "SceneFactory.h"
 

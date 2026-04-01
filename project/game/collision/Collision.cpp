@@ -136,4 +136,15 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
         }
     }
 }
-void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet) { }
+void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet) {}
+
+void CheckCollisionSpecialAtackEnemy(const std::list<std::shared_ptr<Enemy>>& enemies) {
+    // 存在するすべての敵に当たる
+    for (const auto& enemy : enemies) {
+        // 敵が死んでいる場合はスキップ（敵側にAliveフラグ等がある前提）
+         if (!enemy->GetIsAlive()) continue;
+        // 敵に爆弾のダメージを与える
+        
+		 enemy->OnCollision(10, enemy->GetWorldPosition(), Vector3{0, 0, 0}); // 例として100ダメージを与える
+	}
+}

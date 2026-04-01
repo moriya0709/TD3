@@ -133,3 +133,10 @@ float EaseInOut(float x1, float x2, float t);
 
 bool IsCollision(const AABB& aabb1, const AABB& aabb2);
 bool IsCollision(const AABB& aabb, const Vector3& point);
+
+// 2点間の距離の2乗を計算（平方根を取らないことで高速化するのが一般的）
+float DistanceSquared(const Vector3& a, const Vector3& b);
+// 実際の距離（sqrtを使用）
+float Distance(const Vector3& a, const Vector3& b);
+// 外積
+Vector3 Cross(const Vector3& a, const Vector3& b);
