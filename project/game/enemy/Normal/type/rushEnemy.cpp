@@ -2,6 +2,8 @@
 #include "../Bullet/rushEnemyBullet.h"
 #include "Player.h"
 
+// TODO カメラが動いている際の挙動を確認
+
 void rushEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 {
     camera_ = camera;
