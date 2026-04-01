@@ -1,5 +1,5 @@
 #include "AbstractSceneFactory.h"
 
-void AbstractSceneFactory::SetPlayerStyle(Player::Style style)
+void AbstractSceneFactory::SetPlayerStyle(int style)
 {
 }

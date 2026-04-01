@@ -1,20 +1,18 @@
 ﻿#pragma once
 #include "AbstractSceneFactory.h"
-#include "TitleScene.h"
 #include "GamePlayScene.h"
-#include"StageSelect.h"
-#include "Player.h"
+#include "StageSelect.h"
+#include "TitleScene.h"
 
-class SceneFactory : public AbstractSceneFactory{
+class SceneFactory : public AbstractSceneFactory {
 public:
-	void SetPlayerStyle(Player::Style style)override {
-		 currentStyle=style;
+	void SetPlayerStyle(int style) override {
+		currentStyle = style;
 
-	// シーン生成
+		// シーン生成
 	}
-	std::unique_ptr <BaseScene> CreateScene(const std::string& sceneName) override;
+	std::unique_ptr<BaseScene> CreateScene(const std::string& sceneName) override;
+
 private:
-	Player::Style currentStyle;
-
+	int currentStyle;
 };
-

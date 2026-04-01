@@ -331,9 +331,9 @@ void GamePlayScene::Draw3D()
 
 void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
 
-void GamePlayScene::SetPlayerStyle(Player::Style style)
+void GamePlayScene::SetPlayerStyle(int style)
 {
-    style_ = style;
+    style_ = static_cast<Style>(style);
 }
 
 void GamePlayScene::ChekeAllCollision()

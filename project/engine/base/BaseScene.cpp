@@ -1,10 +1,10 @@
 #include "BaseScene.h"
 
-void BaseScene::SetPlayerStyle(Player::Style style)
+void BaseScene::SetPlayerStyle(int style)
 {
 }
 
-Player::Style BaseScene::GetPlayerStyle()
+int BaseScene::GetPlayerStyle()
 {
-	return Player::Style();
+	return 0;
 }

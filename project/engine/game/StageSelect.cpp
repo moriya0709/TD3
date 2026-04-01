@@ -37,16 +37,16 @@ void StageSelect::Initialize()
 	playerObject_ = std::make_unique<Object>();
 	playerObject_->Initialize(camera_.get());
 	switch (currentStyle) {
-	case Player::normal:
+	case normal:
 		playerObject_->SetModel("normalMachine.obj");
 		break;
-	case Player::speed:
+	case speed:
 		playerObject_->SetModel("speedMachine.obj");
 		break;
-	case Player::power:
+	case power:
 		playerObject_->SetModel("powerMachine.obj");
 		break;
-	case Player::sniper:
+	case sniper:
 		playerObject_->SetModel("sniperMachine.obj");
 		break;
 	default:
@@ -72,12 +72,12 @@ void StageSelect::Update()
 	bool isChanged = false;
 	if (input->TriggerKey(DIK_D) || input->TriggerKey(DIK_RIGHT)) 
 	{
-		currentStyle = static_cast<Player::Style>((static_cast<int>(currentStyle) + 1) % 4);
+		currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 1) % 4);
 		isChanged = true;
 	}
 	else if (input->TriggerKey(DIK_A) || input->TriggerKey(DIK_LEFT))
 	{
-		currentStyle = static_cast<Player::Style>((static_cast<int>(currentStyle) + 3) % 4);
+		currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 3) % 4);
 		isChanged = true;
 	}
 
@@ -85,10 +85,10 @@ void StageSelect::Update()
 	{
 		switch (currentStyle)
 		{
-		case Player::normal: playerObject_->SetModel("normalMachine.obj"); break;
-		case Player::speed: playerObject_->SetModel("speedMachine.obj"); break;
-		case Player::power: playerObject_->SetModel("powerMachine.obj"); break;
-		case Player::sniper: playerObject_->SetModel("sniperMachine.obj"); break;
+		case normal: playerObject_->SetModel("normalMachine.obj"); break;
+		case speed: playerObject_->SetModel("speedMachine.obj"); break;
+		case power: playerObject_->SetModel("powerMachine.obj"); break;
+		case sniper: playerObject_->SetModel("sniperMachine.obj"); break;
 		}
 	}
 

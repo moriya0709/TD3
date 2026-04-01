@@ -39,7 +39,7 @@ private:
 	std::unique_ptr <BaseScene> nextScene_ = nullptr;
 	// シーンファクトリー
 	std::unique_ptr <AbstractSceneFactory> sceneFactory_ = nullptr;
-	Player::Style currentStyle;
+	int currentStyle;
 
 };
 
