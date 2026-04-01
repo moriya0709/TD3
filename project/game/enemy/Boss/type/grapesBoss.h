@@ -22,7 +22,7 @@ public:
         kUnknown = -1,
         kAppearance, // 出現中(無敵にするため)
         kStillness, // 無
-        kAttack, // 攻撃
+        kAttack, // 突進
         kShield, // シールド状態
         kDefeated, // ﾀﾋ
     };
@@ -53,6 +53,8 @@ public:
     void BulletUpdate();
 
     void MoveUpdate();
+    void RoatetUpdate();
+    void MoveRush();
 
     void BehaviorStillness();
     void BehaviorAttack();
@@ -78,8 +80,17 @@ private:
     // プレイヤーの情報
     Player* player_ = nullptr;
 
+    // 通常の移動速度
+    Vector3 baseMove = { 1.0f, 1.0f, 0.0f };
+    // ホーミング性能
+    float homingPower = 0.010f;
+    // 突進の移動速度
+    Vector3 acceleration_;
+    Vector3 velocity_ = { 0.0f, 0.0f, 0.0f };
+    static inline const float maxSpeed = 0.75f; // 突進の速度
+
     float BehaviorchangeTimer;
-    static inline const float kBehaviorchangeTimer = 5.0f;
+    static inline const float kBehaviorchangeTimer = 30.0f;
 
     float interval; // 弾を発射する間隔
     Vector3 startRotate;
