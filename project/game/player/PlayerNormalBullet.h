@@ -12,6 +12,7 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
+#include "TrailEffect.h"
 
 class PlayerNormalBullet : public PlayerBullet {
 public:
@@ -49,6 +50,8 @@ private:
 
 	// パーティクルエミッタ
 	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
+	// トレイルエフェクト
+	std::shared_ptr<TrailEffect> trailEffect = std::make_shared<TrailEffect>();
 
 
 	// モーションブラー

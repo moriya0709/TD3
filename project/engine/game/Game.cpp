@@ -37,6 +37,8 @@ void Game::Initialize() {
 #pragma endregion
 
 #pragma region 最初のシーン
+	// テクスチャ読み込み
+	TextureManager::GetInstance()->LoadTexture("Resource/trail/trail.png");
 
 	// パーティクルマネージャ初期化
 	ParticleManager::GetInstance()->CreateParticleGroup("group1", "Resource/particle/particle.png");
@@ -73,6 +75,8 @@ void Game::Initialize() {
 	// 3Dテクスチャに雲を書き込む
 	RayMarching::GetInstance()->ComputeCloud();
 
+	// トレイルエフェクト
+	TrailEffectManager::GetInstance()->Initialize();
 
 	// シーンマネージャーの生成
 	// 最初のシーン生成
@@ -96,6 +100,11 @@ void Game::Update() {
 
 	// パーティクル更新
 	ParticleManager::GetInstance()->Update();
+
+	// トレイルエフェクト更新
+	float deltaTime = 1.0f / 60.0f;
+	TrailEffectManager::GetInstance()->UpdateAll(deltaTime);
+
 	// ImGui受付終了
 	imGuiManager->End();
 }
@@ -114,6 +123,9 @@ void Game::Draw() {
 
 	// パーティクル描画
 	ParticleManager::GetInstance()->Draw();
+	// トレイルエフェクト描画
+	TrailEffectManager::GetInstance()->RenderAll();
+
 
 	// ポストエフェクト描画
 	PostEffect::GetInstance()->PostDraw();
