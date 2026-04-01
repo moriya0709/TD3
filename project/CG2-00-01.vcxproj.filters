@@ -81,6 +81,8 @@
     <ClCompile Include="game\enemy\Boss\BossEnemy.cpp" />
     <ClCompile Include="TrailEffect.cpp" />
     <ClCompile Include="TrailEffectManager.cpp" />
+    <ClCompile Include="engine\base\BaseScene.cpp" />
+    <ClCompile Include="engine\base\AbstractSceneFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />

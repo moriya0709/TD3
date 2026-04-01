@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <cassert>
 #include <memory>
+#include"Player.h"
 
 #include "BaseScene.h"
 #include "AbstractSceneFactory.h"
@@ -38,6 +39,7 @@ private:
 	std::unique_ptr <BaseScene> nextScene_ = nullptr;
 	// シーンファクトリー
 	std::unique_ptr <AbstractSceneFactory> sceneFactory_ = nullptr;
+	int currentStyle;
 
 };
 

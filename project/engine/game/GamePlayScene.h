@@ -33,8 +33,14 @@ public:
     void Draw3D() override;
     // 終了
     void Finalize() override;
+    void SetPlayerStyle(int style) override;
 
     void ChekeAllCollision() ;
+
+    void PauseSelect();
+
+    //ポーズ選択
+    enum Pause { kResume, kRetry, kSelect };
 
 private:
     Transform cameraTransform {
@@ -144,8 +150,15 @@ private:
     std::unique_ptr<Object> object {};
 
     std::unique_ptr<Player> player_ = nullptr;
+    Style style_ = Style::normal;
     // リスト
     std::unique_ptr<EnemyManager> enemy_ = nullptr;
     std::unique_ptr<CameraController> cameraController_ = nullptr;
+	int specialAttackTimer = 0;
+
+    //ポーズかどうか
+    bool isPause_ = false;
+
+    Pause currentPause_ = kResume;
 
 };

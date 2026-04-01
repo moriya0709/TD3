@@ -78,7 +78,7 @@ void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared
 
         for (const auto& enemy : enemies) {
             // 敵が死んでいる場合はスキップ（敵側にAliveフラグ等がある前提）
-            // if (!enemy->IsAlive()) continue;
+             if (!enemy->GetIsAlive()) continue;
 
             Vector3 enemyPos = enemy->GetWorldPosition();
             float enemySize = enemy->GetRadius();
@@ -124,7 +124,7 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
                 if (distance <= bulletSize + volume.radius) {
 
                     // ボスに「このパーツに当たったぞ」と報告し、リアクションを任せる
-                    if (enemy->OnHit(volume, bullet.get())) {
+                    if (enemy->OnCollision(volume, bullet.get())) {
                         bullet->SetActive(false); // 弾を消す
 
                         break; // この弾の判定は終了
@@ -136,4 +136,15 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
         }
     }
 }
-void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet) { }
+void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet) {}
+
+void CheckCollisionSpecialAtackEnemy(const std::list<std::shared_ptr<Enemy>>& enemies) {
+    // 存在するすべての敵に当たる
+    for (const auto& enemy : enemies) {
+        // 敵が死んでいる場合はスキップ（敵側にAliveフラグ等がある前提）
+         if (!enemy->GetIsAlive()) continue;
+        // 敵に爆弾のダメージを与える
+        
+		 enemy->OnCollision(10, enemy->GetWorldPosition(), Vector3{0, 0, 0}); // 例として100ダメージを与える
+	}
+}

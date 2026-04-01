@@ -19,6 +19,8 @@ public:
     // setter
     virtual void SetSceneManager(SceneManager* sceneManager) { sceneManager_ = sceneManager; }
 
+    virtual void SetPlayerStyle(int style);
+    virtual int GetPlayerStyle();
     virtual ~BaseScene() = default;
 
 private:

@@ -6,6 +6,14 @@ public:
     // 各パーツの情報
     struct BossPart {
         Transform transform; // ローカル座標（ボスの中心からのオフセット）
+
+        // --- アニメーション用に追加 ---
+        Vector3 targetRotate; // 目標の角度
+        bool isAnimating = false; // 現在回転中かどうかのフラグ
+
+        // キャラクターの個々の当たり判定サイズ
+        static inline const float radius = 3.0f;
+
         bool isWeakPoint; // 当たり判定の属性（本体かダミーか）
         std::unique_ptr<Object> object; // 描画オブジェクトをパーツが持つ
     };
@@ -14,7 +22,7 @@ public:
         kUnknown = -1,
         kAppearance, // 出現中(無敵にするため)
         kStillness, // 無
-        kAttack, // 攻撃
+        kAttack, // 突進
         kShield, // シールド状態
         kDefeated, // ﾀﾋ
     };
@@ -26,7 +34,7 @@ public:
 
     void Draw3D() override;
 
-    void BulletMirror(const CollisionVolume& volume,PlayerBullet* bullet);
+    void BulletMirror(const CollisionVolume& volume, PlayerBullet* bullet);
 
     void WeakPointChange();
 
@@ -35,15 +43,18 @@ public:
     Vector3 GetWorldPosition() const override;
     float GetRadius() const override;
     bool GetIsDead() const override;
-    bool OnHit(const CollisionVolume& volume, PlayerBullet* bullet) override;
     std::vector<CollisionVolume> GetCollisionVolumes() override;
 
     // Set
     void SetTargetPlayer(Player* target) override;
-    void OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity) override;
+    bool OnCollision(const CollisionVolume& volume, PlayerBullet* bullet) override;
 
 public:
     void BulletUpdate();
+
+    void MoveUpdate();
+    void RoatetUpdate();
+    void MoveRush();
 
     void BehaviorStillness();
     void BehaviorAttack();
@@ -51,7 +62,7 @@ public:
     void BehaviorDefeated();
 
 private:
-    Behavior behavior_ = Behavior::kAppearance;
+    Behavior behavior_ = Behavior::kStillness;
     Behavior behaviorRequest_ = Behavior::kUnknown;
 
     Camera* camera_ = nullptr; // カメラ―
@@ -69,8 +80,17 @@ private:
     // プレイヤーの情報
     Player* player_ = nullptr;
 
+    // 通常の移動速度
+    Vector3 baseMove = { 1.0f, 1.0f, 0.0f };
+    // ホーミング性能
+    float homingPower = 0.010f;
+    // 突進の移動速度
+    Vector3 acceleration_;
+    Vector3 velocity_ = { 0.0f, 0.0f, 0.0f };
+    static inline const float maxSpeed = 0.75f; // 突進の速度
+
     float BehaviorchangeTimer;
-    static inline const float kBehaviorchangeTimer = 5.0f;
+    static inline const float kBehaviorchangeTimer = 30.0f;
 
     float interval; // 弾を発射する間隔
     Vector3 startRotate;
@@ -80,7 +100,4 @@ private:
     bool isDead_ = false;
     float deadTimer_;
     static inline const float kdeadTimer_ = 10.0f;
-
-    // キャラクターの個々の当たり判定サイズ
-    static inline const float radius = 2.0f;
 };

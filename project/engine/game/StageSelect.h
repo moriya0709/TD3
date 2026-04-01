@@ -30,6 +30,9 @@ public:
 	void Draw3D()override;
 
 	void Finalize()override;
+    int GetPlayerStyle()override {
+        return currentStyle;
+    };
 
 private:
 
@@ -60,7 +63,7 @@ private:
 	// パーティクルエミッタ
 	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
 
-	Player::Style currentStyle = Player::normal;
+	Style currentStyle = normal;
 
     // 平行光
     bool isDirectionalLight = false;

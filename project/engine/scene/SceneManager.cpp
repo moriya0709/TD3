@@ -7,6 +7,7 @@ void SceneManager::Update() {
 	if (nextScene_) {
 		// 旧シーン終了
 		if (scene_) {
+			currentStyle=static_cast<Style>(scene_->GetPlayerStyle());
 			scene_->Finalize();
 		}
 
@@ -15,6 +16,7 @@ void SceneManager::Update() {
 
 		// シーンマネージャーをセット
 		scene_->SetSceneManager(this);
+		scene_->SetPlayerStyle(currentStyle);
 
 		// 次シーンを初期化
 		scene_->Initialize();

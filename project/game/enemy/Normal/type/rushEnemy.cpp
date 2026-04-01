@@ -2,6 +2,8 @@
 #include "../Bullet/rushEnemyBullet.h"
 #include "Player.h"
 
+// TODO カメラが動いている際の挙動を確認
+
 void rushEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 {
     camera_ = camera;
@@ -279,5 +281,6 @@ void rushEnemy::BehaviorDefeated()
     // 上に断末のコードを角
     if (deadTimer_ <= 0.0f) {
         isDead_ = true;
+        isAvile = true;
     }
 }
