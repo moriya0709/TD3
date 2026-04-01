@@ -150,6 +150,12 @@ private:
     std::unique_ptr<Object> object {};
 
     std::unique_ptr<Player> player_ = nullptr;
+
+    std::unique_ptr<Sprite> pause_ = nullptr;
+    std::unique_ptr<Sprite> resume_ = nullptr;
+    std::unique_ptr<Sprite> retry_ = nullptr;
+    std::unique_ptr<Sprite> select_ = nullptr;
+
     Style style_ = Style::normal;
     // リスト
     std::unique_ptr<EnemyManager> enemy_ = nullptr;
