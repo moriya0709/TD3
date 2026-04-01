@@ -14,6 +14,8 @@
     <FxCompile Include="Resource\shaders\Sprite.PS.hlsl" />
     <FxCompile Include="Resource\shaders\Sprite.VS.hlsl" />
     <FxCompile Include="Resource\shaders\RayMarching.CS.hlsl" />
+    <FxCompile Include="Resource\shaders\TrailEffect.PS.hlsl" />
+    <FxCompile Include="Resource\shaders\TrailEffect.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game\collision\Collision.cpp" />
@@ -77,6 +79,8 @@
     <ClCompile Include="game\enemy\Boss\type\grapesBoss.cpp" />
     <ClCompile Include="engine\game\StageSelect.cpp" />
     <ClCompile Include="game\enemy\Boss\BossEnemy.cpp" />
+    <ClCompile Include="TrailEffect.cpp" />
+    <ClCompile Include="TrailEffectManager.cpp" />
     <ClCompile Include="engine\base\BaseScene.cpp" />
     <ClCompile Include="engine\base\AbstractSceneFactory.cpp" />
   </ItemGroup>
@@ -147,6 +151,8 @@
     <ClInclude Include="game\enemy\Boss\type\grapesBoss.h" />
     <ClInclude Include="engine\game\StageSelect.h" />
     <ClInclude Include="game\enemy\Boss\BossEnemy.h" />
+    <ClInclude Include="TrailEffect.h" />
+    <ClInclude Include="TrailEffectManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\RayMarching.hlsli" />

@@ -419,3 +419,24 @@ bool IsCollision(const AABB& aabb, const Vector3& point)
     // すべての軸で範囲内なら、衝突（中にある）
     return true;
 }
+
+// 2点間の距離の2乗を計算（平方根を取らないことで高速化するのが一般的）
+float DistanceSquared(const Vector3& a, const Vector3& b) {
+    float dx = a.x - b.x;
+    float dy = a.y - b.y;
+    float dz = a.z - b.z;
+    return dx * dx + dy * dy + dz * dz;
+}
+
+// 実際の距離（sqrtを使用）
+float Distance(const Vector3& a, const Vector3& b) {
+    return std::sqrt(DistanceSquared(a, b));
+}
+
+Vector3 Cross(const Vector3& a, const Vector3& b) {
+    return Vector3(
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    );
+}

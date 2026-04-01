@@ -15,6 +15,7 @@
 #include "ModelManager.h"
 #include "PostEffect.h"
 #include "RayMarching.h"
+#include "TrailEffectManager.h"
 #include "SceneManager.h"
 #include "SceneFactory.h"
 
