@@ -23,6 +23,20 @@ void GamePlayScene::Initialize() {
 	enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
 
 	cameraController_->StartReplay();
+
+	//スプライト
+	pause_ = std::make_unique<Sprite>();
+	pause_->Initialize("Resource/pause.png");//ポーズ
+
+	resume_ = std::make_unique <Sprite>();
+	resume_->Initialize("Resource/resume.png");//続ける
+
+	retry_ = std::make_unique <Sprite>();
+	retry_->Initialize("Resource/retry.png");//リトライ
+
+	select_ = std::make_unique <Sprite>();
+	select_->Initialize("Resource/select.png");//セレクトへ
+
 }
 
 void GamePlayScene::Update() {
@@ -314,6 +328,20 @@ void GamePlayScene::Draw2D() {
 
 	player_->Draw2D();
 
+	pause_->Draw();//ポーズ
+
+	switch (currentPause_)
+	{
+	case kResume:
+		resume_->Draw();//ポーズ//続ける
+		break;
+	case kRetry:
+		retry_->Draw();//リトライ
+		break;
+	case kSelect:
+		select_->Draw();//セレクトへ
+		break;
+	}
 	// スプライト描画
 	// sprite->Draw();
 }
