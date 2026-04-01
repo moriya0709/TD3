@@ -16,6 +16,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
+    <ClCompile Include="engine\base\AbstractSceneFactory.cpp" />
+    <ClCompile Include="engine\base\BaseScene.cpp" />
     <ClCompile Include="game\collision\Collision.cpp" />
     <ClCompile Include="engine\camera\Camera.cpp" />
     <ClCompile Include="engine\camera\CameraManager.cpp" />

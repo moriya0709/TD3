@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "BaseScene.h"
 #include "Camera.h"
 #include "CameraManager.h"
 #include "ImGuiManager.h"
@@ -12,20 +11,11 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
-
+enum Style { normal, speed, power, sniper };
 // ベクトルを回転行列によって変換する関数
 class Enemy;
 class Player {
 public:
-	enum Style {
-		normal,
-		speed,
-		power,
-		sniper
-
-	};
-
-
 	struct Statas {
 		Style style;                  // スタイル
 		int hp;                       // 体力
@@ -36,7 +26,7 @@ public:
 		int chargeTime = 0;           // チャージ時間
 		int haste = 0;                // 攻撃頻度
 	};
-	void Initialize(Camera* camera ,Style style);
+	void Initialize(Camera* camera, Style style);
 	void Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cmrvel);
 	void Draw2D();
 	void Draw3D();
@@ -52,18 +42,18 @@ public:
 		damageTimer = 30; // ダメージ表示タイマーリセット
 	}
 	bool GetIsHit() const { return ishit; }
-	//void SetStatas(const Statas& newStatas) { statas_ = newStatas; }
+	// void SetStatas(const Statas& newStatas) { statas_ = newStatas; }
 
 	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets; }
 	int GetAttack() const { return statas_[currentStyle].attack; }
 	int GetHP() const { return statas_[currentStyle].hp; }
-	int GetCurrentStyleLevel(Style style,int statas) const {
+	int GetCurrentStyleLevel(Style style, int statas) const {
 		if (style < 0 || style >= 4) {
 			return 0; // 無効なスタイルの場合はレベル0を返す
 		}
 		return cureentStyleStatasLevels[style][statas];
 	}
-	int SetCurrentStyleLevel(Style style, int level,int statas) {
+	int SetCurrentStyleLevel(Style style, int level, int statas) {
 		if (style < 0 || style >= 4) {
 			return 0; // 無効なスタイルの場合はレベル0を返す
 		}
@@ -78,7 +68,7 @@ private:
 	Transform transform_;
 	// プレイヤーの3Dオブジェクト
 	std::unique_ptr<Object> playerObject_;
-	//マシン3Dオブジェクト
+	// マシン3Dオブジェクト
 	std::unique_ptr<Object> machineObject_;
 	// プレイヤーの2Dスプライト（照準）
 	std::unique_ptr<Sprite> reticle_;
@@ -138,8 +128,7 @@ private:
 	std::string GetFilePath() const;
 	void LoadStatas(const std::string& filePath);
 	void SaveStatas(const std::string& filePath) const;
-
-
 };
 
+Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);

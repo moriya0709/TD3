@@ -77,6 +77,8 @@
     <ClCompile Include="game\enemy\Boss\type\grapesBoss.cpp" />
     <ClCompile Include="engine\game\StageSelect.cpp" />
     <ClCompile Include="game\enemy\Boss\BossEnemy.cpp" />
+    <ClCompile Include="engine\base\BaseScene.cpp" />
+    <ClCompile Include="engine\base\AbstractSceneFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />

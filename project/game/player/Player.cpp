@@ -1,17 +1,13 @@
 ﻿#include "Player.h"
 #include "../enemy/Enemy.h"
-#include "ObjectCommon.h"
 #include "PlayerChargeBullet.h"
 #include "PlayerNormalBullet.h"
-#include "SceneManager.h"
-#include "SpriteCommon.h"
 #include "engine/base/WindowAPI.h"
 #include <algorithm>
 #include <cmath>
 #include <externals/nlohmann/json.hpp>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 
 #include <list>
 
@@ -161,16 +157,16 @@ void Player::Initialize(Camera* camera, Style style) {
 	playerObject_ = std::make_unique<Object>();
 	playerObject_->Initialize(camera_);
 	switch (style) {
-	case Player::normal:
+	case normal:
 		playerObject_->SetModel("normalMachine.obj");
 		break;
-	case Player::speed:
+	case speed:
 		playerObject_->SetModel("speedMachine.obj");
 		break;
-	case Player::power:
+	case power:
 		playerObject_->SetModel("powerMachine.obj");
 		break;
-	case Player::sniper:
+	case sniper:
 		playerObject_->SetModel("sniperMachine.obj");
 		break;
 	default:
@@ -370,16 +366,16 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 
 	ImGui::End();
 	switch (currentStyle) {
-	case Player::normal:
+	case normal:
 		playerObject_->SetModel("normalMachine.obj");
 		break;
-	case Player::speed:
+	case speed:
 		playerObject_->SetModel("speedMachine.obj");
 		break;
-	case Player::power:
+	case power:
 		playerObject_->SetModel("powerMachine.obj");
 		break;
-	case Player::sniper:
+	case sniper:
 		playerObject_->SetModel("sniperMachine.obj");
 		break;
 	default:
