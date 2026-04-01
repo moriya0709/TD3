@@ -5,9 +5,9 @@
             "type": "NormalEnemy",
             "hp": 10000,
             "position": {
-                "x": 30.0,
+                "x": 0.0,
                 "y": 0.0,
-                "z": 60.0
+                "z": 400.0
             },
             "movePattern": [
                 {
@@ -16,7 +16,7 @@
                         "y": 0.0,
                         "z": 60.0
                     },
-                    "timeToReach": 3.0,
+                    "timeToReach": 1.0,
                     "timeToStop" : 70.0
                 },
                 {

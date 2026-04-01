@@ -65,9 +65,8 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	particleEmitter->Initialize("bBullet", ptrans, 5, 0.2f);
 
 	
-	particleEmitter->Emit();
 	particleEmitter->SetActive("bBullet");
-	particleEmitter->LoadParticle("Resource/particle/fire.csv");
+	particleEmitter->LoadParticle("Resource/particle/bullet.csv");
 
 
 	object_->SetScale(transform_.scale);
@@ -113,10 +112,11 @@ void PlayerNormalBullet::Update(Vector3 cmrvel) {
 		isActive_ = false;
 	} else {
 		lifeTime_++;
-		// パーティクルエミッタ更新
-		particleEmitter->Update();
-		particleEmitter->SetTranslate(transform_.translate);
+		
 	}
+	// パーティクルエミッタ更新
+	particleEmitter->Update();
+	particleEmitter->SetTranslate(transform_.translate);
 
 }
 void PlayerNormalBullet::Draw3D() {
