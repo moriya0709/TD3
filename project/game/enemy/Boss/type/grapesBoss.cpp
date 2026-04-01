@@ -1,6 +1,7 @@
 ﻿#include "grapesBoss.h"
+#include "../../Normal/Bullet/HomingEnemyBullet.h"
+#include "../../Normal/Bullet/TargetEnemyBullet.h"
 #include "Player.h"
-#include <game/enemy/Normal/Bullet/HomingEnemyBullet.h>
 
 void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
 {
@@ -15,6 +16,9 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
     baseTransform_.translate = pos;
 
     BehaviorchangeTimer = kBehaviorchangeTimer;
+    interval = maxInterval;
+
+    isAvile = true;
 
     parts_.clear();
 
@@ -53,11 +57,7 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
             p.object->Initialize(camera_);
             p.object->SetModel("bossGrapesOnly.obj");
             p.object->SetScale(baseTransform_.scale);
-            if (rowIndex == 0 && i == 1) {
-                p.object->SetRotate(p.transform.rotate);
-            } else {
-                p.object->SetRotate(p.transform.rotate);
-            }
+            p.object->SetRotate(p.transform.rotate);
             p.object->SetTranslate(baseTransform_.translate + p.transform.translate + cameraPos);
             // object->SetModel(texture); テクスチャを直で変えられるコードが今はない
             p.object->Update();
@@ -279,7 +279,7 @@ std::vector<CollisionVolume> grapesBoss::GetCollisionVolumes()
         // 2. 判定用のボリューム構造体を作成
         CollisionVolume volume;
         volume.position = partWorldPos; // 計算したワールド座標
-        volume.radius = BossPart::radius; // パーツ個別の当たり判定サイズ
+        volume.radius = parts_[i].radius; // パーツ個別の当たり判定サイズ
         volume.partId = i; // 何番目のパーツか（OnHitで使う）
 
         // 3. リストに追加
@@ -297,20 +297,30 @@ void grapesBoss::SetTargetPlayer(Player* target)
 void grapesBoss::BulletUpdate()
 {
     // 弾を生成する時間を減らす
-    // if (behavior_ == Behavior::kWalk) {
-    //    interval -= 1.0f / 60.0f;
-    //}
+    if (behavior_ == Behavior::kStillness) {
+        interval -= 1.0f / 60.0f;
+    }
 
-    // if (interval <= 0.0f) {
-    //     // 弾の生成
-    //     std::unique_ptr<TargetEnemyBullet> newBulletEnemy = std::make_unique<TargetEnemyBullet>();
-    //     newBulletEnemy->Initialize(camera_, transform_.translate);
-    //     newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.08f));
-    //     newBulletEnemy->SetTargetPosition(player_->GetPosition());
+    if (interval <= 0.0f) {
+        // 弾の生成
+        std::unique_ptr<HomingEnemyBullet> newBulletEnemy = std::make_unique<HomingEnemyBullet>();
 
-    //    enemyBullet_.push_back(std::move(newBulletEnemy));
-    //    interval = maxInterval;
-    //}
+        for (auto& part : parts_) {
+            if (!part.isWeakPoint)
+                continue;
+
+            newBulletEnemy->Initialize(camera_, part.transform.translate + baseTransform_.translate + camera_->GetTranslate());
+            break;
+        }
+
+        // 弱点が攻撃をする
+        newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.08f));
+        newBulletEnemy->SetTargetPosition(player_->GetPosition());
+        newBulletEnemy->Update();
+
+        enemyBullet_.push_back(std::move(newBulletEnemy));
+        interval = maxInterval;
+    }
 
     // 更新処理
     for (auto& bullet : enemyBullet_) {
@@ -326,6 +336,21 @@ void grapesBoss::BulletUpdate()
 
 void grapesBoss::MoveUpdate()
 {
+
+    baseTransform_.translate += baseMove / 60.0f;
+    if (baseTransform_.translate.x <= -5.0f || baseTransform_.translate.x >= 5.0f) {
+        baseMove.x *= -1.0f;
+    }
+    if (baseTransform_.translate.y <= -5.0f || baseTransform_.translate.y >= 5.0f) {
+        baseMove.y *= -1.0f;
+    }
+
+    RoatetUpdate();
+}
+
+void grapesBoss::RoatetUpdate()
+{
+
     const float rotationSpeed = (float)std::numbers::pi * 2.0f;
     const float deltaTime = 1.0f / 60.0f; // フレーム間隔（仮）
 
@@ -355,14 +380,74 @@ void grapesBoss::MoveUpdate()
             }
         }
 
-        Vector3 finalPos = {
-            baseTransform_.translate.x + part.transform.translate.x,
-            baseTransform_.translate.y + part.transform.translate.y,
-            baseTransform_.translate.z + part.transform.translate.z
-        };
-
-        part.object->SetTranslate(finalPos);
         part.object->SetRotate(part.transform.rotate);
+    }
+}
+
+void grapesBoss::MoveRush()
+{
+    // TODO 突進の処理
+    // 本体を含むランダムに3個突進をする敵を設定　→　2秒おきに順番に突進　→　最後に戻る際プレイヤー当たらないように下側(又は上側)に弧を描いて帰宅。
+
+    Vector3 targetPos_;
+    targetPos_ = player_->GetPosition();
+
+    for (auto& patr : parts_) {
+        // ターゲットへのベクトル ＝ 目的地の座標 － 現在の座標
+        Vector3 direction;
+        Vector3 cameraPos = camera_->GetTranslate();
+        direction.x = targetPos_.x - (baseTransform_.translate.x + patr.transform.translate.x + cameraPos.x);
+        direction.y = targetPos_.y - (baseTransform_.translate.y + patr.transform.translate.y + cameraPos.y);
+        direction.z = targetPos_.z - (baseTransform_.translate.z + patr.transform.translate.z + cameraPos.z);
+
+        // directionを「長さが1のベクトル（正規化ベクトル）」にする
+        direction = Normalize(direction);
+
+        // 加速度をターゲット方向に向ける
+        acceleration_ = direction * homingPower;
+
+        velocity_ += acceleration_;
+
+        float currentSpeed = sqrtf(velocity_.x * velocity_.x + velocity_.y * velocity_.y + velocity_.z * velocity_.z);
+        // 弾の速さが最高速度を超えていたら、最高速度に制限する
+        if (currentSpeed >= maxSpeed) {
+            // 現在の進行方向（長さ1）を計算し、それに最高速度を掛ける
+            Vector3 currentDir = Normalize(velocity_);
+            velocity_ = currentDir * maxSpeed;
+        }
+
+        Vector3 rotate;
+        rotate.y = atan2(velocity_.x, velocity_.z);
+        // 横軸方向の長さを求める
+        float hypotXZ = std::hypot(velocity_.x, velocity_.z);
+        rotate.x = atan2(-velocity_.y, hypotXZ);
+        rotate.z = 0.0f;
+        // object_->SetRotate(rotate);
+
+        patr.transform.translate += velocity_;
+
+        // カリング処理
+
+        const Matrix4x4& worldMat = camera_->GetWorldMatrix();
+
+        Vector3 cameraForward = { worldMat.m[2][0], worldMat.m[2][1], worldMat.m[2][2] };
+
+        // 正規化
+        cameraForward = Normalize(cameraForward);
+
+        // べ黒る
+        Vector3 toBullet;
+        toBullet.x = baseTransform_.translate.x + patr.transform.translate.x;
+        toBullet.y = baseTransform_.translate.y + patr.transform.translate.y;
+        toBullet.z = baseTransform_.translate.z + patr.transform.translate.z;
+
+        // 内積
+        float dotProduct = cameraForward.x * toBullet.x + cameraForward.y * toBullet.y + cameraForward.z * toBullet.z;
+
+        // カメラから離れているなら
+        if (dotProduct < -1.0f) {
+            // 弧を描いて戻らせたい
+        }
     }
 }
 
@@ -387,14 +472,17 @@ void grapesBoss::BehaviorStillness()
 
 void grapesBoss::BehaviorAttack()
 {
-    BehaviorchangeTimer -= 1.0f / 60.0f;
+    // 突進が終わったら切り替えにする
+    /*BehaviorchangeTimer -= 1.0f / 60.0f;
     if (BehaviorchangeTimer <= 0.0f) {
         behaviorRequest_ = Behavior::kStillness;
         BehaviorchangeTimer = kBehaviorchangeTimer;
-    }
+    }*/
 
-    // 移動
-    MoveUpdate();
+    // 回転のみ
+    RoatetUpdate();
+
+    MoveRush();
 }
 
 void grapesBoss::BehaviorShield()
