@@ -29,6 +29,7 @@ public:
     Vector3 GetWorldPosition() const override { return transform_.translate; }
     float GetRadius() const override { return radius; }
     bool GetIsDead() const override { return isDead_; }
+    bool GetIsAlive() const override { return isAvile; }
 
 private:
     void EnemyMove();

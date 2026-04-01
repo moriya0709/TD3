@@ -49,13 +49,13 @@ public:
     virtual std::vector<CollisionVolume> GetCollisionVolumes() = 0;
 
     // 弾を受け取り、弾を消滅させるなら true を返す
-    virtual bool OnHit(const CollisionVolume& volume, PlayerBullet* bullet) = 0;
+    virtual bool OnCollision(const CollisionVolume& volume, PlayerBullet* bullet) = 0;
 
     virtual bool GetIsDead() const = 0;
 
     /* Set関数 */
     virtual void SetTargetPlayer(Player* target) { };
-    virtual void OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity) = 0;
+    //virtual void OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity) = 0;
     // virtual void SetWayPoints(const std::vector<WayPoint>& waypoints) { };
     // virtual void SetFleeWaypoint(const WayPoint& fleeWP, bool hasFleeData) { };
 
