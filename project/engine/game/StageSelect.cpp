@@ -69,7 +69,7 @@ void StageSelect::Update()
 	playerObject_->SetRotate(transform_.rotate);
 	playerObject_->SetTranslate(transform_.translate);
 	
-	bool isChanged = false;
+	bool isChanged = false;//マシン変更
 	if (input->TriggerKey(DIK_D) || input->TriggerKey(DIK_RIGHT)) 
 	{
 		currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 1) % 4);
@@ -96,8 +96,6 @@ void StageSelect::Update()
 	if (input->TriggerKey(DIK_RETURN)) {
 		// ゲームプレイシーン(次シーン)を生成
 		SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-		// 音声再生
-		SoundManager::GetInstance()->Stop("bgm");
 	}
 
 	// * 3Dオブジェクト* //
