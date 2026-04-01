@@ -45,6 +45,7 @@ public:
     virtual float GetRadius() const = 0;
     const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
     virtual bool GetIsDead() const = 0;
+    virtual bool GetIsAlive() const = 0;
 
     /* Set関数 */
     virtual void SetTargetPlayer(Player* target) { };
