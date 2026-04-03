@@ -101,15 +101,19 @@ void ParticleManager::Update() {
 			it->color.w = alpha;
 
 			// 色を徐々に変化させる
-			float progress = it->currentTime / it->lifeTime;
+			float progress = (it->currentTime / it->lifeTime) * colorChangeSpeed_;
+			if (progress > 1.0f) {
+				progress = 1.0f;
+			}
 			if (isColorChange_[0]) {
-				it->color.x = 0.5f - (it->currentTime / it->lifeTime);
+				// 【変更】startColor から finalColor へ線形補間
+				it->color.x = it->startColor.x + (finalColor_.x - it->startColor.x) * progress;
 			}
 			if (isColorChange_[1]) {
-				it->color.y = 0.5f - (it->currentTime / it->lifeTime);
+				it->color.y = it->startColor.y + (finalColor_.y - it->startColor.y) * progress;
 			}
 			if (isColorChange_[2]) {
-				it->color.z = 0.5f - (it->currentTime / it->lifeTime);
+				it->color.z = it->startColor.z + (finalColor_.z - it->startColor.z) * progress;
 			}
 
 			// サイズを徐々に変化させる
@@ -517,6 +521,7 @@ Particle ParticleManager::MakeNewParticleEditor(
 
 	// 色
 	particle.color = color;
+	particle.startColor = color;
 
 	// ランダムに1~3秒の間生存するようにする
 	particle.lifeTime = distTime(randomEngine);

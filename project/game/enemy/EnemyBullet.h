@@ -44,6 +44,7 @@ public:
     virtual void SetactiveTimer(float num) = 0;
     virtual void SetTargetPosition(Vector3 Pos) = 0;
     virtual void OnCollision() = 0;
+    virtual void SethomingPower(float num) { };
 
 private:
     // Transform transform_; // 座標系

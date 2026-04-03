@@ -26,6 +26,7 @@ struct Particle {
 	Transform transform;
 	Vector3 velocity;
 	Vector4 color;
+	Vector4 startColor;
 	float lifeTime;
 	float currentTime;
 	Matrix4x4 wvp;
@@ -108,6 +109,9 @@ public:
 		isScaleChange_[i] = isScaleChange[i];
 	}
 	void SetScaleAdd(float scaleAdd) { scaleAdd_ = scaleAdd;}
+	void SetFinalColor(Vector4 color) { finalColor_ = color; }
+	// 【追加】色変化の速度倍率のsetter
+	void SetColorChangeSpeed(float speed) { colorChangeSpeed_ = speed; }
 
 	ParticleManager() = default;
 	~ParticleManager() = default;
@@ -170,6 +174,8 @@ private:
 	// パーティクル共通データ
 	bool isColorChange_[3] = { false }; // 色変更するかどうか
 	bool isScaleChange_[3] = { false }; // スケール変更するかどうか
+	Vector4 finalColor_ = { 1.0f,1.0f,1.0f,1.0f };
+	float colorChangeSpeed_ = 1.0f; // 【追加】色変化の速度（初期値1倍）
 	float scaleAdd_ = 0.0f; // スケール変更量
 
 
