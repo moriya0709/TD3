@@ -21,7 +21,8 @@ struct TrailVertex {
 class TrailEffect {
 public:
 	void Initialize(const std::string& textureName, const Transform& transform, float width, float maxLifetime);
-    void Update(float deltaTime, const Vector3& currentEmitterPos);
+    void UpdateLifetimes();
+    void AddPoint(const Vector3& currentEmitterPos);
     void GenerateVertices(const Vector3& cameraPos, std::vector<TrailVertex>& outVertices);
 
     // setter
@@ -30,6 +31,7 @@ public:
 	void SetWidth(float width) { m_Width = width; }
 	void SetLifetime(float lifetime) { MAX_LIFETIME = lifetime; }
 	void SetDistance(float distance) { MIN_DISTANCE = distance; }
+	void SetDeltaTime(float dt) { deltaTime = dt; }
 
     // getter
     Vector3 GetTranslate() { return translate_; }
@@ -42,7 +44,8 @@ private:
     std::deque<TrailPoint> m_Points;
     float m_Width = 1.5f;
     Vector4 m_Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	float MAX_LIFETIME = 0.5f; // 消えるまでの時間
+    float deltaTime = 0.1f;
+	float MAX_LIFETIME = 1.5f; // 消えるまでの時間
 	float MIN_DISTANCE = 0.1f; // ユニット以上動いたら新しいポイントを追加
     std::string m_TextureName;
 };

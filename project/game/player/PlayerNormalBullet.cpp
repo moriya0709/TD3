@@ -124,6 +124,7 @@ void PlayerNormalBullet::Update(Vector3 cmrvel) {
 	particleEmitter->SetTranslate(transform_.translate);
 
 	// トレイルエフェクト更新
+	trailEffect->AddPoint(transform_.translate);
 	trailEffect->SetTranslate(transform_.translate);
 
 }
