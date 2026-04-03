@@ -114,6 +114,7 @@ private:
     float interval; // 弾を発射する間隔
     Vector3 startRotate;
     static inline const float maxInterval = 2.0f; // 間隔
+    int intervalCount = 0;
 
     // 脂肪フラグ
     bool isDead_ = false;

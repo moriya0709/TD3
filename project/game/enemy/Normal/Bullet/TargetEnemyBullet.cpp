@@ -57,10 +57,11 @@ void TargetEnemyBullet::Update()
     float currentSpeed = sqrtf(velocity_.x * velocity_.x + velocity_.y * velocity_.y + velocity_.z * velocity_.z);
 
     // 弾の速さが最高速度を超えていたら、最高速度に制限する
-    if (currentSpeed >= maxSpeed) {
+    float totalMaxSpeed = maxSpeed + maxSpeedUpgrade; // 合計の限界値を出す
+    if (currentSpeed >= totalMaxSpeed) {
         // 現在の進行方向（長さ1）を計算し、それに最高速度を掛ける
         Vector3 currentDir = Normalize(velocity_);
-        velocity_ = currentDir * maxSpeed;
+        velocity_ = currentDir * totalMaxSpeed;
     }
 
     transform_.translate += velocity_;
