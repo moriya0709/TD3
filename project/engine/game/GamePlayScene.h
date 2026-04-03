@@ -162,6 +162,9 @@ private:
     std::unique_ptr<CameraController> cameraController_ = nullptr;
 	int specialAttackTimer = 0;
 
+    void LithingEffect();
+	void UpdateImGui();
+
     //ポーズかどうか
     bool isPause_ = false;
 
