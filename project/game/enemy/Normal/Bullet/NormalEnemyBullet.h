@@ -29,6 +29,7 @@ private:
     static inline const float maxSpeed = 1.00f; // 弾の最高速度(青天井でおk)
     float activeTimer; // 弾の持続時間
     static inline const float maxactiveTimer = 3.0f; // 弾の最大持続時間
+    float homingPower = 0.015f; // ダミー用
 
     // キャラクターの当たり判定サイズ
     static inline const float radius = 2.0f;

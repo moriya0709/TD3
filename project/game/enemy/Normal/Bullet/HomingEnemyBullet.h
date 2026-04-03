@@ -23,6 +23,7 @@ public:
     void SetactiveTimer(float num) override { activeTimer = num; }
     void SetTargetPosition(Vector3 Pos) { targetPos_ = Pos; };
     void OnCollision() override;
+    void SethomingPower(float num) override { homingPower = num; };
 
 private:
     Transform transform_; // 座標系

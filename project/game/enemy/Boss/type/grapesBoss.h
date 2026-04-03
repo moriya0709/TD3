@@ -96,8 +96,10 @@ private:
 
     // 通常の移動速度
     Vector3 baseMove = { 1.0f, 1.0f, 0.0f };
-    // ホーミング性能
-    float homingPower = 0.005f;
+
+    static inline const float khomingPower = 0.0075f; // デフォルトホーミング性能
+    float homingPower = 0.0075f; // ホーミング性能
+
     // 突進の移動速度
     Vector3 acceleration_;
     Vector3 velocity_ = { 0.0f, 0.0f, 0.0f };
