@@ -143,6 +143,9 @@ private:
     bool rayMarchingIsAnimeLight = true;
     bool  rayMarchingIsMotionBlur = false;
     float  rayMarchingCloudOpacity = 0.01f;
+    bool isStorm = false;
+    float thunderFrequency = 0.3f;
+    float thunderBrightness = 120.0f;
 
     // カメラ
     std::unique_ptr<Camera> camera = nullptr;

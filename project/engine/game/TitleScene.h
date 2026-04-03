@@ -124,13 +124,16 @@ private:
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
-	float rayMarchingCloudCoverage = 0.22f;
-	float rayMarchingCloudBottom = 70.0f;
-	float rayMarchingCloudTop = -300.0f;
+	float rayMarchingCloudCoverage = 1.00f;
+	float rayMarchingCloudBottom = -90.0f;
+	float rayMarchingCloudTop = 2900.0f;
 	bool rayMarchingIsRialLight = false;
 	bool rayMarchingIsAnimeLight = true;
 	bool  rayMarchingIsMotionBlur = true;
 	float  rayMarchingCloudOpacity = 0.04f;
+	bool isStorm = true;
+	float thunderFrequency = 0.3f;
+	float thunderBrightness = 120.0f;
 
 	int padX;
 	int padY;
