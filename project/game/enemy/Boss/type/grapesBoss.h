@@ -16,6 +16,17 @@ public:
 
         bool isWeakPoint; // 当たり判定の属性（本体かダミーか）
         std::unique_ptr<Object> object; // 描画オブジェクトをパーツが持つ
+
+        // 突進に関するもの
+
+        bool isDashschedule = false; // 突進予定か
+        bool isDashing = false; // 突進中か
+        bool isReturning = false; // 帰還中か
+        Vector3 velocity; // 個別のベクトル
+        float returnTimer = 0.0f; // 帰還アニメーション用
+        Vector3 startReturnPos; // 帰還開始地点
+
+        Vector3 targetTranslate; // 突進開始地点
     };
 
     enum class Behavior {
@@ -51,6 +62,7 @@ public:
 
 public:
     void BulletUpdate();
+    void StartRush();
 
     void MoveUpdate();
     void RoatetUpdate();
@@ -66,6 +78,8 @@ private:
     Behavior behaviorRequest_ = Behavior::kUnknown;
 
     Camera* camera_ = nullptr; // カメラ―
+    std::unique_ptr<Object> stemobject; // 茎
+    Vector3 baseStem = { 0.0f, 8.0f, 0.0f };
 
     Transform baseTransform_; // ボス本体のベース（カメラ相対座標）
     std::vector<BossPart> parts_; // 7つのパーツを格納するリスト（vector）
@@ -83,14 +97,17 @@ private:
     // 通常の移動速度
     Vector3 baseMove = { 1.0f, 1.0f, 0.0f };
     // ホーミング性能
-    float homingPower = 0.010f;
+    float homingPower = 0.005f;
     // 突進の移動速度
     Vector3 acceleration_;
     Vector3 velocity_ = { 0.0f, 0.0f, 0.0f };
     static inline const float maxSpeed = 0.75f; // 突進の速度
 
+    float dashTimer = 1.0f;
+    static inline const float kdashTimer = 1.0f;
+
     float BehaviorchangeTimer;
-    static inline const float kBehaviorchangeTimer = 30.0f;
+    static inline const float kBehaviorchangeTimer = 5.0f;
 
     float interval; // 弾を発射する間隔
     Vector3 startRotate;

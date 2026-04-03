@@ -23,82 +23,217 @@ void GamePlayScene::Initialize() {
 	enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
 
 	cameraController_->StartReplay();
+
+	// スプライト
+	pause_ = std::make_unique<Sprite>();
+	pause_->Initialize("Resource/pause.png"); // ポーズ
+
+	resume_ = std::make_unique<Sprite>();
+	resume_->Initialize("Resource/resume.png"); // 続ける
+
+	retry_ = std::make_unique<Sprite>();
+	retry_->Initialize("Resource/retry.png"); // リトライ
+
+	select_ = std::make_unique<Sprite>();
+	select_->Initialize("Resource/select.png"); // セレクトへ
 }
 
 void GamePlayScene::Update() {
 
-    if (!isPause_)
-    {
-        cameraController_->Update();
+	if (!isPause_) {
+		cameraController_->Update();
 
-        // プレイヤー更新
-        player_->Update(enemy_->GetEnemies(), cameraController_->GetVelocity());
+		// プレイヤー更新
+		player_->Update(enemy_->GetEnemies(), cameraController_->GetVelocity());
 
+		// 敵更新
+		enemy_->SetcurrentTimer_(cameraController_->GetCurrentReplayTime());
+		enemy_->Update();
 
-        // 敵更新
-        enemy_->SetcurrentTimer_(cameraController_->GetCurrentReplayTime());
-        enemy_->Update();
+		// 当たり判定
+		ChekeAllCollision();
 
-        // 当たり判定
-        ChekeAllCollision();
+		// ポーズ画面へ
+		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
+			isPause_ = true;
+			isACES = false;
+		}
 
-        //ポーズ画面へ
-        if (Input::GetInstance()->TriggerKey(DIK_ESCAPE))
-        {
-            isPause_ = true;
-            isACES = false;
-        }
+	} else { // ポーズ画面
+		PauseSelect();
+	}
+	LithingEffect();
+	UpdateImGui();
+}
 
-    } else
-    {//ポーズ画面
-        PauseSelect();
-    }
+void GamePlayScene::Draw2D() {
+	// 2Dオブジェクトの描画準備
+	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
+	player_->Draw2D();
+
+	pause_->Draw(); // ポーズ
+
+	switch (currentPause_) {
+	case kResume:
+		resume_->Draw(); // ポーズ//続ける
+		break;
+	case kRetry:
+		retry_->Draw(); // リトライ
+		break;
+	case kSelect:
+		select_->Draw(); // セレクトへ
+		break;
+	}
+	// スプライト描画
+	// sprite->Draw();
+}
+
+void GamePlayScene::Draw3D() {
+	// 3Dオブジェクトの描画準備
+	ObjectCommon::GetInstance()->SetCommonPipelineState();
+	// 3Dオブジェクト描画
+	player_->Draw3D();
+
+	enemy_->Draw3D();
+
+	// パーティクル描画
+	// ParticleManager::GetInstance()->Draw();
+
+	// アウトライン描画準備
+	ObjectCommon::GetInstance()->SetOutlinePipelineState();
+
+	// player_->Draw3D();
+
+	// アウトライン描画
+	// object->Draw();
+}
+
+void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
+
+void GamePlayScene::SetPlayerStyle(int style) { style_ = static_cast<Style>(style); }
+
+void GamePlayScene::ChekeAllCollision() {
+	const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
+	const std::list<std::shared_ptr<BossEnemy>>& Boss = enemy_->GetBoss();
+	CheckCollisionPlayerEnemy(player_.get(), enemies);
+	CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
+	CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
+	CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss);
+	if (player_->GetIsSpecialAttack() && specialAttackTimer <= 0) {
+		CheckCollisionSpecialAtackEnemy(enemies);
+		isACES = false;          // ACESトーンマッピングをONにする
+		specialAttackTimer = 60; // 特殊攻撃のエフェクト時間（例: 60フレーム）
+	}
+	if (specialAttackTimer > 0) {
+		specialAttackTimer--;
+		if (specialAttackTimer <= 0) {
+			isACES = true;                      // ACESトーンマッピングをOFFにする
+			player_->SetIsSpecialAttack(false); // 特殊攻撃の当たり判定は1フレームだけ
+
+			specialAttackTimer = 0; // タイマーリセット
+		}
+	}
+}
+
+// ポーズ選択
+void GamePlayScene::PauseSelect() {
+	isACES = false;
+	switch (currentPause_) {
+	case Pause::kResume:
+		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE) || Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			isPause_ = false;
+			isACES = true;
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
+			currentPause_ = Pause::kSelect;
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN)) {
+			currentPause_ = Pause::kRetry;
+		}
+		break;
+	case Pause::kRetry:
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			// ゲームプレイシーン(次シーン)を生成
+			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+			isACES = true;
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
+			isPause_ = false;
+			isACES = true;
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
+			currentPause_ = Pause::kResume;
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN)) {
+			currentPause_ = Pause::kSelect;
+		}
+		break;
+	case Pause::kSelect:
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			// ゲームプレイシーン(次シーン)を生成
+			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
+			isACES = true;
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
+			isPause_ = false;
+			isACES = true;
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
+			currentPause_ = Pause::kRetry;
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN)) {
+			currentPause_ = Pause::kResume;
+		}
+		break;
+	}
+}
+
+void GamePlayScene::LithingEffect() {
 #pragma region ポストエフェクト
 
-        // *ポストエフェクト* //
-        PostEffect::GetInstance()->Update(camera.get());
+	// *ポストエフェクト* //
+	PostEffect::GetInstance()->Update(camera.get());
 
-        // 反転
-        PostEffect::GetInstance()->SetInversion(isInversion);
-        // グレースケール
-        PostEffect::GetInstance()->SetGrayscale(isGrayscale);
-        // 放射線ブラー
-        PostEffect::GetInstance()->SetRadialBlur(isRadialBlur);
-        PostEffect::GetInstance()->SetBlurCenter(blurCenter);
-        PostEffect::GetInstance()->SetBlurWidth(blurWidth);
-        PostEffect::GetInstance()->SetBlurSamples(blurSamples);
-        // ディスタンスフォグ
-        PostEffect::GetInstance()->SetDistanceFog(isDistanceFog);
-        PostEffect::GetInstance()->SetDistanceFogColor(distanceFogColor);
-        PostEffect::GetInstance()->SetDistanceFogStart(distanceStart);
-        PostEffect::GetInstance()->SetDistanceFogEnd(distanceEnd);
-        // ハイトフォグ
-        PostEffect::GetInstance()->SetHeightFog(isHeightFog);
-        PostEffect::GetInstance()->SetHeightFogColor(heightFogColor);
-        PostEffect::GetInstance()->SetHeightFogTop(heightFogTop);
-        PostEffect::GetInstance()->SetHeightFogBottom(heightFogBottom);
-        PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
-        PostEffect::GetInstance()->HightFogUpdate(camera.get());
-        // DOF
-        PostEffect::GetInstance()->SetDOF(isDOF);
-        PostEffect::GetInstance()->SetFocusDistance(focusDistance);
-        PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
-        PostEffect::GetInstance()->SetFocusRange(focusRange);
-        // ブルーム
-        PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
-        PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
-        // レンズフレア
-        PostEffect::GetInstance()->SetLensFlare(isLensFlare);
-        PostEffect::GetInstance()->SetLensFlareGhostCount(lensFlareGhostCount);
-        PostEffect::GetInstance()->SetLensFlareHaloWidth(lensFlareHaloWidth);
-        PostEffect::GetInstance()->SetIsACES(isACES);
-        PostEffect::GetInstance()->SetCAIntensity(caIntensity);
-        // モーションブラー
-        PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
-        PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
-        PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
-
+	// 反転
+	PostEffect::GetInstance()->SetInversion(isInversion);
+	// グレースケール
+	PostEffect::GetInstance()->SetGrayscale(isGrayscale);
+	// 放射線ブラー
+	PostEffect::GetInstance()->SetRadialBlur(isRadialBlur);
+	PostEffect::GetInstance()->SetBlurCenter(blurCenter);
+	PostEffect::GetInstance()->SetBlurWidth(blurWidth);
+	PostEffect::GetInstance()->SetBlurSamples(blurSamples);
+	// ディスタンスフォグ
+	PostEffect::GetInstance()->SetDistanceFog(isDistanceFog);
+	PostEffect::GetInstance()->SetDistanceFogColor(distanceFogColor);
+	PostEffect::GetInstance()->SetDistanceFogStart(distanceStart);
+	PostEffect::GetInstance()->SetDistanceFogEnd(distanceEnd);
+	// ハイトフォグ
+	PostEffect::GetInstance()->SetHeightFog(isHeightFog);
+	PostEffect::GetInstance()->SetHeightFogColor(heightFogColor);
+	PostEffect::GetInstance()->SetHeightFogTop(heightFogTop);
+	PostEffect::GetInstance()->SetHeightFogBottom(heightFogBottom);
+	PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
+	PostEffect::GetInstance()->HightFogUpdate(camera.get());
+	// DOF
+	PostEffect::GetInstance()->SetDOF(isDOF);
+	PostEffect::GetInstance()->SetFocusDistance(focusDistance);
+	PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
+	PostEffect::GetInstance()->SetFocusRange(focusRange);
+	// ブルーム
+	PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
+	PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
+	// レンズフレア
+	PostEffect::GetInstance()->SetLensFlare(isLensFlare);
+	PostEffect::GetInstance()->SetLensFlareGhostCount(lensFlareGhostCount);
+	PostEffect::GetInstance()->SetLensFlareHaloWidth(lensFlareHaloWidth);
+	PostEffect::GetInstance()->SetIsACES(isACES);
+	PostEffect::GetInstance()->SetCAIntensity(caIntensity);
+	// モーションブラー
+	PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
+	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
+	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
 
 #pragma endregion
 
@@ -116,9 +251,10 @@ void GamePlayScene::Update() {
 	RayMarching::GetInstance()->SetMotionBlur(rayMarchingIsMotionBlur);
 	RayMarching::GetInstance()->SetCloudOpacity(rayMarchingCloudOpacity);
 
-
 #pragma endregion
+}
 
+void GamePlayScene::UpdateImGui() {
 #ifdef USE_IMGUI
 
 	// ImGui
@@ -182,6 +318,7 @@ void GamePlayScene::Update() {
 	}
 
 #pragma endregion
+
 
 #pragma region ポストエフェクト
 
@@ -285,7 +422,6 @@ void GamePlayScene::Update() {
 	cameraController_->DrawImGui();
 	enemy_->DrawImGui();
 
-
 #pragma endregion
 
 #pragma region レイマーチング
@@ -301,139 +437,7 @@ void GamePlayScene::Update() {
 	ImGui::Checkbox("rayMarchingIsMotionBlur", &rayMarchingIsMotionBlur);
 	ImGui::DragFloat("rayMarchingCloudOpacity", &rayMarchingCloudOpacity, 0.001f, 0.0f, 0.1f);
 
-
 #pragma endregion
 
 #endif
-
-}
-
-void GamePlayScene::Draw2D() {
-	// 2Dオブジェクトの描画準備
-	SpriteCommon::GetInstance()->SetCommonPipelineState();
-
-	player_->Draw2D();
-
-	// スプライト描画
-	// sprite->Draw();
-}
-
-void GamePlayScene::Draw3D() {
-	// 3Dオブジェクトの描画準備
-	ObjectCommon::GetInstance()->SetCommonPipelineState();
-	// 3Dオブジェクト描画
-	player_->Draw3D();
-
-	enemy_->Draw3D();
-
-	// パーティクル描画
-	// ParticleManager::GetInstance()->Draw();
-
-	// アウトライン描画準備
-	ObjectCommon::GetInstance()->SetOutlinePipelineState();
-
-	// player_->Draw3D();
-
-	// アウトライン描画
-	// object->Draw();
-}
-
-void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
-
-void GamePlayScene::SetPlayerStyle(int style) { style_ = static_cast<Style>(style); }
-
-void GamePlayScene::ChekeAllCollision() {
-	const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
-	const std::list<std::shared_ptr<BossEnemy>>& Boss = enemy_->GetBoss();
-	CheckCollisionPlayerEnemy(player_.get(), enemies);
-	CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
-	CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
-	CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss);
-	if (player_->GetIsSpecialAttack()&&specialAttackTimer<=0) {
-		CheckCollisionSpecialAtackEnemy(enemies);
-		isACES = false;           // ACESトーンマッピングをONにする
-		specialAttackTimer = 60; // 特殊攻撃のエフェクト時間（例: 60フレーム）
-	}
-	if (specialAttackTimer > 0) {
-		specialAttackTimer--;
-		if (specialAttackTimer <= 0) {
-			isACES = true;                     // ACESトーンマッピングをOFFにする
-			player_->SetIsSpecialAttack(false); // 特殊攻撃の当たり判定は1フレームだけ
-
-			specialAttackTimer = 0; // タイマーリセット
-		}
-	}
-}
-
-//ポーズ選択
-void GamePlayScene::PauseSelect()
-{
-    isACES = false;
-    switch (currentPause_)
-    {
-    case Pause::kResume:
-        if (Input::GetInstance()->TriggerKey(DIK_ESCAPE) ||
-            Input::GetInstance()->TriggerKey(DIK_SPACE))
-        {
-            isPause_ = false;
-            isACES = true;
-        }
-        if (Input::GetInstance()->TriggerKey(DIK_W) ||
-            Input::GetInstance()->TriggerKey(DIK_UP))
-        {
-            currentPause_ = Pause::kSelect;
-        }
-        if (Input::GetInstance()->TriggerKey(DIK_S) ||
-            Input::GetInstance()->TriggerKey(DIK_DOWN))
-        {
-            currentPause_ = Pause::kRetry;
-        }
-        break;
-    case Pause::kRetry:
-        if (Input::GetInstance()->TriggerKey(DIK_SPACE))
-        {
-            // ゲームプレイシーン(次シーン)を生成
-            SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-            isACES = true;
-        }
-        if (Input::GetInstance()->TriggerKey(DIK_ESCAPE))
-        {
-            isPause_ = false;
-            isACES = true;
-        }
-        if (Input::GetInstance()->TriggerKey(DIK_W) ||
-            Input::GetInstance()->TriggerKey(DIK_UP))
-        {
-            currentPause_ = Pause::kResume;
-        }
-        if (Input::GetInstance()->TriggerKey(DIK_S) ||
-            Input::GetInstance()->TriggerKey(DIK_DOWN))
-        {
-            currentPause_ = Pause::kSelect;
-        }
-        break;
-    case Pause::kSelect:
-        if (Input::GetInstance()->TriggerKey(DIK_SPACE))
-        {
-            // ゲームプレイシーン(次シーン)を生成
-            SceneManager::GetInstance()->ChangeScene("GAMESELECT");
-            isACES = true;
-        }
-        if (Input::GetInstance()->TriggerKey(DIK_ESCAPE))
-        {
-            isPause_ = false;
-            isACES = true;
-        }
-        if (Input::GetInstance()->TriggerKey(DIK_W) ||
-            Input::GetInstance()->TriggerKey(DIK_UP))
-        {
-            currentPause_ = Pause::kRetry;
-        }
-        if (Input::GetInstance()->TriggerKey(DIK_S) ||
-            Input::GetInstance()->TriggerKey(DIK_DOWN))
-        {
-            currentPause_ = Pause::kResume;
-        }
-        break;
-    }
 }

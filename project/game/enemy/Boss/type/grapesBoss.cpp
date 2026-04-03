@@ -1,4 +1,6 @@
-﻿#include "grapesBoss.h"
+﻿#define NOMINMAX
+
+#include "grapesBoss.h"
 #include "../../Normal/Bullet/HomingEnemyBullet.h"
 #include "../../Normal/Bullet/TargetEnemyBullet.h"
 #include "Player.h"
@@ -19,6 +21,13 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
     interval = maxInterval;
 
     isAvile = true;
+
+    stemobject = std::make_unique<Object>();
+    stemobject->Initialize(camera_);
+    stemobject->SetModel("bossGrapesBranch.obj");
+    stemobject->SetScale(baseTransform_.scale);
+    stemobject->SetRotate(baseTransform_.rotate);
+    stemobject->SetTranslate(baseTransform_.translate + cameraPos + baseStem);
 
     parts_.clear();
 
@@ -106,6 +115,9 @@ void grapesBoss::Update()
     BulletUpdate();
 
     Vector3 cameraPos = camera_->GetTranslate();
+
+    stemobject->SetTranslate(baseTransform_.translate + cameraPos + baseStem);
+    stemobject->Update();
     for (auto& part : parts_) {
         Vector3 worldPos = part.transform.translate + baseTransform_.translate + cameraPos;
         part.object->SetTranslate(worldPos);
@@ -115,13 +127,15 @@ void grapesBoss::Update()
 
 void grapesBoss::Draw3D()
 {
+    stemobject->Draw();
+
     for (auto& part : parts_) {
-        part.object->Draw();
+         part.object->Draw();
     }
 
     // 更新処理
     for (auto& bullet : enemyBullet_) {
-        bullet->Draw3D();
+          bullet->Draw3D();
     }
 }
 
@@ -334,6 +348,31 @@ void grapesBoss::BulletUpdate()
     });
 }
 
+void grapesBoss::StartRush()
+{
+    // 1. 生きているパーツのインデックスをリストアップ
+    std::vector<int> aliveIndices;
+    for (int i = 0; i < (int)parts_.size(); ++i) {
+        // すでに突進中なものは除外（連続で選ばれないように）
+        if (!parts_[i].isDashing && !parts_[i].isReturning) {
+            aliveIndices.push_back(i);
+        }
+    }
+
+    // 2. シャッフルして先頭3つを選ぶ
+    std::random_device seed_gen;
+    std::mt19937 engine(seed_gen());
+    std::shuffle(aliveIndices.begin(), aliveIndices.end(), engine);
+
+    int count = std::min((int)aliveIndices.size(), 3); // 最大3体
+    for (int i = 0; i < count; ++i) {
+        int targetIdx = aliveIndices[i];
+        parts_[targetIdx].isDashschedule = true;
+        parts_[targetIdx].targetTranslate = parts_[targetIdx].transform.translate; // 座標を保存
+        parts_[targetIdx].velocity = { 0, 0, -0.5f }; // 初速（プレイヤー方向へ）
+    }
+}
+
 void grapesBoss::MoveUpdate()
 {
 
@@ -386,67 +425,90 @@ void grapesBoss::RoatetUpdate()
 
 void grapesBoss::MoveRush()
 {
-    // TODO 突進の処理
+
     // 本体を含むランダムに3個突進をする敵を設定　→　2秒おきに順番に突進　→　最後に戻る際プレイヤー当たらないように下側(又は上側)に弧を描いて帰宅。
 
     Vector3 targetPos_;
     targetPos_ = player_->GetPosition();
+    Vector3 cameraPos = camera_->GetTranslate();
+    const Matrix4x4& worldMat = camera_->GetWorldMatrix();
+    Vector3 cameraForward = { worldMat.m[2][0], worldMat.m[2][1], worldMat.m[2][2] };
+    cameraForward = Normalize(cameraForward);
+    bool isLock = false; // 1体ずつの更新にするため
+
+    // ランダム関数とかでいいから3体突進する対象を決める
 
     for (auto& patr : parts_) {
-        // ターゲットへのベクトル ＝ 目的地の座標 － 現在の座標
-        Vector3 direction;
-        Vector3 cameraPos = camera_->GetTranslate();
-        direction.x = targetPos_.x - (baseTransform_.translate.x + patr.transform.translate.x + cameraPos.x);
-        direction.y = targetPos_.y - (baseTransform_.translate.y + patr.transform.translate.y + cameraPos.y);
-        direction.z = targetPos_.z - (baseTransform_.translate.z + patr.transform.translate.z + cameraPos.z);
 
-        // directionを「長さが1のベクトル（正規化ベクトル）」にする
-        direction = Normalize(direction);
+        // 突進も帰還もしていないなら何もしない
+        if (!patr.isDashing && !patr.isReturning && !patr.isDashschedule)
+            continue;
 
-        // 加速度をターゲット方向に向ける
-        acceleration_ = direction * homingPower;
+        if (patr.isDashschedule && !isLock) {
+            dashTimer -= 1.0f / 60.0f;
+            isLock = true;
 
-        velocity_ += acceleration_;
-
-        float currentSpeed = sqrtf(velocity_.x * velocity_.x + velocity_.y * velocity_.y + velocity_.z * velocity_.z);
-        // 弾の速さが最高速度を超えていたら、最高速度に制限する
-        if (currentSpeed >= maxSpeed) {
-            // 現在の進行方向（長さ1）を計算し、それに最高速度を掛ける
-            Vector3 currentDir = Normalize(velocity_);
-            velocity_ = currentDir * maxSpeed;
+            if (dashTimer <= 0.0f) {
+                dashTimer = kdashTimer;
+                patr.isDashschedule = false;
+                patr.isDashing = true;
+            }
         }
 
-        Vector3 rotate;
-        rotate.y = atan2(velocity_.x, velocity_.z);
-        // 横軸方向の長さを求める
-        float hypotXZ = std::hypot(velocity_.x, velocity_.z);
-        rotate.x = atan2(-velocity_.y, hypotXZ);
-        rotate.z = 0.0f;
-        // object_->SetRotate(rotate);
+        if (patr.isDashing) {
+            // ターゲットへのベクトル ＝ 目的地の座標 － 現在の座標
+            Vector3 currentWorldPos = baseTransform_.translate + patr.transform.translate + cameraPos;
+            Vector3 toPlayer = targetPos_ - currentWorldPos;
+            Vector3 direction = Normalize(toPlayer);
 
-        patr.transform.translate += velocity_;
+            // 加速度をターゲット方向に向ける
+            patr.velocity.x += direction.x * homingPower;
+            patr.velocity.y += direction.y * homingPower;
+            patr.velocity.z += direction.z * homingPower;
 
-        // カリング処理
+            // 速度超過だった場合の処理
+            float currentSpeed = sqrtf(patr.velocity.x * patr.velocity.x + patr.velocity.y * patr.velocity.y + patr.velocity.z * patr.velocity.z);
 
-        const Matrix4x4& worldMat = camera_->GetWorldMatrix();
+            if (currentSpeed > maxSpeed) {
+                patr.velocity = Normalize(patr.velocity) * maxSpeed;
+            }
 
-        Vector3 cameraForward = { worldMat.m[2][0], worldMat.m[2][1], worldMat.m[2][2] };
+            patr.transform.translate += patr.velocity;
 
-        // 正規化
-        cameraForward = Normalize(cameraForward);
+            // カメラの奥に行ったかどうか
+            Vector3 toPart = (baseTransform_.translate + patr.transform.translate + cameraPos) - cameraPos;
+            float dot = Dot(cameraForward, toPart);
+            if (dot < -2.0f) {
+                patr.isDashing = false;
+                patr.isReturning = true;
+                patr.returnTimer = 0.0f;
+                patr.startReturnPos = patr.transform.translate; // 通過した瞬間のローカル座標を保存
+            }
+        } else if (patr.isReturning) {
+            patr.returnTimer += 1.0f / 60.0f;
 
-        // べ黒る
-        Vector3 toBullet;
-        toBullet.x = baseTransform_.translate.x + patr.transform.translate.x;
-        toBullet.y = baseTransform_.translate.y + patr.transform.translate.y;
-        toBullet.z = baseTransform_.translate.z + patr.transform.translate.z;
+            if (patr.returnTimer >= 2.0f) {
+                patr.transform.translate = patr.targetTranslate; // 本来の定位置
+                patr.isReturning = false;
+                patr.velocity = { 0, 0, 0 };
+            } else {
+                // P0: 画面外（通過地点）
+                // P1: 制御点（大きく横に膨らませる）
+                // P2: ボス本体の定位置
+                Vector3 p0 = patr.startReturnPos;
+                Vector3 p2 = patr.targetTranslate;
+                Vector3 p1 = {
+                    (p0.x + p2.x) * 0.5f, // Xは中間地点のまま（横には膨らませない）
+                    (p0.y + p2.y) * 0.5f - 50.0f, // Yをマイナス方向に大きくズラす（下に膨らむ）
+                    p0.z * 0.5f
+                };
 
-        // 内積
-        float dotProduct = cameraForward.x * toBullet.x + cameraForward.y * toBullet.y + cameraForward.z * toBullet.z;
-
-        // カメラから離れているなら
-        if (dotProduct < -1.0f) {
-            // 弧を描いて戻らせたい
+                // 2次ベジエ曲線公式: (1-t)^2*P0 + 2(1-t)t*P1 + t^2*P2
+                float t = patr.returnTimer / 2.0f;
+                patr.transform.translate.x = (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x;
+                patr.transform.translate.y = (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y;
+                patr.transform.translate.z = (1 - t) * (1 - t) * p0.z + 2 * (1 - t) * t * p1.z + t * t * p2.z;
+            }
         }
     }
 }
@@ -466,18 +528,24 @@ void grapesBoss::BehaviorStillness()
     BehaviorchangeTimer -= 1.0f / 60.0f;
     if (BehaviorchangeTimer <= 0.0f) {
         behaviorRequest_ = Behavior::kAttack;
+        StartRush();
         BehaviorchangeTimer = kBehaviorchangeTimer;
     }
 }
 
 void grapesBoss::BehaviorAttack()
 {
-    // 突進が終わったら切り替えにする
-    /*BehaviorchangeTimer -= 1.0f / 60.0f;
-    if (BehaviorchangeTimer <= 0.0f) {
+    // 突進が終わったらStillnessに切り替えにする
+    std::vector<int> aliveIndices;
+    for (int i = 0; i < (int)parts_.size(); ++i) {
+        // すべてfasleならカウントを入れる
+        if (!parts_[i].isDashing && !parts_[i].isReturning && !parts_[i].isDashschedule) {
+            aliveIndices.push_back(i);
+        }
+    }
+    if (aliveIndices.size() == (int)parts_.size()) {
         behaviorRequest_ = Behavior::kStillness;
-        BehaviorchangeTimer = kBehaviorchangeTimer;
-    }*/
+    }
 
     // 回転のみ
     RoatetUpdate();
