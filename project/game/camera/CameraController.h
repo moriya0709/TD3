@@ -32,6 +32,7 @@ public:
 
 	float GetCurrentReplayTime() const { return timer; }
 	int GetCurrentStage() const { return currentStage; }
+	void SetCurrentStage(int stage) { currentStage = stage; }
 
 private:
 	// 補間ヘルパー

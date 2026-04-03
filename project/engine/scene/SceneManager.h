@@ -1,10 +1,10 @@
 ﻿#pragma once
+#include "Player.h"
 #include <cassert>
 #include <memory>
-#include"Player.h"
 
-#include "BaseScene.h"
 #include "AbstractSceneFactory.h"
+#include "BaseScene.h"
 
 class SceneManager {
 public:
@@ -15,12 +15,12 @@ public:
 	void Draw3D();
 
 	// 次シーン予約
-	void SetNextScene(std::unique_ptr <BaseScene> nextScene) {nextScene_ = move(nextScene);}
+	void SetNextScene(std::unique_ptr<BaseScene> nextScene) { nextScene_ = move(nextScene); }
 	// シングルトンインスタンスの取得
 	static SceneManager* GetInstance();
 
 	// シーンファクトリーのsetter
-	void SetSceneFactory(std::unique_ptr <AbstractSceneFactory> sceneFactory) { sceneFactory_ = move(sceneFactory); }
+	void SetSceneFactory(std::unique_ptr<AbstractSceneFactory> sceneFactory) { sceneFactory_ = move(sceneFactory); }
 	// シーンの変更
 	void ChangeScene(const std::string& sceneName);
 
@@ -31,15 +31,14 @@ public:
 
 private:
 	// シングルトンインスタンス
-	static std::unique_ptr <SceneManager> instance;
+	static std::unique_ptr<SceneManager> instance;
 
 	// 今のシーン（実行中シーン）
-	std::unique_ptr <BaseScene> scene_ = nullptr;
+	std::unique_ptr<BaseScene> scene_ = nullptr;
 	// 次のシーン
-	std::unique_ptr <BaseScene> nextScene_ = nullptr;
+	std::unique_ptr<BaseScene> nextScene_ = nullptr;
 	// シーンファクトリー
-	std::unique_ptr <AbstractSceneFactory> sceneFactory_ = nullptr;
-	int currentStyle;
-
+	std::unique_ptr<AbstractSceneFactory> sceneFactory_ = nullptr;
+	int currentStyle = 0;
+	int currentStage = 1;
 };
-

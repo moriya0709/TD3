@@ -6,13 +6,9 @@
 
 class SceneFactory : public AbstractSceneFactory {
 public:
-	void SetPlayerStyle(int style) override {
-		currentStyle = style;
-
-		// シーン生成
-	}
 	std::unique_ptr<BaseScene> CreateScene(const std::string& sceneName) override;
 
 private:
 	int currentStyle;
+	int currentStage;
 };

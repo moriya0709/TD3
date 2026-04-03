@@ -11,6 +11,7 @@ std::unique_ptr <BaseScene> SceneFactory::CreateScene(const std::string& sceneNa
 	} else if (sceneName == "GAMEPLAY") {
 		newScene = std::make_unique <GamePlayScene>();
 		newScene->SetPlayerStyle(currentStyle);
+		newScene->SetCurrentStage(currentStage);
 	}
 
 	return newScene;
