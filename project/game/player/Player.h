@@ -129,7 +129,7 @@ private:
 	Vector3 camPos;
 	int inbincileTimer = 0; // 無敵時間
 	void InputMove();
-	void ImGuiUpdate();
+	void UpdateImGui();
 
 	static int cureentStyleStatasLevels[4][2];
 	void StyleLevelUp(Style style, int statas);

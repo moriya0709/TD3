@@ -210,6 +210,7 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 	if (inbincileTimer > 0) {
 		inbincileTimer--;
 	}
+	UpdateImGui();
 }
 
 void Player::Draw2D() {
@@ -403,7 +404,7 @@ void Player::InputMove() {
 	}
 }
 
-void Player::ImGuiUpdate() {
+void Player::UpdateImGui() {
 #pragma region ImGui
 #ifdef USE_IMGUI
 
