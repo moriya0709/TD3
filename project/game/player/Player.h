@@ -12,6 +12,7 @@
 #include "SoundManager.h"
 #include "Sprite.h"
 enum Style { normal, speed, power, sniper };
+
 // ベクトルを回転行列によって変換する関数
 class Enemy;
 class Player {
@@ -136,6 +137,12 @@ private:
 	std::string GetFilePath() const;
 	void LoadStatas(const std::string& filePath);
 	void SaveStatas(const std::string& filePath) const;
+
+	//弾攻撃モーション
+	void UpdateAttackMove();
+	int maxHaste;//現状の弾数
+	float attackRotate = 0;
+
 };
 
 Vector3 TransformNormal(const Vector3& v, const Matrix4x4& m);
