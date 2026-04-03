@@ -21,7 +21,12 @@ public:
 
     virtual void SetPlayerStyle(int style);
     virtual int GetPlayerStyle();
+	virtual void SetCurrentStage(int currentStage);
+	virtual int GetCurrentStage();
+
     virtual ~BaseScene() = default;
+
+
 
 private:
     // シーンマネージャー

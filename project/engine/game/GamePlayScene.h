@@ -34,6 +34,8 @@ public:
     // 終了
     void Finalize() override;
     void SetPlayerStyle(int style) override;
+	void SetCurrentStage(int currentStage) override;
+
 
     void ChekeAllCollision() ;
 
@@ -169,5 +171,7 @@ private:
     bool isPause_ = false;
 
     Pause currentPause_ = kResume;
+
+    int currentStage_ = 0;
 
 };

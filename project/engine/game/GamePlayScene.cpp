@@ -21,7 +21,7 @@ void GamePlayScene::Initialize() {
 
 	enemy_ = std::make_unique<EnemyManager>();
 	enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
-
+	cameraController_->SetCurrentStage(currentStage_);
 	cameraController_->StartReplay();
 
 	// スプライト
@@ -112,6 +112,8 @@ void GamePlayScene::Draw3D() {
 void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
 
 void GamePlayScene::SetPlayerStyle(int style) { style_ = static_cast<Style>(style); }
+
+void GamePlayScene::SetCurrentStage(int currentStage) { currentStage_ = currentStage; }
 
 void GamePlayScene::ChekeAllCollision() {
 	const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();

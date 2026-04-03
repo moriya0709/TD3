@@ -321,6 +321,7 @@ void CameraController::StartOverwriteRecording() {
 }
 
 void CameraController::StartReplay() {
+	LoadFromJSON(GetFilePath(currentStage));
 	if (stateHistory.empty())
 		return;
 	isReplaying = true;
