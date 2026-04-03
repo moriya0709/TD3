@@ -199,7 +199,26 @@ void Player::Initialize(Camera* camera, Style style) {
 	damageTimer = 0;
 }
 
+//攻撃モーション
+void Player::UpdateAttackMove()
+{
+	if (0 < coolTime)
+	{
+		if (maxHaste / 2 < coolTime)
+		{
+			attackRotate += 0.01f;
+		}
+		else
+		{
+			attackRotate -= 0.01f;
+		}
+	} else {
+		attackRotate = 0;
+	}
+}
+
 void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cmrvel) {
+	UpdateAttackMove();
 	InputMove();
 	chargeReticle_->SetPosition(reticlePosition_);
 	chargeReticle_->Update();
@@ -263,12 +282,15 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 			bullets.push_back(std::move(newBullet));    // 修正: std::moveでunique_ptrをlistに追加
 			chargeTimer = 0;                            // チャージタイマーリセット
 			coolTime = statas_[currentStyle].haste * 2; // チャージ攻撃後のクールタイムも長くする
+			maxHaste = statas_[currentStyle].haste * 2;
 		} else {
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge, enemies);
 			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy, statas_[currentStyle].attack);
 			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
 			coolTime = statas_[currentStyle].haste;
+			maxHaste = statas_[currentStyle].haste;
+
 			chargeTimer = 0; // チャージタイマーリセット
 		}
 	}
@@ -362,7 +384,10 @@ void Player::InputMove() {
 	float speedSq = velocity_.x * velocity_.x + velocity_.y * velocity_.y;
 	if (speedSq > 0.001f) {
 		transform_.rotate.z = -velocity_.x * 2.0f;
-		transform_.rotate.x = velocity_.y * 1.0f;
+		transform_.rotate.x = velocity_.y * 1.0f + attackRotate;
+	} else {
+		transform_.rotate.x =  attackRotate;
+
 	}
 	transform_.rotate.y = camera_->GetRotate().y;
 
