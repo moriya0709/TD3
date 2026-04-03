@@ -47,6 +47,8 @@ private:
 	Vector3 ifTranslate; // ランダムな座標にするかどうか
 	Vector3 velocity; // ランダムに動かすかどうか
 	Vector4 color; // 色
+	Vector4 finalColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	float colorChangeSpeed = 1.0f;
 	float lifeTime; // 寿命
 	bool isRandTranslate[3] = { true }; // ランダムな座標にするかどうか
 	bool isRandVelocity[3] = { true }; // ランダムに動かすかどうか

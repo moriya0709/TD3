@@ -39,9 +39,9 @@ void ParticleEmitter::Update() {
 
 	// パーティクルの形状変化
 	ParticleManager::GetInstance()->SetColorChange(isColorChange);
+	ParticleManager::GetInstance()->SetFinalColor(finalColor);
+	ParticleManager::GetInstance()->SetColorChangeSpeed(colorChangeSpeed); // 【追加】速度をManagerに送る
 	ParticleManager::GetInstance()->SetScaleChange_(isScaleChange);
-	ParticleManager::GetInstance()->SetScaleAdd(scaleAdd);
-
 
 	// 時間経過によって発生させる
 	emitter.frequencyTime += kDeltaTime; // 時刻を進める
@@ -96,6 +96,10 @@ void ParticleEmitter::SaveParticle(const std::string& filePath) {
 	file << isRandVelocity[0] << "," << isRandVelocity[1] << "," << isRandVelocity[2] << "\n";
 	// パーティクルの色
 	file << color.x << "," << color.y << "," << color.z << "," << color.w << "\n";
+	// パーティクルの最終色【追加】
+	file << finalColor.x << "," << finalColor.y << "," << finalColor.z << "," << finalColor.w << "\n";
+	// パーティクルの色変化速度
+	file << colorChangeSpeed << "\n";
 	// パーティクルの色変化
 	file << isColorChange[0] << "," << isColorChange[1] << "," << isColorChange[2] << "\n";
 	// パーティクルのサイズ変化
@@ -156,6 +160,16 @@ void ParticleEmitter::LoadParticle(const std::string& filePath) {
 	// 色
 	if (std::getline(file, line)) {
 		sscanf_s(line.c_str(), "%f,%f,%f,%f", &color.x, &color.y, &color.z, &color.w);
+	}
+
+	// 最終色
+	if (std::getline(file, line)) {
+		sscanf_s(line.c_str(), "%f,%f,%f,%f", &finalColor.x, &finalColor.y, &finalColor.z, &finalColor.w);
+	}
+
+	// 色変化速度【追加】
+	if (std::getline(file, line)) {
+		sscanf_s(line.c_str(), "%f", &colorChangeSpeed);
 	}
 
 	// 色変化（bool）
@@ -231,6 +245,8 @@ void ParticleEmitter::Editor() {
 	ImGui::Checkbox("randVelocity.z", &isRandVelocity[2]);
 	// パーティクルの色
 	ImGui::ColorEdit4("ParticleColor", &color.x);
+	ImGui::ColorEdit4("ParticleFinalColor", &finalColor.x); // 【追加】最終色を設定するGUI
+	ImGui::SliderFloat("ColorChangeSpeed", &colorChangeSpeed, 1.0f, 20.0f);
 	// パーティクルの色変化
 	ImGui::Checkbox("colorChange.x", &isColorChange[0]);
 	ImGui::Checkbox("colorChange.y", &isColorChange[1]);
