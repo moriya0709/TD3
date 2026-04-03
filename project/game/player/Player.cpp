@@ -200,6 +200,91 @@ void Player::Initialize(Camera* camera, Style style) {
 }
 
 void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cmrvel) {
+	InputMove();
+	chargeReticle_->SetPosition(reticlePosition_);
+	chargeReticle_->Update();
+	reticle_->SetPosition(reticlePosition_);
+	reticle_->Update();
+	Attack(enemies);
+	UpdateBullets(cmrvel);
+	if (inbincileTimer > 0) {
+		inbincileTimer--;
+	}
+}
+
+void Player::Draw2D() {
+	if (isCharging) {
+		chargeReticle_->Draw();
+	} else {
+
+		reticle_->Draw();
+	}
+}
+
+void Player::Draw3D() {
+	for (const auto& bullet : bullets) {
+		bullet->Draw3D();
+	}
+	playerObject_->Draw();
+	// machineObject_->Draw();
+}
+
+Player::~Player() {
+	for (auto& bullet : bullets) {
+		// unique_ptrなのでdelete不要
+	}
+	bullets.clear();
+}
+
+void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
+	auto input = Input::GetInstance();
+	if (coolTime > 0) {
+		coolTime--;
+		return;
+	}
+	if (statas_[currentStyle].chargeTime < chargeTimer) {
+		isCharging = true;
+	} else {
+		isCharging = false;
+		chargeTimer++;
+	}
+	if (input->TriggerKey(DIK_SPACE) || input->IsPadButtonPressed(0, 6)) {
+		isSpecialAttack = true;
+		coolTime = 60;
+	}
+
+	if (input->IsMouseButtonPressed(0) || input->IsPadButtonPressed(0, 5)) {
+		if (isCharging) {
+			// チャージ攻撃
+			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies);
+			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy + 0.2f, statas_[currentStyle].attack);
+			bullets.push_back(std::move(newBullet));    // 修正: std::moveでunique_ptrをlistに追加
+			chargeTimer = 0;                            // チャージタイマーリセット
+			coolTime = statas_[currentStyle].haste * 2; // チャージ攻撃後のクールタイムも長くする
+		} else {
+			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge, enemies);
+			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy, statas_[currentStyle].attack);
+			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
+			coolTime = statas_[currentStyle].haste;
+			chargeTimer = 0; // チャージタイマーリセット
+		}
+	}
+}
+
+void Player::UpdateBullets(Vector3 cmrvel) {
+	for (auto it = bullets.begin(); it != bullets.end();) {
+		if (!(*it)->IsActive()) {
+			it = bullets.erase(it);
+		} else {
+			(*it)->Update(cmrvel);
+			++it;
+		}
+	}
+}
+
+void Player::InputMove() {
 	auto input = Input::GetInstance();
 
 	camera_->Update();
@@ -207,9 +292,6 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 		camPos = camera_->GetTranslate();
 	}
 	Matrix4x4 camRotMat = MakeRotateMatrix(camera_->GetRotate());
-
-#pragma region 移動処理 (動的画面内制限)
-
 	// 1. 入力からローカル移動方向(XY)を決定
 	Vector3 moveInput = {0.0f, 0.0f, 0.0f};
 	if (input->PushKey(DIK_W)) {
@@ -296,12 +378,6 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 	// machineObject_->SetScale(transform_.scale);
 	// machineObject_->Update();
 
-	if (ishit) {
-		damageTimer--;
-		if (damageTimer <= 0) {
-			ishit = false;
-		}
-	}
 	if (mouseMove.x == input->GetMouseScreen().x && mouseMove.y == input->GetMouseScreen().y) {
 		reticlePad.x = (input->GetPadRightAxisX(0));
 		reticlePad.y = (input->GetPadRightAxisY(0));
@@ -325,17 +401,10 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 		reticlePosition_.x = std::clamp(mouseMove.x, 0.0f, float(WindowAPI::kClientWidth));
 		reticlePosition_.y = std::clamp(mouseMove.y, 0.0f, float(WindowAPI::kClientHeight));
 	}
-	chargeReticle_->SetPosition(reticlePosition_);
-	chargeReticle_->Update();
-	reticle_->SetPosition(reticlePosition_);
-	reticle_->Update();
+}
 
-	Attack(enemies);
-	UpdateBullets(cmrvel);
-#pragma endregion
-
+void Player::ImGuiUpdate() {
 #pragma region ImGui
-
 #ifdef USE_IMGUI
 
 	ImGui::Begin("Player Config");
@@ -383,82 +452,8 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cm
 		break;
 	}
 
-#pragma endregion
-
 #endif
-}
-
-void Player::Draw2D() {
-	if (isCharging) {
-		chargeReticle_->Draw();
-	} else {
-
-		reticle_->Draw();
-	}
-}
-void Player::Draw3D() {
-	for (const auto& bullet : bullets) {
-		bullet->Draw3D();
-	}
-	playerObject_->Draw();
-	// machineObject_->Draw();
-}
-
-Player::~Player() {
-	for (auto& bullet : bullets) {
-		// unique_ptrなのでdelete不要
-	}
-	bullets.clear();
-}
-
-void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
-	auto input = Input::GetInstance();
-	if (coolTime > 0) {
-		coolTime--;
-		return;
-	}
-	if (statas_[currentStyle].chargeTime < chargeTimer) {
-		isCharging = true;
-	} else {
-		isCharging = false;
-		chargeTimer++;
-	}
-	if (input->TriggerKey(DIK_SPACE) || input->IsPadButtonPressed(0, 6)) {
-		isSpecialAttack = true;
-		coolTime = 60;
-	
-	}
-
-
-	if (input->IsMouseButtonPressed(0) || input->IsPadButtonPressed(0, 5)) {
-		if (isCharging) {
-			// チャージ攻撃
-			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies);
-			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy + 0.2f, statas_[currentStyle].attack);
-			bullets.push_back(std::move(newBullet));    // 修正: std::moveでunique_ptrをlistに追加
-			chargeTimer = 0;                            // チャージタイマーリセット
-			coolTime = statas_[currentStyle].haste * 2; // チャージ攻撃後のクールタイムも長くする
-		} else {
-			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge, enemies);
-			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy, statas_[currentStyle].attack);
-			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
-			coolTime = statas_[currentStyle].haste;
-			chargeTimer = 0; // チャージタイマーリセット
-		}
-	}
-}
-
-void Player::UpdateBullets(Vector3 cmrvel) {
-	for (auto it = bullets.begin(); it != bullets.end();) {
-		if (!(*it)->IsActive()) {
-			it = bullets.erase(it);
-		} else {
-			(*it)->Update(cmrvel);
-			++it;
-		}
-	}
+#pragma endregion
 }
 
 void Player::StyleLevelUp(Style style, int statas) {}

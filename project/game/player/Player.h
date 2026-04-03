@@ -34,6 +34,9 @@ public:
 	~Player();
 	float GetHitSize() const { return hitSize_; }
 	void Damage(int damage) {
+		if (inbincileTimer > 0) {
+			return; // 無敵時間中はダメージを受けない
+		}
 		statas_[currentStyle].hp -= damage;
 		if (statas_[currentStyle].hp < 0) {
 			statas_[currentStyle].hp = 0;
@@ -124,6 +127,9 @@ private:
 	Style currentStyle = normal;
 	bool cameraFollow = true;
 	Vector3 camPos;
+	int inbincileTimer = 0; // 無敵時間
+	void InputMove();
+	void ImGuiUpdate();
 
 	static int cureentStyleStatasLevels[4][2];
 	void StyleLevelUp(Style style, int statas);
