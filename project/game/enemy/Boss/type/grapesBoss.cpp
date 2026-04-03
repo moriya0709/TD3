@@ -130,12 +130,12 @@ void grapesBoss::Draw3D()
     stemobject->Draw();
 
     for (auto& part : parts_) {
-         part.object->Draw();
+        part.object->Draw();
     }
 
     // 更新処理
     for (auto& bullet : enemyBullet_) {
-          bullet->Draw3D();
+        bullet->Draw3D();
     }
 }
 
@@ -438,6 +438,8 @@ void grapesBoss::MoveRush()
 
     // ランダム関数とかでいいから3体突進する対象を決める
 
+    // X = 7 Y = 3
+
     for (auto& patr : parts_) {
 
         // 突進も帰還もしていないなら何もしない
@@ -460,6 +462,17 @@ void grapesBoss::MoveRush()
             Vector3 currentWorldPos = baseTransform_.translate + patr.transform.translate + cameraPos;
             Vector3 toPlayer = targetPos_ - currentWorldPos;
             Vector3 direction = Normalize(toPlayer);
+
+            // ホーミングの変更
+            if ((targetPos_.x + patr.targetTranslate.x) * 0.5f >= 7.0f) {
+                homingPower = 0.010f;
+                if ((targetPos_.y + patr.targetTranslate.y) * 0.5f >= 3.0f) {
+                    homingPower = 0.015f;
+                }
+
+            } else {
+                homingPower = khomingPower;
+            }
 
             // 加速度をターゲット方向に向ける
             patr.velocity.x += direction.x * homingPower;
