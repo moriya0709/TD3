@@ -180,6 +180,7 @@ void grapesBoss::BulletMirror(const CollisionVolume& volume, PlayerBullet* bulle
     newBulletEnemy->Initialize(camera_, bulletPos);
     newBulletEnemy->SetBulletAcceleration(reflectVelocity);
     newBulletEnemy->SetTargetPosition(player_->GetPosition());
+    newBulletEnemy->SetUpgrade(1.0f);
     newBulletEnemy->Update();
 
     // GrapesBossクラスが持つ enemyBullet_ リストに追加
@@ -317,7 +318,7 @@ void grapesBoss::BulletUpdate()
 
     if (interval <= 0.0f) {
         // 弾の生成
-        std::unique_ptr<HomingEnemyBullet> newBulletEnemy = std::make_unique<HomingEnemyBullet>();
+        std::unique_ptr<TargetEnemyBullet> newBulletEnemy = std::make_unique<TargetEnemyBullet>();
 
         for (auto& part : parts_) {
             if (!part.isWeakPoint)
@@ -330,15 +331,23 @@ void grapesBoss::BulletUpdate()
         // 弱点が攻撃をする
         newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.08f));
         newBulletEnemy->SetTargetPosition(player_->GetPosition());
+        newBulletEnemy->SetAcceleration(0.5f);
+        newBulletEnemy->SetUpgrade(1.0f);
         newBulletEnemy->Update();
 
+        intervalCount++;
+        if (intervalCount < 3) {
+            interval = 0.2f;
+        } else {
+            interval = maxInterval;
+            intervalCount = 0;
+        }
         enemyBullet_.push_back(std::move(newBulletEnemy));
-        interval = maxInterval;
     }
 
     // 更新処理
     for (auto& bullet : enemyBullet_) {
-        bullet->SetTargetPosition(player_->GetPosition());
+        bullet->SetTargetPositionUpdate(player_->GetPosition());
         bullet->Update();
     }
 
@@ -530,7 +539,7 @@ void grapesBoss::BehaviorStillness()
 {
     // 弱点入れ替え
     WeakPointchangeTimer -= 1.0f / 60.0f;
-    if (WeakPointchangeTimer <= 0.0f) {
+    if (WeakPointchangeTimer <= 0.0f && intervalCount == 0) {
         WeakPointChange();
         WeakPointchangeTimer = ktWeakPointchangeTimer;
     }
@@ -539,7 +548,7 @@ void grapesBoss::BehaviorStillness()
     MoveUpdate();
 
     BehaviorchangeTimer -= 1.0f / 60.0f;
-    if (BehaviorchangeTimer <= 0.0f) {
+    if (BehaviorchangeTimer <= 0.0f && intervalCount == 0) {
         behaviorRequest_ = Behavior::kAttack;
         StartRush();
         BehaviorchangeTimer = kBehaviorchangeTimer;

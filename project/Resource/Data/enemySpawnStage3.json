@@ -3,7 +3,7 @@
         {
             "popTime": 1.0,
             "type": "grapesBoss",
-            "hp": 1500,
+            "hp": 2100,
             "position": {
                 "x": 0.0,
                 "y": 0.0,

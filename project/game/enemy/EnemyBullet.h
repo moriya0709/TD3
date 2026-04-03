@@ -43,6 +43,7 @@ public:
     virtual void SetBulletAcceleration(Vector3 num) = 0;
     virtual void SetactiveTimer(float num) = 0;
     virtual void SetTargetPosition(Vector3 Pos) = 0;
+    virtual void SetTargetPositionUpdate(Vector3 pos) { };
     virtual void OnCollision() = 0;
     virtual void SethomingPower(float num) { };
 

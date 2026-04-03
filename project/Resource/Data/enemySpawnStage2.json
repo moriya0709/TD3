@@ -3,7 +3,7 @@
         {
             "popTime": 1.0,
             "type": "NormalEnemy",
-            "hp": 10000,
+            "hp": 100,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -17,7 +17,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 1.0,
-                    "timeToStop" : 70.0
+                    "timeToStop" : 4.0
                 },
                 {
                     "target": {
