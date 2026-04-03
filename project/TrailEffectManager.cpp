@@ -67,18 +67,15 @@ void TrailEffectManager::AddTrail(std::shared_ptr<TrailEffect> trail) {
     m_ActiveTrails.push_back(trail);
 }
 
-void TrailEffectManager::UpdateAll(float deltaTime) {
-    // 各トレイルの更新
-    // TODO: エミッターの現在位置(currentEmitterPos)をどうやってTrailEffectに渡すかは
-    // TrailEffect自身にエミッターへの参照を持たせるか、Updateの引数で工夫する必要があります。
+void TrailEffectManager::UpdateAll() {
+    // 1. 全てのトレイルの「時間」を進める（弾が死んでいても実行される）
     for (auto& trail : m_ActiveTrails) {
-        // 仮にVector3::Zero()としていますが、実際は追従対象の座標を渡します
-        trail->Update(deltaTime, trail->GetTranslate());
+        trail->UpdateLifetimes();
     }
 
-    // 寿命が尽きたトレイルをリストから削除 (C++20のstd::erase_if等が便利です)
+    // 2. 寿命が尽きてポイントが0になったトレイルをリストから削除
     std::erase_if(m_ActiveTrails, [](const std::shared_ptr<TrailEffect>& trail) {
-        return trail->IsDead();
+        return trail->IsDead(); // m_Points.empty() なら true
         });
 }
 

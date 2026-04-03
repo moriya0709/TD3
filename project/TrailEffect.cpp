@@ -10,17 +10,20 @@ void TrailEffect::Initialize(const std::string& textureName, const Transform& tr
     translate_ = transform.translate;
 }
 
-void TrailEffect::Update(float deltaTime, const Vector3& currentEmitterPos) {
-    // 既存のポイントのAgeを更新し、寿命切れを削除
+void TrailEffect::UpdateLifetimes() {
+    // 既存のポイントのAgeを更新
     for (auto& pt : m_Points) {
         pt.Age += deltaTime;
     }
+
+    // 寿命切れを削除（最後尾からチェック）
     while (!m_Points.empty() && m_Points.back().Age > MAX_LIFETIME) {
         m_Points.pop_back();
-
     }
+}
 
-    // エミッターが一定距離動いていたら新しいポイントを追加
+void TrailEffect::AddPoint(const Vector3& currentEmitterPos) {
+    // 距離チェックをして、必要なら先頭に追加
     if (m_Points.empty() || Distance(m_Points.front().Position, currentEmitterPos) > MIN_DISTANCE) {
         m_Points.push_front({ currentEmitterPos, 0.0f });
     }
@@ -29,37 +32,48 @@ void TrailEffect::Update(float deltaTime, const Vector3& currentEmitterPos) {
 void TrailEffect::GenerateVertices(const Vector3& cameraPos, std::vector<TrailVertex>& outVertices) {
     if (m_Points.size() < 2) return;
 
-    float totalLength = static_cast<float>(m_Points.size()); // UV計算用（距離ベースにするとなお良し）
+    float totalLength = static_cast<float>(m_Points.size());
 
     for (size_t i = 0; i < m_Points.size(); ++i) {
         const auto& pt = m_Points[i];
 
-        // 進行方向ベクトルの計算
+        // 1. 進行方向ベクトルの計算
         Vector3 dir;
         if (i < m_Points.size() - 1) {
             dir = Normalize(m_Points[i].Position - m_Points[i + 1].Position);
         } else {
-            dir = Normalize(m_Points[i - 1].Position - m_Points[i].Position); // 終端の処理
+            // 修正：終端も一つ前と同じ方向を向くように反転させる（ねじれ防止）
+            dir = Normalize(m_Points[i - 1].Position - m_Points[i].Position);
+            dir = { -dir.x, -dir.y, -dir.z }; // Vector3の演算子に合わせて反転
         }
 
         // カメラへのベクトル
         Vector3 toCamera = Normalize(cameraPos - pt.Position);
 
-        // 外積で右方向（幅を広げる方向）のベクトルを算出
-        Vector3 right = Normalize(Cross(dir, toCamera));
+        // 2. 外積とゼロベクトル（NaN）対策
+        Vector3 crossVec = Cross(dir, toCamera);
+        Vector3 right;
 
-        // Ageに応じたアルファ値や幅の減衰を計算（古いほど細く、透明にするなど）
+        // 外積のベクトルの長さの2乗が非常に小さい（ほぼ平行）場合の回避処理
+        // ※独自MathライブラリのLengthSq等があればそれを使用してください
+        float lengthSq = (crossVec.x * crossVec.x) + (crossVec.y * crossVec.y) + (crossVec.z * crossVec.z);
+        if (lengthSq < 0.00001f) {
+            // カメラと平行な場合は、仮のベクトル（例：ワールドの上方向）を使って右ベクトルを算出
+            right = Normalize(Cross(dir, { 0.0f, 1.0f, 0.0f }));
+        } else {
+            // 通常のビルボード計算
+            right = Normalize(crossVec);
+        }
+
         float lifeRatio = pt.Age / MAX_LIFETIME;
         float currentWidth = m_Width * (1.0f - lifeRatio);
         Vector4 currentColor = m_Color;
-        currentColor.w *= (1.0f - lifeRatio); // アルファフェード
+        currentColor.w *= (1.0f - lifeRatio);
 
-        // 左右の頂点を生成
         TrailVertex vLeft, vRight;
         vLeft.Position = pt.Position + (right * currentWidth * 0.5f);
         vRight.Position = pt.Position - (right * currentWidth * 0.5f);
 
-        // UVのV座標は進行度（0.0 ~ 1.0）、U座標は左右（0.0, 1.0）
         float vCoord = static_cast<float>(i) / (totalLength - 1.0f);
         vLeft.UV = Vector2(0.0f, vCoord);
         vRight.UV = Vector2(1.0f, vCoord);

@@ -102,8 +102,7 @@ void Game::Update() {
 	ParticleManager::GetInstance()->Update();
 
 	// トレイルエフェクト更新
-	float deltaTime = 1.0f / 60.0f;
-	TrailEffectManager::GetInstance()->UpdateAll(deltaTime);
+	TrailEffectManager::GetInstance()->UpdateAll();
 
 	// ImGui受付終了
 	imGuiManager->End();
