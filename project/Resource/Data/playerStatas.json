@@ -10,31 +10,31 @@
             "speed": 0.20000000298023224
         },
         {
-            "attack": 0,
-            "chargeTime": 0,
-            "haste": 0,
-            "hommingAccuracy": 0.0,
-            "hp": 0,
-            "renge": 43.900001525878906,
-            "speed": 0.3499999940395355
+            "attack": 6,
+            "chargeTime": 5,
+            "haste": 3,
+            "hommingAccuracy": 0.05000000074505806,
+            "hp": 30,
+            "renge": 150.0,
+            "speed": 0.4000000059604645
         },
         {
-            "attack": 0,
-            "chargeTime": 0,
-            "haste": 0,
-            "hommingAccuracy": 0.0,
-            "hp": 0,
-            "renge": 59.5,
-            "speed": 0.5799999833106995
+            "attack": 200,
+            "chargeTime": 70,
+            "haste": 60,
+            "hommingAccuracy": 0.10000000149011612,
+            "hp": 150,
+            "renge": 70.0,
+            "speed": 0.30000001192092896
         },
         {
-            "attack": 0,
-            "chargeTime": 0,
-            "haste": 0,
+            "attack": 20,
+            "chargeTime": 150,
+            "haste": 20,
             "hommingAccuracy": 0.0,
-            "hp": 0,
-            "renge": 47.400001525878906,
-            "speed": 0.0
+            "hp": 80,
+            "renge": 500.0,
+            "speed": 0.10000000149011612
         }
     ]
 }

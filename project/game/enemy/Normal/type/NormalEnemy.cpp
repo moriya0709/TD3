@@ -82,6 +82,10 @@ void NormalEnemy::Draw3D()
 
 void NormalEnemy::OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity)
 {
+    if (behavior_ == Behavior::kDefeated) {
+        return;
+    }
+
     health_ -= Damage;
 
     if (health_ <= 0) {
