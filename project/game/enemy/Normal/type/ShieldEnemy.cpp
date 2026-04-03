@@ -89,6 +89,10 @@ void ShieldEnemy::Draw3D()
 
 void ShieldEnemy::OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity)
 {
+    if (behavior_ == Behavior::kDefeated) {
+        return;
+    }
+
     if (behavior_ == Behavior::kShield) {
         // 反射する
         BulletMirror(bulletPos, Velocity);
