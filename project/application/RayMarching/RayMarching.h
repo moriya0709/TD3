@@ -32,7 +32,9 @@ struct CloudParam {
 	int isMotionBlur;
 
 	float cloudOpacity;
-	float pad[3];
+	int isStorm;
+	float thunderFrequency;
+	float thunderBrightness;
 
 };
 
@@ -59,6 +61,9 @@ public:
 	void SetAnimeLight(bool isAnimeLight) { cloudParam->isAnimeLight = isAnimeLight; }
 	void SetMotionBlur(bool isMotionBlur) { cloudParam->isMotionBlur = isMotionBlur; }
 	void SetCloudOpacity(float cloudOpacity) { cloudParam->cloudOpacity = cloudOpacity; }
+	void SetStorm(bool isStorm) { cloudParam->isStorm = isStorm; }
+	void SetThunderFrequency(float thunderFrequency) { cloudParam->thunderFrequency = thunderFrequency; }
+	void SetThunderBrightness(float thunderBrightness) { cloudParam->thunderBrightness = thunderBrightness; }
 
 	// getter
 	Vector3 GetSunDir() { return cloudParam->sunDir; }

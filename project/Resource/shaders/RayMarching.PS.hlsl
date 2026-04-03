@@ -35,7 +35,9 @@ cbuffer CloudParam : register(b0)
     int isMotionBlur;
     
     float cloudOpacity;
-    float pad[3];
+    int isStorm;
+    float thunderFrequency;
+    float thunderBrightness;
 
 }
 
@@ -323,6 +325,49 @@ float3 CalculateAtmosphere(float3 cameraPos, float3 rayDir, float3 sunDir)
     return skyColor;
 }
 
+// =====================================================================
+// 雷の発光を計算する関数
+// =====================================================================
+float3 CalculateLightning(float3 pos, float time, float3 cameraPos, float cloudBottom)
+{
+    float3 totalLightning = float3(0, 0, 0);
+    
+    // 2箇所の雷を別々のタイミング・場所で発生させる
+    for (int i = 0; i < 2; i++)
+    {
+        // 時間軸をスケールし、数秒に1回雷が鳴るようにする
+        float t = time * thunderFrequency + float(i) * 5.31;
+        float seed = floor(t); // シード値（発光ごとに位置が変わる）
+        
+        // ピカッと光るパルス波形（一瞬だけ1.0に近づく）
+        float localTime = frac(t);
+        float flash = smoothstep(0.0, 0.02, localTime) * smoothstep(0.15, 0.02, localTime);
+        
+        // サイン波でチカチカさせる（フリッカー効果）
+        flash *= saturate(sin(time * 80.0 + float(i) * 12.0));
+        
+        // 発光しないタイミングなら計算をスキップして軽量化
+        if (flash <= 0.0)
+            continue;
+        
+        // 雷の中心位置をシード値からランダムに決定（カメラ周囲 約15km圏内）
+        float2 offset = float2(
+            (hash(float3(seed, i, 0)) - 0.5) * 30000.0,
+            (hash(float3(seed, i, 1)) - 0.5) * 30000.0
+        );
+        float3 lightningPos = cameraPos + float3(offset.x, cloudBottom + 800.0, offset.y);
+        
+        // 現在のレイ位置と雷の中心位置の距離で光を減衰させる
+        float dist = length(pos - lightningPos);
+        float atten = exp(-dist * 0.001); // 値が小さいほど遠くまで光が届く
+        
+        // 青白い強烈な光を合成（係数で明るさを調整）
+        totalLightning += float3(0.6, 0.8, 1.0) * flash * atten * thunderBrightness;
+    }
+    
+    return totalLightning;
+}
+
 PSOutput main(VSOutput input)
 {
     float2 ndcXY = input.uv * 2.0f - 1.0f;
@@ -349,6 +394,14 @@ PSOutput main(VSOutput input)
     float sunsetTime = smoothstep(0.3, 0.0, sunHeight)
                      * smoothstep(-0.2, 0.0, sunHeight); // 夕焼けピーク
 
+    if (isStorm)
+    {
+        // 昼間でも空をどんよりとした暗いグレーにする
+        skyColor = lerp(skyColor, float3(0.03, 0.04, 0.05), 0.9);
+        cloudAmbientSkyColor = lerp(cloudAmbientSkyColor, float3(0.04, 0.05, 0.06), 0.9);
+        dayFactor *= 0.13; // 環境光と太陽の光を大幅に抑えて雲を黒くする
+    }
+    
     // ==========================================
     // 水平線
     // ==========================================
@@ -478,6 +531,13 @@ PSOutput main(VSOutput input)
 
                 light += sunIllumination + cloudAmbient;
 
+                if (isStorm)
+                {
+                    float3 lightning = CalculateLightning(pos, time, cameraPos, cloudBottom);
+                    // 雲の内部ほど少し光が拡散・減衰するような見栄えにする
+                    light += lightning * exp(-d * 1.5);
+                }
+                
                 color += opticalDepth * light * transmittance;
                 transmittance *= exp(-opticalDepth);
                 if (transmittance < 0.005)
@@ -543,6 +603,11 @@ PSOutput main(VSOutput input)
     // 4. 最終合成
     // 夜間（sunHeight < 0）は太陽を少し小さく、暗くすると月らしくなります
     float sunAlpha = (sunHeight > 0.0) ? 1.0 : 0.2;
+    
+    //雷雨時は太陽（月）を完全に隠す
+    if (isStorm)
+        sunAlpha = 0.0;
+    
     finalColor += dynamicSunColor * sunDisc * transmittance * sunAlpha;
 
    // ==========================================

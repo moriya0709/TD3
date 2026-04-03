@@ -40,6 +40,9 @@ void RayMarching::Initialize(SrvManager* srvManager) {
 	cloudParam->isAnimeLight = true; // アニメ調ライティング
 	cloudParam->isMotionBlur = false; // モーションブラー
 	cloudParam->cloudOpacity = 0.04f; // 不透明度
+	cloudParam->isStorm = false;
+	cloudParam->thunderFrequency = 0.3f;
+	cloudParam->thunderBrightness = 120.0f;
 
 }
 

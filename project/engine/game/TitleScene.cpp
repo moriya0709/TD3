@@ -162,6 +162,10 @@ void TitleScene::Update() {
 	RayMarching::GetInstance()->SetAnimeLight(rayMarchingIsAnimeLight);
 	RayMarching::GetInstance()->SetMotionBlur(rayMarchingIsMotionBlur);
 	RayMarching::GetInstance()->SetCloudOpacity(rayMarchingCloudOpacity);
+	RayMarching::GetInstance()->SetStorm(isStorm);
+	RayMarching::GetInstance()->SetThunderFrequency(thunderFrequency);
+	RayMarching::GetInstance()->SetThunderBrightness(thunderBrightness);
+
 
 #pragma endregion
 
@@ -339,6 +343,10 @@ void TitleScene::Update() {
 	ImGui::Checkbox("rayMarchingIsAnimeLight", &rayMarchingIsAnimeLight);
 	ImGui::Checkbox("rayMarchingIsMotionBlur", &rayMarchingIsMotionBlur);
 	ImGui::DragFloat("rayMarchingCloudOpacity", &rayMarchingCloudOpacity, 0.001f, 0.0f, 0.1f);
+	ImGui::Checkbox("isStorm", &isStorm);
+	ImGui::DragFloat("thunderFrequency", &thunderFrequency, 0.001f, 0.0f, 10.0f);
+	ImGui::DragFloat("thunderBrightness", &thunderBrightness, 0.01f, 0.0f, 300.0f);
+
 
 #pragma endregion
 
