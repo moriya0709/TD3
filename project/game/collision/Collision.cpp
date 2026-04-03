@@ -78,7 +78,8 @@ void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared
 
         for (const auto& enemy : enemies) {
             // 敵が死んでいる場合はスキップ（敵側にAliveフラグ等がある前提）
-             if (!enemy->GetIsAlive()) continue;
+            if (!enemy->GetIsAlive())
+                continue;
 
             Vector3 enemyPos = enemy->GetWorldPosition();
             float enemySize = enemy->GetRadius();
@@ -136,15 +137,73 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
         }
     }
 }
-void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet) {}
 
-void CheckCollisionSpecialAtackEnemy(const std::list<std::shared_ptr<Enemy>>& enemies) {
+void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_ptr<BossEnemy>>& enemies)
+{
+    Vector3 playerPos = player->GetPosition();
+
+    for (const auto& boss : enemies) {
+        if (boss->GetIsDead())
+            continue;
+
+        const std::vector<std::unique_ptr<EnemyBullet>>& Bullets_ = boss->GetBullets();
+
+        for (const auto& Bullet : Bullets_) {
+            if (!Bullet->GetIsActive())
+                continue;
+
+            Vector3 BossBullet = Bullet->GetWorldPosition();
+
+            Vector3 diff = { playerPos - BossBullet };
+            float distnance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+            if (distnance <= player->GetHitSize() + Bullet->GetRadius()) {
+
+              
+                // 敵の攻撃力を受け取る
+                int test = 1;
+                player->Damage(test);
+
+                // 弾の消す処理
+                Bullet->OnCollision();
+            }
+        }
+    }
+}
+
+void CheckCollisionPlayerBossEnemyBullet(Player* player, const std::list<std::shared_ptr<BossEnemy>>& enemies)
+{
+    for (const auto& boss : enemies) {
+        if (boss->GetIsDead())
+            continue;
+
+        auto volumes = boss->GetCollisionVolumes();
+
+        for (const auto& volume : volumes) {
+
+            Vector3 playerPos = player->GetPosition();
+
+            Vector3 diff = { playerPos - volume.position };
+            float distnance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+            if (distnance <= player->GetHitSize() + boss->GetRadius()) {
+
+                int test = 1;
+                player->Damage(test);
+            }
+        }
+    }
+}
+
+void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet) { }
+
+void CheckCollisionSpecialAtackEnemy(const std::list<std::shared_ptr<Enemy>>& enemies)
+{
     // 存在するすべての敵に当たる
     for (const auto& enemy : enemies) {
         // 敵が死んでいる場合はスキップ（敵側にAliveフラグ等がある前提）
-         if (!enemy->GetIsAlive()) continue;
+        if (!enemy->GetIsAlive())
+            continue;
         // 敵に爆弾のダメージを与える
-        
-		 enemy->OnCollision(10, enemy->GetWorldPosition(), Vector3{0, 0, 0}); // 例として100ダメージを与える
-	}
+
+        enemy->OnCollision(10, enemy->GetWorldPosition(), Vector3 { 0, 0, 0 }); // 例として100ダメージを与える
+    }
 }

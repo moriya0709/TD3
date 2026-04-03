@@ -42,7 +42,7 @@ public:
 			statas_[currentStyle].hp = 0;
 		}
 		ishit = true;
-		damageTimer = 30; // ダメージ表示タイマーリセット
+		inbincileTimer = 30; // ダメージ表示タイマーリセット
 	}
 	bool GetIsHit() const { return ishit; }
 	// void SetStatas(const Statas& newStatas) { statas_ = newStatas; }

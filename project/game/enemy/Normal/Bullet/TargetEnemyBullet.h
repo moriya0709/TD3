@@ -23,6 +23,7 @@ public:
     void SetTargetPosition(Vector3 Pos);
     void OnCollision() override;
 
+
 private:
     Transform transform_; // 座標系
     bool isAvile = true; // 生存しているか
