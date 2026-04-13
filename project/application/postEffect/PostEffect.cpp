@@ -175,6 +175,9 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	effectData->isMotionBlur = true;    // モーションブラーのON/OFF
 	effectData->motionBlurSamples = 8; // サンプル数（例：8〜16）
 	effectData->motionBlurScale = 1.0f;   // ブラーの強さ
+	// 色収差
+	effectData->isFullScreenCA = false; // 画面全体の色収差ON/OFF
+	effectData->fullScreenCAIntensity = 0.02f; // 画面全体の色収差の強さ
 
 	effectData->intensity = 1.0f;
 
@@ -207,6 +210,32 @@ void PostEffect::Update(Camera* camera) {
 	float baseDist = 0.3f; // 太陽が中央のとき（密集）
 	float maxDist = 0.7f;  // 太陽が端のとき（拡散）
 	effectData->lensFlareGhostDispersal = baseDist + (maxDist - baseDist) * lerpFactor;
+
+
+	// ダメージエフェクトの統合制御
+	if (isDamegeFade) {
+		if (damageEffectRatio_ > 0.0f) {
+
+			// 毎フレーム進行度を減らす（0.05fなら約20フレームで消失）
+			damageEffectRatio_ -= 0.05f;
+
+			if (damageEffectRatio_ <= 0.0f) {
+				damageEffectRatio_ = 0.0f;
+				// 完全に終わったら両方のフラグをOFFにして軽くする
+				SetFullScreenCA(false);
+				SetVignette(false);
+			} else {
+				// エフェクト再生中ならフラグをON
+				SetFullScreenCA(true);
+				SetVignette(true);
+
+				// 進行度(0.0~1.0) × 「最大時の強さ」 を計算してHLSLへセット
+				// 色収差のMAXは0.1f、ビネットのMAXは0.8f と定義
+				SetFullScreenCAIntensity(damageEffectRatio_ * 0.1f);
+				SetVignetteIntensity(damageEffectRatio_ * 0.8f);
+			}
+		}
+	}
 }
 
 void PostEffect::Draw() {

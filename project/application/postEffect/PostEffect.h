@@ -82,6 +82,13 @@ struct EffectData {
 	float motionBlurScale;
 	float pad6;
 
+	// 色収差
+	int isFullScreenCA; // 画面全体の色収差ON/OFF
+	float fullScreenCAIntensity; // 画面全体の色収差の強さ
+	// ビネット
+	int isVignette;
+	float vignetteIntensity;
+
 };
 
 // 各パスのレンダーターゲットとSRVインデックスをまとめる構造体
@@ -153,6 +160,14 @@ public:
 	void SetMotionBlur(bool isMotionBlur) { effectData->isMotionBlur = isMotionBlur; }
 	void SetMotionBlurSamples(int motionBlurSamples) { effectData->motionBlurSamples = motionBlurSamples;}
 	void SetMotionBlurScale(float motionBlurScale) {effectData->motionBlurScale = motionBlurScale;}
+	// 色収差
+	void SetFullScreenCA(bool isFullScreenCA) { effectData->isFullScreenCA = isFullScreenCA; }
+	void SetFullScreenCAIntensity(float intensity) { effectData->fullScreenCAIntensity = intensity; }
+	// ビネット
+	void SetVignette(bool isVignette) { effectData->isVignette = isVignette; }
+	void SetVignetteIntensity(float intensity) { effectData->vignetteIntensity = intensity; }
+	// ダメージエフェクト
+	void SetDamageEffectRatio(float ratio) { damageEffectRatio_ = ratio; }
 
 	// getter
 	float GetLensFlareGhostDispersal() { return effectData->lensFlareGhostDispersal; }
@@ -214,6 +229,9 @@ private:
 	uint32_t lensFlareSrvIndex_ = 0;
 	// モーションブラー
 	uint32_t velocitySrvIndex_ = 0; // ベロシティバッファ(t6)用
+	// ダメージエフェクト
+	bool isDamegeFade = true; // フェードアウト
+	float damageEffectRatio_ = 0.0f; // 0.0fでエフェクト無し、1.0fで最大ダメージ表現
 
 	// ポインター
 	DirectXCommon* dxCommon_ = nullptr;

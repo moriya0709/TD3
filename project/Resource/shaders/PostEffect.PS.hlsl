@@ -77,6 +77,15 @@ struct EffectData
     int motionBlurSamples;
     float motionBlurScale;
     float pad6;
+    
+    // 色収差
+    int isFullScreenCA; // 画面全体の色収差ON/OFF
+    float fullScreenCAIntensity; // 画面全体の色収差の強さ
+    // ビネット
+    int isVignette;
+    float vignetteIntensity;
+    
+    
 };
 ConstantBuffer<EffectData> gEffectData : register(b0);
 
@@ -317,6 +326,36 @@ float4 main(VSOutput input) : SV_TARGET
     // *通常描画 ＆ 最終合成* //
     if (gPassId == 0)
     {
+        // ★ フルスクリーン色収差（被ダメージ時などの画面全体エフェクト）
+        if (gEffectData.isFullScreenCA)
+        {
+            float2 toCenter = float2(0.5f, 0.5f) - input.uv;
+            // 既存の便利な関数を再利用して、ベースカラーをズレた色で上書き
+            color.rgb = SampleWithCA(gCurrentTexture, gSampler, input.uv, toCenter, gEffectData.fullScreenCAIntensity);
+        }
+        
+        // ★ 2. ビネット（被ダメージ時の画面端の赤み）
+        if (gEffectData.isVignette)
+        {
+            // 画面中心からの距離を計算 (中心0.0 ～ 四隅約0.707)
+            float dist = distance(input.uv, float2(0.5f, 0.5f));
+            
+            // 距離0.3〜0.8の範囲で 0.0 → 1.0 になるグラデーションを作成
+            float vignetteWeight = smoothstep(0.3f, 0.8f, dist);
+            
+            // C++から渡された強さを掛ける
+            vignetteWeight *= saturate(gEffectData.vignetteIntensity);
+
+            // ダメージ用の色（暗めの血の色をイメージ）
+            float3 damageColor = float3(0.6f, 0.0f, 0.0f);
+
+            // 元の色とダメージ色を、vignetteWeightの強さで合成
+            color.rgb = lerp(color.rgb, damageColor, vignetteWeight);
+
+            // ※もし普通の「黒いビネット」にしたい場合は、上のlerpを消して以下を有効にしてください。
+            // color.rgb *= (1.0f - vignetteWeight);
+        }
+        
         // --- 既存のエフェクト処理 ---
         // モノクロ
         if (gEffectData.isGrayscale)

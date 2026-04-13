@@ -147,6 +147,9 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
 	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
 	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
+	// 色収差
+	PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
+	PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
 
 #pragma endregion
 
@@ -325,6 +328,16 @@ void TitleScene::Update() {
 		if (isLensFlare) {
 			ImGui::DragInt("motionBlurSamples", &motionBlurSamples, 1, 0, 20);
 			ImGui::DragFloat("motionBlurScale", &motionBlurScale, 0.01f, 0.0f, 10.0f);
+		}
+
+		ImGui::TreePop();
+	}
+	// 色収差
+	if (ImGui::TreeNode("CA")) {
+		ImGui::Checkbox("OnOff", &isFullScreenCA);
+
+		if (isLensFlare) {
+			ImGui::DragFloat("fullScreenCAIntensity", &fullScreenCAIntensity, 0.001f, 0.0f, 1.0f);
 		}
 
 		ImGui::TreePop();

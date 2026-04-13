@@ -121,6 +121,10 @@ private:
 	int motionBlurSamples = 16; // サンプル数（例：8〜16）
 	float motionBlurScale = 1.0f;   // ブラーの強さ
 
+	// 色収差
+	bool isFullScreenCA = false; // 画面全体の色収差ON/OFF
+	float fullScreenCAIntensity = 0.005f; // 画面全体の色収差の強さ
+
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
