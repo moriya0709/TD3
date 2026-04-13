@@ -61,6 +61,17 @@ void CheckCollisionPlayerEnemyBullet(Player* player, const std::list<std::shared
 
                 // 弾の消す処理
                 bullet->OnCollision();
+
+                // ダメージエフェクト(色収差、ビネット)
+                if (distance <= playerSize + enemySize) {
+                    // hit
+                    int test = 1;
+                    player->Damage(test);
+                    bullet->OnCollision();
+
+                    // ★ ダメージエフェクトを最大化（トリガー）
+                    PostEffect::GetInstance()->SetDamageEffectRatio(1.0f);
+                }
             }
         }
     }

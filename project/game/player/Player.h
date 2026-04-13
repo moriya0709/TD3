@@ -67,6 +67,8 @@ public:
 	bool GetIsSpecialAttack() const { return isSpecialAttack; }
 	void SetIsSpecialAttack(bool isSpecial) { isSpecialAttack = isSpecial; }
 
+
+
 private:
 	// プレイヤーのステータス
 	Statas statas_[4];
