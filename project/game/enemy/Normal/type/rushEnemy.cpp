@@ -19,6 +19,9 @@ void rushEnemy::Initialize(Camera* camera, Vector3 pos, int health)
     object_->SetRotate(transform_.rotate);
     object_->SetTranslate(transform_.translate);
 
+    velocity_ = { 0.0f, 0.0f, 0.0f };
+    acceleration_ = { 0.0f, 0.0f, 0.0f };
+
     health_ = health;
     isAvile = true;
 
@@ -95,7 +98,6 @@ void rushEnemy::OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[ma
     if (behavior_ == Behavior::kDefeated) {
         return;
     }
-
 
     health_ -= Damage;
 

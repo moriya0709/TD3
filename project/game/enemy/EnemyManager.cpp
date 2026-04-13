@@ -234,7 +234,7 @@ void EnemyManager::SpawnEnemy(const EnemyPopData& data)
         newEnemy = std::make_unique<HomingEnemy>();
     } else if (data.type == "TargetEnemy") {
         newEnemy = std::make_unique<TargetEnemy>();
-    } else if (data.type == "RushEnemy") {
+    } else if (data.type == "rushEnemy") {
         newEnemy = std::make_unique<rushEnemy>();
     } else if (data.type == "ShieldEnemy") {
         newEnemy = std::make_unique<ShieldEnemy>();
