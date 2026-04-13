@@ -55,7 +55,7 @@ public:
 
     /* Set関数 */
     virtual void SetTargetPlayer(Player* target) { };
-    //virtual void OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity) = 0;
+    // virtual void OnCollision(int Damage, [[maybe_unused]] Vector3 bulletPos, [[maybe_unused]] Vector3 Velocity) = 0;
     // virtual void SetWayPoints(const std::vector<WayPoint>& waypoints) { };
     // virtual void SetFleeWaypoint(const WayPoint& fleeWP, bool hasFleeData) { };
 
