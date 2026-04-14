@@ -67,7 +67,7 @@ private:
     static inline const float kdeadTimer_ = 0.1f;
 
     // キャラクターの当たり判定サイズ
-    static inline const float radius = 5.0f;
+    static inline const float radius = 1.5f;
 
     // ホーミング性能
     float homingPower = 0.010f;

@@ -42,7 +42,7 @@ private:
     float homingPower = 0.10f;
 
     // キャラクターの当たり判定サイズ
-    static inline const float radius = 1.0f;
+    static inline const float radius = 0.4f;
 
     Camera* camera_ = nullptr; // カメラ
     std::unique_ptr<Object> object_; // オブジェ
