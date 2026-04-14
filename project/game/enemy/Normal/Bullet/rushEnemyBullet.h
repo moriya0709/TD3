@@ -35,7 +35,7 @@ private:
     Vector3 targetPos_; // 追跡対象、または狙う場所
 
     // キャラクターの当たり判定サイズ
-    static inline const float radius = 0.6f;
+    static inline const float radius = 2.0f;
 
     Camera* camera_ = nullptr; // カメラ
     std::unique_ptr<Object> object_; // オブジェ

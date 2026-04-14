@@ -73,7 +73,7 @@ private:
     static inline const float kdeadTimer_ = 0.1f;
 
     // キャラクターの当たり判定サイズ
-    static inline const float radius = 2.0f;
+    static inline const float radius = 1.0f;
 
     /* ウェイポイント移動の変数 */
     std::vector<WayPoint> wayPoints_;

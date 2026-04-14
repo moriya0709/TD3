@@ -32,7 +32,7 @@ private:
     float homingPower = 0.015f; // ダミー用
 
     // キャラクターの当たり判定サイズ
-    static inline const float radius = 0.6f;
+    static inline const float radius = 2.0f;
 
     Camera* camera_ = nullptr; // カメラ
     std::unique_ptr<Object> object_; // オブジェ

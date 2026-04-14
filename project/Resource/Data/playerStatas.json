@@ -1,30 +1,30 @@
 {
     "Statas": [
         {
-            "attack": 25,
+            "attack": 20,
             "chargeTime": 40,
-            "haste": 10,
+            "haste": 9,
             "hommingAccuracy": 0.009999999776482582,
-            "hp": 100,
-            "renge": 120.0,
+            "hp": 91,
+            "renge": 140.8000030517578,
             "speed": 0.20000000298023224
         },
         {
-            "attack": 7,
+            "attack": 6,
             "chargeTime": 5,
             "haste": 3,
-            "hommingAccuracy": 0.014999999664723873,
+            "hommingAccuracy": 0.05000000074505806,
             "hp": 30,
-            "renge": 100.0,
+            "renge": 150.0,
             "speed": 0.4000000059604645
         },
         {
-            "attack": 180,
+            "attack": 200,
             "chargeTime": 70,
             "haste": 60,
-            "hommingAccuracy": 0.007499999832361937,
+            "hommingAccuracy": 0.10000000149011612,
             "hp": 150,
-            "renge": 80.0,
+            "renge": 70.0,
             "speed": 0.30000001192092896
         },
         {
@@ -33,8 +33,8 @@
             "haste": 20,
             "hommingAccuracy": 0.0,
             "hp": 80,
-            "renge": 250.0,
-            "speed": 0.11999999731779099
+            "renge": 500.0,
+            "speed": 0.10000000149011612
         }
     ]
 }
