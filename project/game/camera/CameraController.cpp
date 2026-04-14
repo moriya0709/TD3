@@ -82,16 +82,7 @@ std::string CameraController::GetFilePath(int slot) const { return "Resource/Dat
 void CameraController::Update() {
 	auto input = Input::GetInstance();
 	int newSlot = -1;
-	if (input->TriggerKey(DIK_1))
-		newSlot = 1;
-	else if (input->TriggerKey(DIK_2))
-		newSlot = 2;
-	else if (input->TriggerKey(DIK_3))
-		newSlot = 3;
-	else if (input->TriggerKey(DIK_4))
-		newSlot = 4;
-	else if (input->TriggerKey(DIK_5))
-		newSlot = 5;
+	
 
 	if (newSlot != -1 && newSlot != currentStage) {
 		currentStage = newSlot;
@@ -162,7 +153,7 @@ void CameraController::DrawImGui() {
 	if (ImGui::CollapsingHeader("Initial Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::DragFloat3("Start Pos", &initialTransform.translate.x, 0.1f);
 		ImGui::DragFloat3("Start Rot", &initialTransform.rotate.x, 0.01f);
-		ImGui::SliderFloat("Start FOV", &initialTransform.fov, 10.0f, 120.0f);
+		ImGui::DragFloat("Start FOV", &initialTransform.fov, 10.0f, 120.0f);
 		if (ImGui::Button("Set Current as Initial"))
 			initialTransform = cameraTransform;
 	}
@@ -184,7 +175,7 @@ void CameraController::DrawImGui() {
 		if (isPaused) {
 			ImGui::Separator();
 			ImGui::TextColored(ImVec4(1, 0.8f, 0, 1), "Edit Mode: Manual Tweak Available");
-			ImGui::SliderFloat("Tweak Zoom (FOV)", &cameraTransform.fov, kMinFov, kMaxFov);
+			ImGui::DragFloat("Tweak Zoom (FOV)", &cameraTransform.fov, kMinFov, kMaxFov);
 			ImGui::DragFloat3("Tweak Pos", &cameraTransform.translate.x, 0.1f);
 			ImGui::DragFloat3("Tweak Rot", &cameraTransform.rotate.x, 0.01f);
 			if (ImGui::Button("● Start Overwrite Recording from Here", ImVec2(-1, 30)))
@@ -195,7 +186,7 @@ void CameraController::DrawImGui() {
 		if (isRecording)
 			ImGui::ProgressBar(timer / kMaxDuration);
 
-		ImGui::SliderFloat("Tweak Zoom (FOV)", &cameraTransform.fov, kMinFov, kMaxFov);
+		ImGui::DragFloat("Tweak Zoom (FOV)", &cameraTransform.fov, kMinFov, kMaxFov);
 		ImGui::DragFloat3("Input Vel", &uiVelocity.x, 0.01f, -1.0f, 1.0f);
 		ImGui::DragFloat3("Input Rot", &uiAngularVelocity.x, 0.005f, -0.05f, 0.05f);
 
@@ -315,7 +306,6 @@ void CameraController::StartOverwriteRecording() {
 	stateHistory.erase(std::remove_if(stateHistory.begin(), stateHistory.end(), [this](const CameraState& s) { return s.time > timer; }), stateHistory.end());
 	isReplaying = isPaused = false;
 	isRecording = true;
-	lastRecordedFov = -999.0f; // 強制記録
 	uiFov = cameraTransform.fov;
 	RecordStateIfChanged(uiVelocity, uiAngularVelocity, cameraTransform.translate, cameraTransform.rotate, uiFov);
 }
