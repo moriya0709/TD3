@@ -178,6 +178,8 @@ void CameraController::DrawImGui() {
 			ImGui::DragFloat("Tweak Zoom (FOV)", &cameraTransform.fov, kMinFov, kMaxFov);
 			ImGui::DragFloat3("Tweak Pos", &cameraTransform.translate.x, 0.1f);
 			ImGui::DragFloat3("Tweak Rot", &cameraTransform.rotate.x, 0.01f);
+			ImGui::DragFloat3("Tweak Vel", &uiVelocity.x, 0.01f, -1.0f, 1.0f);
+			ImGui::DragFloat3("Tweak AngVel", &uiAngularVelocity.x, 0.005f, -0.05f, 0.05f);
 			if (ImGui::Button("● Start Overwrite Recording from Here", ImVec2(-1, 30)))
 				StartOverwriteRecording();
 		}
