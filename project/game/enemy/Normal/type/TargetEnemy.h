@@ -64,7 +64,7 @@ private:
     static inline const float kdeadTimer_ = 0.1f;
 
     // キャラクターの当たり判定サイズ
-    static inline const float radius = 5.0f;
+    static inline const float radius = 2.0f;
 
     // プレイヤーの情報
     Player* player_ = nullptr;
