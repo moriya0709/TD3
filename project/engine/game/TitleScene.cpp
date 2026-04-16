@@ -10,8 +10,11 @@ void TitleScene::Initialize() {
 	camera->SetRotate({ cameraTransform.rotate });
 	camera->SetTranslate({ cameraTransform.translate });
 
+	railCamera = std::make_unique<RailCamera>();
+	railCamera->Initialize();
+
 	// カメラマネージャ登録
-	CameraManager::GetInstance()->AddCamera("main", camera.get());
+	CameraManager::GetInstance()->AddCamera("main", railCamera->camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
 	// スプライト
@@ -44,6 +47,9 @@ void TitleScene::Update() {
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
+
+	railCamera->Update();
+	railCamera->EditorUpdate();
 
 	// ENTERキーを押したら
 	if (input->TriggerKey(DIK_RETURN)) {
@@ -155,7 +161,7 @@ void TitleScene::Update() {
 
 #pragma region レイマーチング
 	// レイマーチング
-	RayMarching::GetInstance()->Update(camera.get());
+	RayMarching::GetInstance()->Update(railCamera->camera.get());
 	//rayMarching->SetTime(rayMarchingTime);
 	RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
 	RayMarching::GetInstance()->SetCloudCoverage(rayMarchingCloudCoverage);
@@ -384,6 +390,7 @@ void TitleScene::Draw3D() {
 		object[i]->Draw();
 	}
 
+	railCamera->EditorDraw();
 
 	// アウトライン描画準備
 	ObjectCommon::GetInstance()->SetOutlinePipelineState();
