@@ -37,6 +37,10 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
     for (int i = 0; i < pats; ++i) {
         BossPart p;
 
+        p.transform.translate = baseTransform_.translate;
+        
+        p.transform.rotate = { 0.0f,(2.0f * (float)std::numbers::pi / (float)pats) * (float)i ,0.0f};
+
         // モデル生成
         p.object = std::make_unique<Object>();
         p.object->Initialize(camera_);
@@ -44,7 +48,6 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
         p.object->SetScale(baseTransform_.scale);
         p.object->SetRotate(p.transform.rotate);
         p.object->SetTranslate(baseTransform_.translate + p.transform.translate + cameraPos);
-        // object->SetModel(texture); テクスチャを直で変えられるコードが今はない
         p.object->Update();
 
         parts_.push_back(std::move(p)); // unique_ptrを含むので std::move
@@ -100,6 +103,8 @@ void banana::Update()
 
 void banana::Draw3D()
 {
+    stemobject->Draw();
+
     for (auto& part : parts_) {
         part.object->Draw();
     }
@@ -293,6 +298,13 @@ void banana::BulletUpdate()
 
 void banana::BehaviorStillness()
 {
+    baseTransform_.translate += baseMove / 60.0f;
+    if (baseTransform_.translate.x <= -5.0f || baseTransform_.translate.x >= 5.0f) {
+        baseMove.x *= -1.0f;
+    }
+    if (baseTransform_.translate.y <= -5.0f || baseTransform_.translate.y >= 5.0f) {
+        baseMove.y *= -1.0f;
+    }
 }
 
 void banana::BehaviorAttack()

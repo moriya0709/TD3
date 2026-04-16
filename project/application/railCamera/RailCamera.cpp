@@ -147,6 +147,7 @@ void RailCamera::AddPoint(Vector3 pos)
 	obj->SetTranslate(pos);
 	spheres.push_back(std::move(obj)); 
 }
+
 void RailCamera::UpdateGizmo() {
 	if (selectedPoint < 0 || selectedPoint >= (int)points.size()) return;
 

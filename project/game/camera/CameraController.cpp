@@ -145,6 +145,9 @@ void CameraController::Update(bool isActive, int bossType) {
 }
 
 void CameraController::DrawImGui() {
+#ifdef USE_IMGUI
+
+
 	ImGui::Begin("Camera Recording Studio");
 	ImGui::Checkbox("Show Trace", &showDebugTrace);
 	ImGui::SameLine();
@@ -225,6 +228,7 @@ void CameraController::DrawImGui() {
 		}
 	}
 	ImGui::End();
+#endif // USE_IMGUI
 }
 
 void CameraController::DrawDebugTrace() {

@@ -27,12 +27,21 @@ void GamePlayScene::Initialize() {
 	// スプライト
 	pause_ = std::make_unique<Sprite>();
 	pause_->Initialize("Resource/pause.png"); // ポーズ
+	pause_->SetPosition({ 100.0f, 50.0f }); // 画面中央
 
 	resume_ = std::make_unique<Sprite>();
 	resume_->Initialize("Resource/resume.png"); // 続ける
+	resume_->SetPosition({ 520.0f, 180.0f });
+	resumeEasing.pos = { 520.0f, 180.0f };
+	resumeEasing.size = { 0.0f,0.0f };
+	resumeEasing.startSizeV2 = { 0.0f,0.0f };
+	resumeEasing.endSizeV2 = { 300.0f,300.0f };
+	resumeEasing.sizeTime = 0.0f;
+	resumeEasing.sizeEasedT = 0.0f;
 
 	retry_ = std::make_unique<Sprite>();
 	retry_->Initialize("Resource/retry.png"); // リトライ
+	retry_->SetPosition({ 520.0f, 180.0f });
 
 	select_ = std::make_unique<Sprite>();
 	select_->Initialize("Resource/select.png"); // セレクトへ
@@ -40,6 +49,16 @@ void GamePlayScene::Initialize() {
 	//playerHPバー
 	playerHpUI_ = std::make_unique<Sprite>();
 	playerHpUI_->Initialize("Resource/UI/playerHp.png");
+	select_->SetPosition({ 520.0f, 180.0f });
+
+	pauseBg_ = std::make_unique<Sprite>();
+	pauseBg_->Initialize("Resource/pauseBg.png"); // ポーズ背景
+	pauseBg_->SetPosition({ 960.0f, 540.0f });
+	pauseBg_->SetSize({ 1920.0f,1080.0f });
+
+	// イージング
+	easing = std::make_unique<Easing>();
+	easing->Initialize();
 }
 
 void GamePlayScene::Update() {
@@ -60,14 +79,22 @@ void GamePlayScene::Update() {
 		// ポーズ画面へ
 		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
 			isPause_ = true;
-			isACES = false;
+			isGrayscale = true;
 		}
 
 	} else { // ポーズ画面
 		PauseSelect();
 	}
+
+	// スプライト更新
+	pause_->Update();
+
 	LithingEffect();
 	UpdateImGui();
+
+	// イージング更新
+	easing->Update();
+	easing->Draw();
 }
 
 void GamePlayScene::Draw2D() {
@@ -82,17 +109,20 @@ void GamePlayScene::Draw2D() {
 
 	switch (currentPause_) {
 	case kResume:
+	if (isPause_) {
+		pauseBg_->Draw(); // ポーズ背景
 		resume_->Draw(); // ポーズ//続ける
 		break;
-	case kRetry:
+		case kRetry:
 		retry_->Draw(); // リトライ
 		break;
-	case kSelect:
+		case kSelect:
 		select_->Draw(); // セレクトへ
 		break;
+		}
 	}
-	// スプライト描画
-	// sprite->Draw();
+
+	
 }
 
 void GamePlayScene::Draw3D() {
@@ -132,13 +162,11 @@ void GamePlayScene::ChekeAllCollision() {
   CheckCollisionPlayerBossEnemyBullet(player_.get(), Boss);
 	if (player_->GetIsSpecialAttack() && specialAttackTimer <= 0) {
 		CheckCollisionSpecialAtackEnemy(enemies);
-		isACES = false;          // ACESトーンマッピングをONにする
 		specialAttackTimer = 60; // 特殊攻撃のエフェクト時間（例: 60フレーム）
 	}
 	if (specialAttackTimer > 0) {
 		specialAttackTimer--;
 		if (specialAttackTimer <= 0) {
-			isACES = true;                      // ACESトーンマッピングをOFFにする
 			player_->SetIsSpecialAttack(false); // 特殊攻撃の当たり判定は1フレームだけ
 
 			specialAttackTimer = 0; // タイマーリセット
@@ -148,29 +176,32 @@ void GamePlayScene::ChekeAllCollision() {
 
 // ポーズ選択
 void GamePlayScene::PauseSelect() {
-	isACES = false;
+	if (Input::GetInstance()->TriggerKey(DIK_ESCAPE) || Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+		isPause_ = false;
+		isGrayscale = false;
+		resumeEasing.sizeTime = 0.0f;
+		resumeEasing.sizeEasedT = 0.0f;
+	}
+
 	switch (currentPause_) {
 	case Pause::kResume:
-		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE) || Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-			isPause_ = false;
-			isACES = true;
-		}
 		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
 			currentPause_ = Pause::kSelect;
 		}
 		if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN)) {
 			currentPause_ = Pause::kRetry;
 		}
+
+		easing->SizeV2(resumeEasing, 0.05f, 1);
+
 		break;
 	case Pause::kRetry:
 		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 			// ゲームプレイシーン(次シーン)を生成
 			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-			isACES = true;
 		}
 		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
 			isPause_ = false;
-			isACES = true;
 		}
 		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
 			currentPause_ = Pause::kResume;
@@ -183,11 +214,9 @@ void GamePlayScene::PauseSelect() {
 		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 			// ゲームプレイシーン(次シーン)を生成
 			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
-			isACES = true;
 		}
 		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
 			isPause_ = false;
-			isACES = true;
 		}
 		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
 			currentPause_ = Pause::kRetry;
@@ -197,6 +226,16 @@ void GamePlayScene::PauseSelect() {
 		}
 		break;
 	}
+
+	// トランスフォーム更新
+	resume_->SetSize(resumeEasing.size);
+
+	// スプライト更新
+	resume_->Update();
+	retry_->Update();
+	select_->Update();
+	pauseBg_->Update();
+
 }
 
 void GamePlayScene::LithingEffect() {

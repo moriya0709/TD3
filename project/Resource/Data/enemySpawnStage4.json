@@ -41,7 +41,7 @@
             "movePattern": [
                 {
                     "target": {
-                        "x": -10.0,
+                        "x": -7.5,
                         "y": 0.0,
                         "z": 60.0
                     },
@@ -70,12 +70,70 @@
             "movePattern": [
                 {
                     "target": {
-                        "x": 10.0,
+                        "x": 7.5,
                         "y": 0.0,
                         "z": 90.0
                     },
                     "timeToReach": 0.5,
                     "timeToStop" : 120.0
+                }
+            ],
+            "flee": {
+                "target": {
+                    "x": 0.0,
+                    "y": 100.0,
+                    "z": 0.0
+                },
+                "timeToReach": 2.0
+            }
+        },
+        {
+            "popTime": 4.0,
+            "type": "ShieldEnemy",
+            "hp": 100000,
+            "position": {
+                "x": 10.0,
+                "y": 0.0,
+                "z": 400.0
+            },
+            "movePattern": [
+                {
+                    "target": {
+                        "x": -15.0,
+                        "y": 0.0,
+                        "z": 75.0
+                    },
+                    "timeToReach": 0.5,
+                    "timeToStop" : 120.0
+                }
+            ],
+            "flee": {
+                "target": {
+                    "x": 0.0,
+                    "y": 100.0,
+                    "z": 0.0
+                },
+                "timeToReach": 2.0
+            }
+        },
+        {
+            "popTime": 5.0,
+            "type": "rushEnemy",
+            "hp": 100000,
+            "position": {
+                "x": 10.0,
+                "y": 0.0,
+                "z": 400.0
+            },
+            "movePattern": [
+                {
+                    "target": {
+                        "x": 15.0,
+                        "y": 0.0,
+                        "z": 45.0
+                    },
+                    "timeToReach": 0.5,
+                    "timeToStop" : 30.0
                 }
             ],
             "flee": {

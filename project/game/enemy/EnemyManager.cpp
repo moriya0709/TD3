@@ -5,6 +5,7 @@
 #include <iostream> // エラー出力用
 
 #include "../camera/CameraController.h"
+#include "Boss/type/banana.h"
 #include "Boss/type/grapesBoss.h"
 #include "Normal/type/HomingEnemy.h"
 #include "Normal/type/NormalEnemy.h"
@@ -149,7 +150,7 @@ void EnemyManager::LoadEnemyData(const std::string& filePath)
             // ==========================================
             // ★ 修正ポイント：ボス以外の時だけ移動・逃走を読み込む
             // ==========================================
-            if (popData.type != "grapesBoss") {
+            if (popData.type != "grapesBoss" || popData.type != "bananaBoss") {
 
                 // --- movePattern の読み込み ---
                 if (enemyData.contains("movePattern") && enemyData["movePattern"].is_array()) {
@@ -215,8 +216,17 @@ void EnemyManager::SpawnEnemy(const EnemyPopData& data)
     if (data.type == "grapesBoss") {
         auto newBoss = std::make_unique<grapesBoss>();
 
-        // ボス専用の初期化（テクスチャHandleを渡す）
-        // ※ JSONにtexture項目がない場合は暫定で0を渡すか、dataに追加してください
+        // ボス専用の初期化
+        newBoss->Initialize(camera_, data.position, data.hp);
+        newBoss->SetTargetPlayer(player_);
+
+        // ボスリストに追加
+        boss_.push_back(std::move(newBoss));
+        return; // ボスとして生成したのでここで終了
+    } else if (data.type == "bananaBoss") {
+        auto newBoss = std::make_unique<banana>();
+
+        // ボス専用の初期化
         newBoss->Initialize(camera_, data.position, data.hp);
         newBoss->SetTargetPlayer(player_);
 
@@ -238,7 +248,7 @@ void EnemyManager::SpawnEnemy(const EnemyPopData& data)
         newEnemy = std::make_unique<rushEnemy>();
     } else if (data.type == "ShieldEnemy") {
         newEnemy = std::make_unique<ShieldEnemy>();
-    }
+    } 
 
     if (newEnemy) {
         newEnemy->Initialize(camera_, data.position, data.hp);
@@ -266,7 +276,7 @@ void EnemyManager::SaveToJson(const std::string& filePath)
         enemyData["position"] = Vector3ToJson(data.position);
 
         // ★ 修正ポイント：ボス以外の時だけ移動・逃走データを保存する
-        if (data.type != "grapesBoss") {
+        if (data.type != "grapesBoss" || data.type != "bananaBoss") {
             // 移動パターン
             enemyData["movePattern"] = nlohmann::ordered_json::array();
             for (const auto& wp : data.movePattern) {
@@ -404,7 +414,7 @@ void EnemyManager::DrawImGui()
             isEditing_ = true;
 
         // ★ 修正ポイント：ボス以外の時だけ移動・逃走の編集UIを表示する
-        if (data.type != "grapesBoss") {
+        if (data.type != "grapesBoss" || data.type != "bananaBoss") {
             ImGui::Separator();
 
             // 移動経路（movePattern）編集

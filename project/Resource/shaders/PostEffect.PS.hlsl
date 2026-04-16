@@ -356,20 +356,6 @@ float4 main(VSOutput input) : SV_TARGET
             // color.rgb *= (1.0f - vignetteWeight);
         }
         
-        // --- 既存のエフェクト処理 ---
-        // モノクロ
-        if (gEffectData.isGrayscale)
-        {
-            float gray = dot(color.rgb, float3(0.2126, 0.7152, 0.0722));
-            color.rgb = float3(gray, gray, gray);
-        }
-
-        // 色反転
-        if (gEffectData.isInversion)
-        {
-            color.rgb = 1.0f - color.rgb;
-        }
-        
         // 放射状ブラー
         if (gEffectData.isRadialBlur)
         {
@@ -498,6 +484,19 @@ float4 main(VSOutput input) : SV_TARGET
            // ★ if文の中に移動する！
             float3 lensFlare = gLensFlareTexture.Sample(gSampler, input.uv).rgb;
             color.rgb += lensFlare;
+        }
+
+        // 色反転
+        if (gEffectData.isInversion)
+        {
+            color.rgb = 1.0f - color.rgb;
+        }
+        
+        // モノクロ
+        if (gEffectData.isGrayscale)
+        {
+            float gray = dot(color.rgb, float3(0.2126, 0.7152, 0.0722));
+            color.rgb = float3(gray, gray, gray);
         }
 
         color.rgb *= gEffectData.intensity;
