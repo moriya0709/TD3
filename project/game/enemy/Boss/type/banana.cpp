@@ -290,3 +290,19 @@ void banana::BulletUpdate()
         return !bullet->GetIsActive(); // GetIsActive が false なら削除
     });
 }
+
+void banana::BehaviorStillness()
+{
+}
+
+void banana::BehaviorAttack()
+{
+}
+
+void banana::BehaviorShield()
+{
+}
+
+void banana::BehaviorDefeated()
+{
+}
