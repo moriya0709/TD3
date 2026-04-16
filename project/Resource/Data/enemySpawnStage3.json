@@ -2,13 +2,14 @@
     "enemies": [
         {
             "popTime": 1.0,
-            "type": "grapesBoss",
+            "type": "bananaBoss",
             "hp": 2100,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
                 "z": 60.0
-            }
+            },
+            "movePattern": []
         }
     ]
 }
