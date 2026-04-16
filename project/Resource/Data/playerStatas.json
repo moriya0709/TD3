@@ -5,7 +5,7 @@
             "chargeTime": 40,
             "haste": 10,
             "hommingAccuracy": 0.019999999552965164,
-            "hp": 100,
+            "hp": 88,
             "renge": 200.0,
             "speed": 0.20000000298023224
         },
@@ -14,7 +14,7 @@
             "chargeTime": 12,
             "haste": 3,
             "hommingAccuracy": 0.009999999776482582,
-            "hp": 50,
+            "hp": 20,
             "renge": 150.0,
             "speed": 0.3499999940395355
         },
@@ -32,8 +32,8 @@
             "chargeTime": 120,
             "haste": 20,
             "hommingAccuracy": 0.0,
-            "hp": 75,
-            "renge": 300.0,
+            "hp": 80,
+            "renge": 250.0,
             "speed": 0.15000000596046448
         }
     ]
