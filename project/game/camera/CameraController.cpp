@@ -79,54 +79,68 @@ void CameraController::Initialize(Camera* targetCamera) {
 
 std::string CameraController::GetFilePath(int slot) const { return "Resource/Data/replay_" + std::to_string(slot) + ".json"; }
 
-void CameraController::Update() {
-	auto input = Input::GetInstance();
-	int newSlot = -1;
-	
+void CameraController::GreapesCameraUpdate() {}
 
-	if (newSlot != -1 && newSlot != currentStage) {
-		currentStage = newSlot;
-		isReplaying = isRecording = false;
-		LoadFromJSON(GetFilePath(currentStage));
-		if (!stateHistory.empty())
-			StartReplay();
-	}
+void CameraController::bananaCameraUpdate() {}
 
-	float deltaTime = 1.0f / 60.0f;
-	Vector3 cv = {0, 0, 0}, cav = {0, 0, 0}, cp = cameraTransform.translate, cr = cameraTransform.rotate;
-	float cf = cameraTransform.fov;
+void CameraController::Update(bool isActive, int bossType) {
+	if (isActive) {
+		switch (bossType) {
+		case 0:
+			GreapesCameraUpdate();
+			break;
+		case 1:
+			bananaCameraUpdate();
+			break;
+		}
 
-	if (isReplaying) {
-		if (!isPaused) {
-			timer += deltaTime * playbackSpeed;
+	} else {
+		int newSlot = -1;
+
+		if (newSlot != -1 && newSlot != currentStage) {
+			currentStage = newSlot;
+			isReplaying = isRecording = false;
+			LoadFromJSON(GetFilePath(currentStage));
+			if (!stateHistory.empty())
+				StartReplay();
+		}
+
+		float deltaTime = 1.0f / 60.0f;
+		Vector3 cv = {0, 0, 0}, cav = {0, 0, 0}, cp = cameraTransform.translate, cr = cameraTransform.rotate;
+		float cf = cameraTransform.fov;
+
+		if (isReplaying) {
+			if (!isPaused) {
+				timer += deltaTime * playbackSpeed;
+				if (timer >= kMaxDuration) {
+					timer = kMaxDuration;
+					isPaused = true;
+				}
+				ApplyReplayState(cv, cav, cp, cr, cf);
+				ApplyPhysics(cv, cav, cp, cr, cf);
+			}
+		} else if (isRecording) {
+			timer += deltaTime;
 			if (timer >= kMaxDuration) {
 				timer = kMaxDuration;
-				isPaused = true;
+				isRecording = false;
+				SaveToJSON(GetFilePath(currentStage));
 			}
-			ApplyReplayState(cv, cav, cp, cr, cf);
-			ApplyPhysics(cv, cav, cp, cr, cf);
-		}
-	} else if (isRecording) {
-		timer += deltaTime;
-		if (timer >= kMaxDuration) {
-			timer = kMaxDuration;
-			isRecording = false;
-			SaveToJSON(GetFilePath(currentStage));
-		}
-		cv = uiVelocity;
-		cav = uiAngularVelocity;
-		cf = uiFov;
+			cv = uiVelocity;
+			cav = uiAngularVelocity;
+			cf = uiFov;
 
-		RecordStateIfChanged(cv, cav, cameraTransform.translate, cameraTransform.rotate, cf);
-		ApplyPhysics(cv, cav, cameraTransform.translate, cameraTransform.rotate, cf);
-	} else {
-		cameraTransform = initialTransform;
-	}
+			RecordStateIfChanged(cv, cav, cameraTransform.translate, cameraTransform.rotate, cf);
+			ApplyPhysics(cv, cav, cameraTransform.translate, cameraTransform.rotate, cf);
+		} else {
+			cameraTransform = initialTransform;
+		}
 
-	if (camera) {
-		camera->SetRotate(cameraTransform.rotate);
-		camera->SetTranslate(cameraTransform.translate);
-		camera->SetFovY(cameraTransform.fov);
+		if (camera) {
+			camera->SetRotate(cameraTransform.rotate);
+			camera->SetTranslate(cameraTransform.translate);
+			camera->SetFovY(cameraTransform.fov);
+		}
 	}
 }
 

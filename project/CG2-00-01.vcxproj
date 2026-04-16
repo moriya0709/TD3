@@ -16,7 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
-    <ClCompile Include="game\enemy\Boss\type\banana.cpp" />
+    <ClCompile Include="BossCamera.cpp" />
     <ClCompile Include="engine\base\AbstractSceneFactory.cpp" />
     <ClCompile Include="engine\base\BaseScene.cpp" />
     <ClCompile Include="game\collision\Collision.cpp" />
@@ -206,7 +206,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\railCamera\RailCamera.h" />
-    <ClInclude Include="game\enemy\Boss\type\banana.h" />
+    <ClInclude Include="BossCamera.h" />
     <ClInclude Include="game\collision\Collision.h" />
     <ClInclude Include="game\camera\CameraController.h" />
     <ClInclude Include="game\enemy\Boss\BossEnemy.h" />

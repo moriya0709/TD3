@@ -170,6 +170,8 @@ private:
     void LithingEffect();
 	void UpdateImGui();
 
+    bool isBossBattle_ = false;
+
     //ポーズかどうか
     bool isPause_ = false;
 

@@ -24,7 +24,7 @@ struct CameraTransform {
 class CameraController {
 public:
 	void Initialize(Camera* camera);
-	void Update();
+	void Update(bool isActive,int bossType);
 	void DrawImGui();
 	void DrawDebugTrace();
 	void StartReplay();
@@ -91,4 +91,8 @@ private:
 	Vector3 lastRecordedPos = {-999.0f, -999.0f, -999.0f};
 	Vector3 lastRecordedRot = {-999.0f, -999.0f, -999.0f};
 	float lastRecordedFov = -999.0f; // ★ 追加
+
+	void GreapesCameraUpdate();
+	void bananaCameraUpdate();
+
 };

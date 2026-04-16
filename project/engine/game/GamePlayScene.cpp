@@ -41,7 +41,7 @@ void GamePlayScene::Initialize() {
 void GamePlayScene::Update() {
 
 	if (!isPause_) {
-		cameraController_->Update();
+		cameraController_->Update(isBossBattle_, 0);
 
 		// プレイヤー更新
 		player_->Update(enemy_->GetEnemies(), cameraController_->GetVelocity());
@@ -453,3 +453,4 @@ void GamePlayScene::UpdateImGui() {
 
 #endif
 }
+
