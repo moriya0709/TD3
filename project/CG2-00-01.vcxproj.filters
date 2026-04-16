@@ -83,6 +83,7 @@
     <ClCompile Include="TrailEffectManager.cpp" />
     <ClCompile Include="engine\base\BaseScene.cpp" />
     <ClCompile Include="engine\base\AbstractSceneFactory.cpp" />
+    <ClCompile Include="resultScene.cpp" />
     <ClCompile Include="game\enemy\Boss\type\banana.cpp" />
     <ClCompile Include="Easing.cpp" />
   </ItemGroup>
@@ -155,6 +156,7 @@
     <ClInclude Include="game\enemy\Boss\BossEnemy.h" />
     <ClInclude Include="TrailEffect.h" />
     <ClInclude Include="TrailEffectManager.h" />
+    <ClInclude Include="resultScene.h" />
     <ClInclude Include="game\enemy\Boss\type\banana.h" />
     <ClInclude Include="Easing.h" />
   </ItemGroup>

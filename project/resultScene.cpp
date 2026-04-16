@@ -1,246 +1,96 @@
-﻿#include "GamePlayScene.h"
+#include "resultScene.h"
 #include "ObjectCommon.h"
-#include "SceneManager.h"
 #include "SpriteCommon.h"
+#include "SceneManager.h"
 
-void GamePlayScene::Initialize() {
+void resultScene::Initialize()
+{
 	// カメラ初期化
 	camera = std::make_unique<Camera>();
-	camera->SetRotate({cameraTransform.rotate});
-	camera->SetTranslate({cameraTransform.translate});
+	camera->SetRotate({ cameraTransform.rotate });
+	camera->SetTranslate({ cameraTransform.translate });
 
 	// カメラマネージャ登録
 	CameraManager::GetInstance()->AddCamera("main", camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
-	cameraController_ = std::make_unique<CameraController>();
-	cameraController_->Initialize(camera.get());
-
-	player_ = std::make_unique<Player>();
-	player_->Initialize(camera.get(), style_);
-
-	enemy_ = std::make_unique<EnemyManager>();
-	enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
-	cameraController_->SetCurrentStage(currentStage_);
-	cameraController_->StartReplay();
-
 	// スプライト
-	pause_ = std::make_unique<Sprite>();
-	pause_->Initialize("Resource/pause.png"); // ポーズ
-	pause_->SetPosition({ 100.0f, 50.0f }); // 画面中央
+	sprite = std::make_unique <Sprite>();
+	sprite->Initialize("Resource/monsterBall.png");
 
-	resume_ = std::make_unique<Sprite>();
-	resume_->Initialize("Resource/resume.png"); // 続ける
-	resume_->SetPosition({ 520.0f, 180.0f });
-	resumeEasing.pos = { 520.0f, 180.0f };
-	resumeEasing.size = { 0.0f,0.0f };
-	resumeEasing.startSizeV2 = { 0.0f,0.0f };
-	resumeEasing.endSizeV2 = { 300.0f,300.0f };
-	resumeEasing.sizeTime = 0.0f;
-	resumeEasing.sizeEasedT = 0.0f;
-
-	retry_ = std::make_unique<Sprite>();
-	retry_->Initialize("Resource/retry.png"); // リトライ
-	retry_->SetPosition({ 520.0f, 180.0f });
-
-	select_ = std::make_unique<Sprite>();
-	select_->Initialize("Resource/select.png"); // セレクトへ
-
-	//playerHPバー
-	playerHpUI_ = std::make_unique<Sprite>();
-	playerHpUI_->Initialize("Resource/UI/playerHp.png");
-	select_->SetPosition({ 520.0f, 180.0f });
-
-	pauseBg_ = std::make_unique<Sprite>();
-	pauseBg_->Initialize("Resource/pauseBg.png"); // ポーズ背景
-	pauseBg_->SetPosition({ 960.0f, 540.0f });
-	pauseBg_->SetSize({ 1920.0f,1080.0f });
-
-	// イージング
-	easing = std::make_unique<Easing>();
-	easing->Initialize();
-}
-
-void GamePlayScene::Update() {
-
-	if (!isPause_) {
-		cameraController_->Update(isBossBattle_, 0);
-
-		// プレイヤー更新
-		player_->Update(enemy_->GetEnemies(), cameraController_->GetVelocity());
-
-		// 敵更新
-		enemy_->SetcurrentTimer_(cameraController_->GetCurrentReplayTime());
-		enemy_->Update();
-
-		// 当たり判定
-		ChekeAllCollision();
-
-		// ポーズ画面へ
-		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
-			isPause_ = true;
-			isGrayscale = true;
-		}
-
-	} else { // ポーズ画面
-		PauseSelect();
+	// 3Dオブジェクト
+	for (int i = 0; i < 2; i++) {
+		object[i] = std::make_unique <Object>();
+		object[i]->Initialize(camera.get());
 	}
 
-	// スプライト更新
-	pause_->Update();
+	// Emitパーティクル発生
+	particleEmitter = std::make_unique <ParticleEmitter>();
+	particleEmitter->Initialize("group1", transformParticle, 5, 1.0f);
+	particleEmitter->Emit();
+	particleEmitter->LoadParticle("Resource/particle/fire.csv");
 
-	LithingEffect();
-	UpdateImGui();
-
-	// イージング更新
-	easing->Update();
-	easing->Draw();
-}
-
-void GamePlayScene::Draw2D() {
-	// 2Dオブジェクトの描画準備
-	SpriteCommon::GetInstance()->SetCommonPipelineState();
-
-	player_->Draw2D();
-
-	pause_->Draw(); // ポーズ
-
-	playerHpUI_->Draw();
-
-	switch (currentPause_) {
-	case kResume:
-	if (isPause_) {
-		pauseBg_->Draw(); // ポーズ背景
-		resume_->Draw(); // ポーズ//続ける
-		break;
-		case kRetry:
-		retry_->Draw(); // リトライ
-		break;
-		case kSelect:
-		select_->Draw(); // セレクトへ
-		break;
-		}
-	}
-
-	
-}
-
-void GamePlayScene::Draw3D() {
-	// 3Dオブジェクトの描画準備
-	ObjectCommon::GetInstance()->SetCommonPipelineState();
-	// 3Dオブジェクト描画
-	player_->Draw3D();
-
-	enemy_->Draw3D();
-
-	// パーティクル描画
-	// ParticleManager::GetInstance()->Draw();
-
-	// アウトライン描画準備
-	ObjectCommon::GetInstance()->SetOutlinePipelineState();
-
-	// player_->Draw3D();
-
-	// アウトライン描画
-	// object->Draw();
-}
-
-void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
-
-void GamePlayScene::SetPlayerStyle(int style) { style_ = static_cast<Style>(style); }
-
-void GamePlayScene::SetCurrentStage(int currentStage) { currentStage_ = currentStage; }
-
-void GamePlayScene::ChekeAllCollision() {
-	const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
-	const std::list<std::shared_ptr<BossEnemy>>& Boss = enemy_->GetBoss();
-	CheckCollisionPlayerEnemy(player_.get(), enemies);
-	CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
-	CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
-	CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss);
-  CheckCollisionPlayerBossEnemy(player_.get(), Boss);
-  CheckCollisionPlayerBossEnemyBullet(player_.get(), Boss);
-	if (player_->GetIsSpecialAttack() && specialAttackTimer <= 0) {
-		CheckCollisionSpecialAtackEnemy(enemies);
-		specialAttackTimer = 60; // 特殊攻撃のエフェクト時間（例: 60フレーム）
-	}
-	if (specialAttackTimer > 0) {
-		specialAttackTimer--;
-		if (specialAttackTimer <= 0) {
-			player_->SetIsSpecialAttack(false); // 特殊攻撃の当たり判定は1フレームだけ
-
-			specialAttackTimer = 0; // タイマーリセット
-		}
-	}
-}
-
-// ポーズ選択
-void GamePlayScene::PauseSelect() {
-	if (Input::GetInstance()->TriggerKey(DIK_ESCAPE) || Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-		isPause_ = false;
-		isGrayscale = false;
-		resumeEasing.sizeTime = 0.0f;
-		resumeEasing.sizeEasedT = 0.0f;
-	}
-
-	switch (currentPause_) {
-	case Pause::kResume:
-		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
-			currentPause_ = Pause::kSelect;
-		}
-		if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN)) {
-			currentPause_ = Pause::kRetry;
-		}
-
-		easing->SizeV2(resumeEasing, 0.05f, 1);
-
-		break;
-	case Pause::kRetry:
-		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-			// ゲームプレイシーン(次シーン)を生成
-			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-		}
-		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
-			isPause_ = false;
-		}
-		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
-			currentPause_ = Pause::kResume;
-		}
-		if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN)) {
-			currentPause_ = Pause::kSelect;
-		}
-		break;
-	case Pause::kSelect:
-		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-			// ゲームプレイシーン(次シーン)を生成
-			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
-		}
-		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
-			isPause_ = false;
-		}
-		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
-			currentPause_ = Pause::kRetry;
-		}
-		if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN)) {
-			currentPause_ = Pause::kResume;
-		}
-		break;
-	}
-
-	// トランスフォーム更新
-	resume_->SetSize(resumeEasing.size);
-
-	// スプライト更新
-	resume_->Update();
-	retry_->Update();
-	select_->Update();
-	pauseBg_->Update();
+	// 初期化済みの3Dオブジェクトにモデルを紐づける
+	object[0]->SetModel("emission.obj");
+	object[1]->SetModel("skydome.obj");
 
 }
 
-void GamePlayScene::LithingEffect() {
+void resultScene::Update()
+{
+	// 入力取得
+	auto input = Input::GetInstance();
+	// カメラ更新
+	CameraManager::GetInstance()->Update();
+
+	// ENTERキーを押したら
+	if (input->TriggerKey(DIK_RETURN)) {
+		// ゲームプレイシーン(次シーン)を生成
+		SceneManager::GetInstance()->ChangeScene("GAMESELECT");
+	}
+
+	// * 3Dオブジェクト* //
+	for (int i = 0; i < 2; i++) {
+		object[i]->Update();
+	}
+
+	// パーティクルエミッタ更新
+	particleEmitter->Editor();
+	particleEmitter->Update();
+
+
+	// *スプライト* //
+	// sprite更新
+	sprite->Update();
+
+#pragma region ライティング
+	// *ライティング* //
+	for (int i = 0; i < 2; i++) {
+		// 平行光
+		object[i]->SetDirectionalLight(isDirectionalLight);
+		object[i]->SetDirectionalLightDirection(DirectionalLightDirection);
+		object[i]->SetDirectionalLightColor(DirectionalLightColor);
+		object[i]->SetDirectionalLightIntensity(DirectionalLightIntensity);
+		// 環境光
+		object[i]->SetAmbientLight(isAmbientLight);
+		object[i]->SetAmbientLightColor(AmbientLightColor);
+		object[i]->SetAmbientLightIntensity(AmbientLightIntensity);
+		// ポイントライト
+		object[i]->SetPointLight(isPointLight);
+		object[i]->SetPointLightColor(PointLightColor);
+		object[i]->SetPointLightPosition(PointLightPosition);
+		object[i]->SetPointLightIntensity(PointLightIntensity);
+		// スポットライト
+		object[i]->SetSpotLight(isSpotLight);
+		object[i]->SetSpotLightColor(SpotLightColor);
+		object[i]->SetSpotLightPosition(SpotLightPosition);
+		object[i]->SetSpotLightDirection(SpotLightDirection);
+		object[i]->SetSpotLightRange(SpotLightRange);
+		object[i]->SetSpotLightIntensity(SpotLightIntensity);
+	}
+#pragma endregion
+
 #pragma region ポストエフェクト
-
 	// *ポストエフェクト* //
 	PostEffect::GetInstance()->Update(camera.get());
 
@@ -273,6 +123,7 @@ void GamePlayScene::LithingEffect() {
 	// ブルーム
 	PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
 	PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
+	PostEffect::GetInstance()->SetBloomBlurRadius(bloomBlurRadius);
 	// レンズフレア
 	PostEffect::GetInstance()->SetLensFlare(isLensFlare);
 	PostEffect::GetInstance()->SetLensFlareGhostCount(lensFlareGhostCount);
@@ -283,14 +134,16 @@ void GamePlayScene::LithingEffect() {
 	PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
 	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
 	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
+	// 色収差
+	PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
+	PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
 
 #pragma endregion
 
 #pragma region レイマーチング
-
 	// レイマーチング
 	RayMarching::GetInstance()->Update(camera.get());
-	// rayMarching->SetTime(rayMarchingTime);
+	//rayMarching->SetTime(rayMarchingTime);
 	RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
 	RayMarching::GetInstance()->SetCloudCoverage(rayMarchingCloudCoverage);
 	RayMarching::GetInstance()->SetCloudTop(rayMarchingCloudBottom);
@@ -305,21 +158,17 @@ void GamePlayScene::LithingEffect() {
 
 
 #pragma endregion
-}
 
-void GamePlayScene::UpdateImGui() {
 #ifdef USE_IMGUI
-
 	// ImGui
 	// フレームレートの取得と表示
 	float fps = ImGui::GetIO().Framerate;
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
 
-	// カメラ
-	ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f, -100.0f, 100.0f);
-	ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -180.0f, 180.0f);
-	camera->SetTranslate({cameraTransform.translate});
-	camera->SetRotate({cameraTransform.rotate});
+	ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.1f, -500.0f, 500.0f);
+	ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -10.0f, 10.0f);
+	camera->SetTranslate(cameraTransform.translate);
+	camera->SetRotate(cameraTransform.rotate);
 
 #pragma region ライティング
 	// *ライティング* //
@@ -372,9 +221,7 @@ void GamePlayScene::UpdateImGui() {
 
 #pragma endregion
 
-
 #pragma region ポストエフェクト
-
 	// *ポストエフェクト* //
 	ImGui::Text("PostEffect"); // ポストエフェクトのテキスト
 
@@ -457,6 +304,7 @@ void GamePlayScene::UpdateImGui() {
 			ImGui::Checkbox("isACES", &isACES);
 			ImGui::DragFloat("caIntensity", &caIntensity, 0.001f, 0.0f, 10.0f);
 		}
+		ImGui::Text("%.3f", PostEffect::GetInstance()->GetLensFlareGhostDispersal());
 
 		ImGui::TreePop();
 	}
@@ -471,16 +319,22 @@ void GamePlayScene::UpdateImGui() {
 
 		ImGui::TreePop();
 	}
+	// 色収差
+	if (ImGui::TreeNode("CA")) {
+		ImGui::Checkbox("OnOff", &isFullScreenCA);
 
-	cameraController_->DrawImGui();
-	enemy_->DrawImGui();
+		if (isLensFlare) {
+			ImGui::DragFloat("fullScreenCAIntensity", &fullScreenCAIntensity, 0.001f, 0.0f, 1.0f);
+		}
+
+		ImGui::TreePop();
+	}
 
 #pragma endregion
 
 #pragma region レイマーチング
-
 	// レイマーチング
-	// ImGui::DragFloat("rayMarchingTime", &rayMarchingTime, 0.1f,0.0f,10.0f);
+	//ImGui::DragFloat("rayMarchingTime", &rayMarchingTime, 0.1f,0.0f,10.0f);
 	ImGui::DragFloat3("rayMarchingSunDir", &rayMarchingSunDir.x, 0.01f, -1.0f, 1.0f);
 	ImGui::DragFloat("rayMarchingCloudCoverage", &rayMarchingCloudCoverage, 0.01f, -5.0f, 10.0f);
 	ImGui::DragFloat("rayMarchingCloudBottom", &rayMarchingCloudBottom, 10.0f, -5000.0f, 5000.0f);
@@ -497,5 +351,16 @@ void GamePlayScene::UpdateImGui() {
 #pragma endregion
 
 #endif
+
+}
 }
 
+void resultScene::Draw2D()
+{
+
+}
+
+void resultScene::Finalize()
+{
+
+}
