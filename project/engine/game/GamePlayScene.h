@@ -155,11 +155,14 @@ private:
     std::unique_ptr<Object> object {};
 
     std::unique_ptr<Player> player_ = nullptr;
-
+    
+    //スプライト
     std::unique_ptr<Sprite> pause_ = nullptr;
     std::unique_ptr<Sprite> resume_ = nullptr;
     std::unique_ptr<Sprite> retry_ = nullptr;
     std::unique_ptr<Sprite> select_ = nullptr;
+    //playerHPバー
+    std::unique_ptr<Sprite> playerHpUI_ = nullptr;
 
     Style style_ = Style::normal;
     // リスト
