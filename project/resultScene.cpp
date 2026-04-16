@@ -1,9 +1,7 @@
 #include "resultScene.h"
-#include "ObjectCommon.h"
-#include "SpriteCommon.h"
 #include "SceneManager.h"
 
-void resultScene::Initialize()
+void ResultScene::Initialize()
 {
 	// カメラ初期化
 	camera = std::make_unique<Camera>();
@@ -36,7 +34,7 @@ void resultScene::Initialize()
 
 }
 
-void resultScene::Update()
+void ResultScene::Update()
 {
 	// 入力取得
 	auto input = Input::GetInstance();
@@ -351,16 +349,14 @@ void resultScene::Update()
 #pragma endregion
 
 #endif
-
-}
 }
 
-void resultScene::Draw2D()
+void ResultScene::Draw2D()
 {
 
 }
 
-void resultScene::Finalize()
+void ResultScene::Finalize()
 {
 
 }
