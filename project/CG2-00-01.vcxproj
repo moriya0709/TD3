@@ -99,7 +99,7 @@
     <ClCompile Include="game\enemy\Normal\Bullet\rushEnemyBullet.cpp" />
     <ClCompile Include="game\enemy\Normal\type\ShieldEnemy.cpp" />
     <ClCompile Include="engine\game\StageSelect.cpp" />
-    <ClCompile Include="resultScene.cpp" />
+    <ClCompile Include="ResultScene.cpp" />
     <ClCompile Include="TrailEffect.cpp" />
     <ClCompile Include="TrailEffectManager.cpp" />
   </ItemGroup>
@@ -277,7 +277,7 @@
     <ClInclude Include="game\enemy\Normal\type\ShieldEnemy.h" />
     <ClInclude Include="game\enemy\Boss\type\grapesBoss.h" />
     <ClInclude Include="engine\game\StageSelect.h" />
-    <ClInclude Include="resultScene.h" />
+    <ClInclude Include="ResultScene.h" />
     <ClInclude Include="TrailEffect.h" />
     <ClInclude Include="TrailEffectManager.h" />
   </ItemGroup>

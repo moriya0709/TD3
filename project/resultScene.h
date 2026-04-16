@@ -17,10 +17,8 @@
 
 using namespace DirectX;
 
-class SpriteCommon;
-class ObjectCommon;
 
-class resultScene : public BaseScene
+class ResultScene : public BaseScene
 {
 
 public:
