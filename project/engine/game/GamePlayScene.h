@@ -18,6 +18,7 @@
 #include "../../game/player/Player.h"
 
 #include "RayMarching.h"
+#include "Easing.h"
 
 class SpriteCommon;
 class ObjectCommon;
@@ -160,12 +161,19 @@ private:
     std::unique_ptr<Sprite> resume_ = nullptr;
     std::unique_ptr<Sprite> retry_ = nullptr;
     std::unique_ptr<Sprite> select_ = nullptr;
+    std::unique_ptr<Sprite> pauseBg_ = nullptr;
 
     Style style_ = Style::normal;
     // リスト
     std::unique_ptr<EnemyManager> enemy_ = nullptr;
     std::unique_ptr<CameraController> cameraController_ = nullptr;
 	int specialAttackTimer = 0;
+
+    // イージング
+    std::unique_ptr<Easing> easing = nullptr;
+    EasingSet resumeEasing;
+    EasingSet retryEasing;
+    EasingSet selectEasing;
 
     void LithingEffect();
 	void UpdateImGui();

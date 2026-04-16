@@ -83,6 +83,7 @@
     <ClCompile Include="TrailEffectManager.cpp" />
     <ClCompile Include="engine\base\BaseScene.cpp" />
     <ClCompile Include="engine\base\AbstractSceneFactory.cpp" />
+    <ClCompile Include="Easing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />
@@ -153,6 +154,7 @@
     <ClInclude Include="game\enemy\Boss\BossEnemy.h" />
     <ClInclude Include="TrailEffect.h" />
     <ClInclude Include="TrailEffectManager.h" />
+    <ClInclude Include="Easing.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\RayMarching.hlsli" />

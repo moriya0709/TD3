@@ -375,6 +375,10 @@ Vector4 Lerp(const Vector4& a, const Vector4& b, float t) {
 
 float Lerp(float x1, float x2, float t) { return (1.0f - t) * x1 + t * x2; }
 
+Vector3 LerpV(float x1, float x2, float t) {
+    return Vector3();
+}
+
 float EaseIn(float x1, float x2, float t)
 {
     float easedT = t * t;
