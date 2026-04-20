@@ -62,12 +62,18 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	Transform ptrans = transform_;
 	ptrans.scale = { 1,1,1 };
 
-	particleEmitter= std::make_unique<ParticleEmitter>();
-	particleEmitter->Initialize("bBullet", ptrans, 5, 0.2f);
-
-	
-	particleEmitter->SetActive("bBullet");
-	particleEmitter->LoadParticle("Resource/particle/bullet.csv");
+	for (int i = 0; i < hitEffectCount; i++) {
+		hitEffect[i] = std::make_unique<ParticleEmitter>();
+		hitEffect[i]->Initialize("hitEffect1", ptrans, 5, 0.2f);
+	}
+	hitEffect[0]->SetActive("hitEffect1");
+	hitEffect[0]->LoadParticle("Resource/particle/hit_1.csv");
+	hitEffect[1]->SetActive("hitEffect2");
+	hitEffect[1]->LoadParticle("Resource/particle/hit_2.csv");
+	hitEffect[2]->SetActive("hitEffect3");
+	hitEffect[2]->LoadParticle("Resource/particle/hit_3.csv");
+	hitEffect[3]->SetActive("hitEffect4");
+	hitEffect[3]->LoadParticle("Resource/particle/hit_4.csv");
 
 	// トレイルエフェクト
 	trailEffect->Initialize("Resource/trail/trail.png", transform_, 1.0f, 1.5f);
@@ -119,9 +125,12 @@ void PlayerNormalBullet::Update(Vector3 cmrvel) {
 		lifeTime_++;
 		
 	}
-	// パーティクルエミッタ更新
-	particleEmitter->Update();
-	particleEmitter->SetTranslate(transform_.translate);
+
+	// ヒットエフェクト更新
+	for (int i = 0; i < hitEffectCount; i++) {
+		hitEffect[i]->Update();
+		hitEffect[i]->SetTranslate(transform_.translate);
+	}
 
 	// トレイルエフェクト更新
 	trailEffect->AddPoint(transform_.translate);

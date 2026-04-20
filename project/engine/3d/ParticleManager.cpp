@@ -97,34 +97,42 @@ void ParticleManager::Update() {
 
 			it->transform.translate += it->velocity * kDeltaTime;
 
-			float alpha = 1.0f - (it->currentTime / it->lifeTime);
-			it->color.w = alpha;
+			//float alpha = 1.0f - (it->currentTime / it->lifeTime);
+			it->color.w = 1.0f;
 
 			// 色を徐々に変化させる
-			float progress = (it->currentTime / it->lifeTime) * colorChangeSpeed_;
+			float progress = (it->currentTime / it->lifeTime) * it->colorChangeSpeed; // ← it-> に変更
 			if (progress > 1.0f) {
 				progress = 1.0f;
 			}
-			if (isColorChange_[0]) {
-				// 【変更】startColor から finalColor へ線形補間
-				it->color.x = it->startColor.x + (finalColor_.x - it->startColor.x) * progress;
+			if (it->isColorChange[0]) { // ← it-> に変更
+				it->color.x = it->startColor.x + (it->finalColor.x - it->startColor.x) * progress; // ← it-> に変更
 			}
-			if (isColorChange_[1]) {
-				it->color.y = it->startColor.y + (finalColor_.y - it->startColor.y) * progress;
+			if (it->isColorChange[1]) {
+				it->color.y = it->startColor.y + (it->finalColor.y - it->startColor.y) * progress;
 			}
-			if (isColorChange_[2]) {
-				it->color.z = it->startColor.z + (finalColor_.z - it->startColor.z) * progress;
+			if (it->isColorChange[2]) {
+				it->color.z = it->startColor.z + (it->finalColor.z - it->startColor.z) * progress;
 			}
 
 			// サイズを徐々に変化させる
-			if (isScaleChange_[0]) {
-				it->transform.scale.x += scaleAdd_;
+			if (it->isScaleChange[0]) {
+				it->transform.scale.x += it->scaleAdd;
+
+				if (it->transform.scale.x <= 0.0f)
+					it->transform.scale.x = 0.0f;
 			}
-			if (isScaleChange_[1]) {
-				it->transform.scale.y += scaleAdd_;
+			if (it->isScaleChange[1]) {
+				it->transform.scale.y += it->scaleAdd;
+
+				if (it->transform.scale.y<= 0.0f)
+					it->transform.scale.y = 0.0f;
 			}
-			if (isScaleChange_[2]) {
-				it->transform.scale.z += scaleAdd_;
+			if (it->isScaleChange[2]) { 
+				it->transform.scale.z += it->scaleAdd;
+
+				if (it->transform.scale.z <= 0.0f)
+					it->transform.scale.z = 0.0f;
 			}
 			
 			it->currentTime += kDeltaTime;
@@ -138,7 +146,10 @@ void ParticleManager::Update() {
 
 			mapped[index].world = world;
 			mapped[index].WVP = Multiply(world, viewProj);
-			mapped[index].color = it->color;
+			mapped[index].color.x = it->color.x * it->emissive;
+			mapped[index].color.y = it->color.y * it->emissive;
+			mapped[index].color.z = it->color.z * it->emissive;
+			mapped[index].color.w = it->color.w;
 
 			++index;
 			++it;
@@ -151,8 +162,6 @@ void ParticleManager::Update() {
 void ParticleManager::Draw() {
 	// ルートシグネイチャを設定
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
-	// PSOを設定
-	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());
 	// プリミティブポロジーを設定
 	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// VBVを設定
@@ -164,6 +173,9 @@ void ParticleManager::Draw() {
 
 		// パーティクルが1つ以上ある場合だけ描画
 		if (group.particles.empty()) continue;
+
+		// ★グループに設定されているブレンドモードのPSOをセット
+		dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineStates[group.blendMode].Get());
 
 		// マテリアルCBufferの場所を設定
 		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
@@ -297,29 +309,6 @@ void ParticleManager::CreateRootSignature() {
 	// 全ての色要素を書き込む
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 	blendDesc.RenderTarget[0].BlendEnable = true; // ブレンドを有効にする
-
-	if (blendMode == kBlendModeNormal) { // 通常のブレンド
-		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-	} else if (blendMode == kBlendModeAdd) { // 加算ブレンド
-		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-	} else if (blendMode == kBlendModeSubtract) { // 減算ブレンド
-		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
-		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-	} else if (blendMode == kBlendModeMultiply) { // 乗算ブレンド
-		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
-	} else if (blendMode == kBlendModeScreen) { // スクリーンブレンド
-		blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
-		blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
-	}
-
 	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
@@ -372,10 +361,13 @@ void ParticleManager::CreateGraphicsPipeline() {
 	// どのように画面に色を打ち込むかの設定（気にしなくて良い）
 	graphicsPipelineStateDesc.SampleDesc.Count = 1;
 	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-	// 実際に生成
-	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-		IID_PPV_ARGS(&graphicsPipelineState));
-	assert(SUCCEEDED(hr));
+
+	// 各ブレンドモードに対してPSOを作成
+	for (int i = 0; i < kCountOfBlendMode; ++i) {
+		// i に応じて blendDesc を設定する
+		graphicsPipelineStateDesc.BlendState = GetBlendDesc((BlendMode)i);
+		dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineStates[i]));
+	}
 }
 
 // .mtlファイルの読み込み
@@ -496,13 +488,16 @@ Particle ParticleManager::MakeNewParticle(std::mt19937& randomEngine, const Vect
 Particle ParticleManager::MakeNewParticleEditor(
 	std::mt19937& randomEngine, 
 	const Vector3& translate,
+	const Vector3& scale,
 	std::uniform_real_distribution<float> distTransform,
 	std::uniform_real_distribution<float> distVelocity,
 	std::uniform_real_distribution<float> distTime, 
-	Vector3 ifTranslate, Vector3 velocity, Vector4 color
+	Vector3 ifTranslate, Vector3 velocity, Vector4 color, 
+	float emissive,Vector4 finalColor, float colorChangeSpeed,
+	bool isColorChange[3], bool isScaleChange[3], float scaleAdd
 ) {
 	Particle particle;
-	particle.transform.scale = { 1.0f,1.0f,1.0f };
+	particle.transform.scale = scale;
 	particle.transform.rotate = { 0.0f,0.0f,0.0f };
 	Vector3 randomTranslate{ distTransform(randomEngine),distTransform(randomEngine),distTransform(randomEngine) };
 
@@ -522,10 +517,26 @@ Particle ParticleManager::MakeNewParticleEditor(
 	// 色
 	particle.color = color;
 	particle.startColor = color;
+	particle.emissive = emissive;
 
 	// ランダムに1~3秒の間生存するようにする
 	particle.lifeTime = distTime(randomEngine);
 	particle.currentTime = 0.0f;
+
+	// 色の最終値
+	particle.finalColor = finalColor;
+	// 色の変化速度
+	particle.colorChangeSpeed = colorChangeSpeed;
+	// 色の変化をするかどうか(0または1)
+	particle.isColorChange[0] = isColorChange[0];
+	particle.isColorChange[1] = isColorChange[1];
+	particle.isColorChange[2] = isColorChange[2];
+	// サイズの変化をするかどうか(0または1)
+	particle.isScaleChange[0] = isScaleChange[0];
+	particle.isScaleChange[1] = isScaleChange[1];
+	particle.isScaleChange[2] = isScaleChange[2];
+	// サイズの変化量
+	particle.scaleAdd = scaleAdd;
 
 	return particle;
 }
@@ -533,22 +544,32 @@ Particle ParticleManager::MakeNewParticleEditor(
 // パーティクルの発生
 void ParticleManager::Emit(
 	const std::string& name, 
-	const Vector3& position,uint32_t count,
+	const Vector3& position,
+	const Vector3& scale,
+	uint32_t count,
 	std::uniform_real_distribution<float>distTransform,
 	std::uniform_real_distribution<float>distVelocity,
 	std::uniform_real_distribution<float>distTime,
-	Vector3 ifTranslate, Vector3 velocity, Vector4 color
+	Vector3 ifTranslate, Vector3 velocity, Vector4 color,
+	float emissive, BlendMode blendMode, Vector4 finalColor, float colorChangeSpeed,
+	bool isColorChange[3], bool isScaleChange[3], float scaleAdd
 ) {
 	assert(particleGroups.count(name));
 
 	// パーティクルグループを追加
 	ParticleGroup& group = particleGroups[name];
+	// ブレンドモードを設定
+	group.blendMode = blendMode;
 
 	for (uint32_t i = 0; i < count; ++i) {
 		if (group.particles.size() >= kMaxParticleInstance) {
 			break;
 		}
-		group.particles.push_back(MakeNewParticleEditor(randomEngine, position, distTransform, distVelocity, distTime, ifTranslate, velocity, color));
+		group.particles.push_back(
+			MakeNewParticleEditor(randomEngine, position, scale, 
+				distTransform, distVelocity, distTime, ifTranslate,
+				velocity, color, emissive, finalColor,  colorChangeSpeed,
+			 isColorChange,  isScaleChange,  scaleAdd));
 	}
 }
 
@@ -558,4 +579,68 @@ ParticleManager* ParticleManager::GetInstance() {
 		instance = std::make_unique <ParticleManager>();
 	}
 	return instance.get();
+}
+
+// ブレンドモードに応じた D3D12_BLEND_DESC を生成して返す関数
+D3D12_BLEND_DESC ParticleManager::GetBlendDesc(BlendMode mode) {
+	D3D12_BLEND_DESC blendDesc{};
+	blendDesc.AlphaToCoverageEnable = FALSE;
+	blendDesc.IndependentBlendEnable = FALSE;
+
+	// 【重要】DirectX12では「0」が無効値なので、最初にすべて安全な値で初期化する
+	for (int i = 0; i < 8; ++i) {
+		blendDesc.RenderTarget[i].BlendEnable = FALSE;
+		blendDesc.RenderTarget[i].SrcBlend = D3D12_BLEND_ONE;        // 0はエラーになるため1(ONE)
+		blendDesc.RenderTarget[i].DestBlend = D3D12_BLEND_ZERO;      // 0はエラーになるため1(ZERO)
+		blendDesc.RenderTarget[i].BlendOp = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[i].SrcBlendAlpha = D3D12_BLEND_ONE;
+		blendDesc.RenderTarget[i].DestBlendAlpha = D3D12_BLEND_ZERO;
+		blendDesc.RenderTarget[i].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		blendDesc.RenderTarget[i].LogicOp = D3D12_LOGIC_OP_NOOP;
+		blendDesc.RenderTarget[i].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	}
+
+	// 0番目のレンダーターゲットのブレンドを有効化
+	blendDesc.RenderTarget[0].BlendEnable = TRUE;
+
+	// --- ここからモード別の設定 ---
+	switch (mode) {
+	case kBlendModeNormal: // 通常（アルファブレンド）
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	break;
+
+	case kBlendModeAdd:    // 加算（光るエフェクト）
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	break;
+
+	case kBlendModeSubtract: // 減算（影や闇のエフェクト）
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;
+	break;
+
+	case kBlendModeMultiply: // 乗算（セロハンのようなエフェクト）
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_COLOR;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	break;
+
+	case kBlendModeScreen:   // スクリーン（反転乗算・明るくなる）
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_INV_DEST_COLOR;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	break;
+
+	default: // 【追加】kCountOfBlendMode などが渡された場合の保険
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	break;
+	}
+
+	return blendDesc;
 }
