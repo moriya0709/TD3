@@ -64,13 +64,14 @@ void GamePlayScene::Initialize() {
 void GamePlayScene::Update() {
 
 	if (!isPause_) {
-		cameraController_->Update(isBossBattle_, 0);
+		cameraController_->Update();
+
 
 		// プレイヤー更新
-		player_->Update(enemy_->GetEnemies(), cameraController_->GetVelocity());
+		player_->Update(enemy_->GetEnemies(), cameraController_->GetSpeed());
 
 		// 敵更新
-		enemy_->SetcurrentTimer_(cameraController_->GetCurrentReplayTime());
+		enemy_->SetcurrentTimer_(cameraController_->GetElapsedTime());
 		enemy_->Update();
 
 		// 当たり判定
@@ -132,6 +133,8 @@ void GamePlayScene::Draw3D() {
 	player_->Draw3D();
 
 	enemy_->Draw3D();
+	
+		cameraController_->EditorDraw();
 
 	// パーティクル描画
 	// ParticleManager::GetInstance()->Draw();
@@ -472,7 +475,7 @@ void GamePlayScene::UpdateImGui() {
 		ImGui::TreePop();
 	}
 
-	cameraController_->DrawImGui();
+	cameraController_->EditorUpdate();
 	enemy_->DrawImGui();
 
 #pragma endregion

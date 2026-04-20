@@ -86,7 +86,7 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	// モーションブラー
 	object_->SetMotionBlur(isMotionBlur);
 }
-void PlayerNormalBullet::Update(Vector3 cmrvel) {
+void PlayerNormalBullet::Update(float cmrvel) {
 	std::shared_ptr<Enemy> target = targetEnemy_.lock();
 	Vector3 cvel = {0};
 	if (target) {
@@ -110,7 +110,7 @@ void PlayerNormalBullet::Update(Vector3 cmrvel) {
 		}
 		cvel = {0};
 	} else {
-		cvel = {cmrvel.x, cmrvel.y, cmrvel.z};
+		cvel = {cmrvel, cmrvel, cmrvel};
 	}
 
 	// 3. 座標更新（共通）
