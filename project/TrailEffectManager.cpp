@@ -219,7 +219,7 @@ void TrailEffectManager::CreateRootSignature() {
 // グラフィックスパイプラインの生成
 void TrailEffectManager::CreateGraphicsPipeline() {
     // InputLayoutの設定 (TrailVertex 構造体と完全に一致させる)
-    D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
+    D3D12_INPUT_ELEMENT_DESC inputElementDescs[4] = {};
 
     // POSITION (Vector3 なので R32G32B32_FLOAT)
     inputElementDescs[0].SemanticName = "POSITION";
@@ -238,6 +238,12 @@ void TrailEffectManager::CreateGraphicsPipeline() {
     inputElementDescs[2].SemanticIndex = 0;
     inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+
+    // エミッシブ強度
+    inputElementDescs[3].SemanticName = "TEXCOORD";
+    inputElementDescs[3].SemanticIndex = 1;
+    inputElementDescs[3].Format = DXGI_FORMAT_R32_FLOAT;
+    inputElementDescs[3].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 
     inputLayoutDesc.pInputElementDescs = inputElementDescs;
     inputLayoutDesc.NumElements = _countof(inputElementDescs);

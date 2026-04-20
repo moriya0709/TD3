@@ -48,8 +48,9 @@ private:
 	float bulletSpeed_;                // 弾の速さ
 	int damage_ = 0;                   // 弾のダメージ量
 
-	// パーティクルエミッタ
-	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
+	// ヒットエフェクト
+	std::unique_ptr <ParticleEmitter> hitEffect[4] = {};
+	const int hitEffectCount = 4; // ヒットエフェクトの数
 	// トレイルエフェクト
 	std::shared_ptr<TrailEffect> trailEffect = std::make_shared<TrailEffect>();
 

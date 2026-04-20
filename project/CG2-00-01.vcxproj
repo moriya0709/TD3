@@ -208,6 +208,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\railCamera\RailCamera.h" />
+    <ClInclude Include="Blend.h" />
     <ClInclude Include="Easing.h" />
     <ClInclude Include="game\collision\Collision.h" />
     <ClInclude Include="game\camera\CameraController.h" />
@@ -309,7 +310,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{7bb8afe6-b31b-47c5-be6e-0be0a9cd17df}</ProjectGuid>
     <RootNamespace>CG20001</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

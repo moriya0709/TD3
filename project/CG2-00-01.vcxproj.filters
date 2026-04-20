@@ -159,6 +159,7 @@
     <ClInclude Include="ResultScene.h" />
     <ClInclude Include="game\enemy\Boss\type\banana.h" />
     <ClInclude Include="Easing.h" />
+    <ClInclude Include="Blend.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\RayMarching.hlsli" />

@@ -16,6 +16,7 @@ struct TrailVertex {
     Vector3 Position;
     Vector2 UV;
     Vector4 Color;
+    float Emissive;
 };
 
 class TrailEffect {
@@ -32,6 +33,7 @@ public:
 	void SetLifetime(float lifetime) { MAX_LIFETIME = lifetime; }
 	void SetDistance(float distance) { MIN_DISTANCE = distance; }
 	void SetDeltaTime(float dt) { deltaTime = dt; }
+    void SetEmissive(float emissive){ m_Emissive  = emissive; }
 
     // getter
     Vector3 GetTranslate() { return translate_; }
@@ -48,4 +50,5 @@ private:
 	float MAX_LIFETIME = 1.5f; // 消えるまでの時間
 	float MIN_DISTANCE = 0.1f; // ユニット以上動いたら新しいポイントを追加
     std::string m_TextureName;
+	float m_Emissive = 10.0f;
 };
