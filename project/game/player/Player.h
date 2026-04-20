@@ -28,7 +28,7 @@ public:
 		int haste = 0;                // 攻撃頻度
 	};
 	void Initialize(Camera* camera, Style style);
-	void Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cmrvel);
+	void Update(const std::list<std::shared_ptr<Enemy>>& enemies, float cmrvel);
 	void Draw2D();
 	void Draw3D();
 	Vector3 GetPosition() const { return transform_.translate; }
@@ -93,7 +93,7 @@ private:
 	// プレイヤーの弾
 	std::list<std::unique_ptr<PlayerBullet>> bullets;
 	void Attack(const std::list<std::shared_ptr<Enemy>>& enemies);
-	void UpdateBullets(Vector3 cmrvel);
+	void UpdateBullets(float cmrvel);
 	// 次の発射まで
 	int coolTime = 0;
 	bool isSpecialAttack = false;

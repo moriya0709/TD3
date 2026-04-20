@@ -1,387 +1,414 @@
-﻿#include "CameraController.h"
-#include <algorithm>
-#include <externals/nlohmann/json.hpp>
-#include <filesystem>
-#include <fstream>
+﻿#define _CRT_SECURE_NO_WARNINGS // sprintf_s などの警告回避用 (念のため)
+
+#include "CameraController.h"
+#include "DirectXCommon.h"
+#include "WindowAPI.h"
 #include <imgui.h>
+#include <ImGuizmo.h>
+#include <algorithm>
+#include <cmath>
+#include <externals/nlohmann/json.hpp>
+#include <fstream>
 
 using json = nlohmann::json;
-namespace fs = std::filesystem;
 
-const float kMaxDuration = 180.0f;
-
-// --- 描画関数 ---
-void DrawLine(const Vector3& s, const Vector3& e, uint32_t color) { /* 描画処理の実装 */ }
-
-// --- nlohmann/json 変換定義 (FOV対応) ---
-void to_json(json& j, const Vector3& v) {
-	j = json{
-	    {"x", v.x},
-        {"y", v.y},
-        {"z", v.z}
-    };
-}
-void from_json(const json& j, Vector3& v) {
-	j.at("x").get_to(v.x);
-	j.at("y").get_to(v.y);
-	j.at("z").get_to(v.z);
+// =========================================================
+// 数学処理 (ベジェ曲線)
+// =========================================================
+double CameraController::BinomialCoefficient(int n, int k) {
+	if (k < 0 || k > n)
+		return 0;
+	if (k == 0 || k == n)
+		return 1;
+	if (k > n / 2)
+		k = n - k;
+	double res = 1;
+	for (int i = 1; i <= k; ++i)
+		res = res * (n - i + 1) / i;
+	return res;
 }
 
-void to_json(json& j, const CameraState& s) {
-	j = json{
-	    {"time",   s.time           },
-        {"vel",    s.velocity       },
-        {"angVel", s.angularVelocity},
-        {"pos",    s.position       },
-        {"rot",    s.rotation       },
-        {"fov",    s.fov            }
-    };
-}
-void from_json(const json& j, CameraState& s) {
-	j.at("time").get_to(s.time);
-	j.at("vel").get_to(s.velocity);
-	j.at("angVel").get_to(s.angularVelocity);
-	j.at("pos").get_to(s.position);
-	j.at("rot").get_to(s.rotation);
-	j.at("fov").get_to(s.fov); // FOV読み込み
+Vector3 CameraController::EvaluateBezier(float t) {
+	int n = static_cast<int>(points.size()) - 1;
+	if (n < 0)
+		return {0, 0, 0};
+	if (n == 0)
+		return points[0].position;
+
+	Vector3 result = {0, 0, 0};
+	for (int i = 0; i <= n; ++i) {
+		double b = BinomialCoefficient(n, i) * std::pow(1.0 - t, n - i) * std::pow(t, i);
+		result.x += static_cast<float>(points[i].position.x * b);
+		result.y += static_cast<float>(points[i].position.y * b);
+		result.z += static_cast<float>(points[i].position.z * b);
+	}
+	return result;
 }
 
-// --- 補間ヘルパー ---
-float CameraController::Lerp(float a, float b, float t) { return a + (b - a) * t; }
-
-float CameraController::CatmullRomF(float v0, float v1, float v2, float v3, float t) {
-	float t2 = t * t;
-	float t3 = t2 * t;
-	return 0.5f * (2.0f * v1 + (-v0 + v2) * t + (2.0f * v0 - 5.0f * v1 + 4.0f * v2 - v3) * t2 + (-v0 + 3.0f * v1 - 3.0f * v2 + v3) * t3);
-}
-
-Vector3 CameraController::CameraLerp(const Vector3& start, const Vector3& end, float t) { return {Lerp(start.x, end.x, t), Lerp(start.y, end.y, t), Lerp(start.z, end.z, t)}; }
-
-Vector3 CameraController::CatmullRom(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t) {
-	return {CatmullRomF(p0.x, p1.x, p2.x, p3.x, t), CatmullRomF(p0.y, p1.y, p2.y, p3.y, t), CatmullRomF(p0.z, p1.z, p2.z, p3.z, t)};
-}
-
+// =========================================================
+// 初期化・更新処理
+// =========================================================
 void CameraController::Initialize(Camera* targetCamera) {
 	this->camera = targetCamera;
-	timer = 0.0f;
-	isReplaying = isPaused = isRecording = false;
-	currentStage = 1;
-	playbackSpeed = 1.0f;
-	if (camera) {
-		initialTransform.rotate = camera->GetRotate();
-		initialTransform.translate = camera->GetTranslate();
-		initialTransform.fov = camera->GetFovY();
-	}
-	cameraTransform = initialTransform;
-	uiFov = initialTransform.fov;
-	LoadFromJSON(GetFilePath(currentStage));
+
+	// システム系の初期化
+	dxCommon_ = DirectXCommon::GetInstance();
+	windowAPI_ = std::make_unique<WindowAPI>();
+
+	// 軌跡描画用のレールモデルを事前生成 (数は要件に合わせて調整)
+	InitializeRailModels(200);
+
+	// ステージ1をロード
+	ChangeStage(1);
+	lastPosition = EvaluateBezier(0.0f);
 }
 
-std::string CameraController::GetFilePath(int slot) const { return "Resource/Data/replay_" + std::to_string(slot) + ".json"; }
+void CameraController::Update() {
+	float deltaTime = 1.0f / 60.0f;
 
-void CameraController::GreapesCameraUpdate() {}
-
-void CameraController::bananaCameraUpdate() {}
-
-void CameraController::Update(bool isActive, int bossType) {
-	if (isActive) {
-		switch (bossType) {
-		case 0:
-			GreapesCameraUpdate();
-			break;
-		case 1:
-			bananaCameraUpdate();
-			break;
+	if (isPlaying) {
+		timer += deltaTime;
+		if (timer >= totalDuration) {
+			timer = totalDuration;
+			isPlaying = false;
 		}
 
-	} else {
-		int newSlot = -1;
+		float t = std::clamp(timer / totalDuration, 0.0f, 1.0f);
+		Vector3 currentPos = EvaluateBezier(t);
 
-		if (newSlot != -1 && newSlot != currentStage) {
-			currentStage = newSlot;
-			isReplaying = isRecording = false;
-			LoadFromJSON(GetFilePath(currentStage));
-			if (!stateHistory.empty())
-				StartReplay();
-		}
-
-		float deltaTime = 1.0f / 60.0f;
-		Vector3 cv = {0, 0, 0}, cav = {0, 0, 0}, cp = cameraTransform.translate, cr = cameraTransform.rotate;
-		float cf = cameraTransform.fov;
-
-		if (isReplaying) {
-			if (!isPaused) {
-				timer += deltaTime * playbackSpeed;
-				if (timer >= kMaxDuration) {
-					timer = kMaxDuration;
-					isPaused = true;
-				}
-				ApplyReplayState(cv, cav, cp, cr, cf);
-				ApplyPhysics(cv, cav, cp, cr, cf);
-			}
-		} else if (isRecording) {
-			timer += deltaTime;
-			if (timer >= kMaxDuration) {
-				timer = kMaxDuration;
-				isRecording = false;
-				SaveToJSON(GetFilePath(currentStage));
-			}
-			cv = uiVelocity;
-			cav = uiAngularVelocity;
-			cf = uiFov;
-
-			RecordStateIfChanged(cv, cav, cameraTransform.translate, cameraTransform.rotate, cf);
-			ApplyPhysics(cv, cav, cameraTransform.translate, cameraTransform.rotate, cf);
-		} else {
-			cameraTransform = initialTransform;
-		}
-
+		// 速度計算
+		float dx = currentPos.x - lastPosition.x;
+		float dy = currentPos.y - lastPosition.y;
+		float dz = currentPos.z - lastPosition.z;
+		float dist = std::sqrt(dx * dx + dy * dy + dz * dz);
+		currentSpeed = dist / deltaTime;
+		lastPosition = currentPos;
+		// 進行方向を向かせる
+		Vector3 forward = GetForward(t);
+		// forwardからオイラー角を計算
+		float yaw = atan2f(forward.x, forward.z);
+		float pitch = atan2f(-forward.y, sqrtf(forward.x * forward.x + forward.z * forward.z));
+	
+		stageStatus.rotate = {pitch, yaw, 0.0f};
+		// カメラ回転を更新
 		if (camera) {
-			camera->SetRotate(cameraTransform.rotate);
-			camera->SetTranslate(cameraTransform.translate);
-			camera->SetFovY(cameraTransform.fov);
+			camera->SetTranslate(currentPos);
+			camera->SetRotate(stageStatus.rotate);
+			camera->SetFovY(std::clamp(stageStatus.fov, kMinFov, kMaxFov));
 		}
+	} else {
+		currentSpeed = 0.0f;
 	}
 }
 
-void CameraController::DrawImGui() {
+// =========================================================
+// エディタUI・描画関連
+// =========================================================
+void CameraController::EditorUpdate() {
 #ifdef USE_IMGUI
+	ImGui::Begin("CameraController Editor");
 
-
-	ImGui::Begin("Camera Recording Studio");
-	ImGui::Checkbox("Show Trace", &showDebugTrace);
-	ImGui::SameLine();
-	ImGui::Checkbox("Spline Mode", &isSmoothMode);
-	ImGui::Separator();
-
-	ImGui::Text("Stage: %d", currentStage);
+	// --- ステージ切り替え ---
+	ImGui::Text("Active Stage: %d", currentStage);
 	for (int i = 1; i <= 5; ++i) {
-		if (ImGui::RadioButton(std::to_string(i).c_str(), currentStage == i)) {
-			currentStage = i;
-			isReplaying = isRecording = false;
-			LoadFromJSON(GetFilePath(currentStage));
-			if (!stateHistory.empty())
-				StartReplay();
+		std::string labelStr = "Stage " + std::to_string(i);
+		if (ImGui::RadioButton(labelStr.c_str(), currentStage == i)) {
+			if (currentStage != i)
+				ChangeStage(i);
 		}
 		if (i < 5)
 			ImGui::SameLine();
 	}
 
-	if (ImGui::CollapsingHeader("Initial Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
-		ImGui::DragFloat3("Start Pos", &initialTransform.translate.x, 0.1f);
-		ImGui::DragFloat3("Start Rot", &initialTransform.rotate.x, 0.01f);
-		ImGui::DragFloat("Start FOV", &initialTransform.fov, 10.0f, 120.0f);
-		if (ImGui::Button("Set Current as Initial"))
-			initialTransform = cameraTransform;
+	ImGui::Separator();
+
+	// --- パラメータ調整 ---
+	if (ImGui::CollapsingHeader("Stage Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
+		ImGui::DragFloat("Duration (s)", &totalDuration, 0.1f, 0.1f, 180.0f);
+		ImGui::DragFloat3("Base Rotate", &stageStatus.rotate.x, 0.1f);
+		ImGui::SliderFloat("Base FOV", &stageStatus.fov, kMinFov, kMaxFov);
 	}
 
 	ImGui::Separator();
 
-	if (isReplaying) {
-		ImGui::TextColored(ImVec4(0, 1, 1, 1), "STATUS: REPLAYING %s", isPaused ? "(PAUSED)" : "");
-		ImGui::SliderFloat("Speed", &playbackSpeed, 0.0f, 3.0f, "%.1fx");
-		if (ImGui::SliderFloat("Seek", &timer, 0.0f, kMaxDuration, "%.2f / 180s"))
-			SeekTo(timer);
+	// --- 再生制御 ---
+	ImGui::Text("Playback: %.2f / %.2f s", timer, totalDuration);
+	if (ImGui::SliderFloat("Seek", &timer, 0.0f, totalDuration)) {
+		float t = std::clamp(timer / totalDuration, 0.0f, 1.0f);
+		Vector3 p = EvaluateBezier(t);
+		if (camera)
+			camera->SetTranslate(p);
+	}
 
-		if (ImGui::Button(isPaused ? "Play" : "Pause"))
-			isPaused = !isPaused;
-		ImGui::SameLine();
-		if (ImGui::Button("Stop"))
-			isReplaying = false;
+	if (ImGui::Button(isPlaying ? "Pause" : "Play Path"))
+		isPlaying = !isPlaying;
+	ImGui::SameLine();
+	if (ImGui::Button("Reset")) {
+		timer = 0.0f;
+		isPlaying = false;
+	}
 
-		if (isPaused) {
-			ImGui::Separator();
-			ImGui::TextColored(ImVec4(1, 0.8f, 0, 1), "Edit Mode: Manual Tweak Available");
-			ImGui::DragFloat("Tweak Zoom (FOV)", &cameraTransform.fov, kMinFov, kMaxFov);
-			ImGui::DragFloat3("Tweak Pos", &cameraTransform.translate.x, 0.1f);
-			ImGui::DragFloat3("Tweak Rot", &cameraTransform.rotate.x, 0.01f);
-			ImGui::DragFloat3("Tweak Vel", &uiVelocity.x, 0.01f, -1.0f, 1.0f);
-			ImGui::DragFloat3("Tweak AngVel", &uiAngularVelocity.x, 0.005f, -0.05f, 0.05f);
-			if (ImGui::Button("● Start Overwrite Recording from Here", ImVec2(-1, 30)))
-				StartOverwriteRecording();
-		}
-	} else {
-		ImGui::Text("STATUS: %s", isRecording ? "RECORDING..." : "WAITING");
-		if (isRecording)
-			ImGui::ProgressBar(timer / kMaxDuration);
+	ImGui::Separator();
 
-		ImGui::DragFloat("Tweak Zoom (FOV)", &cameraTransform.fov, kMinFov, kMaxFov);
-		ImGui::DragFloat3("Input Vel", &uiVelocity.x, 0.01f, -1.0f, 1.0f);
-		ImGui::DragFloat3("Input Rot", &uiAngularVelocity.x, 0.005f, -0.05f, 0.05f);
+	// --- 制御点管理 ---
+	if (ImGui::Button("Add Point")) {
+		Vector3 pos = camera ? camera->GetTranslate() : Vector3{0, 0, 0};
+		AddPoint(pos);
+	}
 
-		if (!isRecording) {
-			if (ImGui::Button("● Start New Recording", ImVec2(-1, 30))) {
-				stateHistory.clear();
-				timer = 0.0f;
-				isRecording = true;
-				cameraTransform = initialTransform;
-				uiFov = initialTransform.fov;
-				RecordStateIfChanged(uiVelocity, uiAngularVelocity, cameraTransform.translate, cameraTransform.rotate, uiFov);
-			}
-		} else {
-			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
-			if (ImGui::Button("■ Stop & Save", ImVec2(-1, 30))) {
-				isRecording = false;
-				SaveToJSON(GetFilePath(currentStage));
-			}
-			ImGui::PopStyleColor();
+	// 無限ループ・ラベルバグを修正したループ
+	for (int i = 0; i < (int)points.size(); ++i) {
+		std::string labelStr = "CP[" + std::to_string(i) + "]";
+		if (ImGui::Selectable(labelStr.c_str(), selectedPoint == i))
+			selectedPoint = i;
+	}
+
+	if (selectedPoint >= 0 && selectedPoint < (int)points.size()) {
+		ImGui::DragFloat3("Selected CP Pos", &points[selectedPoint].position.x, 0.1f);
+		if (ImGui::Button("Delete Point") && points.size() > 2) {
+			points.erase(points.begin() + selectedPoint);
+			spheres.erase(spheres.begin() + selectedPoint);
+			selectedPoint = -1;
 		}
 	}
+
+	ImGui::Separator();
+
+	// --- セーブ ---
+	if (ImGui::Button("Save Current Stage", ImVec2(-1, 30))) {
+		SaveToJSON(GetFilePath(currentStage));
+	}
+	Vector3 camPos = camera ? camera->GetTranslate() : Vector3{0, 0, 0};
+	ImGui::DragFloat3("camera position", &camPos.x, 0.1f);
 	ImGui::End();
-#endif // USE_IMGUI
+
+	// ギズモの更新
+	UpdateGizmo();
+#endif
 }
 
-void CameraController::DrawDebugTrace() {
-	if (!showDebugTrace || stateHistory.empty())
-		return;
-	Vector3 prevPos = initialTransform.translate;
-	Vector3 currentPos = initialTransform.translate;
-	float simTime = 0.0f, maxDataTime = stateHistory.back().time, step = 1.0f / 60.0f;
-	float backupTimer = timer;
+void CameraController::EditorDraw() {
+#ifdef USE_IMGUI
+	if (!isPlaying) {
+		// マウスによる制御点の選択
+		// ImGuiウィンドウ上での操作時は、3D側の選択判定を無視する
+		if (ImGui::IsMouseClicked(0) && !ImGuizmo::IsOver() && !ImGui::GetIO().WantCaptureMouse) {
+			SelectPointByMouse();
+		}
 
-	while (simTime <= maxDataTime && simTime <= kMaxDuration) {
-		timer = simTime;
-		Vector3 v, av, p, r;
-		float f;
-		ApplyReplayState(v, av, p, r, f);
-		currentPos.x += v.x;
-		currentPos.y += v.y;
-		currentPos.z += v.z;
-		DrawLine(prevPos, currentPos, 0x00FF00FF);
-		prevPos = currentPos;
-		simTime += step;
+		// スフィアの描画
+		size_t count = std::min(points.size(), spheres.size());
+		for (size_t i = 0; i < count; i++) {
+			spheres[i]->SetTranslate(points[i].position);
+			spheres[i]->Update();
+			spheres[i]->Draw();
+		}
+
+		// 軌跡の描画
+		DrawRailModels();
 	}
-	timer = backupTimer;
+#endif
 }
 
-void CameraController::ApplyReplayState(Vector3& vel, Vector3& angVel, Vector3& pos, Vector3& rat, float& fov) {
-	if (stateHistory.empty())
-		return;
-	size_t n = stateHistory.size();
-	size_t i1 = 0;
-	while (i1 < n && timer > stateHistory[i1].time)
-		i1++;
+// =========================================================
+// 描画・ギズモ操作ヘルパー
+// =========================================================
+void CameraController::AddPoint(const Vector3& pos) {
+	points.push_back({pos});
+	auto obj = std::make_unique<Object>();
+	obj->Initialize(camera);
+	obj->SetModel("cube.obj"); // 任意のモデル名に変更してください
+	obj->SetScale({0.5f, 0.5f, 0.5f});
+	obj->SetTranslate(pos);
+	spheres.push_back(std::move(obj));
+}
 
-	if (i1 == 0) {
-		vel = stateHistory[0].velocity;
-		angVel = stateHistory[0].angularVelocity;
-		pos = stateHistory[0].position;
-		rat = stateHistory[0].rotation;
-		fov = stateHistory[0].fov;
-	} else if (i1 >= n) {
-		vel = stateHistory.back().velocity;
-		angVel = stateHistory.back().angularVelocity;
-		pos = stateHistory.back().position;
-		rat = stateHistory.back().rotation;
-		fov = stateHistory.back().fov;
-	} else {
-		size_t i0 = i1 - 1;
-		float t = (timer - stateHistory[i0].time) / (stateHistory[i1].time - stateHistory[i0].time);
-		if (isSmoothMode && n >= 4) {
-			size_t im1 = (i0 == 0) ? i0 : i0 - 1;
-			size_t i2 = (i1 + 1 >= n) ? i1 : i1 + 1;
-			pos = CatmullRom(stateHistory[im1].position, stateHistory[i0].position, stateHistory[i1].position, stateHistory[i2].position, t);
-			rat = CatmullRom(stateHistory[im1].rotation, stateHistory[i0].rotation, stateHistory[i1].rotation, stateHistory[i2].rotation, t);
-			fov = CatmullRomF(stateHistory[im1].fov, stateHistory[i0].fov, stateHistory[i1].fov, stateHistory[i2].fov, t);
-		} else {
-			pos = CameraLerp(stateHistory[i0].position, stateHistory[i1].position, t);
-			rat = CameraLerp(stateHistory[i0].rotation, stateHistory[i1].rotation, t);
-			fov = Lerp(stateHistory[i0].fov, stateHistory[i1].fov, t);
+void CameraController::SyncSpheres() {
+	spheres.clear();
+	for (const auto& p : points) {
+		auto obj = std::make_unique<Object>();
+		obj->Initialize(camera);
+		obj->SetModel("cube.obj");
+		obj->SetScale({0.5f, 0.5f, 0.5f});
+		obj->SetTranslate(p.position);
+		spheres.push_back(std::move(obj));
+	}
+}
+
+void CameraController::InitializeRailModels(int count) {
+	railModels.clear();
+	for (int i = 0; i < count; i++) {
+		auto obj = std::make_unique<Object>();
+		obj->Initialize(camera);
+		obj->SetModel("rail.obj");
+		railModels.push_back(std::move(obj));
+	}
+}
+
+void CameraController::DrawRailModels() {
+	if (points.size() < 2)
+		return;
+
+	// t=0.0 から t=1.0 までをレールモデルの数で等分
+	float step = 1.0f / (float)railModels.size();
+	int index = 0;
+
+	for (float t = 0.0f; t <= 1.0f; t += step) {
+		if (index >= (int)railModels.size())
+			break;
+
+		Vector3 pos = EvaluateBezier(t);
+		railModels[index]->SetTranslate(pos);
+		railModels[index]->SetScale({0.1f, 0.1f, 0.1f});
+		railModels[index]->Update();
+		railModels[index]->Draw();
+		index++;
+	}
+}
+
+void CameraController::UpdateGizmo() {
+#ifdef USE_IMGUI
+	if (selectedPoint < 0 || selectedPoint >= (int)points.size())
+		return;
+
+	Matrix4x4 view = camera->GetViewMatrix();
+	Matrix4x4 proj = camera->GetProjectionMatrix();
+	Matrix4x4 world = MakeTranslateMatrix(points[selectedPoint].position);
+
+	ImGuizmo::SetOrthographic(false);
+	ImGuizmo::BeginFrame();
+	ImGuizmo::SetRect(0, 0, (float)windowAPI_->kClientWidth, (float)windowAPI_->kClientHeight);
+
+	ImGuizmo::Manipulate(&view.m[0][0], &proj.m[0][0], ImGuizmo::TRANSLATE, ImGuizmo::WORLD, &world.m[0][0]);
+
+	if (ImGuizmo::IsUsing()) {
+		points[selectedPoint].position = {world.m[3][0], world.m[3][1], world.m[3][2]};
+	}
+#endif
+}
+
+void CameraController::SelectPointByMouse() {
+#ifdef USE_IMGUI
+	ImVec2 mousePos = ImGui::GetMousePos();
+	float mx = mousePos.x / windowAPI_->kClientWidth * 2.0f - 1.0f;
+	float my = -(mousePos.y / windowAPI_->kClientHeight * 2.0f - 1.0f);
+
+	Matrix4x4 invVP = Inverse(camera->GetViewProjectionMatrix());
+	Vector3 rayNear = VectorTransform({mx, my, 0.0f}, invVP);
+	Vector3 rayFar = VectorTransform({mx, my, 1.0f}, invVP);
+	Vector3 rayDir = Normalize(rayFar - rayNear);
+
+	float minDist = FLT_MAX;
+	int hit = -1;
+	for (int i = 0; i < (int)points.size(); i++) {
+		float dist = RaySphereIntersect(rayNear, rayDir, points[i].position, 0.5f);
+		if (dist > 0 && dist < minDist) {
+			minDist = dist;
+			hit = i;
 		}
 	}
+	selectedPoint = hit;
+#endif
 }
 
-void CameraController::ApplyPhysics(const Vector3& vel, const Vector3& angVel, const Vector3& pos, const Vector3& rat, float fov) {
-	if (isReplaying) {
-		cameraTransform.translate = pos;
-		cameraTransform.rotate = rat;
-		cameraTransform.fov = fov;
-	} else {
-		cameraTransform.translate.x += vel.x;
-		cameraTransform.translate.y += vel.y;
-		cameraTransform.translate.z += vel.z;
-		cameraTransform.rotate.x += angVel.x;
-		cameraTransform.rotate.y += angVel.y;
-		cameraTransform.rotate.z += angVel.z;
-		cameraTransform.fov = fov;
-	}
-}
-
-void CameraController::RecordStateIfChanged(const Vector3& vel, const Vector3& angVel, const Vector3& pos, const Vector3& rat, float fov) {
-	bool changed = vel.x != lastRecordedVel.x || vel.y != lastRecordedVel.y || vel.z != lastRecordedVel.z || pos.x != lastRecordedPos.x || pos.y != lastRecordedPos.y || pos.z != lastRecordedPos.z ||
-	               rat.x != lastRecordedRot.x || rat.y != lastRecordedRot.y || rat.z != lastRecordedRot.z || fov != lastRecordedFov;
-
-	if (changed) {
-		stateHistory.push_back({timer, vel, angVel, pos, rat, fov});
-		lastRecordedVel = vel;
-		lastRecordedPos = pos;
-		lastRecordedRot = rat;
-		lastRecordedFov = fov;
-	}
-}
-
-void CameraController::StartOverwriteRecording() {
-	if (!isReplaying || !isPaused)
-		return;
-	stateHistory.erase(std::remove_if(stateHistory.begin(), stateHistory.end(), [this](const CameraState& s) { return s.time > timer; }), stateHistory.end());
-	isReplaying = isPaused = false;
-	isRecording = true;
-	uiFov = cameraTransform.fov;
-	RecordStateIfChanged(uiVelocity, uiAngularVelocity, cameraTransform.translate, cameraTransform.rotate, uiFov);
-}
-
-void CameraController::StartReplay() {
+// =========================================================
+// データ保存・読み込み (JSON)
+// =========================================================
+void CameraController::ChangeStage(int newStage) {
+	SaveToJSON(GetFilePath(currentStage));
+	currentStage = newStage;
 	LoadFromJSON(GetFilePath(currentStage));
-	if (stateHistory.empty())
-		return;
-	isReplaying = true;
-	isPaused = isRecording = false;
+
 	timer = 0.0f;
-	cameraTransform = initialTransform;
+	isPlaying = false;
+	selectedPoint = -1;
+	if (!points.empty())
+		lastPosition = EvaluateBezier(0.0f);
 }
 
-void CameraController::SeekTo(float targetTime) {
-	timer = targetTime;
-	if (stateHistory.empty()) {
-		cameraTransform = initialTransform;
-		return;
-	}
-	Vector3 v, av, p, r;
-	float f;
-	ApplyReplayState(v, av, p, r, f);
-	cameraTransform.translate = p;
-	cameraTransform.rotate = r;
-	cameraTransform.fov = f;
-}
+std::string CameraController::GetFilePath(int slot) const { return "Resource/Data/camera_stage_" + std::to_string(slot) + ".json"; }
 
 void CameraController::SaveToJSON(const std::string& filename) {
-	fs::create_directories(fs::path(filename).parent_path());
 	json j;
-	j["initialTransform"] = {
-	    {"translate", initialTransform.translate},
-        {"rotate",    initialTransform.rotate   },
-        {"fov",       initialTransform.fov      }
+	j["totalDuration"] = totalDuration;
+	j["rotate"] = {
+	    {"x", stageStatus.rotate.x},
+        {"y", stageStatus.rotate.y},
+        {"z", stageStatus.rotate.z}
     };
-	j["states"] = stateHistory;
+	j["fov"] = stageStatus.fov;
+
+	json ptsJson = json::array();
+	for (const auto& p : points) {
+		ptsJson.push_back({
+		    {"x", p.position.x},
+            {"y", p.position.y},
+            {"z", p.position.z}
+        });
+	}
+	j["controlPoints"] = ptsJson;
+
 	std::ofstream file(filename);
 	if (file.is_open())
 		file << j.dump(4);
 }
 
 void CameraController::LoadFromJSON(const std::string& filename) {
-	stateHistory.clear();
-	if (!fs::exists(filename))
-		return;
 	std::ifstream file(filename);
-	if (file.is_open()) {
-		try {
-			json j;
-			file >> j;
-			initialTransform.translate = j["initialTransform"]["translate"].get<Vector3>();
-			initialTransform.rotate = j["initialTransform"]["rotate"].get<Vector3>();
-			initialTransform.fov = j["initialTransform"].value("fov", 45.0f); // 互換性維持
-			stateHistory = j["states"].get<std::vector<CameraState>>();
-		} catch (...) {
-		}
+	if (!file.is_open()) {
+		points = {{{0, 0, 0}}, {{0, 0, 10}}};
+		totalDuration = 5.0f;
+		stageStatus.rotate = {0, 0, 0};
+		stageStatus.fov = 45.0f;
+		SyncSpheres(); // デフォルト作成時もスフィアを生成
+		return;
 	}
+	try {
+		json j;
+		file >> j;
+		totalDuration = j.value("totalDuration", 5.0f);
+		stageStatus.rotate = {j["rotate"]["x"], j["rotate"]["y"], j["rotate"]["z"]};
+		stageStatus.fov = j.value("fov", 45.0f);
+		points.clear();
+		for (const auto& p : j["controlPoints"]) {
+			points.push_back({
+			    {p["x"], p["y"], p["z"]}
+            });
+		}
+		SyncSpheres(); // JSONロード後にスフィアを再生成
+	} catch (...) {
+	}
+}
+
+
+Vector3 CameraController::GetForward(float distance) {
+	float look = 0.01f;
+	Vector3 p0 = Evaluate(distance);
+	Vector3 p1 = Evaluate(distance + look);
+	return Normalize(p1 - p0);
+}
+
+Vector3 CameraController::Evaluate(float distance) {
+	if (points.size() < 4) {
+		return Vector3{0, 0, 0};
+	}
+	float maxT = (float)(points.size() - 3);
+	// distance制限
+	if (distance < 0.0f)
+		distance = 0.0f;
+	if (distance > maxT - 0.001f)
+		distance = maxT - 0.001f;
+	int i = (int)distance;
+	float localT = distance - i;
+	Vector3 p0 = points[i].position;
+	Vector3 p1 = points[i + 1].position;
+	Vector3 p2 = points[i + 2].position;
+	Vector3 p3 = points[i + 3].position;
+	return CatmullRom(p0, p1, p2, p3, localT);
+}
+
+Vector3 CameraController::CatmullRom(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t) {
+	float t2 = t * t;
+	float t3 = t2 * t;
+	return ((p1 * 2.0f) + (-p0 + p2) * t + (p0 * 2 - p1 * 5 + p2 * 4 - p3) * t2 + (-p0 + p1 * 3 - p2 * 3 + p3) * t3) * 0.5f;
 }

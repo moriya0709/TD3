@@ -16,7 +16,7 @@
 class PlayerChargeBullet : public PlayerBullet {
 public:
 	void Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies) override;
-	void Update(Vector3 cmrvel) override;
+	void Update(float cmrvel) override;
 	void Draw3D() override;
 	void Draw2D() override;
 	void SetStatus(const float hommingAccuracy, const int damage) override {
