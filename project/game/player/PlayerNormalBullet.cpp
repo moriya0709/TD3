@@ -62,6 +62,7 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	Transform ptrans = transform_;
 	ptrans.scale = { 1,1,1 };
 
+	// ヒットエフェクト
 	for (int i = 0; i < hitEffectCount; i++) {
 		hitEffect[i] = std::make_unique<ParticleEmitter>();
 		hitEffect[i]->Initialize("hitEffect1", ptrans, 5, 0.2f);
