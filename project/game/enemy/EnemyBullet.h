@@ -45,6 +45,8 @@ public:
     virtual void SetTargetPosition(Vector3 Pos) = 0;
     virtual void SetTargetPositionUpdate(Vector3 pos) { };
     virtual void OnCollision() = 0;
+    virtual void SetObject(std::string text) { };
+    virtual void SetRotate(Vector3 num) { };
     virtual void SethomingPower(float num) { };
 
 private:

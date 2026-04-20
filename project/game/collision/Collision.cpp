@@ -124,22 +124,30 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
         float bulletSize = bullet->GetHitSize();
 
         for (const auto& enemy : enemies) {
-            // ボスから「今チェックすべき判定の球」を全部もらう
             auto volumes = enemy->GetCollisionVolumes();
 
             for (const auto& volume : volumes) {
+                // 1. 面の中心から弾へのベクトル
+                Vector3 v = { bulletPos.x - volume.position.x, bulletPos.y - volume.position.y, bulletPos.z - volume.position.z };
 
-                Vector3 diff = { bulletPos.x - volume.position.x, bulletPos.y - volume.position.y, bulletPos.z - volume.position.z };
-                float distance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+                // 2. 面の法線方向への距離（厚み方向の判定）
+                // 内積を使って「面からどれだけ浮いているか」を出す
+                float distNormal = v.x * volume.normal.x + v.y * volume.normal.y + v.z * volume.normal.z;
 
-                // 当たった場合
-                if (distance <= bulletSize + volume.radius) {
+                // 弾の半径分、面から離れすぎていたら当たっていない
+                if (fabsf(distNormal) > bulletSize)
+                    continue;
 
-                    // ボスに「このパーツに当たったぞ」と報告し、リアクションを任せる
+                // 3. 面の横方向・縦方向の範囲内かチェック（投影）
+                float distRight = v.x * volume.right.x + v.y * volume.right.y + v.z * volume.right.z;
+                float distUp = v.x * volume.up.x + v.y * volume.up.y + v.z * volume.up.z;
+
+                // 矩形の範囲（幅・高さ）に弾のサイズを考慮して判定
+                if (fabsf(distRight) <= volume.width + bulletSize && fabsf(distUp) <= volume.height + bulletSize) {
+
                     if (enemy->OnCollision(volume, bullet.get())) {
-                        bullet->SetActive(false); // 弾を消す
-
-                        break; // この弾の判定は終了
+                        bullet->SetActive(false);
+                        break;
                     }
                 }
             }
@@ -169,7 +177,6 @@ void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_p
             float distnance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
             if (distnance <= player->GetHitSize() + Bullet->GetRadius()) {
 
-              
                 // 敵の攻撃力を受け取る
                 int test = 1;
                 player->Damage(test);
