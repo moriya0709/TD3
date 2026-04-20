@@ -43,7 +43,10 @@ void Game::Initialize() {
 	// パーティクルマネージャ初期化
 	ParticleManager::GetInstance()->CreateParticleGroup("group1", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("group2", "Resource/uvChecker.png");
-	ParticleManager::GetInstance()->CreateParticleGroup("bBullet", "Resource/particle/particle.png");//弾
+	ParticleManager::GetInstance()->CreateParticleGroup("hitEffect1", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("hitEffect2", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("hitEffect3", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("hitEffect4", "Resource/particle/particle.png");
 
 	// .objファイルからモデル読み込み
 	ModelManager::GetInstance()->LoadModel("Resource/plane","plane.obj");

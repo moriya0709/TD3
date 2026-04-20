@@ -217,7 +217,7 @@ void Player::UpdateAttackMove()
 	}
 }
 
-void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, Vector3 cmrvel) {
+void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, float cmrvel) {
 	UpdateAttackMove();
 	InputMove();
 	chargeReticle_->SetPosition(reticlePosition_);
@@ -296,7 +296,7 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 	}
 }
 
-void Player::UpdateBullets(Vector3 cmrvel) {
+void Player::UpdateBullets(float cmrvel) {
 	for (auto it = bullets.begin(); it != bullets.end();) {
 		if (!(*it)->IsActive()) {
 			it = bullets.erase(it);

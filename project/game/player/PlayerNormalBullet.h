@@ -17,7 +17,7 @@
 class PlayerNormalBullet : public PlayerBullet {
 public:
 	void Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies) override;
-	void Update(Vector3 cmrvel) override;
+	void Update(float cmrvel) override;
 	void Draw3D() override;
 	void Draw2D() override;
 	void SetStatus(const float hommingAccuracy, const int damage) override {
@@ -48,8 +48,9 @@ private:
 	float bulletSpeed_;                // 弾の速さ
 	int damage_ = 0;                   // 弾のダメージ量
 
-	// パーティクルエミッタ
-	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
+	// ヒットエフェクト
+	std::unique_ptr <ParticleEmitter> hitEffect[4] = {};
+	const int hitEffectCount = 4; // ヒットエフェクトの数
 	// トレイルエフェクト
 	std::shared_ptr<TrailEffect> trailEffect = std::make_shared<TrailEffect>();
 

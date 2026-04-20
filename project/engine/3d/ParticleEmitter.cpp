@@ -37,24 +37,21 @@ void ParticleEmitter::Update() {
 		velocity.z = 1.0f;
 	}
 
-	// パーティクルの形状変化
-	ParticleManager::GetInstance()->SetColorChange(isColorChange);
-	ParticleManager::GetInstance()->SetFinalColor(finalColor);
-	ParticleManager::GetInstance()->SetColorChangeSpeed(colorChangeSpeed); // 【追加】速度をManagerに送る
-	ParticleManager::GetInstance()->SetScaleChange_(isScaleChange);
-
 	// 時間経過によって発生させる
 	emitter.frequencyTime += kDeltaTime; // 時刻を進める
 	if (emitter.frequency <= emitter.frequencyTime) { // 頻度より大きいなら発生
 		ParticleManager::GetInstance()->Emit(
 			emitter.name,
 			emitter.transform.translate,
+			emitter.transform.scale,
 			emitter.count,
 			distTranslate,
 			distVelocity,
 			distTime,
 			ifTranslate,
-			velocity, color
+			velocity, color, emissive, blendMode,
+			finalColor,  colorChangeSpeed,
+			 isColorChange,  isScaleChange,  scaleAdd
 		);
 
 		emitter.frequencyTime -= emitter.frequency; // 余計に過ぎた時間も紙して頻度計算する
@@ -65,12 +62,15 @@ void ParticleEmitter::Emit() {
 	ParticleManager::GetInstance()->Emit(
 		emitter.name,
 		emitter.transform.translate,
+		emitter.transform.scale,
 		emitter.count,
 		distTranslate,
 		distVelocity, 
 		distTime,
 		ifTranslate, 
-		velocity, color
+		velocity, color, emissive, blendMode,
+		finalColor, colorChangeSpeed,
+		isColorChange, isScaleChange, scaleAdd
 	);
 
 }
@@ -85,7 +85,9 @@ void ParticleEmitter::SaveParticle(const std::string& filePath) {
 	assert(file.is_open());
 
 	// パーティクルの座標
-	file << emitter.transform.translate.x << "," << emitter.transform.translate.y << "\n";
+	file << emitter.transform.translate.x << "," << emitter.transform.translate.y << "," << emitter.transform.translate.z << "\n";
+	// パーティクルのスケール
+	file << emitter.transform.scale.x << "," << emitter.transform.scale.y << "," << emitter.transform.translate.z << "\n";
 	// パーティクルの発生数
 	file << emitter.count << "\n";
 	// パーティクルの発生頻度
@@ -110,6 +112,10 @@ void ParticleEmitter::SaveParticle(const std::string& filePath) {
 	file << distVelocity.a() << "," << distVelocity.b() << "\n";
 	// パーティクルのサイズ追加数
 	file << scaleAdd << "\n";
+	// エミッシブ
+	file << emissive << "\n";
+	// ブレンドモード
+	file << (int)blendMode << "\n";
 
 
 	file.close();
@@ -127,6 +133,15 @@ void ParticleEmitter::LoadParticle(const std::string& filePath) {
 		auto s = line.find(',');
 		emitter.transform.translate.x = std::stof(line.substr(0, s));
 		emitter.transform.translate.y = std::stof(line.substr(s + 1));
+		emitter.transform.translate.z = std::stof(line.substr(s + 1));
+	}
+
+	// パーティクルの座標
+	if (std::getline(file, line)) {
+		auto s = line.find(',');
+		emitter.transform.scale.x = std::stof(line.substr(0, s));
+		emitter.transform.scale.y = std::stof(line.substr(s + 1));
+		emitter.transform.scale.z = std::stof(line.substr(s + 1));
 	}
 
 	// パーティクルの発生数
@@ -209,6 +224,16 @@ void ParticleEmitter::LoadParticle(const std::string& filePath) {
 		scaleAdd = std::stof(line);
 	}
 
+	// エミッシブの読み込み
+	if (std::getline(file, line)) {
+		emissive = std::stof(line);
+	}
+
+	// ブレンドモードの読み込み
+	if (std::getline(file, line)) {
+		blendMode = (BlendMode)std::stoi(line);
+	}
+
 	file.close();
 }
 
@@ -216,7 +241,9 @@ void ParticleEmitter::Editor() {
 #ifdef USE_IMGUI
 	ImGui::Begin("Partocle");
 	// パーティクルの座標変更
-	ImGui::DragFloat3("EmitterTranslate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
+	ImGui::DragFloat3("translate", &emitter.transform.translate.x, 0.01f, -100.0f, 100.0f);
+	// パーティクルのスケール変更
+	ImGui::DragFloat3("scale", &emitter.transform.scale.x, 0.01f, -100.0f, 100.0f);
 
 	// パーティクルの状態
 	if (ImGui::Button("FIRE", ImVec2(50, 50))) {
@@ -252,18 +279,26 @@ void ParticleEmitter::Editor() {
 	ImGui::Checkbox("colorChange.y", &isColorChange[1]);
 	ImGui::Checkbox("colorChange.z", &isColorChange[2]);
 	// パーティクルのサイズ変化
-
 	ImGui::Checkbox("scaleChange.x", &isScaleChange[0]);
 	ImGui::Checkbox("scaleChange.y", &isScaleChange[1]);
 	ImGui::Checkbox("scaleChange.z", &isScaleChange[2]);
 
+	// エミッシブ
+	ImGui::DragFloat("Emissive", &emissive, 0.1f, 0.0f, 100.0f);
+
+	// ★ImGuiでブレンドモードを選択可能にする
+	const char* items[] = { "Normal", "Add", "Subtract", "Multiply", "Screen" };
+	int currentItem = (int)blendMode;
+	if (ImGui::Combo("BlendMode", &currentItem, items, IM_ARRAYSIZE(items))) {
+		blendMode = (BlendMode)currentItem;
+	}
 
 	// パーティクルの発生範囲
 	ImGui::SliderFloat2("distTranslate", (float*)&distTranslate, -100.0f, 100.0f);
 	// パーティクルの速度範囲
 	ImGui::SliderFloat2("distVelocity", (float*)&distVelocity, -100.0f, 100.0f);
 	// パーティクルのサイズ追加数
-	ImGui::SliderFloat("scaleAdd", &scaleAdd, -0.05f, 0.05f);
+	ImGui::SliderFloat("scaleAdd", &scaleAdd, -0.1f, 0.1f);
 
 	// ファイル名
 	ImGui::InputText("FileName", fileName, IM_ARRAYSIZE(fileName));

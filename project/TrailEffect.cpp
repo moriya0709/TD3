@@ -78,8 +78,13 @@ void TrailEffect::GenerateVertices(const Vector3& cameraPos, std::vector<TrailVe
         vLeft.UV = Vector2(0.0f, vCoord);
         vRight.UV = Vector2(1.0f, vCoord);
 
+        // 色の書き込み
         vLeft.Color = currentColor;
         vRight.Color = currentColor;
+
+        // エミッシブの書き込み
+		vLeft.Emissive = m_Emissive;
+		vRight.Emissive = m_Emissive;
 
         outVertices.push_back(vLeft);
         outVertices.push_back(vRight);

@@ -43,7 +43,7 @@ private:
 	{
 		{1.0f,1.0f,1.0f},
 		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f}
+		{10.0f,0.0f,0.0f}
 	};
 
 
@@ -110,14 +110,14 @@ private:
 	float bloomBlurRadius = 1.0f;
 
 	// レンズフレア
-	bool isLensFlare = true;           // レンズフレアのON/OFF
+	bool isLensFlare = false;           // レンズフレアのON/OFF
 	int lensFlareGhostCount = 6;   // ゴーストの数（例: 4～8）
 	float lensFlareHaloWidth = 0.57f;      // ヘイロー（輪っか）の大きさ
 	bool isACES = true;                 // ACESトーンマッピングをONにする
 	float caIntensity = 0.05f;          // 色収差の強さ（最初は弱めに）
 
 	// モーションブラー
-	bool isMotionBlur = true;    // モーションブラーのON/OFF
+	bool isMotionBlur = false;    // モーションブラーのON/OFF
 	int motionBlurSamples = 16; // サンプル数（例：8〜16）
 	float motionBlurScale = 1.0f;   // ブラーの強さ
 
@@ -128,19 +128,23 @@ private:
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
-	float rayMarchingCloudCoverage = 1.00f;
+	float rayMarchingCloudCoverage = 0.00f;
 	float rayMarchingCloudBottom = -90.0f;
 	float rayMarchingCloudTop = 2900.0f;
 	bool rayMarchingIsRialLight = false;
 	bool rayMarchingIsAnimeLight = true;
-	bool  rayMarchingIsMotionBlur = true;
+	bool  rayMarchingIsMotionBlur = false;
 	float  rayMarchingCloudOpacity = 0.04f;
-	bool isStorm = true;
+	bool isStorm = false;
 	float thunderFrequency = 0.3f;
 	float thunderBrightness = 120.0f;
 
 	int padX;
 	int padY;
+
+	// ヒットエフェクト
+	std::unique_ptr <ParticleEmitter> hitEffect[4] = {};
+	const int hitEffectCount = 4; // ヒットエフェクトの数
 	
 	// カメラ
 	std::unique_ptr<Camera> camera = nullptr;
@@ -149,6 +153,6 @@ private:
 	std::unique_ptr <Sprite> sprite = nullptr;
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
-	// パーティクルエミッタ
+
 	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
 };

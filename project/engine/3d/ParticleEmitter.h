@@ -5,6 +5,7 @@
 #include <random>
 
 #include "Calc.h"
+#include "Blend.h"
 
 struct Emitter {
 	Transform transform; //!< エミッタのTransform
@@ -61,5 +62,10 @@ private:
 
 	// デルタタイム(60fps固定)
 	const float kDeltaTime = 1.0f / 60.0f;
+
+	// エミッシブ
+	float emissive = 10.0f;
+	// ブレンドモード
+	BlendMode blendMode = kBlendModeNormal;
 	
 };
