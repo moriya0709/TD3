@@ -114,6 +114,8 @@ void CameraController::EditorUpdate() {
 		std::string labelStr = "Stage " + std::to_string(i);
 		if (ImGui::RadioButton(labelStr.c_str(), currentStage == i)) {
 			if (currentStage != i)
+				SaveToJSON(GetFilePath(i));
+
 				ChangeStage(i);
 		}
 		if (i < 5)
@@ -315,7 +317,6 @@ void CameraController::SelectPointByMouse() {
 // データ保存・読み込み (JSON)
 // =========================================================
 void CameraController::ChangeStage(int newStage) {
-	SaveToJSON(GetFilePath(currentStage));
 	currentStage = newStage;
 	LoadFromJSON(GetFilePath(currentStage));
 
