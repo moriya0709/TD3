@@ -87,13 +87,13 @@ void TitleScene::Update() {
 	}
 
 	// ヒットエフェクト更新
-	for (int i = 0; i < hitEffectCount; i++) {
-		hitEffect[i]->Update();
-	}
+	//for (int i = 0; i < hitEffectCount; i++) {
+	//	hitEffect[i]->Update();
+	//}
 
 	// パーティクル更新
-	//particleEmitter->Update();
-	//particleEmitter->Editor();
+	particleEmitter->Update();
+	particleEmitter->Editor();
 
 
 	// *スプライト* //
