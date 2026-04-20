@@ -120,4 +120,5 @@ private:
     bool isDead_ = false;
     float deadTimer_;
     static inline const float kdeadTimer_ = 10.0f;
+
 };

@@ -18,8 +18,12 @@ class Player;
 class PlayerBullet;
 
 struct CollisionVolume {
-    Vector3 position;
-    float radius;
+    Vector3 position; // 面の中心座標
+    Vector3 normal; // 面の正面方向（法線）
+    Vector3 right; // 面の横方向（幅の計算用）
+    Vector3 up; // 面の縦方向（高さの計算用）
+    float width; // 横幅の半分
+    float height;
     uint32_t partId;
 };
 

@@ -19,6 +19,11 @@ void TargetEnemyBullet::Initialize(Camera* camera, Vector3 Pos)
     acceleration_.z = 0.1f;
 }
 
+void TargetEnemyBullet::SetObject(std::string text)
+{
+    object_->SetModel(text);
+}
+
 void TargetEnemyBullet::SetTargetPosition(Vector3 Pos)
 {
     // 狙う場所を設定

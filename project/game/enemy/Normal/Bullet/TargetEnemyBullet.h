@@ -18,10 +18,12 @@ public:
 
     // Set
     void SetPosition(Vector3 Pos) override { transform_.translate = Pos; }
+    void SetRotate(Vector3 num) override { transform_.rotate = num; };
     void SetBulletAcceleration(Vector3 num) override { acceleration_ = num; }
     void SetactiveTimer(float num) override { activeTimer = num; }
     void SetUpgrade(float num) { maxSpeedUpgrade = num; }
     void SetAcceleration(float num) { accelerationScalar = num; }
+    void SetObject(std::string text) override;
     void SetTargetPosition(Vector3 Pos);
     void OnCollision() override;
 
@@ -42,5 +44,4 @@ private:
 
     Camera* camera_ = nullptr; // カメラ
     std::unique_ptr<Object> object_; // オブジェ
-
 };

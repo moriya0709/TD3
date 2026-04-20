@@ -8,13 +8,17 @@ public:
         Transform transform; // ローカル座標（ボスの中心からのオフセット）
 
         // --- アニメーション用に追加 ---
-        Vector3 targetRotate; // 目標の角度
+        Vector3 transformtaget; // 当たり判定用の座標
         bool isAnimating = false; // 現在回転中かどうかのフラグ
 
         // キャラクターの個々の当たり判定サイズ
-        static inline const float radius = 3.0f;
+        static inline const float radiusX = 3.0f;
+        static inline const float radiusY = 20.0f;
 
-        bool isWeakPoint; // 当たり判定の属性（本体かダミーか）
+        int PartsHp = 100;
+        static inline const int kPartsHp = 100;
+
+        bool isWeakPoint; // 当たり判定の属性（皮があるかどうか）
         std::unique_ptr<Object> object; // 描画オブジェクトをパーツが持つ
     };
 
@@ -64,8 +68,6 @@ private:
     Behavior behaviorRequest_ = Behavior::kUnknown;
 
     Camera* camera_ = nullptr; // カメラ―
-    std::unique_ptr<Object> stemobject; // 身
-    Vector3 baseStem = { 0.0f, 8.0f, 0.0f };
 
     // バナナの皮
     Transform baseTransform_; // ボス本体のベース（カメラ相対座標）
