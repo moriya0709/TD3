@@ -155,6 +155,40 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
                 break;
         }
     }
+
+
+    // 葡萄用の当たり判定なので触らないでください(継承クラスを破壊して個別にするため修正中です!!!!!!)
+    // for (const auto& bullet : player->GetBullets()) {
+    //    if (!bullet->IsActive())
+    //        continue;
+
+    //    Vector3 bulletPos = bullet->GetPosition();
+    //    float bulletSize = bullet->GetHitSize();
+
+    //    for (const auto& enemy : enemies) {
+    //        // ボスから「今チェックすべき判定の球」を全部もらう
+    //        auto volumes = enemy->GetCollisionVolumes();
+
+    //        for (const auto& volume : volumes) {
+
+    //            Vector3 diff = { bulletPos.x - volume.position.x, bulletPos.y - volume.position.y, bulletPos.z - volume.position.z };
+    //            float distance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
+
+    //            // 当たった場合
+    //            if (distance <= bulletSize + volume.radius) {
+
+    //                // ボスに「このパーツに当たったぞ」と報告し、リアクションを任せる
+    //                if (enemy->OnCollision(volume, bullet.get())) {
+    //                    bullet->SetActive(false); // 弾を消す
+
+    //                    break; // この弾の判定は終了
+    //                }
+    //            }
+    //        }
+    //        if (!bullet->IsActive())
+    //            break;
+    //    }
+    //}
 }
 
 void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_ptr<BossEnemy>>& enemies)

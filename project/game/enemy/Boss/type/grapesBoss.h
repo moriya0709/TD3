@@ -1,7 +1,28 @@
 ﻿#pragma once
-#include "../BossEnemy.h"
+#include "BaseScene.h"
+#include "Camera.h"
+#include "CameraManager.h"
+#include "ImGuiManager.h"
+#include "Input.h"
+#include "ModelManager.h"
+#include "Object.h"
+#include "ParticleEmitter.h"
+#include "ParticleManager.h"
+#include "PostEffect.h"
+#include "SoundManager.h"
+#include "Sprite.h"
 
-class grapesBoss : public BossEnemy {
+#include "../../EnemyBullet.h"
+
+class Player;
+
+struct CollisionVolume {
+    Vector3 position;
+    float radius;
+    uint32_t partId;
+};
+
+class grapesBoss {
 public:
     // 各パーツの情報
     struct BossPart {
@@ -39,11 +60,11 @@ public:
     };
 
 public:
-    void Initialize(Camera* camera, Vector3 pos, int health) override;
+    void Initialize(Camera* camera, Vector3 pos, int health);
 
-    void Update() override;
+    void Update();
 
-    void Draw3D() override;
+    void Draw3D();
 
     void BulletMirror(const CollisionVolume& volume, PlayerBullet* bullet);
 
@@ -51,14 +72,14 @@ public:
 
 public:
     // Get
-    Vector3 GetWorldPosition() const override;
-    float GetRadius() const override;
-    bool GetIsDead() const override;
-    std::vector<CollisionVolume> GetCollisionVolumes() override;
+    Vector3 GetWorldPosition() const;
+    float GetRadius() const;
+    bool GetIsDead() const;
+    std::vector<CollisionVolume> GetCollisionVolumes();
 
     // Set
-    void SetTargetPlayer(Player* target) override;
-    bool OnCollision(const CollisionVolume& volume, PlayerBullet* bullet) override;
+    void SetTargetPlayer(Player* target);
+    bool OnCollision(const CollisionVolume& volume, PlayerBullet* bullet);
 
 public:
     void BulletUpdate();
@@ -121,4 +142,5 @@ private:
     float deadTimer_;
     static inline const float kdeadTimer_ = 10.0f;
 
+    std::vector<std::unique_ptr<EnemyBullet>> enemyBullet_;
 };
