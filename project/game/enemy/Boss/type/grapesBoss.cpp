@@ -294,8 +294,7 @@ std::vector<CollisionVolume> grapesBoss::GetCollisionVolumes()
         // 2. 判定用のボリューム構造体を作成
         CollisionVolume volume;
         volume.position = partWorldPos; // 計算したワールド座標
-        volume.width = parts_[i].radius;
-        volume.height = parts_[i].radius; // パーツ個別の当たり判定サイズ
+        volume.radius = parts_[i].radius; // パーツ個別の当たり判定サイズ
         volume.partId = i; // 何番目のパーツか（OnHitで使う）
 
         // 3. リストに追加
