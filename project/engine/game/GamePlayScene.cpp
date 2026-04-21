@@ -163,8 +163,8 @@ void GamePlayScene::ChekeAllCollision() {
 	CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
 	CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
 	CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss);
-  CheckCollisionPlayerBossEnemy(player_.get(), Boss);
-  CheckCollisionPlayerBossEnemyBullet(player_.get(), Boss);
+    CheckCollisionPlayerBossEnemy(player_.get(), Boss);
+    CheckCollisionPlayerBossEnemyBullet(player_.get(), Boss);
 	if (player_->GetIsSpecialAttack() && specialAttackTimer <= 0) {
 		CheckCollisionSpecialAtackEnemy(enemies);
 		specialAttackTimer = 60; // 特殊攻撃のエフェクト時間（例: 60フレーム）
