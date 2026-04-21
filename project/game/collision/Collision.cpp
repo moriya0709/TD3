@@ -1,5 +1,6 @@
 ﻿#include "Collision.h"
-#include "../enemy/Boss/BossEnemy.h"
+#include "../enemy/Boss/type/banana.h"
+#include "../enemy/Boss/type/grapesBoss.h"
 #include "../enemy/Enemy.h"
 #include "../enemy/EnemyBullet.h"
 #include "Player.h"
@@ -114,8 +115,9 @@ void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared
     }
 }
 
-void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::shared_ptr<BossEnemy>>& enemies)
+void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::shared_ptr<grapesBoss>>& enemies)
 {
+    // 葡萄用の当たり判定なので触らないでください(継承クラスを破壊して個別にするため修正中です!!!!!!)
     for (const auto& bullet : player->GetBullets()) {
         if (!bullet->IsActive())
             continue;
@@ -149,7 +151,7 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
     }
 }
 
-void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_ptr<BossEnemy>>& enemies)
+void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_ptr<grapesBoss>>& enemies)
 {
     Vector3 playerPos = player->GetPosition();
 
@@ -169,7 +171,6 @@ void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_p
             float distnance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
             if (distnance <= player->GetHitSize() + Bullet->GetRadius()) {
 
-              
                 // 敵の攻撃力を受け取る
                 int test = 1;
                 player->Damage(test);
@@ -181,7 +182,7 @@ void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_p
     }
 }
 
-void CheckCollisionPlayerBossEnemyBullet(Player* player, const std::list<std::shared_ptr<BossEnemy>>& enemies)
+void CheckCollisionPlayerBossEnemyBullet(Player* player, const std::list<std::shared_ptr<grapesBoss>>& enemies)
 {
     for (const auto& boss : enemies) {
         if (boss->GetIsDead())

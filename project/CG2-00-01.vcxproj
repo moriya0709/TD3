@@ -16,7 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
-    <ClCompile Include="Easing.cpp" />
+    <ClCompile Include="application\Easing\Easing.cpp" />
     <ClCompile Include="engine\base\AbstractSceneFactory.cpp" />
     <ClCompile Include="engine\base\BaseScene.cpp" />
     <ClCompile Include="game\collision\Collision.cpp" />
@@ -25,8 +25,11 @@
     <ClCompile Include="engine\base\DirectXCommon.cpp" />
     <ClCompile Include="engine\camera\DebugCamera.cpp" />
     <ClCompile Include="game\camera\CameraController.cpp" />
-    <ClCompile Include="game\enemy\Boss\BossEnemy.cpp" />
-    <ClCompile Include="game\enemy\Boss\type\banana.cpp" />
+    <ClCompile Include="game\enemy\Boss\type\banana.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="game\enemy\Enemy.cpp" />
     <ClCompile Include="game\enemy\EnemyBullet.cpp" />
     <ClCompile Include="game\enemy\EnemyManager.cpp" />
@@ -101,8 +104,8 @@
     <ClCompile Include="engine\game\StageSelect.cpp" />
     <ClCompile Include="ResultScene.cpp" />
     <ClCompile Include="ScoreManager.cpp" />
-    <ClCompile Include="TrailEffect.cpp" />
-    <ClCompile Include="TrailEffectManager.cpp" />
+    <ClCompile Include="application\trailEffect\TrailEffect.cpp" />
+    <ClCompile Include="application\trailEffect\TrailEffectManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\shaders\RayMarching.CS.hlsl">
@@ -209,11 +212,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\railCamera\RailCamera.h" />
-    <ClInclude Include="Easing.h" />
+    <ClInclude Include="Blend.h" />
+    <ClInclude Include="application\Easing\Easing.h" />
     <ClInclude Include="game\collision\Collision.h" />
     <ClInclude Include="game\camera\CameraController.h" />
-    <ClInclude Include="game\enemy\Boss\BossEnemy.h" />
-    <ClInclude Include="game\enemy\Boss\type\banana.h" />
+    <ClInclude Include="game\enemy\Boss\type\banana.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="game\enemy\Enemy.h" />
     <ClInclude Include="game\enemy\EnemyBullet.h" />
     <ClInclude Include="engine\base\AbstractSceneFactory.h" />
@@ -280,8 +287,8 @@
     <ClInclude Include="engine\game\StageSelect.h" />
     <ClInclude Include="ResultScene.h" />
     <ClInclude Include="ScoreManager.h" />
-    <ClInclude Include="TrailEffect.h" />
-    <ClInclude Include="TrailEffectManager.h" />
+    <ClInclude Include="application\trailEffect\TrailEffect.h" />
+    <ClInclude Include="application\trailEffect\TrailEffectManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
@@ -311,7 +318,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{7bb8afe6-b31b-47c5-be6e-0be0a9cd17df}</ProjectGuid>
     <RootNamespace>CG20001</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -375,7 +382,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>C:\CG2-00-01\externals\DirectXTex;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\math;$(ProjectDir)engine\game;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)application\postEffect;$(ProjectDir)application\railCamera;$(ProjectDir)game\ememy;$(ProjectDir)game\player;$(ProjectDir)game\camera;$(ProjectDir)application\rayMarching</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\CG2-00-01\externals\DirectXTex;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\math;$(ProjectDir)engine\game;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)application\postEffect;$(ProjectDir)application\railCamera;$(ProjectDir)game\ememy;$(ProjectDir)game\player;$(ProjectDir)game\camera;$(ProjectDir)application\rayMarching;$(ProjectDir)application\trailEffect;$(ProjectDir)application\Easing</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -402,7 +409,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>C:\CG2-00-01\externals\DirectXTex;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\math;$(ProjectDir)engine\game;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)application\postEffect;$(ProjectDir)application\railCamera;$(ProjectDir)game\ememy;$(ProjectDir)game\player;$(ProjectDir)game\camera;$(ProjectDir)application\rayMarching</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\CG2-00-01\externals\DirectXTex;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\math;$(ProjectDir)engine\game;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)application\postEffect;$(ProjectDir)application\railCamera;$(ProjectDir)game\ememy;$(ProjectDir)game\player;$(ProjectDir)game\camera;$(ProjectDir)application\rayMarching;$(ProjectDir)application\trailEffect;$(ProjectDir)application\Easing</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -430,7 +437,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>C:\CG2-00-01\externals\DirectXTex;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\math;$(ProjectDir)engine\game;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)application\postEffect;$(ProjectDir)application\railCamera;$(ProjectDir)game\ememy;$(ProjectDir)game\player;$(ProjectDir)game\camera;$(ProjectDir)application\rayMarching</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\CG2-00-01\externals\DirectXTex;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\math;$(ProjectDir)engine\game;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)application\postEffect;$(ProjectDir)application\railCamera;$(ProjectDir)game\ememy;$(ProjectDir)game\player;$(ProjectDir)game\camera;$(ProjectDir)application\rayMarching;$(ProjectDir)application\trailEffect;$(ProjectDir)application\Easing</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>

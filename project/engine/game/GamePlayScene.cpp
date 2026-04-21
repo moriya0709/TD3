@@ -32,25 +32,35 @@ void GamePlayScene::Initialize() {
 
 	resume_ = std::make_unique<Sprite>();
 	resume_->Initialize("Resource/resume.png"); // 続ける
-	resume_->SetPosition({ 520.0f, 180.0f });
-	resumeEasing.pos = { 520.0f, 180.0f };
+	resume_->SetPosition({ 960.0f, 216.0f });
 	resumeEasing.size = { 0.0f,0.0f };
 	resumeEasing.startSizeV2 = { 0.0f,0.0f };
-	resumeEasing.endSizeV2 = { 300.0f,300.0f };
+	resumeEasing.endSizeV2 = { 400.0f,400.0f };
 	resumeEasing.sizeTime = 0.0f;
 	resumeEasing.sizeEasedT = 0.0f;
 
 	retry_ = std::make_unique<Sprite>();
 	retry_->Initialize("Resource/retry.png"); // リトライ
-	retry_->SetPosition({ 520.0f, 180.0f });
+	retry_->SetPosition({ 860.0f, 432.0f });
+	retryEasing.size = { 0.0f,0.0f };
+	retryEasing.startSizeV2 = { 0.0f,0.0f };
+	retryEasing.endSizeV2 = { 300.0f,300.0f };
+	retryEasing.sizeTime = 0.0f;
+	retryEasing.sizeEasedT = 0.0f;
 
 	select_ = std::make_unique<Sprite>();
 	select_->Initialize("Resource/select.png"); // セレクトへ
+	select_->SetPosition({ 1060.0f, 648.0f });
+	selectEasing.size = { 0.0f,0.0f };
+	selectEasing.startSizeV2 = { 0.0f,0.0f };
+	selectEasing.endSizeV2 = { 300.0f,300.0f };
+	selectEasing.sizeTime = 0.0f;
+	selectEasing.sizeEasedT = 0.0f;
 
 	//playerHPバー
 	playerHpUI_ = std::make_unique<Sprite>();
 	playerHpUI_->Initialize("Resource/UI/playerHp.png");
-	select_->SetPosition({ 520.0f, 180.0f });
+	playerHpUI_->SetPosition({ 100.0f, 50.0f });
 
 	pauseBg_ = std::make_unique<Sprite>();
 	pauseBg_->Initialize("Resource/pauseBg.png"); // ポーズ背景
@@ -65,13 +75,14 @@ void GamePlayScene::Initialize() {
 void GamePlayScene::Update() {
 
 	if (!isPause_) {
-		cameraController_->Update(isBossBattle_, 0);
+		cameraController_->Update();
+
 
 		// プレイヤー更新
-		player_->Update(enemy_->GetEnemies(), cameraController_->GetVelocity());
+		player_->Update(enemy_->GetEnemies(), cameraController_->GetSpeed());
 
 		// 敵更新
-		enemy_->SetcurrentTimer_(cameraController_->GetCurrentReplayTime());
+		enemy_->SetcurrentTimer_(cameraController_->GetElapsedTime());
 		enemy_->Update();
 
 		// 当たり判定
@@ -80,7 +91,7 @@ void GamePlayScene::Update() {
 		// ポーズ画面へ
 		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
 			isPause_ = true;
-			isGrayscale = true;
+			currentPause_ = Pause::kResume;
 		}
 
 	} else { // ポーズ画面
@@ -129,19 +140,11 @@ void GamePlayScene::Draw2D() {
 
 	playerHpUI_->Draw();
 
-	switch (currentPause_) {
-	case kResume:
 	if (isPause_) {
 		pauseBg_->Draw(); // ポーズ背景
 		resume_->Draw(); // ポーズ//続ける
-		break;
-		case kRetry:
 		retry_->Draw(); // リトライ
-		break;
-		case kSelect:
 		select_->Draw(); // セレクトへ
-		break;
-		}
 	}
 
 	
@@ -154,6 +157,8 @@ void GamePlayScene::Draw3D() {
 	player_->Draw3D();
 
 	enemy_->Draw3D();
+	
+		cameraController_->EditorDraw();
 
 	// パーティクル描画
 	// ParticleManager::GetInstance()->Draw();
@@ -175,13 +180,13 @@ void GamePlayScene::SetCurrentStage(int currentStage) { currentStage_ = currentS
 
 void GamePlayScene::ChekeAllCollision() {
 	const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
-	const std::list<std::shared_ptr<BossEnemy>>& Boss = enemy_->GetBoss();
+	const std::list<std::shared_ptr<grapesBoss>>& Boss = enemy_->GetGBoss();
 	CheckCollisionPlayerEnemy(player_.get(), enemies);
 	CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
 	CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
 	CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss);
-  CheckCollisionPlayerBossEnemy(player_.get(), Boss);
-  CheckCollisionPlayerBossEnemyBullet(player_.get(), Boss);
+    CheckCollisionPlayerBossEnemy(player_.get(), Boss);
+    CheckCollisionPlayerBossEnemyBullet(player_.get(), Boss);
 	if (player_->GetIsSpecialAttack() && specialAttackTimer <= 0) {
 		CheckCollisionSpecialAtackEnemy(enemies);
 		specialAttackTimer = 60; // 特殊攻撃のエフェクト時間（例: 60フレーム）
@@ -198,23 +203,100 @@ void GamePlayScene::ChekeAllCollision() {
 
 // ポーズ選択
 void GamePlayScene::PauseSelect() {
+	if(resumeEasing.sizeTime >= 1.0f && retryEasing.sizeTime >= 1.0f && selectEasing.sizeTime >= 1.0f)
 	if (Input::GetInstance()->TriggerKey(DIK_ESCAPE) || Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-		isPause_ = false;
-		isGrayscale = false;
+		isPauseEasing_ = true;
+		easingType_ = Start;
+
+		resumeEasing.startSizeV2 = resumeEasing.size;
+		resumeEasing.endSizeV2 = { 0.0f,0.0f };
 		resumeEasing.sizeTime = 0.0f;
 		resumeEasing.sizeEasedT = 0.0f;
+
+		retryEasing.startSizeV2 = retryEasing.size;
+		retryEasing.endSizeV2 = { 0.0f,0.0f };
+		retryEasing.sizeTime = 0.0f;
+		retryEasing.sizeEasedT = 0.0f;
+
+		selectEasing.startSizeV2 = selectEasing.size;
+		selectEasing.endSizeV2 = { 0.0f,0.0f };
+		selectEasing.sizeTime = 0.0f;
+		selectEasing.sizeEasedT = 0.0f;
+	}
+
+	if (isPauseEasing_) {
+		if (selectEasing.sizeTime >= 1.0f) {
+			isPause_ = false;
+			isPauseEasing_ = false;
+
+			resumeEasing.startSizeV2 = resumeEasing.size;
+			resumeEasing.endSizeV2 = { 400.0f,400.0f };
+			resumeEasing.sizeTime = 0.0f;
+			resumeEasing.sizeEasedT = 0.0f;
+
+			retryEasing.startSizeV2 = retryEasing.size;
+			retryEasing.endSizeV2 = { 300.0f,300.0f };
+			retryEasing.sizeTime = 0.0f;
+			retryEasing.sizeEasedT = 0.0f;
+
+			selectEasing.startSizeV2 = selectEasing.size;
+			selectEasing.endSizeV2 = { 300.0f,300.0f };
+			selectEasing.sizeTime = 0.0f;
+			selectEasing.sizeEasedT = 0.0f;
+		}
 	}
 
 	switch (currentPause_) {
 	case Pause::kResume:
+	if (resumeEasing.sizeTime >= 1.0f) {
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			isPauseEasing_ = true;
+			resumeEasing.startSizeV2 = resumeEasing.size;
+			resumeEasing.endSizeV2 = { 0.0f,0.0f };
+			resumeEasing.sizeTime = 0.0f;
+			resumeEasing.sizeEasedT = 0.0f;
+
+			retryEasing.startSizeV2 = retryEasing.size;
+			retryEasing.endSizeV2 = { 0.0f,0.0f };
+			retryEasing.sizeTime = 0.0f;
+			retryEasing.sizeEasedT = 0.0f;
+
+			selectEasing.startSizeV2 = selectEasing.size;
+			selectEasing.endSizeV2 = { 0.0f,0.0f };
+			selectEasing.sizeTime = 0.0f;
+			selectEasing.sizeEasedT = 0.0f;
+		}
 		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
 			currentPause_ = Pause::kSelect;
+			easingType_ = Select;
+
+			resumeEasing.startSizeV2 = resumeEasing.size;
+			resumeEasing.endSizeV2 = { 300.0f,300.0f };
+			resumeEasing.sizeTime = 0.0f;
+			resumeEasing.sizeEasedT = 0.0f;
+
+			selectEasing.startSizeV2 = selectEasing.size;
+			selectEasing.endSizeV2 = { 400.0f,400.0f };
+			selectEasing.sizeTime = 0.0f;
+			selectEasing.sizeEasedT = 0.0f;
+
+
 		}
 		if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN)) {
 			currentPause_ = Pause::kRetry;
-		}
+			easingType_ = Select;
 
-		easing->SizeV2(resumeEasing, 0.05f, 1);
+			resumeEasing.startSizeV2 = resumeEasing.size;
+			resumeEasing.endSizeV2 = { 300.0f,300.0f };
+			resumeEasing.sizeTime = 0.0f;
+			resumeEasing.sizeEasedT = 0.0f;
+
+			retryEasing.startSizeV2 = retryEasing.size;
+			retryEasing.endSizeV2 = { 400.0f,400.0f };
+			retryEasing.sizeTime = 0.0f;
+			retryEasing.sizeEasedT = 0.0f;
+		}
+	}
 
 		break;
 	case Pause::kRetry:
@@ -222,14 +304,31 @@ void GamePlayScene::PauseSelect() {
 			// ゲームプレイシーン(次シーン)を生成
 			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 		}
-		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
-			isPause_ = false;
-		}
 		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
 			currentPause_ = Pause::kResume;
+
+			retryEasing.startSizeV2 = retryEasing.size;
+			retryEasing.endSizeV2 = { 300.0f,300.0f };
+			retryEasing.sizeTime = 0.0f;
+			retryEasing.sizeEasedT = 0.0f;
+
+			resumeEasing.startSizeV2 = resumeEasing.size;
+			resumeEasing.endSizeV2 = { 400.0f,400.0f };
+			resumeEasing.sizeTime = 0.0f;
+			resumeEasing.sizeEasedT = 0.0f;
 		}
 		if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN)) {
 			currentPause_ = Pause::kSelect;
+
+			retryEasing.startSizeV2 = retryEasing.size;
+			retryEasing.endSizeV2 = { 300.0f,300.0f };
+			retryEasing.sizeTime = 0.0f;
+			retryEasing.sizeEasedT = 0.0f;
+
+			selectEasing.startSizeV2 = selectEasing.size;
+			selectEasing.endSizeV2 = { 400.0f,400.0f };
+			selectEasing.sizeTime = 0.0f;
+			selectEasing.sizeEasedT = 0.0f;
 		}
 		break;
 	case Pause::kSelect:
@@ -237,20 +336,46 @@ void GamePlayScene::PauseSelect() {
 			// ゲームプレイシーン(次シーン)を生成
 			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		}
-		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
-			isPause_ = false;
-		}
 		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
 			currentPause_ = Pause::kRetry;
+
+			selectEasing.startSizeV2 = selectEasing.size;
+			selectEasing.endSizeV2 = { 300.0f,300.0f };
+			selectEasing.sizeTime = 0.0f;
+			selectEasing.sizeEasedT = 0.0f;
+
+			retryEasing.startSizeV2 = retryEasing.size;
+			retryEasing.endSizeV2 = { 400.0f,400.0f };
+			retryEasing.sizeTime = 0.0f;
+			retryEasing.sizeEasedT = 0.0f;
 		}
 		if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN)) {
 			currentPause_ = Pause::kResume;
+
+			selectEasing.startSizeV2 = selectEasing.size;
+			selectEasing.endSizeV2 = { 300.0f,300.0f };
+			selectEasing.sizeTime = 0.0f;
+			selectEasing.sizeEasedT = 0.0f;
+
+			resumeEasing.startSizeV2 = resumeEasing.size;
+			resumeEasing.endSizeV2 = { 400.0f,400.0f };
+			resumeEasing.sizeTime = 0.0f;
+			resumeEasing.sizeEasedT = 0.0f;
 		}
 		break;
 	}
 
+	// イージング更新
+	easing->SizeV2(resumeEasing, 0.05f, 1);
+	if (resumeEasing.sizeTime >= 0.5f)
+		easing->SizeV2(retryEasing, 0.05f, 1);
+	if (retryEasing.sizeTime >= 0.5f)
+		easing->SizeV2(selectEasing, 0.05f, 1);
+
 	// トランスフォーム更新
 	resume_->SetSize(resumeEasing.size);
+	retry_->SetSize(retryEasing.size);
+	select_->SetSize(selectEasing.size);
 
 	// スプライト更新
 	resume_->Update();
@@ -515,7 +640,7 @@ void GamePlayScene::UpdateImGui() {
 		ImGui::TreePop();
 	}
 
-	cameraController_->DrawImGui();
+	cameraController_->EditorUpdate();
 	enemy_->DrawImGui();
 
 #pragma endregion

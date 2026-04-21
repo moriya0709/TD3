@@ -189,6 +189,9 @@ private:
 
     //ポーズかどうか
     bool isPause_ = false;
+	bool isPauseEasing_ = false;
+    enum EasingType { Start, Select };
+	EasingType easingType_ = Start;
 
     Pause currentPause_ = kResume;
 

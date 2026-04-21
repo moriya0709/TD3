@@ -239,7 +239,7 @@ bool grapesBoss::GetIsDead() const
     return isDead_;
 }
 
-bool grapesBoss::OnCollision(const CollisionVolume& volume, PlayerBullet* bullet)
+bool grapesBoss::OnCollision(const grapesBoss::CollisionVolume& volume, PlayerBullet* bullet)
 {
     uint32_t id = volume.partId;
 
@@ -254,12 +254,13 @@ bool grapesBoss::OnCollision(const CollisionVolume& volume, PlayerBullet* bullet
         // 【弱点（本体）に当たった場合：共有HPにダメージ】
         // ==========================================
 
-        // ボス全体の共有体力を減らす
-        health_ -= bullet->GetDamage();
+        // 弾のダメージを取得
+        int Damage = bullet->GetDamage();
 
-        // 共有体力が0以下になったらボス撃破
-        if (health_ <= 0) {
-            health_ = 0;
+        this->health_ -= Damage;
+
+        if (this->health_ <= 0 || isDead_) {
+            this->health_ = 0; // マイナスにならないよう補正
             isDead_ = true;
         }
 
@@ -272,7 +273,7 @@ bool grapesBoss::OnCollision(const CollisionVolume& volume, PlayerBullet* bullet
     }
 }
 
-std::vector<CollisionVolume> grapesBoss::GetCollisionVolumes()
+std::vector<grapesBoss::CollisionVolume> grapesBoss::GetCollisionVolumes()
 {
     std::vector<CollisionVolume> volumes;
 

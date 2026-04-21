@@ -78,15 +78,15 @@
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
     <ClCompile Include="game\enemy\Boss\type\grapesBoss.cpp" />
     <ClCompile Include="engine\game\StageSelect.cpp" />
-    <ClCompile Include="game\enemy\Boss\BossEnemy.cpp" />
-    <ClCompile Include="TrailEffect.cpp" />
-    <ClCompile Include="TrailEffectManager.cpp" />
+    <ClCompile Include="application\trailEffect\TrailEffect.cpp" />
+    <ClCompile Include="application\trailEffect\TrailEffectManager.cpp" />
     <ClCompile Include="engine\base\BaseScene.cpp" />
     <ClCompile Include="engine\base\AbstractSceneFactory.cpp" />
     <ClCompile Include="ResultScene.cpp" />
     <ClCompile Include="game\enemy\Boss\type\banana.cpp" />
     <ClCompile Include="Easing.cpp" />
     <ClCompile Include="ScoreManager.cpp" />
+    <ClCompile Include="application\Easing\Easing.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />
@@ -154,13 +154,14 @@
     <ClInclude Include="application\railCamera\RailCamera.h" />
     <ClInclude Include="game\enemy\Boss\type\grapesBoss.h" />
     <ClInclude Include="engine\game\StageSelect.h" />
-    <ClInclude Include="game\enemy\Boss\BossEnemy.h" />
-    <ClInclude Include="TrailEffect.h" />
-    <ClInclude Include="TrailEffectManager.h" />
+    <ClInclude Include="application\trailEffect\TrailEffect.h" />
+    <ClInclude Include="application\trailEffect\TrailEffectManager.h" />
     <ClInclude Include="ResultScene.h" />
     <ClInclude Include="game\enemy\Boss\type\banana.h" />
     <ClInclude Include="Easing.h" />
     <ClInclude Include="ScoreManager.h" />
+    <ClInclude Include="application\Easing\Easing.h" />
+    <ClInclude Include="Blend.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\RayMarching.hlsli" />

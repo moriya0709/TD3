@@ -15,6 +15,7 @@
 #include "SoundManager.h"
 #include "Sprite.h"
 #include "game/player/Player.h"
+#include "Easing.h"
 
 using namespace DirectX;
 
@@ -39,31 +40,45 @@ private:
 	std::unique_ptr<Object> playerObject_;
 
 	Transform cameraTransform{
-	    {1.0f, 1.0f, 1.0f }, // scale
-	    {0.0f, 0.0f, 0.0f }, // rotate
-	    {0.0f, 0.0f, -5.0f}  // translate
+		{1.0f, 1.0f, 1.0f }, // scale
+		{0.0f, 0.0f, 0.0f }, // rotate
+		{0.0f, 0.0f, -5.0f}  // translate
 	};
 	// パーティクル
 	Transform transformParticle{
-	    {1.0f, 1.0f, 1.0f},
-        {0.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, 0.0f}
-    };
+		{1.0f, 1.0f, 1.0f},
+		{0.0f, 0.0f, 0.0f},
+		{0.0f, 0.0f, 0.0f}
+	};
 
 	// カメラ
 	std::unique_ptr<Camera> camera_ = nullptr;
-	// スプライト
-	std::unique_ptr<Sprite> sprite = nullptr;
-	// 3Dオブジェクト
-	std::unique_ptr<Object> object[2]{};
 	// パーティクルエミッタ
 	std::unique_ptr<ParticleEmitter> particleEmitter = nullptr;
 
 	Style currentStyle = normal;
 
 	bool isStageSelect = false;
-
 	int currentStage = 1;
+
+	// パラメータ
+	std::unique_ptr<Sprite> parameter[5] = {};
+	std::unique_ptr<Sprite> parameterGauge[5] = {};
+	EasingSet parameterGaugeEasing[5];
+	int kMaxParameter = 5;
+
+	int parameterSetting[5][4] = {
+		{80, 50, 10, 30},	// hp
+		{70, 60, 70, 80},	// 威力
+		{90, 40, 20, 30},	// 連射速度
+		{60, 70, 50, 10},	// 移動速度
+		{50, 80, 40, 30}	// 射程orチャージ速度
+		//Normal	Speed	Power	Sniper
+	};
+
+
+	// イージング
+	std::unique_ptr <Easing> easing;
 
 	// 平行光
 	bool isDirectionalLight = false;
@@ -146,5 +161,9 @@ private:
 	bool rayMarchingIsAnimeLight = true;
 	bool rayMarchingIsMotionBlur = false;
 	float rayMarchingCloudOpacity = 0.01f;
+
 	void LithingEffect();
+
+	// パラメータのイージングを設定
+	void ParameterEasingSet(Style currentStyle);
 };

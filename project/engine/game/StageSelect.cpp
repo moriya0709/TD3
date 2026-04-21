@@ -16,19 +16,29 @@ void StageSelect::Initialize() {
 	CameraManager::GetInstance()->AddCamera("main", camera_.get());
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
-	// スプライト
-	sprite = std::make_unique<Sprite>();
-	sprite->Initialize("Resource/monsterBall.png");
-
-	// 3Dオブジェクト
-	for (int i = 0; i < 2; i++) {
-		object[i] = std::make_unique<Object>();
-		object[i]->Initialize(camera_.get());
+	// パラメータ
+	for(int i = 0; i< kMaxParameter; i++){
+		parameter[i] = std::make_unique<Sprite>();
+		parameter[i]->Initialize("Resource/parameters/parameters.png");
+		parameter[i]->SetPosition({ 1300.0f, 800.0f + i * 60.0f });
+		parameter[i]->SetSize({ 500.0f, 50.0f });
+		parameter[i]->SetAnchorPoint({ 0.0f, 0.0f });
+		parameterGauge[i] = std::make_unique<Sprite>();
+		parameterGauge[i]->Initialize("Resource/parameters/parametersGauge.png");
+		parameterGaugeEasing[i].pos = { 1300.0f, 800.0f + i * 60.0f };
+		parameterGaugeEasing[i].size = { 0.0f, 50.0f };
+		parameterGaugeEasing[i].startSizeV2 = { 0.0f, 50.0f };
+		parameterGaugeEasing[i].endSizeV2 = { float(parameterSetting[i][currentStyle] * 5), parameterGaugeEasing[i].size.y};
+		parameterGaugeEasing[i].sizeTime = 0.0f;
+		parameterGaugeEasing[i].sizeEasedT = 0.0f;
+		parameterGauge[i]->SetPosition(parameterGaugeEasing[i].pos);
+		parameterGauge[i]->SetSize(parameterGaugeEasing[i].size);
+		parameterGauge[i]->SetAnchorPoint({ 0.0f, 0.0f });
 	}
 
-	// 初期化済みの3Dオブジェクトにモデルを紐づける
-	object[0]->SetModel("emission.obj");
-	object[1]->SetModel("skydome.obj");
+	// イージング
+	easing = std::make_unique<Easing>();
+	easing->Initialize();
 
 	playerObject_ = std::make_unique<Object>();
 	playerObject_->Initialize(camera_.get());
@@ -68,6 +78,9 @@ void StageSelect::Update() {
 		if (!isStageSelect) {
 			currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 1) % 4);
 			isChanged = true;
+
+			// パラメータのイージングセット
+			ParameterEasingSet(currentStyle);
 		} else {
 			if (currentStage < 5) {
 				currentStage++;
@@ -79,6 +92,9 @@ void StageSelect::Update() {
 		if (!isStageSelect) {
 			currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 3) % 4);
 			isChanged = true;
+
+			// パラメータのイージングセット
+			ParameterEasingSet(currentStyle);
 		} else {
 			if (currentStage > 0) {
 				currentStage--;
@@ -116,30 +132,36 @@ void StageSelect::Update() {
 		}
 	}
 
-	// * 3Dオブジェクト* //
-	for (int i = 0; i < 2; i++) {
-		object[i]->Update();
-	}
 	if (!isStageSelect) {
 		playerObject_->Update();
 	}
 
-	sprite->Update();
+	for (int i = 0; i < kMaxParameter; i++) {
+		if(parameterGaugeEasing[i - 1].sizeTime >= 0.5f || i == 0)
+			easing->SizeV2(parameterGaugeEasing[i], 0.05f, 0);
+
+		parameterGauge[i]->SetSize(parameterGaugeEasing[i].size);
+
+		parameterGauge[i]->Update();
+		parameter[i]->Update();
+	}
 
 	LithingEffect();
 }
 void StageSelect::Draw2D() {
 	// 2Dオブジェクトの描画準備
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
+
+	for (int i = 0; i < kMaxParameter; i++) {
+		parameterGauge[i]->Draw();
+		parameter[i]->Draw();
+	}
 }
 
 void StageSelect::Draw3D() {
 	// 3Dオブジェクトの描画準備
 	ObjectCommon::GetInstance()->SetCommonPipelineState();
 	// 3Dオブジェクト描画
-	for (int i = 0; i < 2; i++) {
-		object[i]->Draw();
-	}
 	if (!isStageSelect) {
 		if (playerObject_) {
 			playerObject_->Draw();
@@ -211,4 +233,16 @@ void StageSelect::LithingEffect() {
 	RayMarching::GetInstance()->SetCloudOpacity(rayMarchingCloudOpacity);
 
 #pragma endregion
+}
+
+void StageSelect::ParameterEasingSet(Style currentStyle) {
+	for (int i = 0; i < kMaxParameter; i++) {
+		parameterGaugeEasing[i].size = { 0.0f, 50.0f };
+		parameterGaugeEasing[i].startSizeV2 = { 0.0f,parameterGaugeEasing[i].size.y};
+		parameterGaugeEasing[i].endSizeV2 = { float(parameterSetting[i][currentStyle] * 5),parameterGaugeEasing[i].size.y};
+		parameterGaugeEasing[i].sizeTime = 0.0f;
+		parameterGaugeEasing[i].sizeEasedT = 0.0f;
+
+		parameterGauge[i]->SetSize(parameterGaugeEasing[i].size);
+	}
 }
