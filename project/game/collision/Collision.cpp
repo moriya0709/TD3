@@ -1,5 +1,6 @@
 ﻿#include "Collision.h"
-#include "../enemy/Boss/BossEnemy.h"
+#include "../enemy/Boss/type/banana.h"
+#include "../enemy/Boss/type/grapesBoss.h"
 #include "../enemy/Enemy.h"
 #include "../enemy/EnemyBullet.h"
 #include "Player.h"
@@ -114,8 +115,9 @@ void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared
     }
 }
 
-void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::shared_ptr<BossEnemy>>& enemies)
+void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::shared_ptr<grapesBoss>>& enemies)
 {
+    // 葡萄用の当たり判定なので触らないでください(継承クラスを破壊して個別にするため修正中です!!!!!!)
     for (const auto& bullet : player->GetBullets()) {
         if (!bullet->IsActive())
             continue;
@@ -124,30 +126,22 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
         float bulletSize = bullet->GetHitSize();
 
         for (const auto& enemy : enemies) {
+            // ボスから「今チェックすべき判定の球」を全部もらう
             auto volumes = enemy->GetCollisionVolumes();
 
             for (const auto& volume : volumes) {
-                // 1. 面の中心から弾へのベクトル
-                Vector3 v = { bulletPos.x - volume.position.x, bulletPos.y - volume.position.y, bulletPos.z - volume.position.z };
 
-                // 2. 面の法線方向への距離（厚み方向の判定）
-                // 内積を使って「面からどれだけ浮いているか」を出す
-                float distNormal = v.x * volume.normal.x + v.y * volume.normal.y + v.z * volume.normal.z;
+                Vector3 diff = { bulletPos.x - volume.position.x, bulletPos.y - volume.position.y, bulletPos.z - volume.position.z };
+                float distance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
 
-                // 弾の半径分、面から離れすぎていたら当たっていない
-                if (fabsf(distNormal) > bulletSize)
-                    continue;
+                // 当たった場合
+                if (distance <= bulletSize + volume.radius) {
 
-                // 3. 面の横方向・縦方向の範囲内かチェック（投影）
-                float distRight = v.x * volume.right.x + v.y * volume.right.y + v.z * volume.right.z;
-                float distUp = v.x * volume.up.x + v.y * volume.up.y + v.z * volume.up.z;
-
-                // 矩形の範囲（幅・高さ）に弾のサイズを考慮して判定
-                if (fabsf(distRight) <= volume.width + bulletSize && fabsf(distUp) <= volume.height + bulletSize) {
-
+                    // ボスに「このパーツに当たったぞ」と報告し、リアクションを任せる
                     if (enemy->OnCollision(volume, bullet.get())) {
-                        bullet->SetActive(false);
-                        break;
+                        bullet->SetActive(false); // 弾を消す
+
+                        break; // この弾の判定は終了
                     }
                 }
             }
@@ -155,43 +149,9 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
                 break;
         }
     }
-
-
-    // 葡萄用の当たり判定なので触らないでください(継承クラスを破壊して個別にするため修正中です!!!!!!)
-    // for (const auto& bullet : player->GetBullets()) {
-    //    if (!bullet->IsActive())
-    //        continue;
-
-    //    Vector3 bulletPos = bullet->GetPosition();
-    //    float bulletSize = bullet->GetHitSize();
-
-    //    for (const auto& enemy : enemies) {
-    //        // ボスから「今チェックすべき判定の球」を全部もらう
-    //        auto volumes = enemy->GetCollisionVolumes();
-
-    //        for (const auto& volume : volumes) {
-
-    //            Vector3 diff = { bulletPos.x - volume.position.x, bulletPos.y - volume.position.y, bulletPos.z - volume.position.z };
-    //            float distance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
-
-    //            // 当たった場合
-    //            if (distance <= bulletSize + volume.radius) {
-
-    //                // ボスに「このパーツに当たったぞ」と報告し、リアクションを任せる
-    //                if (enemy->OnCollision(volume, bullet.get())) {
-    //                    bullet->SetActive(false); // 弾を消す
-
-    //                    break; // この弾の判定は終了
-    //                }
-    //            }
-    //        }
-    //        if (!bullet->IsActive())
-    //            break;
-    //    }
-    //}
 }
 
-void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_ptr<BossEnemy>>& enemies)
+void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_ptr<grapesBoss>>& enemies)
 {
     Vector3 playerPos = player->GetPosition();
 
@@ -222,7 +182,7 @@ void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_p
     }
 }
 
-void CheckCollisionPlayerBossEnemyBullet(Player* player, const std::list<std::shared_ptr<BossEnemy>>& enemies)
+void CheckCollisionPlayerBossEnemyBullet(Player* player, const std::list<std::shared_ptr<grapesBoss>>& enemies)
 {
     for (const auto& boss : enemies) {
         if (boss->GetIsDead())

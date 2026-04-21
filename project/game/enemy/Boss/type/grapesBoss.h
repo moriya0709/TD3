@@ -15,15 +15,16 @@
 #include "../../EnemyBullet.h"
 
 class Player;
-
-struct CollisionVolume {
-    Vector3 position;
-    float radius;
-    uint32_t partId;
-};
+class PlayerBullet;
 
 class grapesBoss {
 public:
+    struct CollisionVolume {
+        Vector3 position;
+        float radius;
+        uint32_t partId;
+    };
+
     // 各パーツの情報
     struct BossPart {
         Transform transform; // ローカル座標（ボスの中心からのオフセット）
@@ -76,6 +77,7 @@ public:
     float GetRadius() const;
     bool GetIsDead() const;
     std::vector<CollisionVolume> GetCollisionVolumes();
+    const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
 
     // Set
     void SetTargetPlayer(Player* target);

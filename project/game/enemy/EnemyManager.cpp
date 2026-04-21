@@ -79,13 +79,17 @@ void EnemyManager::Update()
         enemy->Update();
     }
 
-    for (auto& boss : boss_) {
+    for (auto& boss : gboss_) {
         boss->Update();
     }
+    /*for (auto& boss : bboss_) {
+        boss->Update();
+    }*/
 
     // --- 修正ポイント：引数を std::shared_ptr に変更 ---
     enemies_.remove_if([](const std::shared_ptr<Enemy>& enemy) { return enemy->GetIsDead(); });
-    boss_.remove_if([](const std::shared_ptr<BossEnemy>& enemy) { return enemy->GetIsDead(); });
+    gboss_.remove_if([](const std::shared_ptr<grapesBoss>& enemy) { return enemy->GetIsDead(); });
+    //bboss_.remove_if([](const std::shared_ptr<banana>& enemy) { return enemy->GetIsDead(); });
 }
 void EnemyManager::Draw3D()
 {
@@ -93,9 +97,14 @@ void EnemyManager::Draw3D()
         enemy->Draw3D();
     }
 
-    for (auto& boss : boss_) {
+    for (auto& boss : gboss_) {
+
         boss->Draw3D();
     }
+    /*for (auto& boss : bboss_) {
+
+        boss->Draw3D();
+    }*/
 }
 
 void EnemyManager::SetcurrentTimer_(float timer)
@@ -105,7 +114,8 @@ void EnemyManager::SetcurrentTimer_(float timer)
     if (currentTimer_ > timer) {
         currentSpawnIndex_ = 0;
         enemies_.remove_if([](const std::shared_ptr<Enemy>& enemy) { return true; });
-        boss_.remove_if([](const std::shared_ptr<BossEnemy>& enemy) { return true; });
+        gboss_.remove_if([](const std::shared_ptr<grapesBoss>& enemy) { return true; });
+        //bboss_.remove_if([](const std::shared_ptr<banana>& enemy) { return true; });
     }
     currentTimer_ = timer;
 }
@@ -221,18 +231,18 @@ void EnemyManager::SpawnEnemy(const EnemyPopData& data)
         newBoss->SetTargetPlayer(player_);
 
         // ボスリストに追加
-        boss_.push_back(std::move(newBoss));
+        gboss_.push_back(std::move(newBoss));
         return; // ボスとして生成したのでここで終了
     } else if (data.type == "bananaBoss") {
-        auto newBoss = std::make_unique<banana>();
+        //auto newBoss = std::make_unique<banana>();
 
-        // ボス専用の初期化
-        newBoss->Initialize(camera_, data.position, data.hp);
-        newBoss->SetTargetPlayer(player_);
+        //// ボス専用の初期化
+        //newBoss->Initialize(camera_, data.position, data.hp);
+        //newBoss->SetTargetPlayer(player_);
 
-        // ボスリストに追加
-        boss_.push_back(std::move(newBoss));
-        return; // ボスとして生成したのでここで終了
+        //// ボスリストに追加
+        //bboss_.push_back(std::move(newBoss));
+        //return; // ボスとして生成したのでここで終了
     }
 
     // --- 2. ザコ敵（Enemy）の場合 ---
@@ -248,7 +258,7 @@ void EnemyManager::SpawnEnemy(const EnemyPopData& data)
         newEnemy = std::make_unique<rushEnemy>();
     } else if (data.type == "ShieldEnemy") {
         newEnemy = std::make_unique<ShieldEnemy>();
-    } 
+    }
 
     if (newEnemy) {
         newEnemy->Initialize(camera_, data.position, data.hp);

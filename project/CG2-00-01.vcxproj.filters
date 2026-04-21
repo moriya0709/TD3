@@ -78,7 +78,6 @@
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
     <ClCompile Include="game\enemy\Boss\type\grapesBoss.cpp" />
     <ClCompile Include="engine\game\StageSelect.cpp" />
-    <ClCompile Include="game\enemy\Boss\BossEnemy.cpp" />
     <ClCompile Include="TrailEffect.cpp" />
     <ClCompile Include="TrailEffectManager.cpp" />
     <ClCompile Include="engine\base\BaseScene.cpp" />
@@ -153,7 +152,6 @@
     <ClInclude Include="application\railCamera\RailCamera.h" />
     <ClInclude Include="game\enemy\Boss\type\grapesBoss.h" />
     <ClInclude Include="engine\game\StageSelect.h" />
-    <ClInclude Include="game\enemy\Boss\BossEnemy.h" />
     <ClInclude Include="TrailEffect.h" />
     <ClInclude Include="TrailEffectManager.h" />
     <ClInclude Include="ResultScene.h" />
