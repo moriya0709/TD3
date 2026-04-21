@@ -14,6 +14,7 @@
 #include "BaseScene.h"
 #include "PostEffect.h"
 #include "RailCamera.h"
+#include "ScoreManager.h"
 
 using namespace DirectX;
 
@@ -25,6 +26,7 @@ public:
 	void Initialize()override;
 	void Update()override;
 	void Draw2D()override;
+	void Draw3D()override;
 	void Finalize()override;
 
 
@@ -143,14 +145,29 @@ private:
 	std::unique_ptr<Camera> camera = nullptr;
 	// スプライト
 	std::unique_ptr <Sprite> sprite = nullptr;
+
+	//数字
+	std::unique_ptr<Sprite> numberSprites_[10][5];
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
 	// パーティクルエミッタ
 	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
+	
+	//スコア演出
+
+	//クラスのメンバ変数として持っておく
+	std::vector<ScoreData> history_;
+
+	float countTimer_ = 0.0f;//2秒計るためのタイマー
+	const float kMaxCount_ = 2.0f;//2秒経ったらスコア数字表示
+
+	int currentDigitIndex_ = 0;//今何桁目か(0～4桁)
+	int targetScore_ = 0;//実際のスコア
+	int actualDigits_[5] = { 0 };//実際のスコアの各桁の数字
+	int displayNumbers_[5] = { 0 };//画面に表示させる数字(シャッフル中はランダムな数字が入る)
 
 	//フラグ
-	bool isScoreStartTime = false;//スコアカウントスタート
-	bool isScoreFinisheTime = false;//スコア終わって数字表示
-	bool isCanPress = false;//ボタン押せるようにする
+	bool isScoreStartTime_ = false;//スコアカウントスタート
+	bool isCanPress_ = false;//ボタン押せるようにする
 };
 

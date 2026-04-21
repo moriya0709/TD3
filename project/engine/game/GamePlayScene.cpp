@@ -2,6 +2,7 @@
 #include "ObjectCommon.h"
 #include "SceneManager.h"
 #include "SpriteCommon.h"
+#include "ScoreManager.h"
 
 void GamePlayScene::Initialize() {
 	// カメラ初期化
@@ -96,6 +97,27 @@ void GamePlayScene::Update() {
 	} else { // ポーズ画面
 		PauseSelect();
 	}
+
+
+	if (isPause_ || isFinished_)return;
+
+	//時間の計測
+	float deltaTime = 1.0f / 60.0f;
+	playTimer_ += deltaTime;
+
+	//クリア条件の分岐
+	if (isBossBattle_)
+	{
+		//ボス倒したらクリア
+	}
+	else {//制限時間来たらリザルトへ
+		if (playTimer_ >= kMaxTime_)
+		{
+			playTimer_ = kMaxTime_;
+			StageClear();
+		}
+	}
+
 
 	// スプライト更新
 	pause_->Update();
@@ -363,6 +385,22 @@ void GamePlayScene::PauseSelect() {
 
 }
 
+void GamePlayScene::StageClear()
+{
+	if (isFinished_)return;
+	isFinished_ = true;
+
+	//現在のゲーム情報を取得
+	int fianalScore = this->score_;
+	std::string currentStage = "Stage "+ std::to_string(currentStage_);
+	std::string currentModel = "cloud";
+
+	//保存実行
+	scoreManager_.SaveScene(fianalScore, currentStage, currentModel,playTimer_);
+
+	SceneManager::GetInstance()->ChangeScene("RESULT");
+}
+
 void GamePlayScene::LithingEffect() {
 #pragma region ポストエフェクト
 
@@ -439,12 +477,17 @@ void GamePlayScene::UpdateImGui() {
 	// フレームレートの取得と表示
 	float fps = ImGui::GetIO().Framerate;
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / fps, fps);
-
+	ImGui::Text("time: %.2f", playTimer_);
 	// カメラ
 	ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f, -100.0f, 100.0f);
 	ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -180.0f, 180.0f);
 	camera->SetTranslate({cameraTransform.translate});
 	camera->SetRotate({cameraTransform.rotate});
+
+	if (Input::GetInstance()->TriggerKey(DIK_BACKSPACE)) {
+		// ゲームプレイシーン(次シーン)を生成
+		SceneManager::GetInstance()->ChangeScene("RESULT");
+	}
 
 #pragma region ライティング
 	// *ライティング* //

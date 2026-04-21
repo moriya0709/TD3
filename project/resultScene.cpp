@@ -1,8 +1,42 @@
 #include "resultScene.h"
 #include "SceneManager.h"
+#include <SpriteCommon.h>
+#include <ObjectCommon.h>
 
 void ResultScene::Initialize()
 {
+	//初期化
+	targetScore_ = 0;
+	for (int i = 0; i < 5; i++)
+	{
+		actualDigits_[i] = 0;
+		displayNumbers_[i] = 0;
+	}
+
+
+	ScoreManager scoreManager;
+	//過去の全データを読み込む
+	history_ = scoreManager.LoadHistory();
+
+	if (!history_.empty())
+	{
+		//最新のスコアを取得
+		targetScore_ = history_.back().score;
+
+		//スコアを5桁に分割
+		actualDigits_[0] = (targetScore_ / 10000) % 10;
+		actualDigits_[1] = (targetScore_ / 1000) % 10;
+		actualDigits_[2] = (targetScore_ / 100) % 10;
+		actualDigits_[3] = (targetScore_ / 10) % 10;
+		actualDigits_[4] = targetScore_ % 10;
+	}
+
+	//スコアシャッフル
+	currentDigitIndex_ = 0;
+	countTimer_ = 0.0f;
+	isScoreStartTime_ = true;
+	isCanPress_ = false;
+
 	// カメラ初期化
 	camera = std::make_unique<Camera>();
 	camera->SetRotate({ cameraTransform.rotate });
@@ -12,7 +46,19 @@ void ResultScene::Initialize()
 	CameraManager::GetInstance()->AddCamera("main", camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
-	// スプライト
+	for (int num = 0; num < 10; num++)
+	{
+		for (int digit = 0; digit < 5; digit++)
+		{
+			numberSprites_[num][digit] = std::make_unique<Sprite>();
+			//数字
+			std::string filePath = "Resource/number/" + std::to_string(num) + ".png";
+			numberSprites_[num][digit]->Initialize(filePath);
+		}
+	}
+
+
+
 	sprite = std::make_unique <Sprite>();
 	sprite->Initialize("Resource/monsterBall.png");
 
@@ -26,11 +72,11 @@ void ResultScene::Initialize()
 	particleEmitter = std::make_unique <ParticleEmitter>();
 	particleEmitter->Initialize("group1", transformParticle, 5, 1.0f);
 	particleEmitter->Emit();
-	particleEmitter->LoadParticle("Resource/particle/fire.csv");
+	//particleEmitter->LoadParticle("Resource/particle/fire.csv");
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
-	object[0]->SetModel("emission.obj");
-	object[1]->SetModel("skydome.obj");
+	//object[0]->SetModel("emission.obj");
+	//object[1]->SetModel("skydome.obj");
 
 }
 
@@ -41,10 +87,53 @@ void ResultScene::Update()
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
 
-	// ENTERキーを押したら
-	if (input->TriggerKey(DIK_RETURN)) {
-		// ゲームプレイシーン(次シーン)を生成
-		SceneManager::GetInstance()->ChangeScene("GAMESELECT");
+	//スペースキーでお急ぎ用スコア表示
+	if (isScoreStartTime_ && !isCanPress_)
+	{
+		if (input->TriggerKey(DIK_SPACE))
+		{
+			currentDigitIndex_ = 5;//スコア全部強制確定
+		}
+
+		//まだ出てない桁があればタイマーを進める
+		if (currentDigitIndex_ < 5)
+		{
+			countTimer_ += 1.0f / 60.0f;
+
+			// 全5桁の表示用数字を計算
+			for (int i = 0; i < 5; i++)
+			{
+				// currentDigitIndex_ が 0 の時：全員シャッフル
+				// 1 の時：i=4(右端)が確定
+				if (i >= (5 - currentDigitIndex_)) {
+					displayNumbers_[i] = actualDigits_[i]; // 確定(スコアを上書き)
+				} else {
+					displayNumbers_[i] = rand() % 10; // シャッフル中
+				}
+			}
+
+			//2秒経過したら、次の桁のシャッフル開始
+			if (countTimer_ >= kMaxCount_)
+			{
+				countTimer_ = 0.0f;//タイマーリセット
+				currentDigitIndex_++;//確定する1桁を1つ進める
+			}
+		} else {//5桁全て確定したらステージセレクト(Enterキー押せるよう)にする
+			for (int i = 0; i < 5; i++)
+			{
+				displayNumbers_[i] = actualDigits_[i];//一応全部本物のスコアに変える
+			}
+			isCanPress_ = true;
+		}
+	}
+		//ステージセレクトへ
+	if (isCanPress_)
+	{
+		//Enterキーで
+		if (input->TriggerKey(DIK_RETURN)) {
+			// ゲームプレイシーン(次シーン)を生成
+			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
+		}
 	}
 
 	// * 3Dオブジェクト* //
@@ -353,7 +442,30 @@ void ResultScene::Update()
 
 void ResultScene::Draw2D()
 {
+	// 2Dオブジェクトの描画準備
+	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
+	if (isScoreStartTime_)
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			Vector2 drawPosition = { 850.0f + (i * 60.0f),500.0f };
+
+			//その桁で表示する数字
+			int number = displayNumbers_[i];
+
+			numberSprites_[number][i]->SetPosition(drawPosition);
+			numberSprites_[number][i]->Update();
+			numberSprites_[number][i]->Draw();
+		}
+	}
+}
+
+void ResultScene::Draw3D()
+{
+
+	// アウトライン描画準備
+	ObjectCommon::GetInstance()->SetOutlinePipelineState();
 }
 
 void ResultScene::Finalize()
