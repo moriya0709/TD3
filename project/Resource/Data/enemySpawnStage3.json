@@ -2,7 +2,7 @@
     "enemies": [
         {
             "popTime": 1.0,
-            "type": "bananaBoss",
+            "type": "grapesBoss",
             "hp": 2100,
             "position": {
                 "x": 0.0,

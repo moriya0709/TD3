@@ -19,7 +19,13 @@ class PlayerBullet;
 
 class banana {
 public:
+    enum class CollisionShape {
+        kPlane, // 面
+        kBox // 矩形
+    };
+
     struct CollisionVolume {
+        CollisionShape shape; // 形状の判定
         Vector3 position; // 面の中心座標
         Vector3 normal; // 面の正面方向（法線）
         Vector3 right; // 面の横方向（幅の計算用）
@@ -31,21 +37,26 @@ public:
 
     // 各パーツの情報
     struct BossPart {
-        Transform transform; // ローカル座標（ボスの中心からのオフセット）
+        Transform transform; // モデル用座標
+        Vector3 collisionLocalPos; // 当たり判定のローカル座標
 
-        // --- アニメーション用に追加 ---
-        Vector3 transformtaget; // 当たり判定用の座標
-        bool isAnimating = false; // 現在回転中かどうかのフラグ
+        bool isAnimating = false;
 
-        // キャラクターの個々の当たり判定サイズ
+        // 当たり判定のサイズ
         static inline const float radiusX = 3.0f;
         static inline const float radiusY = 20.0f;
 
+        // 体力
         int PartsHp = 100;
         static inline const int kPartsHp = 100;
 
-        bool isWeakPoint; // 当たり判定の属性（皮があるかどうか）
-        std::unique_ptr<Object> object; // 描画オブジェクトをパーツが持つ
+        // --- 以下を追加 ---
+        float repairTimer = 0.0f; // 修理までの時間
+        static inline const float kRepairTime = 300.0f; // 修理にかかる時間（60FPSなら5秒）
+        // ------------------
+
+        bool isWeakPoint;
+        std::unique_ptr<Object> object;
     };
 
     enum class Behavior {
