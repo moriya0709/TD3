@@ -86,6 +86,7 @@
     <ClCompile Include="ResultScene.cpp" />
     <ClCompile Include="game\enemy\Boss\type\banana.cpp" />
     <ClCompile Include="Easing.cpp" />
+    <ClCompile Include="ScoreManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />
@@ -159,6 +160,7 @@
     <ClInclude Include="ResultScene.h" />
     <ClInclude Include="game\enemy\Boss\type\banana.h" />
     <ClInclude Include="Easing.h" />
+    <ClInclude Include="ScoreManager.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\RayMarching.hlsli" />

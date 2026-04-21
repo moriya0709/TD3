@@ -12,6 +12,7 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
+#include "ScoreManager.h"
 #include"../game/collision/Collision.h"
 
 #include "../../game/enemy/EnemyManager.h"
@@ -41,6 +42,9 @@ public:
     void ChekeAllCollision() ;
 
     void PauseSelect();
+
+    //ステージクリア
+    void StageClear();
 
     //ポーズ選択
     enum Pause { kResume, kRetry, kSelect };
@@ -189,5 +193,17 @@ private:
     Pause currentPause_ = kResume;
 
     int currentStage_ = 0;
+
+    //スコア保持用
+    int score_ = 0;
+    //今のプレイ時間
+    float playTimer_ = 0.0f;
+    //制限時間
+    const float kMaxTime_ = 180.0f;
+    //クリアしたかどうか
+    bool isFinished_ = false;
+
+    //スコア管理用
+    ScoreManager scoreManager_;
 
 };
