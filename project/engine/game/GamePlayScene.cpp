@@ -158,7 +158,7 @@ void GamePlayScene::SetCurrentStage(int currentStage) { currentStage_ = currentS
 
 void GamePlayScene::ChekeAllCollision() {
 	const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
-	const std::list<std::shared_ptr<BossEnemy>>& Boss = enemy_->GetBoss();
+	const std::list<std::shared_ptr<grapesBoss>>& Boss = enemy_->GetGBoss();
 	CheckCollisionPlayerEnemy(player_.get(), enemies);
 	CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
 	CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
