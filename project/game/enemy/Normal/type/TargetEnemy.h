@@ -31,6 +31,7 @@ public:
     float GetRadius() const override { return radius; }
     bool GetIsDead() const override { return isDead_; }
     bool GetIsAlive() const override { return isAvile; }
+    int GetScore() const override { return score_; }
 
 private:
     void EnemyMove();
@@ -41,6 +42,9 @@ private:
     void BehaviorDefeated();
 
 private:
+    // スコア
+    int score_ = 500;
+
     Behavior behavior_ = Behavior::kWalk;
     Behavior behaviorRequest_ = Behavior::kUnknown;
 
