@@ -84,6 +84,7 @@ public:
     bool GetIsDead() const;
     std::vector<CollisionVolume> GetCollisionVolumes();
     const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
+    int GetScore() const { return score_; }
 
     // Set
     void SetTargetPlayer(Player* target);
@@ -102,6 +103,9 @@ public:
     void BehaviorDefeated();
 
 private:
+    // スコア
+    int score_ = 2500;
+
     Behavior behavior_ = Behavior::kStillness;
     Behavior behaviorRequest_ = Behavior::kUnknown;
 
