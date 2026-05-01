@@ -11,6 +11,7 @@ void ObjectCommon::Initialize() {
 	CreateRootSignature();
 	// グラフィックスパイプラインの生成
 	CreateGraphicsPipeline();
+	CreateGraphicsOutlinePipeline();
 }
 
 // 共通描画設定

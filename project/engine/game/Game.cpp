@@ -136,14 +136,13 @@ void Game::Draw() {
 	// トレイルエフェクト描画
 	TrailEffectManager::GetInstance()->RenderAll();
 
+	// シーンマネージャー描画(2D)
+	SceneManager::GetInstance()->Draw2D();
 
 	// ポストエフェクト描画
 	PostEffect::GetInstance()->PostDraw();
 	// ② 深度バッファをPSR状態へ
 	PostEffect::GetInstance()->Draw();
-
-	// シーンマネージャー描画(2D)
-	SceneManager::GetInstance()->Draw2D();
 	
 
 	// ImGui描画
