@@ -16,6 +16,10 @@
     <FxCompile Include="Resource\shaders\RayMarching.CS.hlsl" />
     <FxCompile Include="Resource\shaders\TrailEffect.PS.hlsl" />
     <FxCompile Include="Resource\shaders\TrailEffect.VS.hlsl" />
+    <FxCompile Include="Resource\shaders\BookUi.DS.hlsl" />
+    <FxCompile Include="Resource\shaders\BookUi.HS.hlsl" />
+    <FxCompile Include="Resource\shaders\BookUi.PS.hlsl" />
+    <FxCompile Include="Resource\shaders\BookUi.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game\collision\Collision.cpp" />
@@ -84,9 +88,11 @@
     <ClCompile Include="engine\base\AbstractSceneFactory.cpp" />
     <ClCompile Include="ResultScene.cpp" />
     <ClCompile Include="game\enemy\Boss\type\banana.cpp" />
-    <ClCompile Include="Easing.cpp" />
     <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="application\Easing\Easing.cpp" />
+    <ClCompile Include="BookUi.cpp" />
+    <ClCompile Include="BookUiCommon.cpp" />
+    <ClCompile Include="Book.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />
@@ -158,10 +164,12 @@
     <ClInclude Include="application\trailEffect\TrailEffectManager.h" />
     <ClInclude Include="ResultScene.h" />
     <ClInclude Include="game\enemy\Boss\type\banana.h" />
-    <ClInclude Include="Easing.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="application\Easing\Easing.h" />
     <ClInclude Include="Blend.h" />
+    <ClInclude Include="BookUi.h" />
+    <ClInclude Include="BookUiCommon.h" />
+    <ClInclude Include="Book.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\RayMarching.hlsli" />

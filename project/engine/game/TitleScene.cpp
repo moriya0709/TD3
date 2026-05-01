@@ -1,6 +1,7 @@
 ﻿#include "TitleScene.h"
 #include "ObjectCommon.h"
 #include "SpriteCommon.h"
+#include "BookUiCommon.h"
 #include "SceneManager.h"
 
 void TitleScene::Initialize() {
@@ -51,6 +52,17 @@ void TitleScene::Initialize() {
 	object[0]->SetModel("emission.obj");
 	object[1]->SetModel("skydome.obj");
 
+	// 本型UI
+	std::vector<std::string> textures = {
+	"Resource/bookUi/bookUi_1.png",
+	"Resource/bookUi/bookUi_2.png",
+	"Resource/bookUi/bookUi_3.png",
+	"Resource/bookUi/bookUi_4.png"
+	};
+	book = std::make_unique<Book>();
+	book->Initialize(textures);
+	book->SetPosition({ 640.0f, 360.0f, 0.0f });
+
 	// 音声再生
 	//SoundManager::GetInstance()->Play("bgm");
 
@@ -64,6 +76,11 @@ void TitleScene::Update() {
 
 	railCamera->Update();
 	railCamera->EditorUpdate();
+
+	// 本型UI更新
+	if (input->TriggerKey(DIK_D)) book->NextPage();
+	if (input->TriggerKey(DIK_A))  book->PrevPage();
+	book->Update();
 
 	// ENTERキーを押したら
 	if (input->TriggerKey(DIK_RETURN)) {
@@ -397,6 +414,7 @@ void TitleScene::Draw2D() {
 
 	// スプライト描画
 	//sprite->Draw();
+
 }
 void TitleScene::Draw3D() {
 	// 3Dオブジェクトの描画準備
@@ -410,13 +428,19 @@ void TitleScene::Draw3D() {
 
 	railCamera->EditorDraw();
 
-	// アウトライン描画準備
-	ObjectCommon::GetInstance()->SetOutlinePipelineState();
+	// 本型UIの描画準備
+	BookUiCommon::GetInstance()->SetCommonPipelineState();
 
-	// アウトライン描画
-	for (int i = 0; i < 2; i++) {
-		object[i]->Draw();
-	}
+	book->Draw();
+
+
+	// アウトライン描画準備
+	//ObjectCommon::GetInstance()->SetOutlinePipelineState();
+	//
+	//// アウトライン描画
+	//for (int i = 0; i < 2; i++) {
+	//	object[i]->Draw();
+	//}
 
 }
 

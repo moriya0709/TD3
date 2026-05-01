@@ -18,6 +18,7 @@
 #include "TrailEffectManager.h"
 #include "SceneManager.h"
 #include "SceneFactory.h"
+#include "BookUiCommon.h"
 
 class Game : public M_Framework {
 public:

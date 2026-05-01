@@ -1,41 +1,34 @@
-﻿#include "SpriteCommon.h"
-#include "DirectXCommon.h"
+#include "BookUiCommon.h"
+#include "WindowAPI.h"
 
-std::unique_ptr <SpriteCommon> SpriteCommon::instance = nullptr;
+std::unique_ptr <BookUiCommon> BookUiCommon::instance = nullptr;
 
-void SpriteCommon::Initialize() {
-	// 引数で受け取ってメンバ変数に記録する
+void BookUiCommon::Initialize(WindowAPI* winodwAPI) {
 	dxCommon_ = DirectXCommon::GetInstance();
+	windowAPI_ = winodwAPI;
 
 	// ルートシグネイチャの作成
 	CreateRootSignature();
-
 	// グラフィックスパイプラインの生成
 	CreateGraphicsPipeline();
-	
 }
 
-// 共通描画設定
-void SpriteCommon::SetCommonPipelineState() {
-	// RootSignatureを設定。PSOに設定しているけど別途設定が必要
+void BookUiCommon::SetCommonPipelineState() {
+	// 1. パイプラインとルートシグネチャのセット
+	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
-	dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineState.Get()); // PSOを設定
-	// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけ良い
-	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	ID3D12DescriptorHeap* heaps[] = { dxCommon_->srvDescriptorHeap.Get() };
-	dxCommon_->GetCommandList()->SetDescriptorHeaps(1, heaps);
+	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST);
 }
 
-SpriteCommon* SpriteCommon::GetInstance() {
+BookUiCommon* BookUiCommon::GetInstance() {
 	if (instance == nullptr) {
-		instance = std::make_unique <SpriteCommon>();
+		instance = std::make_unique <BookUiCommon>();
 	}
 	return instance.get();
 }
 
-// ルートシグネイチャの作成
-void SpriteCommon::CreateRootSignature() {
+void BookUiCommon::CreateRootSignature() {
 	// DescriptorRange作成
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0; // 0から始まる
@@ -48,20 +41,22 @@ void SpriteCommon::CreateRootSignature() {
 	descriptionRootSignature.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
 	// RootParameter作成
-	D3D12_ROOT_PARAMETER rootParameters[4] = {};
-	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
-	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
-	rootParameters[0].Descriptor.ShaderRegister = 0; // レジスタ番号０とバインド
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
-	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // PixelShaderで使う
-	rootParameters[1].Descriptor.ShaderRegister = 0; // レジスタ番号0とバインド
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE; // DescriptorTableを使う
-	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
-	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange; // Tableの中身の配列を指定
-	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange); // Tableで利用する数
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // CBVを使う
-	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
-	rootParameters[3].Descriptor.ShaderRegister = 1; // レジスタ番号１を使う
+	D3D12_ROOT_PARAMETER rootParameters[3] = {};
+	// Param 0: PageCurlData用 (b0) -> Domain Shaderで使う
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // ALLに変更（DSから見えるように）
+	rootParameters[0].Descriptor.ShaderRegister = 0; // b0
+
+	// Param 1: TransformMatrix用 (b1) -> Domain Shaderで使う
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // ALLに変更
+	rootParameters[1].Descriptor.ShaderRegister = 1; // b1
+
+	// Param 2: テクスチャ(SRV)用 (t0) -> Pixel Shaderで使う
+	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
+	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
 
 	descriptionRootSignature.pParameters = rootParameters; // ルートパラメーター配列へのポインタ
 	descriptionRootSignature.NumParameters = _countof(rootParameters); // 配列の長さ
@@ -112,6 +107,10 @@ void SpriteCommon::CreateRootSignature() {
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
 	inputLayoutDesc.NumElements = _countof(inputElementDescs);
 
+
+}
+
+void BookUiCommon::CreateGraphicsPipeline() {
 	// BlendStateの設定
 	// 1. ブレンドを有効にする
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
@@ -137,37 +136,38 @@ void SpriteCommon::CreateRootSignature() {
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	// Shaderをコンパイルする
-	vertexShaderBlob = dxCommon_->CompileShader(L"Resource/shaders/Sprite.VS.hlsl", L"vs_6_0");
-	assert(vertexShaderBlob != nullptr);
+	VertexShaderBlob = dxCommon_->CompileShader(L"Resource/shaders/BookUi.VS.hlsl", L"vs_6_0");
+	assert(VertexShaderBlob != nullptr);
+	PixelShaderBlob = dxCommon_->CompileShader(L"Resource/shaders/BookUi.PS.hlsl", L"ps_6_0");
+	assert(PixelShaderBlob != nullptr);
+	HullShaderBlob = dxCommon_->CompileShader(L"Resource/shaders/BookUi.HS.hlsl", L"hs_6_0");
+	assert(HullShaderBlob != nullptr);
+	DomainShaderBlob = dxCommon_->CompileShader(L"Resource/shaders/BookUi.DS.hlsl", L"ds_6_0");
+	assert(DomainShaderBlob != nullptr);
 
-	pixelShaderBlob = dxCommon_->CompileShader(L"Resource/shaders/Sprite.PS.hlsl", L"ps_6_0");
-	assert(pixelShaderBlob != nullptr);
-}
-
-// グラフィックスパイプラインの生成
-void SpriteCommon::CreateGraphicsPipeline() {
 	//PSO
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
 	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get(); // RootSignature
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc; // InputLayout
-	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),
-	vertexShaderBlob->GetBufferSize() }; // VertexShader
-	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),
-	pixelShaderBlob->GetBufferSize() }; // PixelShader
+	graphicsPipelineStateDesc.VS = { VertexShaderBlob->GetBufferPointer(), VertexShaderBlob->GetBufferSize() };
+	graphicsPipelineStateDesc.PS = { PixelShaderBlob->GetBufferPointer(), PixelShaderBlob->GetBufferSize() };
+	graphicsPipelineStateDesc.HS = { HullShaderBlob->GetBufferPointer(), HullShaderBlob->GetBufferSize() };
+	graphicsPipelineStateDesc.DS = { DomainShaderBlob->GetBufferPointer(), DomainShaderBlob->GetBufferSize() };
 	graphicsPipelineStateDesc.BlendState = blendDesc; // BlendState
 	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc; // RasterizerState
 
 	// DepthStencilの設定z
 	graphicsPipelineStateDesc.DepthStencilState = dxCommon_->depthStencilDesc;
-	graphicsPipelineStateDesc.DepthStencilState.DepthEnable = FALSE;
-	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
+	graphicsPipelineStateDesc.DepthStencilState.DepthEnable = TRUE;
+	graphicsPipelineStateDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	graphicsPipelineStateDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	// 書き込むRTVの情報
 	graphicsPipelineStateDesc.NumRenderTargets = 1;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	// 利用するトポロジ（形状）のタイプ。三角形
-	graphicsPipelineStateDesc.PrimitiveTopologyType =
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
 	// どのように画面に色を打ち込むかの設定（気にしなくて良い）
 	graphicsPipelineStateDesc.SampleDesc.Count = 1;
 	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;

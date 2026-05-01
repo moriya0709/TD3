@@ -70,6 +70,7 @@ Vector3& operator*=(Vector3& v, float s);
 Vector3& operator/=(Vector3& v, float s);
 
 Vector2& operator+=(Vector2& lhs, const Vector2& rhv);
+Vector2& operator-=(Vector2& lhs, const Vector2& rhv);
 
 Vector3 operator/(const Vector3& v, float scalar);
 

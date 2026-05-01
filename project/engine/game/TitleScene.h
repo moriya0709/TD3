@@ -14,6 +14,7 @@
 #include "BaseScene.h"
 #include "PostEffect.h"
 #include "RailCamera.h"
+#include "Book.h"
 
 using namespace DirectX;
 
@@ -155,4 +156,7 @@ private:
 	std::unique_ptr <Object> object[2]{};
 
 	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
+
+	// 本型UI
+	std::unique_ptr <Book> book = nullptr;
 };

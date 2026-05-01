@@ -75,6 +75,12 @@ Vector2& operator+=(Vector2& lhs, const Vector2& rhv)
     return lhs;
 }
 
+Vector2& operator-=(Vector2& lhs, const Vector2& rhv) {
+    lhs.x -= rhv.x;
+    lhs.y -= rhv.y;
+    return lhs;
+}
+
 Vector3 operator/(const Vector3& v, float scalar)
 {
     return Vector3 { v.x / scalar, v.y / scalar, v.z / scalar };
