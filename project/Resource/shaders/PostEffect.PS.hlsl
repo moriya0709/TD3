@@ -85,6 +85,11 @@ struct EffectData
     int isVignette;
     float vignetteIntensity;
     
+    // スピードディストーション
+    int isSpeedDistortion; // スピードディストーションのON/OFF
+    float speedDistortionStrength; // 歪みの強さ
+    float2 pad7; // アライメント調整用
+    
     
 };
 ConstantBuffer<EffectData> gEffectData : register(b0);
@@ -326,6 +331,30 @@ float4 main(VSOutput input) : SV_TARGET
     // *通常描画 ＆ 最終合成* //
     if (gPassId == 0)
     {
+        // ★ 新規追加：スピードディストーション（画面中心からの空間の歪み）
+        if (gEffectData.isSpeedDistortion)
+        {
+            // 画面中心(0.5, 0.5)からのベクトルを計算
+            float2 toCenter = input.uv - float2(0.5f, 0.5f);
+            
+            // 中心からの距離の2乗（画面端に行くほど急激に歪むようにする）
+            float distSq = dot(toCenter, toCenter);
+            
+            // 歪み係数の計算 
+            // ※ strengthに「マイナスの値（例: -0.3など）」を入れると、周囲が伸びて奥に吸い込まれるワープ感が出ます
+            // ※ プラスの値を入れると手前に迫るような魚眼レンズ風になります
+            float warpFactor = 1.0f + (gEffectData.speedDistortionStrength * distSq);
+            
+            // UV座標を上書きして歪ませる
+            input.uv = float2(0.5f, 0.5f) + toCenter * warpFactor;
+            
+            // 画面外のサンプリングによるアーティファクトを防ぐためにクランプ
+            input.uv = saturate(input.uv);
+            
+            // 歪んだUVを使って、一番最初のベースカラーを再サンプリングして上書き
+            color = gCurrentTexture.Sample(gSampler, input.uv);
+        }
+        
         // ★ フルスクリーン色収差（被ダメージ時などの画面全体エフェクト）
         if (gEffectData.isFullScreenCA)
         {
