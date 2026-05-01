@@ -158,7 +158,7 @@ void GamePlayScene::Draw3D() {
 
 	enemy_->Draw3D();
 	
-		cameraController_->EditorDraw();
+	cameraController_->EditorDraw();
 
 	// パーティクル描画
 	// ParticleManager::GetInstance()->Draw();
