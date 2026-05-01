@@ -13,10 +13,13 @@ void Game::Initialize() {
 	CameraManager::GetInstance();
 
 	// スプライト共通部の初期化
-	SpriteCommon::GetInstance()->Initialize(dxCommon);
+	SpriteCommon::GetInstance()->Initialize();
 
 	// 3dスプライト共通部の初期化
-	ObjectCommon::GetInstance()->Initialize(dxCommon);
+	ObjectCommon::GetInstance()->Initialize();
+
+	// 本型UI共通部の初期化
+	BookUiCommon::GetInstance()->Initialize(windowAPI.get());
 
 	// SRVマネージャ
 	srvManager = std::make_unique<SrvManager>();

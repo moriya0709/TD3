@@ -3,15 +3,14 @@
 
 std::unique_ptr <ObjectCommon> ObjectCommon::instance = nullptr;
 
-void ObjectCommon::Initialize(DirectXCommon* dxCommon) {
+void ObjectCommon::Initialize() {
 	// 引数で受け取ってメンバ変数に記録する
-	dxCommon_ = dxCommon;
+	dxCommon_ = DirectXCommon::GetInstance();
 
 	// ルートシグネイチャの作成
 	CreateRootSignature();
 	// グラフィックスパイプラインの生成
 	CreateGraphicsPipeline();
-	CreateGraphicsOutlinePipeline(); // アウトライン用
 }
 
 // 共通描画設定
