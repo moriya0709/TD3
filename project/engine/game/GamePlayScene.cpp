@@ -446,6 +446,9 @@ void GamePlayScene::LithingEffect() {
 	PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
 	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
 	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
+	// スピードディストーション
+	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
+	PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
 
 #pragma endregion
 
@@ -638,6 +641,15 @@ void GamePlayScene::UpdateImGui() {
 		}
 
 		ImGui::TreePop();
+	}
+	// スピードディストーション
+	if (ImGui::TreeNode("SpeedDistortion")) {
+		ImGui::Checkbox("OnOff", &isSpeedDistortion);
+		if (isSpeedDistortion) {
+			ImGui::DragFloat("speedDistortionStrength", &speedDistortionStrength, 0.01f, 0.0f, 10.0f);
+		}
+		ImGui::TreePop();
+
 	}
 
 	cameraController_->EditorUpdate();

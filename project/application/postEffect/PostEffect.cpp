@@ -178,6 +178,12 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	// 色収差
 	effectData->isFullScreenCA = false; // 画面全体の色収差ON/OFF
 	effectData->fullScreenCAIntensity = 0.02f; // 画面全体の色収差の強さ
+	// ビネット
+	effectData->isVignette = false; // ビネットON/OFF
+	effectData->vignetteIntensity = 0.0f; // ビネットの強さ
+	// スピードディストーション
+	effectData->isSpeedDistortion = false; // スピードディストーションのON/OFF
+	effectData->speedDistortionStrength = 0.5f; // 歪みの強さ
 
 	effectData->intensity = 1.0f;
 

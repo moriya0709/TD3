@@ -137,6 +137,9 @@ private:
     bool isMotionBlur = true;    // モーションブラーのON/OFF
     int motionBlurSamples = 16; // サンプル数（例：8〜16）
     float motionBlurScale = 1.0f;   // ブラーの強さ
+	// スピードディストーション
+	bool isSpeedDistortion = false; // スピードディストーションのON/OFF
+    float speedDistortionStrength = 0.5f; // 歪みの強さ
 
     // レイマーチング
     //float rayMarchingTime = 0.0f; ;

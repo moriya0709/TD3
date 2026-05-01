@@ -89,6 +89,11 @@ struct EffectData {
 	int isVignette;
 	float vignetteIntensity;
 
+	// スピードディストーション
+	int isSpeedDistortion; // スピードディストーションのON/OFF
+	float speedDistortionStrength; // 歪みの強さ
+	Vector2 pad7; // アライメント調整用
+
 };
 
 // 各パスのレンダーターゲットとSRVインデックスをまとめる構造体
@@ -168,6 +173,9 @@ public:
 	void SetVignetteIntensity(float intensity) { effectData->vignetteIntensity = intensity; }
 	// ダメージエフェクト
 	void SetDamageEffectRatio(float ratio) { damageEffectRatio_ = ratio; }
+	// スピードディストーション
+	void SetSpeedDistortion(bool isSpeedDistortion) { effectData->isSpeedDistortion = isSpeedDistortion; }
+	void SetSpeedDistortionStrength(float strength) { effectData->speedDistortionStrength = strength; }
 
 	// getter
 	float GetLensFlareGhostDispersal() { return effectData->lensFlareGhostDispersal; }
