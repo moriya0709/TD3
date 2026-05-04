@@ -16,6 +16,8 @@
 #include "Sprite.h"
 #include "game/player/Player.h"
 #include "Easing.h"
+#include "Book.h"
+
 
 using namespace DirectX;
 
@@ -61,20 +63,8 @@ private:
 	bool isStageSelect = false;
 	int currentStage = 1;
 
-	// パラメータ
-	std::unique_ptr<Sprite> parameter[5] = {};
-	std::unique_ptr<Sprite> parameterGauge[5] = {};
-	EasingSet parameterGaugeEasing[5];
-	int kMaxParameter = 5;
-
-	int parameterSetting[5][4] = {
-		{80, 50, 10, 30},	// hp
-		{70, 60, 70, 80},	// 威力
-		{90, 40, 20, 30},	// 連射速度
-		{60, 70, 50, 10},	// 移動速度
-		{50, 80, 40, 30}	// 射程orチャージ速度
-		//Normal	Speed	Power	Sniper
-	};
+	// 切り換えクールタイム
+	float switchCooltime = 0.0f;
 
 
 	// イージング
@@ -112,7 +102,7 @@ private:
 	// 放射線ブラー
 	bool isRadialBlur = false;
 	Vector2 blurCenter = {0.5f, 0.5f};
-	float blurWidth = 0.01f;
+	float blurWidth = 0.0f;
 	int blurSamples = 10;
 
 	// ディスタンスフォグ
@@ -151,6 +141,14 @@ private:
 	int motionBlurSamples = 16;   // サンプル数（例：8〜16）
 	float motionBlurScale = 1.0f; // ブラーの強さ
 
+	// 色収差
+	bool isFullScreenCA = false; // 画面全体の色収差ON/OFF
+	float fullScreenCAIntensity = 0.0f; // 画面全体の色収差の強さ
+
+	// スピードディストーション
+	bool isSpeedDistortion = false; // スピードディストーションのON/OFF
+	float speedDistortionStrength = 0.0f; // 歪みの強さ
+
 	// レイマーチング
 	// float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = {0.07f, -0.17f, -0.75f};
@@ -162,8 +160,13 @@ private:
 	bool rayMarchingIsMotionBlur = false;
 	float rayMarchingCloudOpacity = 0.01f;
 
-	void LithingEffect();
+	// 本型UI
+	std::unique_ptr <Book> book = nullptr;
+	EasingSet bookEasing;
 
-	// パラメータのイージングを設定
-	void ParameterEasingSet(Style currentStyle);
+	bool isTransition = false;
+
+	void TransitionUpdate();
+
+	void LithingEffect();
 };

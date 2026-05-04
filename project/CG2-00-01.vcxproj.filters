@@ -90,9 +90,9 @@
     <ClCompile Include="game\enemy\Boss\type\banana.cpp" />
     <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="application\Easing\Easing.cpp" />
-    <ClCompile Include="BookUi.cpp" />
-    <ClCompile Include="BookUiCommon.cpp" />
-    <ClCompile Include="Book.cpp" />
+    <ClCompile Include="application\BookUi\BookUi.cpp" />
+    <ClCompile Include="application\BookUi\BookUiCommon.cpp" />
+    <ClCompile Include="application\BookUi\Book.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />
@@ -166,10 +166,10 @@
     <ClInclude Include="game\enemy\Boss\type\banana.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="application\Easing\Easing.h" />
-    <ClInclude Include="Blend.h" />
-    <ClInclude Include="BookUi.h" />
-    <ClInclude Include="BookUiCommon.h" />
-    <ClInclude Include="Book.h" />
+    <ClInclude Include="application\BookUi\Blend.h" />
+    <ClInclude Include="application\BookUi\BookUi.h" />
+    <ClInclude Include="application\BookUi\BookUiCommon.h" />
+    <ClInclude Include="application\BookUi\Book.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\RayMarching.hlsli" />

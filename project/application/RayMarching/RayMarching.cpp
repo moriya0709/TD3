@@ -43,6 +43,7 @@ void RayMarching::Initialize(SrvManager* srvManager) {
 	cloudParam->isStorm = false;
 	cloudParam->thunderFrequency = 0.3f;
 	cloudParam->thunderBrightness = 120.0f;
+	cloudParam->horizonHeight = 0.2f;
 
 }
 

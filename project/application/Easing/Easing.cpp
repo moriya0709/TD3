@@ -4,10 +4,10 @@ void Easing::Initialize() {
 	// イージングの枠数
 	// kEasePNum = 0;
 
-	// 着地時のパーティクル
-	LoadEasing("Easing/landing.csv", 0);
+	// 一般的なイージング
+	LoadEasing("Easing/normal.csv", 0);
 	// 磁力エリア切り替え
-	LoadEasing("Easing/swichArea.csv", 1);
+	LoadEasing("Easing/warp.csv", 1);
 	// セレクトUI
 	LoadEasing("Easing/select.csv", 2);
 	// タイトル

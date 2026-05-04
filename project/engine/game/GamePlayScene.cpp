@@ -75,6 +75,10 @@ void GamePlayScene::Initialize() {
 void GamePlayScene::Update() {
 
 	if (!isPause_) {
+		// セレクトからシーン切り替えした時のエフェクト
+		SceneChangedEffect();
+
+		// カメラ更新
 		cameraController_->Update();
 
 
@@ -128,6 +132,7 @@ void GamePlayScene::Update() {
 	// イージング更新
 	easing->Update();
 	easing->Draw();
+
 }
 
 void GamePlayScene::Draw2D() {
@@ -446,10 +451,15 @@ void GamePlayScene::LithingEffect() {
 	PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
 	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
 	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
-	// スピードディストーション
-	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
-	PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
+	if (isSceneChanged_) {
+		// 色収差
+		PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
+		PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
+		// スピードディストーション
+		PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
+		PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
 
+	}
 #pragma endregion
 
 #pragma region レイマーチング
@@ -677,5 +687,28 @@ void GamePlayScene::UpdateImGui() {
 #pragma endregion
 
 #endif
+}
+
+void GamePlayScene::SceneChangedEffect() {
+	// セレクトから遷移した時のエフェクトを元に戻す
+	if(isSceneChanged_){
+		if (fullScreenCAIntensity > 0.0f)
+			fullScreenCAIntensity -= 0.05f;
+		else
+			isFullScreenCA = false;
+
+		if (speedDistortionStrength > 0.0f)
+			speedDistortionStrength -= 0.1f;
+		else
+			isSpeedDistortion = false;
+
+		if (blurWidth > 0.0f)
+			blurWidth -= 0.001f;
+		else
+			isRadialBlur = false;
+
+		if(!isFullScreenCA && !isSpeedDistortion && !isRadialBlur)
+			isSceneChanged_ = false;
+	}
 }
 

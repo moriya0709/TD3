@@ -13,7 +13,6 @@
 #include "ImGuiManager.h"
 #include "BaseScene.h"
 #include "PostEffect.h"
-#include "RailCamera.h"
 #include "Book.h"
 
 using namespace DirectX;
@@ -37,7 +36,7 @@ private:
 	Transform cameraTransform{
 	   { 1.0f, 1.0f, 1.0f }, // scale
 	   { 0.0f, 0.0f, 0.0f }, // rotate
-	   { 0.0f, 0.0f, -5.0f } // translate
+	   { 0.0f, 1.0f, -5.0f } // translate
 	};
 	// パーティクル
 	Transform transformParticle
@@ -129,9 +128,9 @@ private:
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
-	float rayMarchingCloudCoverage = 0.00f;
-	float rayMarchingCloudBottom = -90.0f;
-	float rayMarchingCloudTop = 2900.0f;
+	float rayMarchingCloudCoverage = 0.22f;
+	float rayMarchingCloudBottom = 70.0f;
+	float rayMarchingCloudTop = -300.0f;
 	bool rayMarchingIsRialLight = false;
 	bool rayMarchingIsAnimeLight = true;
 	bool  rayMarchingIsMotionBlur = false;
@@ -149,7 +148,6 @@ private:
 	
 	// カメラ
 	std::unique_ptr<Camera> camera = nullptr;
-	std::unique_ptr<RailCamera> railCamera = nullptr;
 	// スプライト
 	std::unique_ptr <Sprite> sprite = nullptr;
 	// 3Dオブジェクト

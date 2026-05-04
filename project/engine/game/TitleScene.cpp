@@ -11,11 +11,8 @@ void TitleScene::Initialize() {
 	camera->SetRotate({ cameraTransform.rotate });
 	camera->SetTranslate({ cameraTransform.translate });
 
-	railCamera = std::make_unique<RailCamera>();
-	railCamera->Initialize();
-
 	// カメラマネージャ登録
-	CameraManager::GetInstance()->AddCamera("main", railCamera->camera.get());
+	CameraManager::GetInstance()->AddCamera("main", camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
 	// スプライト
@@ -55,9 +52,9 @@ void TitleScene::Initialize() {
 	// 本型UI
 	std::vector<std::string> textures = {
 	"Resource/bookUi/bookUi_1.png",
-	"Resource/bookUi/bookUi_2.png",
-	"Resource/bookUi/bookUi_3.png",
-	"Resource/bookUi/bookUi_4.png"
+	"Resource/bookUi/bookUi_1.png",
+	"Resource/bookUi/bookUi_1.png",
+	"Resource/bookUi/bookUi_1.png",
 	};
 	book = std::make_unique<Book>();
 	book->Initialize(textures);
@@ -73,9 +70,6 @@ void TitleScene::Update() {
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
-
-	railCamera->Update();
-	railCamera->EditorUpdate();
 
 	// 本型UI更新
 	if (input->TriggerKey(DIK_D)) book->NextPage();
@@ -109,7 +103,7 @@ void TitleScene::Update() {
 	//}
 
 	// パーティクル更新
-	particleEmitter->Update();
+	//particleEmitter->Update();
 	particleEmitter->Editor();
 
 
@@ -196,7 +190,7 @@ void TitleScene::Update() {
 
 #pragma region レイマーチング
 	// レイマーチング
-	RayMarching::GetInstance()->Update(railCamera->camera.get());
+	RayMarching::GetInstance()->Update(camera.get());
 	//rayMarching->SetTime(rayMarchingTime);
 	RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
 	RayMarching::GetInstance()->SetCloudCoverage(rayMarchingCloudCoverage);
@@ -426,12 +420,10 @@ void TitleScene::Draw3D() {
 		object[i]->Draw();
 	}
 
-	railCamera->EditorDraw();
-
 	// 本型UIの描画準備
-	BookUiCommon::GetInstance()->SetCommonPipelineState();
+	//BookUiCommon::GetInstance()->SetCommonPipelineState();
 
-	book->Draw();
+	//book->Draw();
 
 
 	// アウトライン描画準備

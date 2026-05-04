@@ -146,7 +146,7 @@ void BookUi::Update() {
 		// 影オブジェクト(左に落ちるグラデーション)を有効化
 		isShadowActive = true;
 
-		if (shadowSize.x < 1200.0f) {
+		if (shadowSize.x < scale_.x) {
 			shadowSize.x += 17.0f;
 		}
 		shadowSprite->SetSize(shadowSize);
@@ -155,7 +155,7 @@ void BookUi::Update() {
 		shadowSprite->SetColor(Vector4(0.0f, 0.0f, 0.0f, shadowAlpha));
 
 		// 影の位置を、本の中央（折り目）に合わせる
-		shadowSprite->SetPosition(Vector2(centerX - 30.0f, centerY - 300.0f));
+		shadowSprite->SetPosition(Vector2(centerX - 30.0f, centerY - (scale_.y / 2.0f)));
 	} else if (flipDir == RightClose) {
 		// --- 右ページから左ページへ進める時 ---
 		// 影オブジェクト(左に落ちるグラデーション)を有効化
@@ -170,7 +170,7 @@ void BookUi::Update() {
 		shadowSprite->SetColor(Vector4(0.0f, 0.0f, 0.0f, shadowAlpha));
 
 		// 影の位置を、本の中央（折り目）に合わせる
-		shadowSprite->SetPosition(Vector2(centerX - 30.0f, centerY - 300.0f));
+		shadowSprite->SetPosition(Vector2(centerX - 30.0f, centerY - (scale_.y / 2.0f)));
 	}
 	else {
 		// --- めくっていない待機時は影を非表示にする ---
@@ -181,7 +181,7 @@ void BookUi::Update() {
 }
 
 void BookUi::Draw() {
-	if (isPageTurnR || isPageTurnL) {
+	if (isShadowActive) {
 		// スプライト描画用のステート（PSOやRootSignature）に切り替え
 		SpriteCommon::GetInstance()->SetCommonPipelineState();
 
@@ -225,18 +225,17 @@ void BookUi::UpdatePageTurn() {
 
 		if (currentCurlX_ > DirectX::XM_PI) {
 			currentCurlX_ = DirectX::XM_PI;
-
+			flipDir = None;
 		}
 	}
 }
 
 void BookUi::StartOpenPageR() {
-	if (flipDir == RightClose) {
+	if (flipDir == None) {
 		flipDir = RightOpen;
 		isPageTurnR = true; // ★右めくり開始
 		isPageTurnL = false;
-		currentCurlX_ = DirectX::XM_PI;     // 0からPIまで動かす
-		shadowSize = Vector2(0.0f, 600.0f); // 影のサイズをリセット
+		shadowSize = Vector2(0.0f, scale_.y); // 影のサイズをリセット
 	}
 }
 
@@ -245,17 +244,15 @@ void BookUi::StartClosePageR() {
 		flipDir = RightClose;
 		isPageTurnR = true; // ★右めくり開始
 		isPageTurnL = false;
-		currentCurlX_ = 0.0f;     // 0からPIまで動かす
-		shadowSize = Vector2(600.0f, 600.0f); // 影のサイズをリセット
+		shadowSize = Vector2(scale_.x / 2.0f, scale_.y); // 影のサイズをリセット
 	}
 }
 
 void BookUi::StartOpenPageL() {
-	if (flipDir == LeftClose) {
+	if (flipDir == None) {
 		flipDir = LeftOpen;
 		isPageTurnR = false; // ★右めくり開始
 		isPageTurnL = true;
-		currentCurlX_ = DirectX::XM_PI;     // 0からPIまで動かす
 	}
 }
 
@@ -264,7 +261,6 @@ void BookUi::StartClosePageL() {
 		flipDir = LeftClose;
 		isPageTurnL = true; // ★左めくり開始
 		isPageTurnR = false;
-		currentCurlX_ = 0.0f;     // 0からPIまで動かす
 	}
 }
 
