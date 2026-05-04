@@ -36,6 +36,8 @@ struct CloudParam {
 	float thunderFrequency;
 	float thunderBrightness;
 
+	float horizonHeight;
+
 };
 
 class RayMarching {
@@ -64,6 +66,7 @@ public:
 	void SetStorm(bool isStorm) { cloudParam->isStorm = isStorm; }
 	void SetThunderFrequency(float thunderFrequency) { cloudParam->thunderFrequency = thunderFrequency; }
 	void SetThunderBrightness(float thunderBrightness) { cloudParam->thunderBrightness = thunderBrightness; }
+	void SetHorizonHeight(float horizonHeight) { cloudParam->horizonHeight = horizonHeight; }
 
 	// getter
 	Vector3 GetSunDir() { return cloudParam->sunDir; }

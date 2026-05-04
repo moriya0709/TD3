@@ -15,7 +15,7 @@ float4 main(DS_OUTPUT input) : SV_TARGET
     float4 texColor = tex.Sample(smp, input.uv);
     
     // ★追加：RGB（色）に対して、Domain Shaderで計算した影の明るさを掛ける
-    texColor.rgb *= pow(input.shadow, 3.0f);
+    texColor.rgb *= pow(input.shadow, 5.0f);
     
     return texColor;
 }

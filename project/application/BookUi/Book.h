@@ -15,9 +15,16 @@ public:
 
     // 親の座標（これを変えると子も連動する）
     void SetPosition(Vector3 pos) { position_ = pos; }
+	void SetScale(Vector3 scale) { scale_ = scale; }
+
+    // getter
+	int GetCurrentPageIndex() const { return currentPageIndex_; }
 
 private:
+    // ページの集合
     std::vector<std::unique_ptr<BookUi>> pages_;
-    int currentPageIndex_ = 0; // 現在めくる対象のページ
+    int currentPageIndex_ = 2; // 現在めくる対象のページ
     Vector3 position_ = { 960.0f, 540.0f, 0.0f };
+	Vector3 scale_ = { 1200.0f, 700.0f, 1.0f };
+
 };

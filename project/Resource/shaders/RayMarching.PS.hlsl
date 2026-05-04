@@ -39,6 +39,8 @@ cbuffer CloudParam : register(b0)
     float thunderFrequency;
     float thunderBrightness;
 
+    float horizonHeight;
+    
 }
 
 float hash(float3 p)
@@ -382,7 +384,7 @@ PSOutput main(VSOutput input)
     // ==========================================
     float3 normalizedSunDir = normalize(-sunDir);
 
-    float3 skyRayDir = normalize(rayDir + float3(0, 0.05, 0));
+    float3 skyRayDir = normalize(rayDir + float3(0, horizonHeight, 0));
     float3 skyColor = CalculateAtmosphere(cameraPos, skyRayDir, normalizedSunDir);
 
     float3 ambientRayDir = normalize(float3(rayDir.x, max(rayDir.y, 0.05), rayDir.z));
@@ -420,21 +422,31 @@ PSOutput main(VSOutput input)
     }
 
     // ★ 地平線グロー（昼夜で変化）
-    float horizonBand = smoothstep(0.0, 0.12, skyRayDir.y)
-                      * smoothstep(0.12, 0.0, skyRayDir.y);
+    float horizonBand = smoothstep(0.15, 0.0, abs(skyRayDir.y));
 
-    float3 horizonDay = float3(0.6, 0.8, 1.0);
-    float3 horizonSunset = float3(1.0, 0.4, 0.1);
+    // 1. 基本の水平線カラー（常に青～夜の色）
+    float3 horizonDay = float3(0.4, 0.65, 1.0); // 綺麗な青色に調整
     float3 horizonNight = float3(0.02, 0.04, 0.12);
-    float3 horizonColor;
-    if (sunHeight > 0.0)
-        horizonColor = lerp(horizonSunset, horizonDay, smoothstep(0.0, 0.3, sunHeight));
-    else
-        horizonColor = lerp(horizonNight, horizonSunset, smoothstep(-0.3, 0.0, sunHeight));
+    // sunHeightを元に昼と夜の基本色をブレンド（夕焼け色は入れない）
+    float3 baseHorizonColor = lerp(horizonNight, horizonDay, saturate(sunHeight * 4.0 + 0.5));
 
-    float sunAlignH = saturate(dot(float2(skyRayDir.x, skyRayDir.z),
-                                    float2(normalizedSunDir.x, normalizedSunDir.z)));
-    float horizonGlow = horizonBand * lerp(0.2, 1.0, sunAlignH);
+    // 2. 夕焼け色（太陽の周りだけに使用）
+    float3 horizonSunset = float3(1.0, 0.45, 0.1);
+
+    // 3. 視線と太陽方向の水平方向の一致度
+    // （normalizeを追加して精度を安定させています）
+    float sunAlignH = saturate(dot(normalize(float2(skyRayDir.x, skyRayDir.z)),
+                                   normalize(float2(normalizedSunDir.x, normalizedSunDir.z))));
+
+    // 4. 夕焼けの発生条件を厳しくする
+    // 太陽が低い時（sunHeightが0付近） かつ 太陽のすぐ近く（sunAlignHを4乗して絞る）のみ
+    float sunsetIntensity = smoothstep(0.3, 0.0, abs(sunHeight)) * pow(sunAlignH, 4.0);
+
+    // 5. 最終的な水平線の色
+    float3 horizonColor = lerp(baseHorizonColor, horizonSunset, sunsetIntensity);
+
+    // 太陽から離れてもベースの青いグローはしっかり出すために強さを調整
+    float horizonGlow = saturate(horizonBand * 1.5);
     skyColor = lerp(skyColor, horizonColor, horizonGlow);
 
     // ==========================================

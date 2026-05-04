@@ -68,6 +68,7 @@ public:
 	// getter
 	bool IsOpenPage() const { return isOpenPage; }
 	float GetCurrentCurlX() const { return currentCurlX_; }
+	FlipDirection GetFlipDirection() const { return flipDir; }
 
 private:
 	// 座標変換行列データ
@@ -82,7 +83,7 @@ private:
 	// アンカーポイント
 	Vector2 anchorPoint = { -0.5f,-0.5f };
 	// めくりの速度
-	float pageTurnSpeed = 0.06f; // 1フレームあたりのcurlXの増加量
+	float pageTurnSpeed = 0.07f; // 1フレームあたりのcurlXの増加量
 
 	bool isOpenPage = false; // ページが開いているかどうかのフラグ
 	

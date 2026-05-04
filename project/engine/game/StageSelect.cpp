@@ -1,7 +1,12 @@
-﻿#include "StageSelect.h"
+﻿
+#include <algorithm>
+#include <Windows.h>
+
+#include "StageSelect.h"
 #include "ObjectCommon.h"
 #include "SceneManager.h"
 #include "SpriteCommon.h"
+#include "BookUiCommon.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -9,32 +14,12 @@
 void StageSelect::Initialize() {
 	// カメラ初期化
 	camera_ = std::make_unique<Camera>();
-	camera_->SetRotate({cameraTransform.rotate});
-	camera_->SetTranslate({cameraTransform.translate});
+	camera_->SetRotate({ cameraTransform.rotate });
+	camera_->SetTranslate({ cameraTransform.translate });
 
 	// カメラマネージャ登録
 	CameraManager::GetInstance()->AddCamera("main", camera_.get());
 	CameraManager::GetInstance()->SetActiveCamera("main");
-
-	// パラメータ
-	for(int i = 0; i< kMaxParameter; i++){
-		parameter[i] = std::make_unique<Sprite>();
-		parameter[i]->Initialize("Resource/parameters/parameters.png");
-		parameter[i]->SetPosition({ 1300.0f, 800.0f + i * 60.0f });
-		parameter[i]->SetSize({ 500.0f, 50.0f });
-		parameter[i]->SetAnchorPoint({ 0.0f, 0.0f });
-		parameterGauge[i] = std::make_unique<Sprite>();
-		parameterGauge[i]->Initialize("Resource/parameters/parametersGauge.png");
-		parameterGaugeEasing[i].pos = { 1300.0f, 800.0f + i * 60.0f };
-		parameterGaugeEasing[i].size = { 0.0f, 50.0f };
-		parameterGaugeEasing[i].startSizeV2 = { 0.0f, 50.0f };
-		parameterGaugeEasing[i].endSizeV2 = { float(parameterSetting[i][currentStyle] * 5), parameterGaugeEasing[i].size.y};
-		parameterGaugeEasing[i].sizeTime = 0.0f;
-		parameterGaugeEasing[i].sizeEasedT = 0.0f;
-		parameterGauge[i]->SetPosition(parameterGaugeEasing[i].pos);
-		parameterGauge[i]->SetSize(parameterGaugeEasing[i].size);
-		parameterGauge[i]->SetAnchorPoint({ 0.0f, 0.0f });
-	}
 
 	// イージング
 	easing = std::make_unique<Easing>();
@@ -44,23 +29,51 @@ void StageSelect::Initialize() {
 	playerObject_->Initialize(camera_.get());
 	switch (currentStyle) {
 	case normal:
-		playerObject_->SetModel("normalMachine.obj");
-		break;
+	playerObject_->SetModel("normalMachine.obj");
+	break;
 	case speed:
-		playerObject_->SetModel("speedMachine.obj");
-		break;
+	playerObject_->SetModel("speedMachine.obj");
+	break;
 	case power:
-		playerObject_->SetModel("powerMachine.obj");
-		break;
+	playerObject_->SetModel("powerMachine.obj");
+	break;
 	case sniper:
-		playerObject_->SetModel("sniperMachine.obj");
-		break;
+	playerObject_->SetModel("sniperMachine.obj");
+	break;
 	default:
-		playerObject_->SetModel("normalMachine.obj");
-		break;
+	playerObject_->SetModel("normalMachine.obj");
+	break;
 	}
 
 	playerObject_->SetTranslate(transform_.translate);
+
+	// 本型UI
+	std::vector<std::string> textures = {
+	"Resource/bookUi/cover.png",
+	"Resource/bookUi/cover2.png",
+	"Resource/bookUi/bookUi_1.png",// normal
+	"Resource/bookUi/bookUi_1.png",// speed
+	"Resource/bookUi/bookUi_1.png",// power
+	"Resource/bookUi/bookUi_1.png",// sniper
+	"Resource/bookUi/bookUi_1.png",
+	"Resource/bookUi/bookUi_1.png",
+	"Resource/bookUi/bookUi_1.png",
+	"Resource/bookUi/stage1.png",// stage1
+	};
+	book = std::make_unique<Book>();
+	book->Initialize(textures);
+
+	// 本のイージング
+	bookEasing.transform.translate = { 960.0f, 540.0f, 0.0f };
+	bookEasing.transform.scale = { 1200.0f, 700.0f, 1.0f };
+	bookEasing.startSize = bookEasing.transform.scale;
+	bookEasing.endSize = { 3600.0f, 2100.0f, 1.0f };
+	bookEasing.sizeTime = 0.0f;
+	bookEasing.sizeEasedT = 0.0f;
+
+	book->SetPosition(bookEasing.transform.translate);
+	book->SetScale(bookEasing.transform.scale);
+
 }
 
 void StageSelect::Update() {
@@ -73,51 +86,85 @@ void StageSelect::Update() {
 	playerObject_->SetRotate(transform_.rotate);
 	playerObject_->SetTranslate(transform_.translate);
 
+	// 切り換えクールタイム減少
+	switchCooltime = (std::max)(0.0f, switchCooltime - 1.0f / 60.0f);
+	if (isStageSelect) {
+		if (switchCooltime <= 0.0f) {
+			book->NextPage();
+			switchCooltime = 0.3f; // クールタイムリセット
+		}
+	}
+
+
 	bool isChanged = false; // マシン変更
 	if (input->TriggerKey(DIK_D) || input->TriggerKey(DIK_RIGHT)) {
-		if (!isStageSelect) {
-			currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 1) % 4);
-			isChanged = true;
+		if (switchCooltime <= 0.0f) {
+			if (currentStyle != sniper) {
+				if (!isStageSelect) {
+					currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 1) % 4);
+					isChanged = true;
 
-			// パラメータのイージングセット
-			ParameterEasingSet(currentStyle);
-		} else {
-			if (currentStage < 5) {
-				currentStage++;
-			} else {
-				currentStage = 0;
+					// 本のページをめくる
+					if (book->GetCurrentPageIndex() < 5)
+					book->NextPage();
+
+				} else {
+					if (currentStage < 5) {
+						currentStage++;
+					} else {
+						currentStage = 0;
+					}
+
+					// 本のページをめくる
+					book->NextPage();
+
+				}
+				switchCooltime = 0.8f; // クールタイムリセット
 			}
 		}
 	} else if (input->TriggerKey(DIK_A) || input->TriggerKey(DIK_LEFT)) {
-		if (!isStageSelect) {
-			currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 3) % 4);
-			isChanged = true;
+		if (switchCooltime <= 0.0f) {
+			if (currentStyle != normal) {
+				if (!isStageSelect) {
+					currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 3) % 4);
+					isChanged = true;
 
-			// パラメータのイージングセット
-			ParameterEasingSet(currentStyle);
-		} else {
-			if (currentStage > 0) {
-				currentStage--;
-			} else {
-				currentStage = 5;
+					// 本のページを戻す
+					book->PrevPage();
+
+				} else {
+					if (currentStage > 0) {
+						currentStage--;
+					} else {
+						currentStage = 5;
+					}
+
+					if (book->GetCurrentPageIndex() > 8) {
+						// 本のページを戻す
+						book->PrevPage();
+					}
+
+				}
+				switchCooltime = 0.8f; // クールタイムリセット
 			}
 		}
 	}
+
 	if (!isStageSelect) {
 		if (isChanged) {
 			switch (currentStyle) {
 			case normal:
-				playerObject_->SetModel("normalMachine.obj");
-				break;
+			playerObject_->SetModel("normalMachine.obj");
+			break;
 			case speed:
-				playerObject_->SetModel("speedMachine.obj");
-				break;
+			playerObject_->SetModel("speedMachine.obj");
+			break;
 			case power:
-				playerObject_->SetModel("powerMachine.obj");
-				break;
+			playerObject_->SetModel("powerMachine.obj");
+			break;
 			case sniper:
-				playerObject_->SetModel("sniperMachine.obj");
-				break;
+			playerObject_->SetModel("sniperMachine.obj");
+			break;
 			}
 		}
 	}
@@ -126,7 +173,14 @@ void StageSelect::Update() {
 	if (input->TriggerKey(DIK_RETURN)) {
 		// ゲームプレイシーン(次シーン)を生成
 		if (isStageSelect) {
-			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+			//SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+
+			// シーン切り替え演出
+			isTransition = true;
+			isFullScreenCA = true;
+			isSpeedDistortion = true;
+			isRadialBlur = true;
+
 		} else {
 			isStageSelect = true;
 		}
@@ -136,15 +190,14 @@ void StageSelect::Update() {
 		playerObject_->Update();
 	}
 
-	for (int i = 0; i < kMaxParameter; i++) {
-		if(parameterGaugeEasing[i - 1].sizeTime >= 0.5f || i == 0)
-			easing->SizeV2(parameterGaugeEasing[i], 0.05f, 0);
+	// 本の更新
+	book->Update();
+	// シーン切り替え演出
+	TransitionUpdate();
 
-		parameterGauge[i]->SetSize(parameterGaugeEasing[i].size);
-
-		parameterGauge[i]->Update();
-		parameter[i]->Update();
-	}
+	//イージング
+	easing->Update();
+	easing->Draw();
 
 	LithingEffect();
 }
@@ -152,10 +205,6 @@ void StageSelect::Draw2D() {
 	// 2Dオブジェクトの描画準備
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
-	for (int i = 0; i < kMaxParameter; i++) {
-		parameterGauge[i]->Draw();
-		parameter[i]->Draw();
-	}
 }
 
 void StageSelect::Draw3D() {
@@ -167,9 +216,44 @@ void StageSelect::Draw3D() {
 			playerObject_->Draw();
 		}
 	}
+
+	// 本型UIの描画準備
+	BookUiCommon::GetInstance()->SetCommonPipelineState();
+
+	book->Draw();
+
 }
 
 void StageSelect::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
+
+void StageSelect::TransitionUpdate() {
+	if (isTransition) {
+		easing->Size(bookEasing, 0.01f, 1);
+
+		if (bookEasing.sizeEasedT >= 0.1f) {
+			if(fullScreenCAIntensity < 1.0f)
+				fullScreenCAIntensity += 0.01f;
+			if(speedDistortionStrength < 1.0f)
+				speedDistortionStrength += 0.1f;
+			if(blurWidth <= 0.01f)
+				blurWidth += 0.0001f;
+			if(bloomThreshold > 0.0f)
+				bloomThreshold -= 0.01f;
+			if (bloomIntensity < 10.0f)
+				bloomIntensity += 0.01f;
+
+		}
+
+		// 本のサイズを更新
+		book->SetScale(bookEasing.transform.scale);
+
+		if(bookEasing.sizeEasedT >= 1.0f) {
+			// シーン切り替え
+			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		}
+
+	}
+}
 
 void StageSelect::LithingEffect() {
 #pragma region ポストエフェクト
@@ -206,6 +290,7 @@ void StageSelect::LithingEffect() {
 	// ブルーム
 	PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
 	PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
+	PostEffect::GetInstance()->SetBokehRadius(bloomBlurRadius);
 	// レンズフレア
 	PostEffect::GetInstance()->SetLensFlare(isLensFlare);
 	PostEffect::GetInstance()->SetLensFlareGhostCount(lensFlareGhostCount);
@@ -216,6 +301,12 @@ void StageSelect::LithingEffect() {
 	PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
 	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
 	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
+	// 色収差
+	PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
+	PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
+	// スピードディストーション
+	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
+	PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
 
 #pragma endregion
 
@@ -233,16 +324,4 @@ void StageSelect::LithingEffect() {
 	RayMarching::GetInstance()->SetCloudOpacity(rayMarchingCloudOpacity);
 
 #pragma endregion
-}
-
-void StageSelect::ParameterEasingSet(Style currentStyle) {
-	for (int i = 0; i < kMaxParameter; i++) {
-		parameterGaugeEasing[i].size = { 0.0f, 50.0f };
-		parameterGaugeEasing[i].startSizeV2 = { 0.0f,parameterGaugeEasing[i].size.y};
-		parameterGaugeEasing[i].endSizeV2 = { float(parameterSetting[i][currentStyle] * 5),parameterGaugeEasing[i].size.y};
-		parameterGaugeEasing[i].sizeTime = 0.0f;
-		parameterGaugeEasing[i].sizeEasedT = 0.0f;
-
-		parameterGauge[i]->SetSize(parameterGaugeEasing[i].size);
-	}
 }

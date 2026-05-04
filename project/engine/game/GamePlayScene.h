@@ -97,9 +97,9 @@ private:
     bool isGrayscale = false;
 
     // 放射線ブラー
-    bool isRadialBlur = false;
+    bool isRadialBlur = true;
     Vector2 blurCenter = { 0.5f, 0.5f };
-    float blurWidth = 0.01f;
+    float blurWidth = 0.05f;
     int blurSamples = 10;
 
     // ディスタンスフォグ
@@ -137,9 +137,12 @@ private:
     bool isMotionBlur = true;    // モーションブラーのON/OFF
     int motionBlurSamples = 16; // サンプル数（例：8〜16）
     float motionBlurScale = 1.0f;   // ブラーの強さ
+    // 色収差
+    bool isFullScreenCA = true; // 画面全体の色収差ON/OFF
+    float fullScreenCAIntensity = 1.0f; // 画面全体の色収差の強さ
 	// スピードディストーション
-	bool isSpeedDistortion = false; // スピードディストーションのON/OFF
-    float speedDistortionStrength = 0.5f; // 歪みの強さ
+	bool isSpeedDistortion = true; // スピードディストーションのON/OFF
+    float speedDistortionStrength = 1.0f; // 歪みの強さ
 
     // レイマーチング
     //float rayMarchingTime = 0.0f; ;
@@ -211,5 +214,9 @@ private:
 
     //スコア管理用
     ScoreManager scoreManager_;
+
+    // シーン切り替わり後
+	bool isSceneChanged_ = true;
+    void SceneChangedEffect();
 
 };

@@ -101,7 +101,7 @@ DS_OUTPUT main(HS_CONSTANT_DATA_OUTPUT input, float2 UV : SV_DomainLocation, con
     bool isShadowSide = (side > 0.0f) ? (UV.x <= foldX) : (UV.x >= foldX);
     if (isShadowSide)
     {
-        float closeFactor = smoothstep(0.8f, 2.35f, localSafeAngle); // ★変更
+        float closeFactor = smoothstep(0.8f, PI, localSafeAngle); // ★変更
         float overlapStrength = 1.0f * closeFactor;
         float overlapRange = 0.8f * closeFactor + 0.001f;
         overlapShadow = overlapStrength * (1.0f - smoothstep(0.0f, overlapRange, distToFold));
