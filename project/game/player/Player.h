@@ -21,6 +21,8 @@ public:
 		Style style;                  // スタイル
 		int hp;                       // 体力
 		int attack;                   // 攻撃力
+		int chargeAttack;             // チャージ攻撃力
+		int chargeSize;               // チャージサイズ
 		float speed;                  // 速度
 		float hommingAccuracy = 0.0f; // ホーミング精度
 		float renge = 0.0f;           // 弾速

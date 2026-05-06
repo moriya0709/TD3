@@ -55,6 +55,8 @@ void Player::LoadStatas(const std::string& filePath) {
 		    {"Statas",
 		     {{{"hp", statas_[0].hp},
 		       {"attack", statas_[0].attack},
+		       {"chargeAttack", statas_[0].chargeAttack},
+		       {"chargeSize", statas_[0].chargeSize},
 		       {"speed", statas_[0].speed},
 		       {"hommingAccuracy", statas_[0].hommingAccuracy},
 		       {"renge", statas_[0].renge},
@@ -62,6 +64,8 @@ void Player::LoadStatas(const std::string& filePath) {
 		       {"haste", statas_[0].haste}},
 		      {{"hp", statas_[1].hp},
 		       {"attack", statas_[1].attack},
+		       {"chargeAttack", statas_[1].chargeAttack},
+		       {"chargeSize", statas_[1].chargeSize},
 		       {"speed", statas_[1].speed},
 		       {"hommingAccuracy", statas_[1].hommingAccuracy},
 		       {"renge", statas_[1].renge},
@@ -69,6 +73,8 @@ void Player::LoadStatas(const std::string& filePath) {
 		       {"haste", statas_[1].haste}},
 		      {{"hp", statas_[2].hp},
 		       {"attack", statas_[2].attack},
+		       {"chargeAttack", statas_[2].chargeAttack},
+		       {"chargeSize", statas_[2].chargeSize},
 		       {"speed", statas_[2].speed},
 		       {"hommingAccuracy", statas_[2].hommingAccuracy},
 		       {"renge", statas_[2].renge},
@@ -76,6 +82,8 @@ void Player::LoadStatas(const std::string& filePath) {
 		       {"haste", statas_[2].haste}},
 		      {{"hp", statas_[3].hp},
 		       {"attack", statas_[3].attack},
+		       {"chargeAttack", statas_[3].chargeAttack},
+		       {"chargeSize", statas_[3].chargeSize},
 		       {"speed", statas_[3].speed},
 		       {"hommingAccuracy", statas_[3].hommingAccuracy},
 		       {"renge", statas_[3].renge},
@@ -96,6 +104,8 @@ void Player::LoadStatas(const std::string& filePath) {
 	for (int i = 0; i < 4; ++i) {
 		statas_[i].hp = j["Statas"][i]["hp"];
 		statas_[i].attack = j["Statas"][i]["attack"];
+		statas_[i].chargeAttack = j["Statas"][i]["chargeAttack"];
+		statas_[i].chargeSize = j["Statas"][i]["chargeSize"];
 		statas_[i].speed = j["Statas"][i]["speed"];
 		statas_[i].hommingAccuracy = j["Statas"][i]["hommingAccuracy"];
 		statas_[i].renge = j["Statas"][i]["renge"];
@@ -111,6 +121,8 @@ void Player::SaveStatas(const std::string& filePath) const {
 	for (int i = 0; i < 4; ++i) {
 		j["Statas"][i]["hp"] = statas_[i].hp;
 		j["Statas"][i]["attack"] = statas_[i].attack;
+		j["Statas"][i]["chargeAttack"] = statas_[i].chargeAttack;
+		j["Statas"][i]["chargeSize"] = statas_[i].chargeSize;
 		j["Statas"][i]["speed"] = statas_[i].speed;
 		j["Statas"][i]["hommingAccuracy"] = statas_[i].hommingAccuracy;
 		j["Statas"][i]["renge"] = statas_[i].renge;
@@ -199,17 +211,12 @@ void Player::Initialize(Camera* camera, Style style) {
 	damageTimer = 0;
 }
 
-//攻撃モーション
-void Player::UpdateAttackMove()
-{
-	if (0 < coolTime)
-	{
-		if (maxHaste / 2 < coolTime)
-		{
+// 攻撃モーション
+void Player::UpdateAttackMove() {
+	if (0 < coolTime) {
+		if (maxHaste / 2 < coolTime) {
 			attackRotate += 0.01f;
-		}
-		else
-		{
+		} else {
 			attackRotate -= 0.01f;
 		}
 	} else {
@@ -278,7 +285,8 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 			// チャージ攻撃
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies);
-			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy + 0.2f, statas_[currentStyle].attack);
+			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy + 0.2f, statas_[currentStyle].chargeAttack);
+			newBullet->SetSize(1.5f); // チャージ弾のサイズを設定
 			bullets.push_back(std::move(newBullet));    // 修正: std::moveでunique_ptrをlistに追加
 			chargeTimer = 0;                            // チャージタイマーリセット
 			coolTime = statas_[currentStyle].haste * 2; // チャージ攻撃後のクールタイムも長くする
@@ -386,8 +394,7 @@ void Player::InputMove() {
 		transform_.rotate.z = -velocity_.x * 2.0f;
 		transform_.rotate.x = velocity_.y * 1.0f + attackRotate;
 	} else {
-		transform_.rotate.x =  attackRotate;
-
+		transform_.rotate.x = attackRotate;
 	}
 	transform_.rotate.y = camera_->GetRotate().y;
 
@@ -446,6 +453,8 @@ void Player::UpdateImGui() {
 	ImGui::DragFloat2("Relative Pos", &relativePos_.x, 0.1f);
 	ImGui::DragInt("HP", &statas_[currentStyle].hp, 0.1f);
 	ImGui::DragInt("Attack", &statas_[currentStyle].attack, 0.1f);
+	ImGui::DragInt("Charge Attack", &statas_[currentStyle].chargeAttack, 0.1f);
+	ImGui::DragInt("Charge Size", &statas_[currentStyle].chargeSize, 0.1f);
 	ImGui::DragFloat("Speed", &statas_[currentStyle].speed, 0.01f);
 	ImGui::DragFloat("Homing Accuracy", &statas_[currentStyle].hommingAccuracy, 0.0001f, 0.0f, 1.0f, "%.4f");
 	ImGui::DragFloat("Reticle Speed", &reticleSpeed, 0.1f);
