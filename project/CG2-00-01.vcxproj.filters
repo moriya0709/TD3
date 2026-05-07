@@ -93,6 +93,9 @@
     <ClCompile Include="application\BookUi\BookUi.cpp" />
     <ClCompile Include="application\BookUi\BookUiCommon.cpp" />
     <ClCompile Include="application\BookUi\Book.cpp" />
+    <ClCompile Include="game\camera\BananaCameraController.cpp" />
+    <ClCompile Include="game\camera\StageCameraController.cpp" />
+    <ClCompile Include="GrapeCameraController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />
@@ -170,6 +173,9 @@
     <ClInclude Include="application\BookUi\BookUi.h" />
     <ClInclude Include="application\BookUi\BookUiCommon.h" />
     <ClInclude Include="application\BookUi\Book.h" />
+    <ClInclude Include="game\camera\BananaCameraController.h" />
+    <ClInclude Include="game\camera\StageCameraController.h" />
+    <ClInclude Include="GrapeCameraController.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\RayMarching.hlsli" />

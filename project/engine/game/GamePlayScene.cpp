@@ -2,75 +2,74 @@
 #include "ObjectCommon.h"
 #include "SceneManager.h"
 #include "ScoreManager.h"
-#include "SpriteCommon.h"
+#include "StageCameraController.h"
 
-void GamePlayScene::Initialize()
-{
-    // カメラ初期化
-    camera = std::make_unique<Camera>();
-    camera->SetRotate({ cameraTransform.rotate });
-    camera->SetTranslate({ cameraTransform.translate });
+void GamePlayScene::Initialize() {
+	// カメラ初期化
+	camera = std::make_unique<Camera>();
+	camera->SetRotate({cameraTransform.rotate});
+	camera->SetTranslate({cameraTransform.translate});
 
-    // カメラマネージャ登録
-    CameraManager::GetInstance()->AddCamera("main", camera.get());
-    CameraManager::GetInstance()->SetActiveCamera("main");
+	// カメラマネージャ登録
+	CameraManager::GetInstance()->AddCamera("main", camera.get());
+	CameraManager::GetInstance()->SetActiveCamera("main");
 
-    cameraController_ = std::make_unique<CameraController>();
-    cameraController_->Initialize(camera.get());
+	cameraController_ = std::make_unique<StageCameraController>();
+	cameraController_->Initialize(camera.get());
 
-    player_ = std::make_unique<Player>();
-    player_->Initialize(camera.get(), style_);
+	player_ = std::make_unique<Player>();
+	player_->Initialize(camera.get(), style_);
 
-    enemy_ = std::make_unique<EnemyManager>();
-    enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
-    cameraController_->SetCurrentStage(currentStage_);
-    cameraController_->StartReplay();
+	enemy_ = std::make_unique<EnemyManager>();
+	enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
+	cameraController_->SetCurrentStage(currentStage_);
+	cameraController_->StartReplay();
 
-    // スプライト
-    pause_ = std::make_unique<Sprite>();
-    pause_->Initialize("Resource/pause.png"); // ポーズ
-    pause_->SetPosition({ 100.0f, 50.0f }); // 画面中央
+	// スプライト
+	pause_ = std::make_unique<Sprite>();
+	pause_->Initialize("Resource/pause.png"); // ポーズ
+	pause_->SetPosition({ 100.0f, 50.0f }); // 画面中央
 
-    resume_ = std::make_unique<Sprite>();
-    resume_->Initialize("Resource/resume.png"); // 続ける
-    resume_->SetPosition({ 960.0f, 216.0f });
-    resumeEasing.size = { 0.0f, 0.0f };
-    resumeEasing.startSizeV2 = { 0.0f, 0.0f };
-    resumeEasing.endSizeV2 = { 400.0f, 400.0f };
-    resumeEasing.sizeTime = 0.0f;
-    resumeEasing.sizeEasedT = 0.0f;
+	resume_ = std::make_unique<Sprite>();
+	resume_->Initialize("Resource/resume.png"); // 続ける
+	resume_->SetPosition({ 960.0f, 216.0f });
+	resumeEasing.size = { 0.0f,0.0f };
+	resumeEasing.startSizeV2 = { 0.0f,0.0f };
+	resumeEasing.endSizeV2 = { 400.0f,400.0f };
+	resumeEasing.sizeTime = 0.0f;
+	resumeEasing.sizeEasedT = 0.0f;
 
-    retry_ = std::make_unique<Sprite>();
-    retry_->Initialize("Resource/retry.png"); // リトライ
-    retry_->SetPosition({ 860.0f, 432.0f });
-    retryEasing.size = { 0.0f, 0.0f };
-    retryEasing.startSizeV2 = { 0.0f, 0.0f };
-    retryEasing.endSizeV2 = { 300.0f, 300.0f };
-    retryEasing.sizeTime = 0.0f;
-    retryEasing.sizeEasedT = 0.0f;
+	retry_ = std::make_unique<Sprite>();
+	retry_->Initialize("Resource/retry.png"); // リトライ
+	retry_->SetPosition({ 860.0f, 432.0f });
+	retryEasing.size = { 0.0f,0.0f };
+	retryEasing.startSizeV2 = { 0.0f,0.0f };
+	retryEasing.endSizeV2 = { 300.0f,300.0f };
+	retryEasing.sizeTime = 0.0f;
+	retryEasing.sizeEasedT = 0.0f;
 
-    select_ = std::make_unique<Sprite>();
-    select_->Initialize("Resource/select.png"); // セレクトへ
-    select_->SetPosition({ 1060.0f, 648.0f });
-    selectEasing.size = { 0.0f, 0.0f };
-    selectEasing.startSizeV2 = { 0.0f, 0.0f };
-    selectEasing.endSizeV2 = { 300.0f, 300.0f };
-    selectEasing.sizeTime = 0.0f;
-    selectEasing.sizeEasedT = 0.0f;
+	select_ = std::make_unique<Sprite>();
+	select_->Initialize("Resource/select.png"); // セレクトへ
+	select_->SetPosition({ 1060.0f, 648.0f });
+	selectEasing.size = { 0.0f,0.0f };
+	selectEasing.startSizeV2 = { 0.0f,0.0f };
+	selectEasing.endSizeV2 = { 300.0f,300.0f };
+	selectEasing.sizeTime = 0.0f;
+	selectEasing.sizeEasedT = 0.0f;
 
-    // playerHPバー
-    playerHpUI_ = std::make_unique<Sprite>();
-    playerHpUI_->Initialize("Resource/UI/playerHp.png");
-    playerHpUI_->SetPosition({ 100.0f, 50.0f });
+	//playerHPバー
+	playerHpUI_ = std::make_unique<Sprite>();
+	playerHpUI_->Initialize("Resource/UI/playerHp.png");
+	playerHpUI_->SetPosition({ 100.0f, 50.0f });
 
-    pauseBg_ = std::make_unique<Sprite>();
-    pauseBg_->Initialize("Resource/pauseBg.png"); // ポーズ背景
-    pauseBg_->SetPosition({ 960.0f, 540.0f });
-    pauseBg_->SetSize({ 1920.0f, 1080.0f });
+	pauseBg_ = std::make_unique<Sprite>();
+	pauseBg_->Initialize("Resource/pauseBg.png"); // ポーズ背景
+	pauseBg_->SetPosition({ 960.0f, 540.0f });
+	pauseBg_->SetSize({ 1920.0f,1080.0f });
 
-    // イージング
-    easing = std::make_unique<Easing>();
-    easing->Initialize();
+	// イージング
+	easing = std::make_unique<Easing>();
+	easing->Initialize();
 }
 
 void GamePlayScene::Update()
