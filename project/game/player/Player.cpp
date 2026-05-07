@@ -258,7 +258,6 @@ void Player::Draw3D() {
 
 Player::~Player() {
 	for (auto& bullet : bullets) {
-		// unique_ptrなのでdelete不要
 	}
 	bullets.clear();
 }
@@ -287,7 +286,7 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies);
 			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy + 0.2f, statas_[currentStyle].chargeAttack);
 			newBullet->SetSize(1.5f); // チャージ弾のサイズを設定
-			bullets.push_back(std::move(newBullet));    // 修正: std::moveでunique_ptrをlistに追加
+			bullets.push_back(std::move(newBullet));    
 			chargeTimer = 0;                            // チャージタイマーリセット
 			coolTime = statas_[currentStyle].haste * 2; // チャージ攻撃後のクールタイムも長くする
 			maxHaste = statas_[currentStyle].haste * 2;
@@ -295,7 +294,7 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge, enemies);
 			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy, statas_[currentStyle].attack);
-			bullets.push_back(std::move(newBullet)); // 修正: std::moveでunique_ptrをlistに追加
+			bullets.push_back(std::move(newBullet)); 
 			coolTime = statas_[currentStyle].haste;
 			maxHaste = statas_[currentStyle].haste;
 
@@ -366,7 +365,7 @@ void Player::InputMove() {
 
 	// 5. 【重要】カメラの視界（Frustum）に合わせた制限の計算
 	// 一般的な画角(45度)とアスペクト比(16:9)の場合
-	float fovY = 0.45f; // 垂直画角（ラジアン） ※約25.7度相当。プロジェクトのカメラ設定に合わせて調整してください
+	float fovY = 0.45f; // 垂直画角（ラジアン）
 	float aspect = (float)WindowAPI::kClientWidth / (float)WindowAPI::kClientHeight;
 
 	// 距離(relativePos_.z)に応じて、画面内に収まる限界値を計算

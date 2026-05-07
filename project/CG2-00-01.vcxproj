@@ -20,6 +20,7 @@
     <ClCompile Include="application\BookUi\Book.cpp" />
     <ClCompile Include="application\BookUi\BookUi.cpp" />
     <ClCompile Include="application\BookUi\BookUiCommon.cpp" />
+    <ClCompile Include="game\camera\BananaCameraController.cpp" />
     <ClCompile Include="engine\base\AbstractSceneFactory.cpp" />
     <ClCompile Include="engine\base\BaseScene.cpp" />
     <ClCompile Include="game\collision\Collision.cpp" />
@@ -70,6 +71,7 @@
     <ClCompile Include="engine\io\Input.cpp" />
     <ClCompile Include="engine\base\Logger.cpp" />
     <ClCompile Include="game\enemy\Boss\type\grapesBoss.cpp" />
+    <ClCompile Include="GrapeCameraController.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">MaxSpeed</Optimization>
       <WholeProgramOptimization Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</WholeProgramOptimization>
@@ -109,6 +111,7 @@
     <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="application\trailEffect\TrailEffect.cpp" />
     <ClCompile Include="application\trailEffect\TrailEffectManager.cpp" />
+    <ClCompile Include="game\camera\StageCameraController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Resource\shaders\BookUi.HS.hlsl">
@@ -252,6 +255,7 @@
     <ClInclude Include="application\BookUi\Book.h" />
     <ClInclude Include="application\BookUi\BookUi.h" />
     <ClInclude Include="application\BookUi\BookUiCommon.h" />
+    <ClInclude Include="game\camera\BananaCameraController.h" />
     <ClInclude Include="game\collision\Collision.h" />
     <ClInclude Include="game\camera\CameraController.h" />
     <ClInclude Include="game\enemy\Boss\type\banana.h">
@@ -323,10 +327,12 @@
     <ClInclude Include="game\enemy\Normal\type\ShieldEnemy.h" />
     <ClInclude Include="game\enemy\Boss\type\grapesBoss.h" />
     <ClInclude Include="engine\game\StageSelect.h" />
+    <ClInclude Include="GrapeCameraController.h" />
     <ClInclude Include="ResultScene.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="application\trailEffect\TrailEffect.h" />
     <ClInclude Include="application\trailEffect\TrailEffectManager.h" />
+    <ClInclude Include="game\camera\StageCameraController.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
