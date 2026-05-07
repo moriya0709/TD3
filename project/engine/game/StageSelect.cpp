@@ -47,14 +47,34 @@ void StageSelect::Initialize() {
 
 	playerObject_->SetTranslate(transform_.translate);
 
+	// パラメータ
+	for (int i = 0; i < kMaxParameter; i++) {
+		parameter[i] = std::make_unique<Sprite>();
+		parameter[i]->Initialize("Resource/parameters/parameters.png");
+		parameter[i]->SetPosition({ 1000.0f, 300.0f + i * 60.0f });
+		parameter[i]->SetSize({ 500.0f, 25.0f });
+		parameter[i]->SetAnchorPoint({ 0.0f, 0.0f });
+		parameterGauge[i] = std::make_unique<Sprite>();
+		parameterGauge[i]->Initialize("Resource/parameters/parametersGauge.png");
+		parameterGaugeEasing[i].pos = { 1000.0f, 300.0f + i * 60.0f };
+		parameterGaugeEasing[i].size = { 0.0f, 25.0f };
+		parameterGaugeEasing[i].startSizeV2 = { 0.0f, 25.0f };
+		parameterGaugeEasing[i].endSizeV2 = { float(parameterSetting[i][currentStyle] * 5), parameterGaugeEasing[i].size.y };
+		parameterGaugeEasing[i].sizeTime = 0.0f;
+		parameterGaugeEasing[i].sizeEasedT = 0.0f;
+		parameterGauge[i]->SetPosition(parameterGaugeEasing[i].pos);
+		parameterGauge[i]->SetSize(parameterGaugeEasing[i].size);
+		parameterGauge[i]->SetAnchorPoint({ 0.0f, 0.0f });
+	}
+
 	// 本型UI
 	std::vector<std::string> textures = {
 	"Resource/bookUi/cover.png",
 	"Resource/bookUi/cover2.png",
-	"Resource/bookUi/bookUi_1.png",// normal
-	"Resource/bookUi/bookUi_1.png",// speed
-	"Resource/bookUi/bookUi_1.png",// power
-	"Resource/bookUi/bookUi_1.png",// sniper
+	"Resource/bookUi/normal.png",// normal
+	"Resource/bookUi/speed.png",// speed
+	"Resource/bookUi/power.png",// power
+	"Resource/bookUi/sniper.png",// sniper
 	"Resource/bookUi/bookUi_1.png",
 	"Resource/bookUi/bookUi_1.png",
 	"Resource/bookUi/bookUi_1.png",
@@ -94,6 +114,13 @@ void StageSelect::Update() {
 			switchCooltime = 0.3f; // クールタイムリセット
 		}
 	}
+	if (switchCooltime <= 0.0f) {
+		// パラメータのイージングセット
+		if (isParameterEasing) {
+			ParameterEasingSet(currentStyle);
+			isParameterEasing = false;
+		}
+	}
 
 
 	bool isChanged = false; // マシン変更
@@ -108,6 +135,8 @@ void StageSelect::Update() {
 					if (book->GetCurrentPageIndex() < 5)
 					book->NextPage();
 
+					isParameterEasing = true; // イージングリセット
+
 				} else {
 					if (currentStage < 5) {
 						currentStage++;
@@ -117,6 +146,8 @@ void StageSelect::Update() {
 
 					// 本のページをめくる
 					book->NextPage();
+
+					isParameterEasing = true; // イージングリセット
 
 				}
 				switchCooltime = 0.8f; // クールタイムリセット
@@ -132,6 +163,8 @@ void StageSelect::Update() {
 					// 本のページを戻す
 					book->PrevPage();
 
+					isParameterEasing = true; // イージングリセット
+
 				} else {
 					if (currentStage > 0) {
 						currentStage--;
@@ -142,6 +175,8 @@ void StageSelect::Update() {
 					if (book->GetCurrentPageIndex() > 8) {
 						// 本のページを戻す
 						book->PrevPage();
+
+						isParameterEasing = true; // イージングリセット
 					}
 
 				}
@@ -195,6 +230,16 @@ void StageSelect::Update() {
 	// シーン切り替え演出
 	TransitionUpdate();
 
+	for (int i = 0; i < kMaxParameter; i++) {
+		if (parameterGaugeEasing[i - 1].sizeTime >= 0.5f || i == 0)
+			easing->SizeV2(parameterGaugeEasing[i], 0.05f, 0);
+
+		parameterGauge[i]->SetSize(parameterGaugeEasing[i].size);
+
+		parameterGauge[i]->Update();
+		parameter[i]->Update();
+	}
+
 	//イージング
 	easing->Update();
 	easing->Draw();
@@ -204,6 +249,13 @@ void StageSelect::Update() {
 void StageSelect::Draw2D() {
 	// 2Dオブジェクトの描画準備
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
+
+	if (switchCooltime <= 0.0f) {
+		for (int i = 0; i < kMaxParameter; i++) {
+			parameterGauge[i]->Draw();
+			parameter[i]->Draw();
+		}
+	}
 
 }
 
@@ -324,4 +376,16 @@ void StageSelect::LithingEffect() {
 	RayMarching::GetInstance()->SetCloudOpacity(rayMarchingCloudOpacity);
 
 #pragma endregion
+}
+
+void StageSelect::ParameterEasingSet(Style currentStyle) {
+	for (int i = 0; i < kMaxParameter; i++) {
+		parameterGaugeEasing[i].size = { 0.0f, 25.0f };
+		parameterGaugeEasing[i].startSizeV2 = { 0.0f,parameterGaugeEasing[i].size.y };
+		parameterGaugeEasing[i].endSizeV2 = { float(parameterSetting[i][currentStyle] * 5),parameterGaugeEasing[i].size.y };
+		parameterGaugeEasing[i].sizeTime = 0.0f;
+		parameterGaugeEasing[i].sizeEasedT = 0.0f;
+
+		parameterGauge[i]->SetSize(parameterGaugeEasing[i].size);
+	}
 }
