@@ -66,6 +66,25 @@ private:
 	// 切り換えクールタイム
 	float switchCooltime = 0.0f;
 
+	// パラメータ
+	std::unique_ptr<Sprite> parameter[9] = {};
+	std::unique_ptr<Sprite> parameterGauge[9] = {};
+	EasingSet parameterGaugeEasing[9];
+	int kMaxParameter = 9;
+
+	int parameterSetting[9][4] = {
+		{80, 50, 10, 30},	// hp
+		{70, 60, 70, 80},	// 威力
+		{90, 40, 20, 30},	// 連射速度
+		{60, 70, 50, 10},	// 移動速度
+		{50, 80, 40, 30},	// 射程orチャージ速度
+		{50, 80, 40, 30},	// 射程orチャージ速度
+		{50, 80, 40, 30},	// 射程orチャージ速度
+		{50, 80, 40, 30},	// 射程orチャージ速度
+		{50, 80, 40, 30},	// 射程orチャージ速度
+		//Normal	Speed	Power	Sniper
+	};
+	bool isParameterEasing = false;
 
 	// イージング
 	std::unique_ptr <Easing> easing;
@@ -126,7 +145,7 @@ private:
 
 	// ブルーム
 	float bloomThreshold = 1.5f;
-	float bloomIntensity = 1.0f;
+	float bloomIntensity = 0.0f;
 	float bloomBlurRadius = 1.0f;
 
 	// レンズフレア
@@ -169,4 +188,7 @@ private:
 	void TransitionUpdate();
 
 	void LithingEffect();
+
+	// パラメータのイージングを設定
+	void ParameterEasingSet(Style currentStyle);
 };
