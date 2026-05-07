@@ -226,7 +226,13 @@ banana::CollisionVolume banana::CreateVolumeFromPart(uint32_t i, Vector3 bossPos
 
 Vector3 banana::GetWorldPosition() const
 {
-    return baseTransform_.translate;
+    Vector3 cameraPos = camera_->GetTranslate();
+
+    return {
+        baseTransform_.translate.x + cameraPos.x,
+        baseTransform_.translate.y + cameraPos.y,
+        baseTransform_.translate.z + cameraPos.z
+    };
 }
 
 float banana::GetRadius() const
@@ -266,6 +272,27 @@ std::vector<banana::CollisionVolume> banana::GetCollisionVolumes()
     }
 
     return volumes;
+}
+
+Vector3 banana::GetBodyWorldPosition() const
+{
+    Vector3 cameraPos = camera_->GetTranslate();
+
+    for (const auto& part : parts_) {
+        // 本体（弱点属性を持つパーツ）を探す
+        if (part.isWeakPoint) {
+            // Update関数と同じ計算式でワールド座標を算出
+            Vector3 worldPos = {
+                part.transform.translate.x + baseTransform_.translate.x + cameraPos.x,
+                part.transform.translate.y + baseTransform_.translate.y + cameraPos.y,
+                part.transform.translate.z + baseTransform_.translate.z + cameraPos.z
+            };
+            return worldPos;
+        }
+    }
+
+    // 万が一見つからなかった場合はベース座標を返す
+    return baseTransform_.translate;
 }
 
 void banana::SetTargetPlayer(Player* target)

@@ -87,6 +87,7 @@ public:
     std::vector<CollisionVolume> GetCollisionVolumes();
     const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
     int GetScore() const { return score_; }
+    Vector3 GetBodyWorldPosition() const;
 
     // Set
     void SetTargetPlayer(Player* target);
