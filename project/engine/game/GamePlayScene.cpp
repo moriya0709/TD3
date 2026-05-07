@@ -3,6 +3,7 @@
 #include "SceneManager.h"
 #include "SpriteCommon.h"
 #include "ScoreManager.h"
+#include "StageCameraController.h"
 
 void GamePlayScene::Initialize() {
 	// カメラ初期化
@@ -14,7 +15,7 @@ void GamePlayScene::Initialize() {
 	CameraManager::GetInstance()->AddCamera("main", camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
-	cameraController_ = std::make_unique<CameraController>();
+	cameraController_ = std::make_unique<StageCameraController>();
 	cameraController_->Initialize(camera.get());
 
 	player_ = std::make_unique<Player>();
