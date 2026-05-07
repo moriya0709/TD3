@@ -3,6 +3,7 @@
 #include "SceneManager.h"
 #include "ScoreManager.h"
 #include "StageCameraController.h"
+#include "SpriteCommon.h"
 
 void GamePlayScene::Initialize() {
 	// カメラ初期化
