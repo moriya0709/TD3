@@ -43,7 +43,7 @@ public:
         bool isAnimating = false;
 
         // 当たり判定のサイズ
-        static inline const float radiusX = 3.0f;
+        static inline const float radiusX = 1.0f;
         static inline const float radiusY = 20.0f;
 
         // 体力
@@ -52,7 +52,7 @@ public:
 
         // --- 以下を追加 ---
         float repairTimer = 0.0f; // 修理までの時間
-        static inline const float kRepairTime = 300.0f; // 修理にかかる時間（60FPSなら5秒）
+        static inline const float kRepairTime = 30.0f; // 修理にかかる時間
         // ------------------
 
         bool isWeakPoint;
@@ -77,6 +77,8 @@ public:
 
     void BulletMirror(const CollisionVolume& volume, PlayerBullet* bullet);
 
+    CollisionVolume CreateVolumeFromPart(uint32_t i, Vector3 bossPos, Vector3 cameraPos);
+
 public:
     // Get
     Vector3 GetWorldPosition() const;
@@ -85,6 +87,7 @@ public:
     std::vector<CollisionVolume> GetCollisionVolumes();
     const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
     int GetScore() const { return score_; }
+    Vector3 GetBodyWorldPosition() const;
 
     // Set
     void SetTargetPlayer(Player* target);

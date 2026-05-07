@@ -52,22 +52,21 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
         p.object->SetTranslate(p.transform.translate + baseTransform_.translate + cameraPos);
         p.object->Update();
 
-        float offsetRadius = 4.0f; // バナナの中心から皮の当たり判定までの距離
+        float offsetRadius = 12.0f; // 本体(0,0,0)を囲む半径。少し広めにするのがコツ
 
-        if (i == 0) { // 皮1 (奥)
-            p.collisionLocalPos = { 0.0f, 0.0f, offsetRadius };
+        if (i == 0) { // 皮1: 正面 (Zマイナス側をふさぐ)
+            p.collisionLocalPos = { 0.0f, 0.0f, -offsetRadius };
             p.isWeakPoint = false;
-        } else if (i == 1) { // 皮2 (左)
-            p.collisionLocalPos = { -offsetRadius, 0.0f, 0.0f };
+        } else if (i == 1) { // 皮2: 右後ろ (120度の位置)
+            p.collisionLocalPos = { offsetRadius * 0.866f, 0.0f, offsetRadius * 0.5f };
             p.isWeakPoint = false;
-        } else if (i == 2) { // 皮3 (右)
-            p.collisionLocalPos = { offsetRadius, 0.0f, 0.0f };
+        } else if (i == 2) { // 皮3: 左後ろ (240度の位置)
+            p.collisionLocalPos = { -offsetRadius * 0.866f, 0.0f, offsetRadius * 0.5f };
             p.isWeakPoint = false;
-        } else if (i == 3) { // 本体 (身)
-            p.collisionLocalPos = { 0.0f, 0.0f, 0.0f }; // 身は中心
+        } else if (i == 3) { // 本体: 中心
+            p.collisionLocalPos = { 0.0f, 0.0f, 0.0f };
             p.isWeakPoint = true;
         }
-
         parts_.push_back(std::move(p));
     }
 }
@@ -112,9 +111,10 @@ void banana::Update()
 
     for (auto& part : parts_) {
         if (!part.isWeakPoint && part.PartsHp <= 0) {
-            part.repairTimer -= 1.0f;
+            part.repairTimer -= 1.0f/60.0f;
             if (part.repairTimer <= 0.0f) {
                 part.PartsHp = BossPart::kPartsHp; // 修理完了
+                part.repairTimer = BossPart::kRepairTime;
             }
         }
 
@@ -123,6 +123,18 @@ void banana::Update()
         part.object->SetTranslate(worldPos);
         part.object->Update();
     }
+
+    ImGui::Begin("Banana Boss Debug");
+    ImGui::Text("Total Health: %d", health_);
+    for (int i = 0; i < parts_.size(); i++) {
+        ImGui::Separator();
+        ImGui::Text("Part [%d] %s", i, parts_[i].isWeakPoint ? "BODY" : "PEEL");
+        ImGui::Text("HP: %d", parts_[i].PartsHp);
+        if (parts_[i].repairTimer > 0) {
+            ImGui::Text("Repairing... %.1f", parts_[i].repairTimer);
+        }
+    }
+    ImGui::End();
 }
 
 void banana::Draw3D()
@@ -185,9 +197,42 @@ void banana::BulletMirror(const CollisionVolume& volume, PlayerBullet* bullet)
     enemyBullet_.push_back(std::move(newBulletEnemy));
 }
 
+banana::CollisionVolume banana::CreateVolumeFromPart(uint32_t i, Vector3 bossPos, Vector3 cameraPos)
+{
+    banana::CollisionVolume volume;
+    Vector3 partWorldPos = {
+        parts_[i].collisionLocalPos.x + bossPos.x + cameraPos.x,
+        parts_[i].collisionLocalPos.y + bossPos.y + cameraPos.y,
+        parts_[i].collisionLocalPos.z + bossPos.z + cameraPos.z
+    };
+
+    volume.position = partWorldPos;
+    volume.width = parts_[i].radiusX;
+    volume.height = parts_[i].radiusY;
+    volume.partId = i;
+
+    if (parts_[i].isWeakPoint) {
+        volume.shape = CollisionShape::kBox;
+    } else {
+        volume.shape = CollisionShape::kPlane;
+        // 常に中心(0,0,0)から外側を向くように法線を計算
+        Vector3 toOut = Normalize(parts_[i].collisionLocalPos);
+        volume.normal = toOut;
+        volume.right = { toOut.z, 0.0f, -toOut.x };
+        volume.up = { 0.0f, 1.0f, 0.0f };
+    }
+    return volume;
+}
+
 Vector3 banana::GetWorldPosition() const
 {
-    return baseTransform_.translate;
+    Vector3 cameraPos = camera_->GetTranslate();
+
+    return {
+        baseTransform_.translate.x + cameraPos.x,
+        baseTransform_.translate.y + cameraPos.y,
+        baseTransform_.translate.z + cameraPos.z
+    };
 }
 
 float banana::GetRadius() const
@@ -206,47 +251,48 @@ std::vector<banana::CollisionVolume> banana::GetCollisionVolumes()
     Vector3 bossPos = baseTransform_.translate;
     Vector3 cameraPos = camera_->GetTranslate();
 
+    // --- 1巡目：まず「皮(Plane)」だけをリストに追加する ---
     for (uint32_t i = 0; i < parts_.size(); ++i) {
+        if (parts_[i].isWeakPoint)
+            continue; // 本体は後回し
+        if (parts_[i].PartsHp <= 0)
+            continue; // 壊れている皮は判定を作らない
 
-        // 破壊された部位はスキップ
-        if (!parts_[i].isWeakPoint && parts_[i].kPartsHp <= 0)
+        banana::CollisionVolume vol = CreateVolumeFromPart(i, bossPos, cameraPos); // 共通処理へ
+        volumes.push_back(vol);
+    }
+
+    // --- 2巡目：最後に「本体(Box)」を追加する ---
+    for (uint32_t i = 0; i < parts_.size(); ++i) {
+        if (!parts_[i].isWeakPoint)
             continue;
 
-        // [変更]当たり判定用のローカル座標に変更
-        Vector3 partWorldPos = {
-            parts_[i].collisionLocalPos.x + bossPos.x + cameraPos.x,
-            parts_[i].collisionLocalPos.y + bossPos.y + cameraPos.y,
-            parts_[i].collisionLocalPos.z + bossPos.z + cameraPos.z
-        };
-
-        banana::CollisionVolume volume;
-
-        if (parts_[i].isWeakPoint) {
-            // 本体
-            volume.shape = CollisionShape::kBox;
-            volume.normal = { 0.0f, 0.0f, -1.0f };
-            volume.right = { 1.0f, 0.0f, 0.0f };
-            volume.up = { 0.0f, 1.0f, 0.0f };
-        } else {
-            // 皮
-            volume.shape = CollisionShape::kPlane;
-            Vector3 toOut = Normalize(parts_[i].collisionLocalPos);
-            volume.normal = toOut;
-            volume.right = { toOut.z, 0.0f, -toOut.x }; // 簡易的な直交ベクトル
-            volume.up = { 0.0f, 1.0f, 0.0f };
-        }
-
-        // 2. 判定用のボリューム構造体を作成
-        volume.position = partWorldPos; // 計算したワールド座標
-        volume.width = parts_[i].radiusX; // パーツ個別の当たり判定サイズ
-        volume.height = parts_[i].radiusY;
-        volume.partId = i; // 何番目のパーツか（OnHitで使う）
-
-        // 3. リストに追加
-        volumes.push_back(volume);
+        banana::CollisionVolume vol = CreateVolumeFromPart(i, bossPos, cameraPos);
+        volumes.push_back(vol);
     }
 
     return volumes;
+}
+
+Vector3 banana::GetBodyWorldPosition() const
+{
+    Vector3 cameraPos = camera_->GetTranslate();
+
+    for (const auto& part : parts_) {
+        // 本体（弱点属性を持つパーツ）を探す
+        if (part.isWeakPoint) {
+            // Update関数と同じ計算式でワールド座標を算出
+            Vector3 worldPos = {
+                part.transform.translate.x + baseTransform_.translate.x + cameraPos.x,
+                part.transform.translate.y + baseTransform_.translate.y + cameraPos.y,
+                part.transform.translate.z + baseTransform_.translate.z + cameraPos.z
+            };
+            return worldPos;
+        }
+    }
+
+    // 万が一見つからなかった場合はベース座標を返す
+    return baseTransform_.translate;
 }
 
 void banana::SetTargetPlayer(Player* target)
