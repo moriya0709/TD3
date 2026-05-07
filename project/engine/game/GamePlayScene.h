@@ -13,6 +13,7 @@
 #include "SoundManager.h"
 #include "Sprite.h"
 #include "ScoreManager.h"
+#include "CommonStructs.h"
 #include"../game/collision/Collision.h"
 
 #include "../../game/enemy/EnemyManager.h"
@@ -211,5 +212,17 @@ private:
 
     //スコア管理用
     ScoreManager scoreManager_;
+
+    // Updateで直接操作したい特定のオブジェクトへのポインタ(アニメーションモデル)
+    Object* walkAnimation = nullptr;
+
+    Skeleton skeleton_;
+    Skeleton skinCluster_;
+
+    std::vector<std::unique_ptr<Object>> normalObjects;//通常モデル  
+    std::vector<std::unique_ptr<Object>> animationObjects;//アニメーションモデル 
+    
+    Animation simpleAnimation_;//スケルトン
+    Animation walkAnimation_;//歩きモーション
 
 };

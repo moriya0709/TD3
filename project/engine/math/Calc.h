@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <algorithm>
+#include <cmath>
 
 /// AL3サンプルプログラム用の数学ライブラリ。
 /// MT3準拠で、KamataEngine内部の数学ライブラリと重複する。
@@ -31,6 +32,13 @@ struct Vector2Int final {
     int y;
 };
 
+// クォータニオン（四元数）
+struct Quaternion {
+    float x;
+    float y;
+    float z;
+    float w;
+};
 
 // 円周率
 const float PI = 3.141592654f;
@@ -44,9 +52,20 @@ struct AABB
 // Transform
 struct Transform {
     Vector3 scale;
-    Vector3 rotate;
+    Vector3 rotate;//Eulerでの回転
     Vector3 translate;
 };
+
+struct QuaternionTransform
+{
+    Vector3 scale;
+    Quaternion rotate;
+    Vector3 translate;
+};
+
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
+
+Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t);
 
 
 // 02_14 29枚目 単項演算子オーバーロード
@@ -91,10 +110,12 @@ Matrix4x4 MakeRotateXMatrix(float theta);
 Matrix4x4 MakeRotateYMatrix(float theta);
 Matrix4x4 MakeRotateZMatrix(float theta);
 Matrix4x4 MakeRotateMatrix(const Vector3& rot);
+Matrix4x4 MakeRotateMatrix(const Quaternion& quaternion);
 // 平行移動行列の作成
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate);
 // アフィン変換行列の作成
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rot, const Vector3& translate);
+Matrix4x4 MakeAffineMatrixQuaternion(const Vector3& scale, const Quaternion& rotate, const Vector3& translate);
 // 累積の回転行列の場合
 Matrix4x4 MakeAffineMatrixR(const Vector3& scale, const Matrix4x4& matRot, const Vector3& translate);
 // 透視投影行列
@@ -106,6 +127,8 @@ Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, f
 
 // 逆行列
 Matrix4x4 Inverse(const Matrix4x4& m);
+
+Matrix4x4 Transpose(const Matrix4x4& m);
 
 Matrix4x4 MakeIdentity4x4();
 

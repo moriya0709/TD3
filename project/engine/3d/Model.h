@@ -10,6 +10,7 @@
 #include<assimp/Importer.hpp>
 #include<assimp/scene.h>
 #include<assimp/postprocess.h>
+#include <span>
 
 #include "Calc.h"
 #include "CommonStructs.h"
@@ -30,6 +31,8 @@ public:
 	// .objファイルの読み込み
 	ModelData LoadModelFile(const std::string& directoryPath, const std::string& filename);
 
+	void CreateIndexData();
+	void CreateVertexData();
 	// 第二法線生成
 	void GenerateOutlineNormal(std::vector<VertexData>& vertices);
 
@@ -75,7 +78,7 @@ private:
 
 	// バッファリソースの使い道を補足するバッファビュー
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
-
+	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 
 	// ModelCommonのポインタ
 	ModelCommon* modelCommon_ = nullptr;

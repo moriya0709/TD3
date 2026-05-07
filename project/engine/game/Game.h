@@ -32,9 +32,6 @@ public:
 	void Finalize() override;
 
 private:
-
-	// SRVマネージャ
-	std::unique_ptr<SrvManager> srvManager = nullptr;
 	// ImGuiマネージャ
 	std::unique_ptr <ImGuiManager> imGuiManager = nullptr;
 	// シーンファクトリー

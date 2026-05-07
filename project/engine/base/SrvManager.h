@@ -7,11 +7,13 @@ class DirectXCommon;
 
 class SrvManager {
 public:
+	static SrvManager* GetInstance();
+
 	// 初期化
 	void Initialize(DirectXCommon* dxCommon);
 
 	// 確保
-	uint32_t Allocate(uint32_t num);
+	uint32_t Allocate(uint32_t num = 1);
 
 	// デスクリプタハンドル計算
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(uint32_t index);
@@ -33,6 +35,11 @@ public:
 	ID3D12DescriptorHeap* GetDescriptorHeap() const {return descriptorHeap.Get();}
 
 private:
+	// Singleton用のコンストラクタ隠蔽
+	SrvManager() = default;
+	~SrvManager() = default;
+	SrvManager(const SrvManager&) = delete;
+	SrvManager& operator=(const SrvManager&) = delete;
 	// 最大SRV数（最大テクスチャ枚数）
 	static const uint32_t kMaxSRVConst;
 	// SRV用のデスクリプタサイズ

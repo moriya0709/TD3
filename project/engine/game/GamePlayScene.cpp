@@ -3,6 +3,7 @@
 #include "SceneManager.h"
 #include "SpriteCommon.h"
 #include "ScoreManager.h"
+#include "Model.h"
 
 void GamePlayScene::Initialize() {
 	// カメラ初期化
@@ -24,6 +25,36 @@ void GamePlayScene::Initialize() {
 	enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
 	cameraController_->SetCurrentStage(currentStage_);
 	cameraController_->StartReplay();
+
+	///
+	///アニメーションモデル
+	/// 
+
+	//スケルトン
+	Model* model = ModelManager::GetInstance()->FindModel("simpleSkin.gltf");//スケルトンアクセス権
+	skeleton_ = model->CreateSkeleton(model->GetModelData().rootNode);//動く仕組み
+
+	//アニメーションデータの読み込み(モデル自体はGame.cppに入れること)
+	simpleAnimation_ = Model::LoadAnimationFile("./Resource", "simpleSkin.gltf");//スケルトン
+	walkAnimation_ = Model::LoadAnimationFile("./Resource", "walk.gltf");
+
+	// アニメーション用オブジェクトの生成と設定
+	auto walkAnim = std::make_unique<Object>();
+	walkAnim->Initialize(camera.get()); // 初期化
+	walkAnim->SetModel("walk.gltf",true); // アニメーションは「true」を入れること
+	walkAnim->SetScale({ 2.0f, 2.0f, 2.0f });
+	walkAnim->SetRotate({ 0.0f, 0.0f, 0.0f });
+	walkAnim->SetTranslate({ -5.0f, -15.0f, 70.0f });
+
+	walkAnim->PlayAnimation(walkAnimation_);//アニメーション読み込み
+	walkAnimation = walkAnim.get();//アニメーション読み込み
+
+	animationObjects.push_back(std::move(walkAnim));//アニメーションモデル専用のリストに入れる
+
+
+	///
+	///
+	///
 
 	// スプライト
 	pause_ = std::make_unique<Sprite>();
@@ -85,6 +116,11 @@ void GamePlayScene::Update() {
 		enemy_->SetcurrentTimer_(cameraController_->GetElapsedTime());
 		enemy_->Update();
 
+		//アニメーションするモデル更新処理
+		for(auto& object : animationObjects) {
+			object->Update();
+		}
+
 		// 当たり判定
 		ChekeAllCollision();
 
@@ -128,6 +164,20 @@ void GamePlayScene::Update() {
 	// イージング更新
 	easing->Update();
 	easing->Draw();
+
+	if (!animationObjects.empty()) {
+		Object* animationObject = animationObjects[0].get(); // アニメーションモデルを取得
+
+		//アニメーションするモデル更新処理
+		if (animationObject->IsSkeletal()) {
+			Vector3 scale = animationObject->GetScale();
+			Vector3 rotate = animationObject->GetRotate();
+			Vector3 translate = animationObject->GetTranslate();
+
+			// アニメーションモデルのワールド行列を作る
+			Matrix4x4 animationWorldMatrix = MakeAffineMatrix(scale, rotate, translate);
+		}
+	}
 }
 
 void GamePlayScene::Draw2D() {
@@ -160,6 +210,16 @@ void GamePlayScene::Draw3D() {
 	
 	cameraController_->EditorDraw();
 
+	//アニメーションモデル描画
+	ObjectCommon::GetInstance()->SetSkinningPipelineState();
+
+	// アニメーションモデルの描画
+	for (auto& object : animationObjects) {
+		if (object->IsSkeletal()) {
+			object->Draw();
+		}
+	}
+
 	// パーティクル描画
 	// ParticleManager::GetInstance()->Draw();
 
@@ -172,7 +232,9 @@ void GamePlayScene::Draw3D() {
 	// object->Draw();
 }
 
-void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
+void GamePlayScene::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); 
+animationObjects.clear();
+}
 
 void GamePlayScene::SetPlayerStyle(int style) { style_ = static_cast<Style>(style); }
 

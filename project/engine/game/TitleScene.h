@@ -159,4 +159,17 @@ private:
 
 	// 本型UI
 	std::unique_ptr <Book> book = nullptr;
+
+	// Updateで直接操作したい特定のオブジェクトへのポインタ(アニメーションモデル)
+	Object* walkAnimation = nullptr;
+
+	Skeleton skeleton_;
+	Skeleton skinCluster_;
+
+	std::vector<std::unique_ptr<Object>> normalObjects;//通常モデル  
+	std::vector<std::unique_ptr<Object>> animationObjects;//アニメーションモデル 
+
+	Animation simpleAnimation_;//スケルトン
+	Animation walkAnimation_;//歩きモーション
+
 };
