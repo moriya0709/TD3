@@ -202,7 +202,7 @@ void GamePlayScene::Draw2D() {
 
 void GamePlayScene::Draw3D() {
 	// 3Dオブジェクトの描画準備
-	ObjectCommon::GetInstance()->SetCommonPipelineState();
+	ObjectCommon::GetInstance()->SetCommonDrawSetting();
 	// 3Dオブジェクト描画
 	player_->Draw3D();
 
@@ -211,7 +211,7 @@ void GamePlayScene::Draw3D() {
 	cameraController_->EditorDraw();
 
 	//アニメーションモデル描画
-	ObjectCommon::GetInstance()->SetSkinningPipelineState();
+	ObjectCommon::GetInstance()->SetSkinningCommonDrawSetting();
 
 	// アニメーションモデルの描画
 	for (auto& object : animationObjects) {

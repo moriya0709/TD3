@@ -45,9 +45,9 @@ void TitleScene::Initialize() {
 	auto walkAnim = std::make_unique<Object>();
 	walkAnim->Initialize(camera.get()); // 初期化
 	walkAnim->SetModel("walk.gltf", true); // アニメーションは「true」を入れること
-	walkAnim->SetScale({ 20.0f, 20.0f, 20.0f });
+	walkAnim->SetScale({ 1.0f, 1.0f, 1.0f });
 	walkAnim->SetRotate({ 0.0f, 0.0f, 0.0f });
-	walkAnim->SetTranslate({ 1.0f, 1.0f, 2.0f });
+	walkAnim->SetTranslate({ 5.0f, -1.0f, 5.0f });
 
 	walkAnim->PlayAnimation(walkAnimation_);//アニメーション読み込み
 	walkAnimation = walkAnim.get();//アニメーション読み込み
@@ -463,7 +463,7 @@ void TitleScene::Draw2D() {
 }
 void TitleScene::Draw3D() {
 	// 3Dオブジェクトの描画準備
-	ObjectCommon::GetInstance()->SetCommonPipelineState();
+	ObjectCommon::GetInstance()->SetCommonDrawSetting();
 
 	
 	// 3Dオブジェクト描画
@@ -479,7 +479,7 @@ void TitleScene::Draw3D() {
 	book->Draw();
 
 	//アニメーションモデル描画
-	ObjectCommon::GetInstance()->SetSkinningPipelineState();
+	ObjectCommon::GetInstance()->SetSkinningCommonDrawSetting();
 
 	// アニメーションモデルの描画
 	for (auto& object : animationObjects) {
