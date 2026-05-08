@@ -7,6 +7,7 @@
 #include "SceneManager.h"
 #include "SpriteCommon.h"
 #include "BookUiCommon.h"
+#include "RadarChartCommon.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -47,25 +48,23 @@ void StageSelect::Initialize() {
 
 	playerObject_->SetTranslate(transform_.translate);
 
-	// パラメータ
-	for (int i = 0; i < kMaxParameter; i++) {
-		parameter[i] = std::make_unique<Sprite>();
-		parameter[i]->Initialize("Resource/parameters/parameters.png");
-		parameter[i]->SetPosition({ 1000.0f, 300.0f + i * 60.0f });
-		parameter[i]->SetSize({ 500.0f, 25.0f });
-		parameter[i]->SetAnchorPoint({ 0.0f, 0.0f });
-		parameterGauge[i] = std::make_unique<Sprite>();
-		parameterGauge[i]->Initialize("Resource/parameters/parametersGauge.png");
-		parameterGaugeEasing[i].pos = { 1000.0f, 300.0f + i * 60.0f };
-		parameterGaugeEasing[i].size = { 0.0f, 25.0f };
-		parameterGaugeEasing[i].startSizeV2 = { 0.0f, 25.0f };
-		parameterGaugeEasing[i].endSizeV2 = { float(parameterSetting[i][currentStyle] * 5), parameterGaugeEasing[i].size.y };
-		parameterGaugeEasing[i].sizeTime = 0.0f;
-		parameterGaugeEasing[i].sizeEasedT = 0.0f;
-		parameterGauge[i]->SetPosition(parameterGaugeEasing[i].pos);
-		parameterGauge[i]->SetSize(parameterGaugeEasing[i].size);
-		parameterGauge[i]->SetAnchorPoint({ 0.0f, 0.0f });
+
+	// レーダーチャート
+	radarChart = std::make_unique<RadarChart>();
+	radarChart->Initialize();
+	radarChart->SetPosition({ radarPosition });
+	radarChart->SetMaxRadius(radarChartRadius);
+	radarChart->SetColor(radarChartColor);
+	radarChart->SetValues(values);
+	for (int i = 0; i < kMaxRadarChart; i++) {
+		radarChartEasing[i].num = 0.0f;
+		radarChartEasing[i].startNumber = 0.0f;
+		radarChartEasing[i].endNumber = parameterSetting[i][currentStyle];
+		radarChartEasing[i].numberTime = 0.0f;
+		radarChartEasing[i].numberEasedT = 0.0f;
 	}
+
+
 
 	// 本型UI
 	std::vector<std::string> textures = {
@@ -117,8 +116,8 @@ void StageSelect::Update() {
 	if (switchCooltime <= 0.0f) {
 		// パラメータのイージングセット
 		if (isParameterEasing) {
-			ParameterEasingSet(currentStyle);
 			isParameterEasing = false;
+			ParameterEasingSet(currentStyle);
 		}
 	}
 
@@ -136,6 +135,7 @@ void StageSelect::Update() {
 					book->NextPage();
 
 					isParameterEasing = true; // イージングリセット
+					ParameterEasingSet(currentStyle);
 
 				} else {
 					if (currentStage < 5) {
@@ -148,6 +148,7 @@ void StageSelect::Update() {
 					book->NextPage();
 
 					isParameterEasing = true; // イージングリセット
+					ParameterEasingSet(currentStyle);
 
 				}
 				switchCooltime = 0.8f; // クールタイムリセット
@@ -164,6 +165,7 @@ void StageSelect::Update() {
 					book->PrevPage();
 
 					isParameterEasing = true; // イージングリセット
+					ParameterEasingSet(currentStyle);
 
 				} else {
 					if (currentStage > 0) {
@@ -177,6 +179,7 @@ void StageSelect::Update() {
 						book->PrevPage();
 
 						isParameterEasing = true; // イージングリセット
+						ParameterEasingSet(currentStyle);
 					}
 
 				}
@@ -218,6 +221,8 @@ void StageSelect::Update() {
 
 		} else {
 			isStageSelect = true;
+			isParameterEasing = true; // イージングリセット
+			ParameterEasingSet(currentStyle);
 		}
 	}
 
@@ -229,16 +234,22 @@ void StageSelect::Update() {
 	book->Update();
 	// シーン切り替え演出
 	TransitionUpdate();
+	radarChart->Update();
 
-	for (int i = 0; i < kMaxParameter; i++) {
-		if (parameterGaugeEasing[i - 1].sizeTime >= 0.5f || i == 0)
-			easing->SizeV2(parameterGaugeEasing[i], 0.05f, 0);
 
-		parameterGauge[i]->SetSize(parameterGaugeEasing[i].size);
+	// レーダーチャート
 
-		parameterGauge[i]->Update();
-		parameter[i]->Update();
+	float radarValues[5];
+	for (int i = 0; i < kMaxRadarChart; i++) {
+		if (!isParameterEasing)
+			easing->Number(radarChartEasing[i], 0.01f, 0);
+		else
+			easing->Number(radarChartEasing[i], 0.05f, 0);
+
+		radarValues[i] = radarChartEasing[i].num;
+		radarChart->SetValues(radarValues);
 	}
+
 
 	//イージング
 	easing->Update();
@@ -250,12 +261,17 @@ void StageSelect::Draw2D() {
 	// 2Dオブジェクトの描画準備
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
-	if (switchCooltime <= 0.0f) {
-		for (int i = 0; i < kMaxParameter; i++) {
-			parameterGauge[i]->Draw();
-			parameter[i]->Draw();
-		}
-	}
+	//if (switchCooltime <= 0.0f) {
+	//	for (int i = 0; i < kMaxParameter; i++) {
+	//		parameterGauge[i]->Draw();
+	//		parameter[i]->Draw();
+	//	}
+	//}
+
+	RadarChartCommon::GetInstance()->SetCommonPipelineState();
+
+	radarChart->Draw();
+
 
 }
 
@@ -379,13 +395,19 @@ void StageSelect::LithingEffect() {
 }
 
 void StageSelect::ParameterEasingSet(Style currentStyle) {
-	for (int i = 0; i < kMaxParameter; i++) {
-		parameterGaugeEasing[i].size = { 0.0f, 25.0f };
-		parameterGaugeEasing[i].startSizeV2 = { 0.0f,parameterGaugeEasing[i].size.y };
-		parameterGaugeEasing[i].endSizeV2 = { float(parameterSetting[i][currentStyle] * 5),parameterGaugeEasing[i].size.y };
-		parameterGaugeEasing[i].sizeTime = 0.0f;
-		parameterGaugeEasing[i].sizeEasedT = 0.0f;
+	for (int i = 0; i < kMaxRadarChart; i++) {
+		if (isParameterEasing) {
+			radarChartEasing[i].startNumber = radarChartEasing[i].num;
+			radarChartEasing[i].endNumber = 0.0f;
+			radarChartEasing[i].numberTime = 0.0f;
+			radarChartEasing[i].numberEasedT = 0.0f;
+		} else {
+			radarChartEasing[i].num = 0.0f;
+			radarChartEasing[i].startNumber = 0.0f;
+			radarChartEasing[i].endNumber = parameterSetting[i][currentStyle];
+			radarChartEasing[i].numberTime = 0.0f;
+			radarChartEasing[i].numberEasedT = 0.0f;
+		}
 
-		parameterGauge[i]->SetSize(parameterGaugeEasing[i].size);
 	}
 }

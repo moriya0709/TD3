@@ -14,6 +14,7 @@
 #include "BaseScene.h"
 #include "PostEffect.h"
 #include "Book.h"
+#include "RadarChart.h"
 
 using namespace DirectX;
 
@@ -157,4 +158,9 @@ private:
 
 	// 本型UI
 	std::unique_ptr <Book> book = nullptr;
+
+	// レーダーチャート
+	std::unique_ptr <RadarChart> radarChart = nullptr;
+	float values[5] = { 0.8f, 0.6f, 0.9f, 0.5f, 0.7f };
+	Vector2 radarPosition = { 960.0f, 540.0f };
 };

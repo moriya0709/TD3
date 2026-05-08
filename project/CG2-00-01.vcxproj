@@ -107,6 +107,8 @@
     <ClCompile Include="game\enemy\Normal\Bullet\rushEnemyBullet.cpp" />
     <ClCompile Include="game\enemy\Normal\type\ShieldEnemy.cpp" />
     <ClCompile Include="engine\game\StageSelect.cpp" />
+    <ClCompile Include="RadarChart.cpp" />
+    <ClCompile Include="RadarChartCommon.cpp" />
     <ClCompile Include="ResultScene.cpp" />
     <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="application\trailEffect\TrailEffect.cpp" />
@@ -114,6 +116,16 @@
     <ClCompile Include="game\camera\StageCameraController.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Resource\shaders\RadarChart.PS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Resource\shaders\RadarChart.VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Development|x64'">Vertex</ShaderType>
+    </FxCompile>
     <FxCompile Include="Resource\shaders\BookUi.HS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Hull</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
@@ -328,6 +340,8 @@
     <ClInclude Include="game\enemy\Boss\type\grapesBoss.h" />
     <ClInclude Include="engine\game\StageSelect.h" />
     <ClInclude Include="GrapeCameraController.h" />
+    <ClInclude Include="RadarChart.h" />
+    <ClInclude Include="RadarChartCommon.h" />
     <ClInclude Include="ResultScene.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="application\trailEffect\TrailEffect.h" />

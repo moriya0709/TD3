@@ -3,6 +3,7 @@
 #include "SpriteCommon.h"
 #include "BookUiCommon.h"
 #include "SceneManager.h"
+#include "RadarChartCommon.h"
 
 void TitleScene::Initialize() {
 
@@ -60,6 +61,10 @@ void TitleScene::Initialize() {
 	book->Initialize(textures);
 	book->SetPosition({ 640.0f, 360.0f, 0.0f });
 
+	// レーダーチャート
+	radarChart = std::make_unique<RadarChart>();
+	radarChart->Initialize();
+
 	// 音声再生
 	//SoundManager::GetInstance()->Play("bgm");
 
@@ -110,6 +115,11 @@ void TitleScene::Update() {
 	// *スプライト* //
 	// sprite更新
 	sprite->Update();
+
+
+	radarChart->SetValues(values);
+	radarChart->SetPosition(radarPosition);
+	radarChart->Update();
 
 #pragma region ライティング
 	// *ライティング* //
@@ -398,6 +408,13 @@ void TitleScene::Update() {
 
 #pragma endregion
 
+	ImGui::DragFloat("radarValue0", &values[0], 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("radarValue1", &values[1], 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("radarValue2", &values[2], 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("radarValue3", &values[3], 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("radarValue4", &values[4], 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat2("radarPosition", &radarPosition.x, 0.1f, 0.0f, 2000.0f);
+
 #endif
 
 }
@@ -408,6 +425,10 @@ void TitleScene::Draw2D() {
 
 	// スプライト描画
 	//sprite->Draw();
+
+	RadarChartCommon::GetInstance()->SetCommonPipelineState();
+
+	radarChart->Draw();
 
 }
 void TitleScene::Draw3D() {
