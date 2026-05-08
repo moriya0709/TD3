@@ -19,6 +19,7 @@
 #include "SceneManager.h"
 #include "SceneFactory.h"
 #include "BookUiCommon.h"
+#include "RadarChartCommon.h"
 
 class Game : public M_Framework {
 public:

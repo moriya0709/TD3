@@ -17,6 +17,7 @@
 #include "game/player/Player.h"
 #include "Easing.h"
 #include "Book.h"
+#include "RadarChart.h"
 
 
 using namespace DirectX;
@@ -62,29 +63,6 @@ private:
 
 	bool isStageSelect = false;
 	int currentStage = 1;
-
-	// 切り換えクールタイム
-	float switchCooltime = 0.0f;
-
-	// パラメータ
-	std::unique_ptr<Sprite> parameter[9] = {};
-	std::unique_ptr<Sprite> parameterGauge[9] = {};
-	EasingSet parameterGaugeEasing[9];
-	int kMaxParameter = 9;
-
-	int parameterSetting[9][4] = {
-		{80, 50, 10, 30},	// hp
-		{70, 60, 70, 80},	// 威力
-		{90, 40, 20, 30},	// 連射速度
-		{60, 70, 50, 10},	// 移動速度
-		{50, 80, 40, 30},	// 射程orチャージ速度
-		{50, 80, 40, 30},	// 射程orチャージ速度
-		{50, 80, 40, 30},	// 射程orチャージ速度
-		{50, 80, 40, 30},	// 射程orチャージ速度
-		{50, 80, 40, 30},	// 射程orチャージ速度
-		//Normal	Speed	Power	Sniper
-	};
-	bool isParameterEasing = false;
 
 	// イージング
 	std::unique_ptr <Easing> easing;
@@ -182,6 +160,28 @@ private:
 	// 本型UI
 	std::unique_ptr <Book> book = nullptr;
 	EasingSet bookEasing;
+
+	// レーダーチャート
+	std::unique_ptr <RadarChart> radarChart = nullptr;
+	float values[5] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+	Vector2 radarPosition = { 1247.0f, 530.0f };
+	float radarChartRadius = 204.0f;
+	EasingSet radarChartEasing[5];
+	int kMaxRadarChart = 5;
+	DirectX::XMFLOAT4 radarChartColor = { 0.0f, 1.0f, 0.0f, 0.5f };
+
+	// 切り換えクールタイム
+	float switchCooltime = 0.0f;
+
+	float parameterSetting[5][4] = {
+		{0.88f, 0.2f, 1.44f, 0.8f},	// 体力
+		{0.25f, 0.08f, 2.0f, 0.2f},	// 攻撃力
+		{0.6f, 1.2f, 0.1f, 0.02f},	// チャージ速度
+		{0.5f, 0.3f, 0.5f, 2.0f},	// チャージ攻撃力
+		{0.5f, 1.5f, 0.2f, 0.1f},	// 連射速度
+		//Normal	Speed	Power	Sniper
+	};
+	bool isParameterEasing = false;
 
 	bool isTransition = false;
 
