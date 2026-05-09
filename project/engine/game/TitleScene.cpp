@@ -4,6 +4,7 @@
 #include "BookUiCommon.h"
 #include "SceneManager.h"
 #include "Model.h"
+#include "RadarChartCommon.h"
 
 void TitleScene::Initialize() {
 
@@ -12,11 +13,8 @@ void TitleScene::Initialize() {
 	camera->SetRotate({ cameraTransform.rotate });
 	camera->SetTranslate({ cameraTransform.translate });
 
-	railCamera = std::make_unique<RailCamera>();
-	railCamera->Initialize();
-
 	// カメラマネージャ登録
-	CameraManager::GetInstance()->AddCamera("main", railCamera->camera.get());
+	CameraManager::GetInstance()->AddCamera("main", camera.get());
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
 	// スプライト
@@ -81,13 +79,17 @@ void TitleScene::Initialize() {
 	// 本型UI
 	std::vector<std::string> textures = {
 	"Resource/bookUi/bookUi_1.png",
-	"Resource/bookUi/bookUi_2.png",
-	"Resource/bookUi/bookUi_3.png",
-	"Resource/bookUi/bookUi_4.png"
+	"Resource/bookUi/bookUi_1.png",
+	"Resource/bookUi/bookUi_1.png",
+	"Resource/bookUi/bookUi_1.png",
 	};
 	book = std::make_unique<Book>();
 	book->Initialize(textures);
 	book->SetPosition({ 640.0f, 360.0f, 0.0f });
+
+	// レーダーチャート
+	radarChart = std::make_unique<RadarChart>();
+	radarChart->Initialize();
 
 	// 音声再生
 	//SoundManager::GetInstance()->Play("bgm");
@@ -99,9 +101,6 @@ void TitleScene::Update() {
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
-
-	railCamera->Update();
-	railCamera->EditorUpdate();
 
 	// 本型UI更新
 	if (input->TriggerKey(DIK_D)) book->NextPage();
@@ -154,13 +153,18 @@ void TitleScene::Update() {
 	//}
 
 	// パーティクル更新
-	particleEmitter->Update();
+	//particleEmitter->Update();
 	particleEmitter->Editor();
 
 
 	// *スプライト* //
 	// sprite更新
 	sprite->Update();
+
+
+	radarChart->SetValues(values);
+	radarChart->SetPosition(radarPosition);
+	radarChart->Update();
 
 #pragma region ライティング
 	// *ライティング* //
@@ -241,7 +245,7 @@ void TitleScene::Update() {
 
 #pragma region レイマーチング
 	// レイマーチング
-	RayMarching::GetInstance()->Update(railCamera->camera.get());
+	RayMarching::GetInstance()->Update(camera.get());
 	//rayMarching->SetTime(rayMarchingTime);
 	RayMarching::GetInstance()->SetSunDir(rayMarchingSunDir);
 	RayMarching::GetInstance()->SetCloudCoverage(rayMarchingCloudCoverage);
@@ -449,6 +453,13 @@ void TitleScene::Update() {
 
 #pragma endregion
 
+	ImGui::DragFloat("radarValue0", &values[0], 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("radarValue1", &values[1], 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("radarValue2", &values[2], 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("radarValue3", &values[3], 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat("radarValue4", &values[4], 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat2("radarPosition", &radarPosition.x, 0.1f, 0.0f, 2000.0f);
+
 #endif
 
 }
@@ -459,6 +470,10 @@ void TitleScene::Draw2D() {
 
 	// スプライト描画
 	//sprite->Draw();
+
+	RadarChartCommon::GetInstance()->SetCommonPipelineState();
+
+	radarChart->Draw();
 
 }
 void TitleScene::Draw3D() {
@@ -471,12 +486,10 @@ void TitleScene::Draw3D() {
 		object[i]->Draw();
 	}
 
-	railCamera->EditorDraw();
-
 	// 本型UIの描画準備
-	BookUiCommon::GetInstance()->SetCommonPipelineState();
+	//BookUiCommon::GetInstance()->SetCommonPipelineState();
 
-	book->Draw();
+	//book->Draw();
 
 	//アニメーションモデル描画
 	ObjectCommon::GetInstance()->SetSkinningCommonDrawSetting();

@@ -20,6 +20,7 @@ public:
 	virtual void Draw3D();
 	virtual void Draw2D();
 	virtual void SetStatus(const float hommingAccuracy,const int damage);
+	virtual void SetSize(float size) {};
 	virtual bool IsActive();
 	virtual void SetActive(bool active) {};
 	virtual int GetPenetration();

@@ -15,6 +15,7 @@ struct EasingSet {
 	Transform transform;
 	Vector2 pos;
 	Vector2 size;
+	float num;
 	Vector2 startPosV2;
 	Vector3 startPos;
 	Vector2 endPosV2;
@@ -25,12 +26,16 @@ struct EasingSet {
 	Vector3 endSize;
 	Vector3 startRotation;
 	Vector3 endRotation;
+	float startNumber;
+	float endNumber;
 	float moveTime;
 	float sizeTime;
 	float rotationTime;
+	float numberTime;
 	float moveEasedT;
 	float sizeEasedT;
 	float rotationEasedT;
+	float numberEasedT;
 	int color;
 };
 
@@ -53,6 +58,8 @@ public:
 	void SizeV2(EasingSet& ui, float timeSpeed, int num);
 	// 回転
 	void Rotation(EasingSet& ui, float timeSpeed, int num);
+	// 数値
+	void Number(EasingSet& ui, float timeSpeed, int num);
 
 private:
 	// 制御点の数

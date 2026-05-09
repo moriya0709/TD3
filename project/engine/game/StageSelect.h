@@ -16,6 +16,9 @@
 #include "Sprite.h"
 #include "game/player/Player.h"
 #include "Easing.h"
+#include "Book.h"
+#include "RadarChart.h"
+
 
 using namespace DirectX;
 
@@ -61,22 +64,6 @@ private:
 	bool isStageSelect = false;
 	int currentStage = 1;
 
-	// パラメータ
-	std::unique_ptr<Sprite> parameter[5] = {};
-	std::unique_ptr<Sprite> parameterGauge[5] = {};
-	EasingSet parameterGaugeEasing[5];
-	int kMaxParameter = 5;
-
-	int parameterSetting[5][4] = {
-		{80, 50, 10, 30},	// hp
-		{70, 60, 70, 80},	// 威力
-		{90, 40, 20, 30},	// 連射速度
-		{60, 70, 50, 10},	// 移動速度
-		{50, 80, 40, 30}	// 射程orチャージ速度
-		//Normal	Speed	Power	Sniper
-	};
-
-
 	// イージング
 	std::unique_ptr <Easing> easing;
 
@@ -112,7 +99,7 @@ private:
 	// 放射線ブラー
 	bool isRadialBlur = false;
 	Vector2 blurCenter = {0.5f, 0.5f};
-	float blurWidth = 0.01f;
+	float blurWidth = 0.0f;
 	int blurSamples = 10;
 
 	// ディスタンスフォグ
@@ -136,7 +123,7 @@ private:
 
 	// ブルーム
 	float bloomThreshold = 1.5f;
-	float bloomIntensity = 1.0f;
+	float bloomIntensity = 0.0f;
 	float bloomBlurRadius = 1.0f;
 
 	// レンズフレア
@@ -151,6 +138,14 @@ private:
 	int motionBlurSamples = 16;   // サンプル数（例：8〜16）
 	float motionBlurScale = 1.0f; // ブラーの強さ
 
+	// 色収差
+	bool isFullScreenCA = false; // 画面全体の色収差ON/OFF
+	float fullScreenCAIntensity = 0.0f; // 画面全体の色収差の強さ
+
+	// スピードディストーション
+	bool isSpeedDistortion = false; // スピードディストーションのON/OFF
+	float speedDistortionStrength = 0.0f; // 歪みの強さ
+
 	// レイマーチング
 	// float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = {0.07f, -0.17f, -0.75f};
@@ -161,6 +156,36 @@ private:
 	bool rayMarchingIsAnimeLight = true;
 	bool rayMarchingIsMotionBlur = false;
 	float rayMarchingCloudOpacity = 0.01f;
+
+	// 本型UI
+	std::unique_ptr <Book> book = nullptr;
+	EasingSet bookEasing;
+
+	// レーダーチャート
+	std::unique_ptr <RadarChart> radarChart = nullptr;
+	float values[5] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+	Vector2 radarPosition = { 1247.0f, 530.0f };
+	float radarChartRadius = 204.0f;
+	EasingSet radarChartEasing[5];
+	int kMaxRadarChart = 5;
+	DirectX::XMFLOAT4 radarChartColor = { 0.0f, 1.0f, 0.0f, 0.5f };
+
+	// 切り換えクールタイム
+	float switchCooltime = 0.0f;
+
+	float parameterSetting[5][4] = {
+		{0.88f, 0.2f, 1.44f, 0.8f},	// 体力
+		{0.25f, 0.08f, 2.0f, 0.2f},	// 攻撃力
+		{0.6f, 1.2f, 0.1f, 0.02f},	// チャージ速度
+		{0.5f, 0.3f, 0.5f, 2.0f},	// チャージ攻撃力
+		{0.5f, 1.5f, 0.2f, 0.1f},	// 連射速度
+		//Normal	Speed	Power	Sniper
+	};
+	bool isParameterEasing = false;
+
+	bool isTransition = false;
+
+	void TransitionUpdate();
 
 	void LithingEffect();
 

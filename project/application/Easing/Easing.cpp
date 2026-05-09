@@ -4,10 +4,10 @@ void Easing::Initialize() {
 	// イージングの枠数
 	// kEasePNum = 0;
 
-	// 着地時のパーティクル
-	LoadEasing("Easing/landing.csv", 0);
+	// 一般的なイージング
+	LoadEasing("Easing/normal.csv", 0);
 	// 磁力エリア切り替え
-	LoadEasing("Easing/swichArea.csv", 1);
+	LoadEasing("Easing/warp.csv", 1);
 	// セレクトUI
 	LoadEasing("Easing/select.csv", 2);
 	// タイトル
@@ -221,6 +221,20 @@ void Easing::Rotation(EasingSet& ui, float timeSpeed, int num) {
 	ui.rotationEasedT = BezierEasing(ui.rotationTime, easeP[num][0], easeP[num][1], easeP[num][2], easeP[num][3]);
 
 	ui.transform.rotate = Lerp(ui.startRotation, ui.endRotation, ui.rotationEasedT);
+}
+
+void Easing::Number(EasingSet& ui, float timeSpeed, int num) {
+	// イージング処理
+
+	ui.numberTime += timeSpeed;
+
+	if (ui.numberTime > 1.0f) {
+		ui.numberTime = 1.0f;
+	}
+
+	ui.numberEasedT = BezierEasing(ui.numberTime, easeP[num][0], easeP[num][1], easeP[num][2], easeP[num][3]);
+
+	ui.num = Lerp(ui.startNumber, ui.endNumber, ui.numberEasedT);
 }
 
 float Easing::Lerp(const float& p0, const float& p1, float t) {

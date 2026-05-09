@@ -21,6 +21,8 @@
     <FxCompile Include="Resource\shaders\BookUi.PS.hlsl" />
     <FxCompile Include="Resource\shaders\BookUi.VS.hlsl" />
     <FxCompile Include="Resource\shaders\SkinningObject3d.VS.hlsl" />
+    <FxCompile Include="Resource\shaders\RadarChart.PS.hlsl" />
+    <FxCompile Include="Resource\shaders\RadarChart.VS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game\collision\Collision.cpp" />
@@ -91,9 +93,14 @@
     <ClCompile Include="game\enemy\Boss\type\banana.cpp" />
     <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="application\Easing\Easing.cpp" />
-    <ClCompile Include="BookUi.cpp" />
-    <ClCompile Include="BookUiCommon.cpp" />
-    <ClCompile Include="Book.cpp" />
+    <ClCompile Include="application\BookUi\BookUi.cpp" />
+    <ClCompile Include="application\BookUi\BookUiCommon.cpp" />
+    <ClCompile Include="application\BookUi\Book.cpp" />
+    <ClCompile Include="game\camera\BananaCameraController.cpp" />
+    <ClCompile Include="game\camera\StageCameraController.cpp" />
+    <ClCompile Include="GrapeCameraController.cpp" />
+    <ClCompile Include="RadarChart.cpp" />
+    <ClCompile Include="RadarChartCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />
@@ -167,10 +174,15 @@
     <ClInclude Include="game\enemy\Boss\type\banana.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="application\Easing\Easing.h" />
-    <ClInclude Include="Blend.h" />
-    <ClInclude Include="BookUi.h" />
-    <ClInclude Include="BookUiCommon.h" />
-    <ClInclude Include="Book.h" />
+    <ClInclude Include="application\BookUi\Blend.h" />
+    <ClInclude Include="application\BookUi\BookUi.h" />
+    <ClInclude Include="application\BookUi\BookUiCommon.h" />
+    <ClInclude Include="application\BookUi\Book.h" />
+    <ClInclude Include="game\camera\BananaCameraController.h" />
+    <ClInclude Include="game\camera\StageCameraController.h" />
+    <ClInclude Include="GrapeCameraController.h" />
+    <ClInclude Include="RadarChart.h" />
+    <ClInclude Include="RadarChartCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\RayMarching.hlsli" />

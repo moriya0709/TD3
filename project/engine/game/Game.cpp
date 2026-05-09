@@ -90,6 +90,9 @@ void Game::Initialize() {
 	// トレイルエフェクト
 	TrailEffectManager::GetInstance()->Initialize();
 
+	// レーダーチャート
+	RadarChartCommon::GetInstance()->Initialize();
+
 	// シーンマネージャーの生成
 	// 最初のシーン生成
 	sceneFactory_ = std::make_unique<SceneFactory>();

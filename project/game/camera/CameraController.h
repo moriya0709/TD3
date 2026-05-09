@@ -15,49 +15,34 @@ class WindowAPI;
 struct ControlPoint {
 	Vector3 position;
 };
-
+struct RotationSpeedKey {
+	float time;            // 変化した瞬間の時間(timer)
+	Vector3 rotationSpeed; // その時の回転速度
+};
 class CameraController {
 public:
-	void Initialize(Camera* camera);
-	void Update();
-	void EditorUpdate();
-	void EditorDraw();
+	virtual void Initialize(Camera* camera);
+	virtual void Update();
+	virtual void EditorUpdate();
+	virtual void EditorDraw();
 
 	// --- ゲッター ---
-	float GetElapsedTime() const { return timer; }
-	float GetTotalDuration() const { return totalDuration; }
-	float GetSpeed() const { return currentSpeed; }
-	int GetCurrentStage() const { return currentStage; }
+	virtual float GetElapsedTime() const { return timer; }
+	virtual float GetTotalDuration() const { return totalDuration; }
+	virtual float GetSpeed() const { return currentSpeed; }
+	virtual int GetCurrentStage() const { return currentStage; }
 
-	void SetCurrentStage(int stage) { ChangeStage(stage); }
-	void StartReplay() {
+	virtual void SetCurrentStage(int stage) {}
+	virtual void StartReplay() {
 		timer = 0.0f;
 		isPlaying = true;
 	}
+	virtual void SetTargetPosition(const Vector3& position) { lastPosition = position; }
 
 private:
-	// ベジェ曲線計算
-	Vector3 EvaluateBezier(float t);
-	double BinomialCoefficient(int n, int k);
 
-	// データ保存・読み込み
-	void SaveToJSON(const std::string& filename);
-	void LoadFromJSON(const std::string& filename);
-	Vector3 GetForward(float distance);
-	Vector3 Evaluate(float distance);
-	Vector3 CatmullRom(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t);
-	std::string GetFilePath(int slot) const;
-	void ChangeStage(int newStage);
 
-	// エディタ・描画用ヘルパー
-	void AddPoint(const Vector3& pos);
-	void SyncSpheres(); // 点の数とスフィアのオブジェクトを同期
-	void InitializeRailModels(int count);
-	void DrawRailModels();
-	void UpdateGizmo();
-	void SelectPointByMouse();
 
-private:
 	Camera* camera = nullptr;
 
 	// --- ステージ依存データ ---
@@ -85,4 +70,7 @@ private:
 
 	DirectXCommon* dxCommon_ = nullptr;
 	std::unique_ptr<WindowAPI> windowAPI_ = nullptr;
+	Vector3 currentRotationSpeed = {1.0f, 1.0f, 1.0f}; // 現在の回転倍率
+	std::vector<RotationSpeedKey> rotationHistory;     // 履歴
+	bool speedChangedDuringPause = false;              // 一時停止中に変更されたか
 };

@@ -9,9 +9,15 @@ void Book::Initialize(const std::vector<std::string>& textures) {
         // ※Zバッファが 0(手前)～1(奥) の設定なら、iが大きいほど数値を大きくする
         page->SetBaseZ(0.5f + (i * 0.001f));
         page->SetPosition(position_);
+        page->SetScale(scale_);
 
         pages_.push_back(std::move(page));
     }
+	pages_[0]->SetPosition(Vector3(position_.x, position_.y + 20.0f, position_.z));
+    pages_[0]->SetScale(Vector3(scale_.x + 90.0f, scale_.y + 50.0f, scale_.z));
+    pages_[1]->SetPosition(Vector3(position_.x, position_.y + 15.0f, position_.z));
+    pages_[1]->SetScale(Vector3(scale_.x + 30.0f, scale_.y + 30.0f, scale_.z));
+
 }
 
 void Book::Update() {
@@ -35,15 +41,28 @@ void Book::Update() {
         }
 
         page->SetBaseZ(targetZ);
+        page->SetPosition(position_);
+		page->SetScale(scale_);
 
         // 座標同期と更新
         page->Update();
     }
+    pages_[0]->SetBaseZ(0.9f);
+    pages_[0]->SetPosition(Vector3(position_.x, position_.y + 20.0f, position_.z));
+    pages_[0]->SetScale(Vector3(scale_.x + 90.0f, scale_.y + 50.0f, scale_.z));
+    pages_[0]->Update();
+
+    pages_[1]->SetBaseZ(0.8f);
+    pages_[1]->SetPosition(Vector3(position_.x, position_.y + 15.0f, position_.z));
+    pages_[1]->SetScale(Vector3(scale_.x + 30.0f, scale_.y + 30.0f, scale_.z));
+    pages_[1]->Update();
 }
 
 void Book::Draw() {
+    pages_[0]->Draw();
+    pages_[1]->Draw();
     // 背面のページから順に描画（ページ番号が大きい順に描画して重ねる）
-    for (int i = (int)pages_.size() - 1; i >= 0; i--) {
+    for (int i = (int)pages_.size() - 1; i >= 2; i--) {
         pages_[i]->Draw();
     }
 }
@@ -58,7 +77,7 @@ void Book::NextPage() {
 
 void Book::PrevPage() {
     // 一つ前のページを「左から右」へ開く
-    if (currentPageIndex_ > 0) {
+    if (currentPageIndex_ > 2) {
         currentPageIndex_--;
         pages_[currentPageIndex_]->StartOpenPageR();
     }

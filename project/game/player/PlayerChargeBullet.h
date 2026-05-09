@@ -23,6 +23,7 @@ public:
 		hommingAccuracy_ = hommingAccuracy;
 		damage_ = damage*2;
 	}
+	void SetSize(float size) override { size_ = size; }
 	bool IsActive() override { return isActive_; }
 	void SetActive(bool active) override { isActive_ = active; }
 	int GetPenetration() override { return 0; }
@@ -33,6 +34,7 @@ public:
 
 private:
 	// プレイヤーの弾のステータス
+	float size_ = 1.0f; // 弾のサイズ
 	Transform transform_;
 	std::unique_ptr<Object> object_;
 	float hommingAccuracy_ = 0.0f;           // ホーミング精度
