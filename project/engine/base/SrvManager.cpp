@@ -3,6 +3,12 @@
 
 const uint32_t SrvManager::kMaxSRVConst = 512;
 
+SrvManager* SrvManager::GetInstance()
+{
+	static SrvManager instance;
+	return &instance;
+}
+
 void SrvManager::Initialize(DirectXCommon* dxCommon) {
 	// 引数で受け取ってメンバ変数に記録する
 	dxCommon_ = dxCommon;

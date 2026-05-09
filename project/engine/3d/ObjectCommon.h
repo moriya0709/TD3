@@ -17,6 +17,11 @@ public:
 	void SetCommonPipelineState(); // 通常
 	void SetOutlinePipelineState(); // アウトライン
 
+	//スキニング用の共通描画設定
+	void SetSkinningCommonDrawSetting();
+	//共通描画設定
+	void SetCommonDrawSetting();
+
 	// シングルトンインスタンスの取得
 	static ObjectCommon* GetInstance();
 
@@ -59,5 +64,13 @@ private:
 	// グラフィックスパイプラインの生成
 	void CreateGraphicsPipeline(); // 通常
 	void CreateGraphicsOutlinePipeline(); // アウトライン用
+
+	// スキニング用のパイプライン生成関数
+	void CreateSkinningRootSignature();
+	void CreateSkinningGraphicsPipeline();
+
+	// スキニング用のルートシグネチャとパイプライン
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> skinningRootSignature_;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> skinningGraphicsPipelineState_;
 };
 

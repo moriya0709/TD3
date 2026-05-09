@@ -3,6 +3,7 @@
 #include "SpriteCommon.h"
 #include "BookUiCommon.h"
 #include "SceneManager.h"
+#include "Model.h"
 #include "RadarChartCommon.h"
 
 void TitleScene::Initialize() {
@@ -25,6 +26,31 @@ void TitleScene::Initialize() {
 		object[i] = std::make_unique <Object>();
 		object[i]->Initialize(camera.get());
 	}
+
+	///
+	///アニメーションモデル
+	/// 
+
+	//スケルトン
+	Model* model = ModelManager::GetInstance()->FindModel("simpleSkin.gltf");//スケルトンアクセス権
+	skeleton_ = model->CreateSkeleton(model->GetModelData().rootNode);//動く仕組み
+
+	//アニメーションデータの読み込み(モデル自体はGame.cppに入れること)
+	simpleAnimation_ = Model::LoadAnimationFile("./Resource", "simpleSkin.gltf");//スケルトン
+	walkAnimation_ = Model::LoadAnimationFile("./Resource", "walk.gltf");
+
+	// アニメーション用オブジェクトの生成と設定
+	auto walkAnim = std::make_unique<Object>();
+	walkAnim->Initialize(camera.get()); // 初期化
+	walkAnim->SetModel("walk.gltf", true); // アニメーションは「true」を入れること
+	walkAnim->SetScale({ 1.0f, 1.0f, 1.0f });
+	walkAnim->SetRotate({ 0.0f, 0.0f, 0.0f });
+	walkAnim->SetTranslate({ 5.0f, -1.0f, 5.0f });
+
+	walkAnim->PlayAnimation(walkAnimation_);//アニメーション読み込み
+	walkAnimation = walkAnim.get();//アニメーション読み込み
+
+	animationObjects.push_back(std::move(walkAnim));//アニメーションモデル専用のリストに入れる
 
 	// ヒットエフェクト
 	for (int i = 0; i < hitEffectCount; i++) {
@@ -100,6 +126,25 @@ void TitleScene::Update() {
 	// * 3Dオブジェクト* //
 	for (int i = 0; i < 2; i++) {
 		object[i]->Update();
+	}
+
+	//アニメーションするモデル更新処理
+	for (auto& object : animationObjects) {
+		object->Update();
+	}
+
+	if (!animationObjects.empty()) {
+		Object* animationObject = animationObjects[0].get(); // アニメーションモデルを取得
+
+		//アニメーションするモデル更新処理
+		if (animationObject->IsSkeletal()) {
+			Vector3 scale = animationObject->GetScale();
+			Vector3 rotate = animationObject->GetRotate();
+			Vector3 translate = animationObject->GetTranslate();
+
+			// アニメーションモデルのワールド行列を作る
+			Matrix4x4 animationWorldMatrix = MakeAffineMatrix(scale, rotate, translate);
+		}
 	}
 
 	// ヒットエフェクト更新
@@ -433,7 +478,7 @@ void TitleScene::Draw2D() {
 }
 void TitleScene::Draw3D() {
 	// 3Dオブジェクトの描画準備
-	ObjectCommon::GetInstance()->SetCommonPipelineState();
+	ObjectCommon::GetInstance()->SetCommonDrawSetting();
 
 	
 	// 3Dオブジェクト描画
@@ -446,6 +491,15 @@ void TitleScene::Draw3D() {
 
 	//book->Draw();
 
+	//アニメーションモデル描画
+	ObjectCommon::GetInstance()->SetSkinningCommonDrawSetting();
+
+	// アニメーションモデルの描画
+	for (auto& object : animationObjects) {
+		if (object->IsSkeletal()) {
+			object->Draw();
+		}
+	}
 
 	// アウトライン描画準備
 	//ObjectCommon::GetInstance()->SetOutlinePipelineState();
@@ -459,4 +513,5 @@ void TitleScene::Draw3D() {
 
 void TitleScene::Finalize() {
 	CameraManager::GetInstance()->RemoveCamera("main");
+	animationObjects.clear();
 }
