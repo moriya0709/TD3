@@ -42,6 +42,7 @@ void Game::Initialize() {
 #pragma region 最初のシーン
 	// テクスチャ読み込み
 	TextureManager::GetInstance()->LoadTexture("Resource/trail/trail.png");
+	TextureManager::GetInstance()->LoadTexture("Resource/titleF.jpg");//タイトル仮
 
 	// パーティクルマネージャ初期化
 	ParticleManager::GetInstance()->CreateParticleGroup("group1", "Resource/particle/particle.png");
@@ -62,10 +63,16 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/player", "player.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/cloud", "normalMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/cloud", "normalNBullet.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/machine/cloud", "normalCBullet.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/kamihikouki", "speedMachine.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/machine/kamihikouki", "SpeedNBullet.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/machine/kamihikouki", "SpeedCBullet.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/houki", "powerMachine.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/machine/houki", "powerNBullet.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/machine/houki", "powerCBullet.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/nasu", "sniperMachine.obj");
-	ModelManager::GetInstance()->LoadModel("Resource/enemy/tometo", "tometo.obj");//トマトの代わり
+	ModelManager::GetInstance()->LoadModel("Resource/enemy/tometo", "tometo.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/enemy/suican", "suican.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/enemy/bossGrape", "bossGrapesOnly.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/enemy/bossGrape", "bossGrapesBranch.obj");
     ModelManager::GetInstance()->LoadModel("Resource/enemy/bossBanana", "bossBananAttack.obj");

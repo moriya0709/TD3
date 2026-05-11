@@ -167,6 +167,9 @@ private:
 	std::unique_ptr<Camera> camera = nullptr;
 	// スプライト
 	std::unique_ptr <Sprite> sprite = nullptr;
+	// タイトル
+	std::unique_ptr <Sprite> title_ = nullptr;
+
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
 
