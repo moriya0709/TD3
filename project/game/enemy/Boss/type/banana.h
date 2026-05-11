@@ -20,7 +20,6 @@ class PlayerBullet;
 class banana {
 public:
     enum class CollisionShape {
-        kPlane, // 面
         kBox // 矩形
     };
 
@@ -28,8 +27,7 @@ public:
         CollisionShape shape; // 形状の判定
         Vector3 position; // 面の中心座標
         Vector3 normal; // 面の正面方向（法線）
-        Vector3 right; // 面の横方向（幅の計算用）
-        Vector3 up; // 面の縦方向（高さの計算用）
+        float depth;
         float width; // 横幅の半分
         float height;
         uint32_t partId;

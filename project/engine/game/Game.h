@@ -19,6 +19,7 @@
 #include "SceneManager.h"
 #include "SceneFactory.h"
 #include "BookUiCommon.h"
+#include "RadarChartCommon.h"
 
 class Game : public M_Framework {
 public:
@@ -32,9 +33,6 @@ public:
 	void Finalize() override;
 
 private:
-
-	// SRVマネージャ
-	std::unique_ptr<SrvManager> srvManager = nullptr;
 	// ImGuiマネージャ
 	std::unique_ptr <ImGuiManager> imGuiManager = nullptr;
 	// シーンファクトリー

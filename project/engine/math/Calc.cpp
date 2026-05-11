@@ -155,6 +155,42 @@ Matrix4x4 MakeRotateMatrix(const Vector3& rot)
     return matRotZ * matRotX * matRotY;
 }
 
+// クォータニオンから回転行列を作成する関数
+Matrix4x4 MakeRotateMatrix(const Quaternion& quaternion) {
+    Matrix4x4 result{};
+    float xx = quaternion.x * quaternion.x;
+    float yy = quaternion.y * quaternion.y;
+    float zz = quaternion.z * quaternion.z;
+    float xy = quaternion.x * quaternion.y;
+    float xz = quaternion.x * quaternion.z;
+    float yz = quaternion.y * quaternion.z;
+    float wx = quaternion.w * quaternion.x;
+    float wy = quaternion.w * quaternion.y;
+    float wz = quaternion.w * quaternion.z;
+
+    result.m[0][0] = 1.0f - 2.0f * (yy + zz);
+    result.m[0][1] = 2.0f * (xy + wz);
+    result.m[0][2] = 2.0f * (xz - wy);
+    result.m[0][3] = 0.0f;
+
+    result.m[1][0] = 2.0f * (xy - wz);
+    result.m[1][1] = 1.0f - 2.0f * (xx + zz);
+    result.m[1][2] = 2.0f * (yz + wx);
+    result.m[1][3] = 0.0f;
+
+    result.m[2][0] = 2.0f * (xz + wy);
+    result.m[2][1] = 2.0f * (yz - wx);
+    result.m[2][2] = 1.0f - 2.0f * (xx + yy);
+    result.m[2][3] = 0.0f;
+
+    result.m[3][0] = 0.0f;
+    result.m[3][1] = 0.0f;
+    result.m[3][2] = 0.0f;
+    result.m[3][3] = 1.0f;
+
+    return result;
+}
+
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate)
 {
     Matrix4x4 result { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, translate.x, translate.y, translate.z, 1.0f };
@@ -181,6 +217,62 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rot, const Vecto
     Matrix4x4 matTransform = matScale * matRot * matTrans;
 
     return matTransform;
+}
+
+Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t)
+{
+    return {
+    v1.x + (v2.x - v1.x) * t,
+    v1.y + (v2.y - v1.y) * t,
+    v1.z + (v2.z - v1.z) * t
+    };
+}
+
+Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t) {
+    float dot = q0.x * q1.x + q0.y * q1.y + q0.z * q1.z + q0.w * q1.w;
+    Quaternion q1_ = q1;
+
+    // 内積が負の場合は、逆回転を防ぐために反転
+    if (dot < 0.0f) {
+        q1_ = { -q1.x, -q1.y, -q1.z, -q1.w };
+        dot = -dot;
+    }
+
+    // 内積が1に近い（角度がほぼ0）場合はゼロ除算を防ぐため線形補間
+    if (dot >= 1.0f - 0.0005f) {
+        Quaternion result = {
+            q0.x * (1.0f - t) + q1_.x * t,
+            q0.y * (1.0f - t) + q1_.y * t,
+            q0.z * (1.0f - t) + q1_.z * t,
+            q0.w * (1.0f - t) + q1_.w * t
+        };
+        // 正規化
+        float norm = std::sqrt(result.x * result.x + result.y * result.y + result.z * result.z + result.w * result.w);
+        return { result.x / norm, result.y / norm, result.z / norm, result.w / norm };
+    }
+
+    float theta_0 = std::acos(dot);
+    float theta = theta_0 * t;
+    float sin_theta = std::sin(theta);
+    float sin_theta_0 = std::sin(theta_0);
+
+    float s0 = std::cos(theta) - dot * sin_theta / sin_theta_0;
+    float s1 = sin_theta / sin_theta_0;
+
+    return {
+        (q0.x * s0) + (q1_.x * s1),
+        (q0.y * s0) + (q1_.y * s1),
+        (q0.z * s0) + (q1_.z * s1),
+        (q0.w * s0) + (q1_.w * s1)
+    };
+}
+
+Matrix4x4 MakeAffineMatrixQuaternion(const Vector3& scale, const Quaternion& rotate, const Vector3& translate)
+{
+    Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
+    Matrix4x4 rotateMatrix = MakeRotateMatrix(rotate);
+    Matrix4x4 translateMatrix = MakeTranslateMatrix(translate);
+    return Multiply(scaleMatrix, Multiply(rotateMatrix, translateMatrix));
 }
 
 // 累積の回転行列の場合
@@ -277,6 +369,17 @@ Matrix4x4 Inverse(const Matrix4x4& m) {
     float* dst = &result.m[0][0];
     for (int i = 0; i < 16; i++) dst[i] = tmp[i] * invDet;
 
+    return result;
+}
+
+// 4x4行列の転置（行と列を入れ替える）
+Matrix4x4 Transpose(const Matrix4x4& m) {
+    Matrix4x4 result;
+    for (int row = 0; row < 4; ++row) {
+        for (int column = 0; column < 4; ++column) {
+            result.m[row][column] = m.m[column][row];
+        }
+    }
     return result;
 }
 

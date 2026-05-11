@@ -223,6 +223,20 @@ void Easing::Rotation(EasingSet& ui, float timeSpeed, int num) {
 	ui.transform.rotate = Lerp(ui.startRotation, ui.endRotation, ui.rotationEasedT);
 }
 
+void Easing::Number(EasingSet& ui, float timeSpeed, int num) {
+	// イージング処理
+
+	ui.numberTime += timeSpeed;
+
+	if (ui.numberTime > 1.0f) {
+		ui.numberTime = 1.0f;
+	}
+
+	ui.numberEasedT = BezierEasing(ui.numberTime, easeP[num][0], easeP[num][1], easeP[num][2], easeP[num][3]);
+
+	ui.num = Lerp(ui.startNumber, ui.endNumber, ui.numberEasedT);
+}
+
 float Easing::Lerp(const float& p0, const float& p1, float t) {
 	float result;
 	result = (1.0f - t) * p0 + t * p1;

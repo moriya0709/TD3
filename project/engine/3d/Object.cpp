@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "CameraManager.h"
 #include "DirectXCommon.h"
+#include "SrvManager.h"
 
 void Object::Initialize(Camera* camera) {
 	// 引数で受け取ってメンバ変数に記録する
@@ -100,8 +101,48 @@ void Object::Update() {
 	// 新しいWVPを計算する前に、現在のWVPを「過去のWVP」として退避させる
 	transformationMatrixData->prevWVP = currentWVP_;
 
+	if (model_ && isAnimating_)
+	{
+		animationTime_ += 1.0f / 60.0f;//時刻を進める。1/60で固定してあるが、計算した時間を使って可変フレーム対応するほうが望ましい
+		animationTime_ = std::fmod(animationTime_, currentAnimation_.duration);//最後まで行ったら最初からリポート再生
+
+
+		if (isSkeletal_)//スケルトンがある場合
+		{
+			model_->ApplyAnimation(skeleton_, currentAnimation_, animationTime_);
+			model_->Update(skeleton_);
+			model_->Update(skinCluster_, skeleton_);
+		} else {//RootNodeだけ動かす場合
+			std::string rootName = model_->GetModelData().rootNode.name;
+			if (currentAnimation_.nodeAnimations.count(rootName))
+			{
+				NodeAnimation& rootNodeAnimation = currentAnimation_.nodeAnimations[rootName];
+
+				Vector3 translate = Model::CalculateValue(rootNodeAnimation.translate.keyframes, animationTime_);
+				Quaternion rotate = Model::CalculateValue(rootNodeAnimation.rotate.keyframes, animationTime_);
+				Vector3 scale = Model::CalculateValue(rootNodeAnimation.scale.keyframes, animationTime_);
+
+				model_->GetModelData().rootNode.localMatrix = MakeAffineMatrixQuaternion(scale, rotate, translate);
+			}
+		}
+	}
+
 	// 通常通り、現在のワールド行列を計算
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	
+	if (model_)
+	{
+		if (!isSkeletal_)
+		{
+			Matrix4x4 rootMatrix = model_->GetModelData().rootNode.localMatrix;
+			//もしrootMatrixが未初期化だったら単位行列に
+			if (rootMatrix.m[0][0] == 0.0f && rootMatrix.m[3][3] == 0.0f) {
+				rootMatrix = MakeIdentity4x4();
+			}
+			worldMatrix = Multiply(rootMatrix, worldMatrix);
+		}
+	}
+	
 	transformationMatrixData->World = worldMatrix;
 
 	// 現在のWVP行列を計算
@@ -133,15 +174,52 @@ void Object::Draw() {
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(9, motionBlurResource->GetGPUVirtualAddress());
 
 	// 3Dモデルが割り当てられていれば描画する
-	if (model_) {
-		model_->Draw();
+	if (model_)
+	{
+		//アニメーションモデルならアドレスを渡す
+		if (isSkeletal_)
+		{
+			model_->Draw(skinCluster_);
+		} else
+		{
+			model_->Draw();
+		}
 	}
 
 }
 
-void Object::SetModel(const std::string& filePath) {
+void Object::SetModel(const std::string& filePath, bool isAnimation) {
 	// モデルを検索してセットする
 	model_ = ModelManager::GetInstance()->FindModel(filePath);
+	if (model_)
+	{
+		if (isAnimation) {
+			//モデルの階層構造からスケルトンを生成
+			skeleton_ = model_->CreateSkeleton(model_->GetModelData().rootNode);
+			//ジョイントがあればスケルトンモデルとして扱う
+			isSkeletal_ = !skeleton_.joints.empty();
+			//obj なら絶対にスケルトンを作らない
+		} else {
+			isSkeletal_ = false;//アニメーションしないモデルはfalse
+		}
+
+		if (isSkeletal_) {
+			//スケルトンがあるならSkinClusterも作成する
+			// （引数の descriptorHeap や device は DxCommon 等から引っ張ってくる）
+			auto device = dxCommon_->GetDevice();
+			auto srvHeap = SrvManager::GetInstance()->GetDescriptorHeap();
+			uint32_t descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+			skinCluster_ = model_->CreateSkinCluster(device, skeleton_, model_->GetModelData(), srvHeap, descriptorSize);
+		}
+	}
+}
+
+void Object::PlayAnimation(const Animation& animation)
+{
+	currentAnimation_ = animation;
+	animationTime_ = 0.0f;
+	isAnimating_ = true;
 }
 
 void Object::SunLight() {

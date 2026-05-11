@@ -7,6 +7,7 @@
 #include "SceneManager.h"
 #include "SpriteCommon.h"
 #include "BookUiCommon.h"
+#include "RadarChartCommon.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -47,14 +48,32 @@ void StageSelect::Initialize() {
 
 	playerObject_->SetTranslate(transform_.translate);
 
+
+	// レーダーチャート
+	radarChart = std::make_unique<RadarChart>();
+	radarChart->Initialize();
+	radarChart->SetPosition({ radarPosition });
+	radarChart->SetMaxRadius(radarChartRadius);
+	radarChart->SetColor(radarChartColor);
+	radarChart->SetValues(values);
+	for (int i = 0; i < kMaxRadarChart; i++) {
+		radarChartEasing[i].num = 0.0f;
+		radarChartEasing[i].startNumber = 0.0f;
+		radarChartEasing[i].endNumber = parameterSetting[i][currentStyle];
+		radarChartEasing[i].numberTime = 0.0f;
+		radarChartEasing[i].numberEasedT = 0.0f;
+	}
+
+
+
 	// 本型UI
 	std::vector<std::string> textures = {
 	"Resource/bookUi/cover.png",
 	"Resource/bookUi/cover2.png",
-	"Resource/bookUi/bookUi_1.png",// normal
-	"Resource/bookUi/bookUi_1.png",// speed
-	"Resource/bookUi/bookUi_1.png",// power
-	"Resource/bookUi/bookUi_1.png",// sniper
+	"Resource/bookUi/normal.png",// normal
+	"Resource/bookUi/speed.png",// speed
+	"Resource/bookUi/power.png",// power
+	"Resource/bookUi/sniper.png",// sniper
 	"Resource/bookUi/bookUi_1.png",
 	"Resource/bookUi/bookUi_1.png",
 	"Resource/bookUi/bookUi_1.png",
@@ -94,6 +113,13 @@ void StageSelect::Update() {
 			switchCooltime = 0.3f; // クールタイムリセット
 		}
 	}
+	if (switchCooltime <= 0.0f) {
+		// パラメータのイージングセット
+		if (isParameterEasing) {
+			isParameterEasing = false;
+			ParameterEasingSet(currentStyle);
+		}
+	}
 
 
 	bool isChanged = false; // マシン変更
@@ -108,6 +134,9 @@ void StageSelect::Update() {
 					if (book->GetCurrentPageIndex() < 5)
 					book->NextPage();
 
+					isParameterEasing = true; // イージングリセット
+					ParameterEasingSet(currentStyle);
+
 				} else {
 					if (currentStage < 5) {
 						currentStage++;
@@ -117,6 +146,9 @@ void StageSelect::Update() {
 
 					// 本のページをめくる
 					book->NextPage();
+
+					isParameterEasing = true; // イージングリセット
+					ParameterEasingSet(currentStyle);
 
 				}
 				switchCooltime = 0.8f; // クールタイムリセット
@@ -132,6 +164,9 @@ void StageSelect::Update() {
 					// 本のページを戻す
 					book->PrevPage();
 
+					isParameterEasing = true; // イージングリセット
+					ParameterEasingSet(currentStyle);
+
 				} else {
 					if (currentStage > 0) {
 						currentStage--;
@@ -142,6 +177,9 @@ void StageSelect::Update() {
 					if (book->GetCurrentPageIndex() > 8) {
 						// 本のページを戻す
 						book->PrevPage();
+
+						isParameterEasing = true; // イージングリセット
+						ParameterEasingSet(currentStyle);
 					}
 
 				}
@@ -183,6 +221,8 @@ void StageSelect::Update() {
 
 		} else {
 			isStageSelect = true;
+			isParameterEasing = true; // イージングリセット
+			ParameterEasingSet(currentStyle);
 		}
 	}
 
@@ -194,6 +234,22 @@ void StageSelect::Update() {
 	book->Update();
 	// シーン切り替え演出
 	TransitionUpdate();
+	radarChart->Update();
+
+
+	// レーダーチャート
+
+	float radarValues[5];
+	for (int i = 0; i < kMaxRadarChart; i++) {
+		if (!isParameterEasing)
+			easing->Number(radarChartEasing[i], 0.01f, 0);
+		else
+			easing->Number(radarChartEasing[i], 0.05f, 0);
+
+		radarValues[i] = radarChartEasing[i].num;
+		radarChart->SetValues(radarValues);
+	}
+
 
 	//イージング
 	easing->Update();
@@ -205,10 +261,24 @@ void StageSelect::Draw2D() {
 	// 2Dオブジェクトの描画準備
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
+	//if (switchCooltime <= 0.0f) {
+	//	for (int i = 0; i < kMaxParameter; i++) {
+	//		parameterGauge[i]->Draw();
+	//		parameter[i]->Draw();
+	//	}
+	//}
+
+	RadarChartCommon::GetInstance()->SetCommonPipelineState();
+
+	radarChart->Draw();
+
+
 }
 
 void StageSelect::Draw3D() {
 	// 3Dオブジェクトの描画準備
+	ObjectCommon::GetInstance()->SetCommonDrawSetting();
+
 	ObjectCommon::GetInstance()->SetCommonPipelineState();
 	// 3Dオブジェクト描画
 	if (!isStageSelect) {
@@ -324,4 +394,22 @@ void StageSelect::LithingEffect() {
 	RayMarching::GetInstance()->SetCloudOpacity(rayMarchingCloudOpacity);
 
 #pragma endregion
+}
+
+void StageSelect::ParameterEasingSet(Style currentStyle) {
+	for (int i = 0; i < kMaxRadarChart; i++) {
+		if (isParameterEasing) {
+			radarChartEasing[i].startNumber = radarChartEasing[i].num;
+			radarChartEasing[i].endNumber = 0.0f;
+			radarChartEasing[i].numberTime = 0.0f;
+			radarChartEasing[i].numberEasedT = 0.0f;
+		} else {
+			radarChartEasing[i].num = 0.0f;
+			radarChartEasing[i].startNumber = 0.0f;
+			radarChartEasing[i].endNumber = parameterSetting[i][currentStyle];
+			radarChartEasing[i].numberTime = 0.0f;
+			radarChartEasing[i].numberEasedT = 0.0f;
+		}
+
+	}
 }
