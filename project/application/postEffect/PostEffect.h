@@ -94,6 +94,30 @@ struct EffectData {
 	float speedDistortionStrength; // 歪みの強さ
 	Vector2 pad7; // アライメント調整用
 
+	// 集中線
+	int isConcentrationLines;       // ON/OFF
+	float concentrationLineIntensity; // 線の濃さ
+	Vector2 concentrationLineCenter;  // 中心座標 (通常 0.5, 0.5)
+
+	float concentrationLineDensity;   // 線の密度（本数）
+	float concentrationLineLength;    // 線の長さ（中心からの開始距離 0.0〜1.0）
+	float concentrationLineSpeed;   // アニメーション速度
+	float time; // アニメーション用の時間
+
+	// ピンチエフェクト
+	int32_t isPinch;             
+	float pinchStrength;         // 歪みの強さ（正の値で吸い込み、負の値で膨張）
+	Vector2 pinchCenter;         // 歪みの中心 (通常 0.5, 0.5)
+
+	float pinchRadius;           // 歪みが影響する半径
+	Vector3 pad8;               // 16byteアライメント調整
+
+	// モノクロ
+	int32_t isTwoColor;
+	float threshold; // 白と黒の境界値 (0.0~1.0)
+	float contrast; // コントラストの強さ
+	float pad9; // パディング
+
 };
 
 // 各パスのレンダーターゲットとSRVインデックスをまとめる構造体
@@ -123,6 +147,9 @@ public:
 	void SetInversion(bool isInversion) { effectData->isInversion = isInversion; }
 	// グレースケール
 	void SetGrayscale(bool isGrayscale) { effectData->isGrayscale = isGrayscale; }
+	void SetTwoColor(bool isTwoColor) { effectData->isTwoColor = isTwoColor; }
+	void SetThreshold(float threshold) { effectData->threshold = threshold; }
+	void SetContrast(float contrast) { effectData->contrast = contrast; }
 	// 放射線ブラー
 	void SetRadialBlur(bool isRadialBlur) { effectData->isRadialBlur = isRadialBlur; }
 	void SetBlurCenter(const Vector2& center) { effectData->blurCenter = center; }
@@ -176,6 +203,19 @@ public:
 	// スピードディストーション
 	void SetSpeedDistortion(bool isSpeedDistortion) { effectData->isSpeedDistortion = isSpeedDistortion; }
 	void SetSpeedDistortionStrength(float strength) { effectData->speedDistortionStrength = strength; }
+	// 集中線
+	void SetConcentrationLines(bool isConcentrationLines) { effectData->isConcentrationLines = isConcentrationLines; }
+	void SetConcentrationLineIntensity(float intensity) { effectData->concentrationLineIntensity = intensity; }
+	void SetConcentrationLineCenter(const Vector2& center) { effectData->concentrationLineCenter = center; }
+	void SetConcentrationLineDensity(float density) { effectData->concentrationLineDensity = density; }
+	void SetConcentrationLineLength(float length) { effectData->concentrationLineLength = length; }
+	void SetConcentrationLineSpeed(float speed) { effectData->concentrationLineSpeed = speed; }
+	void SetTime(float time) { effectData->time = time; }
+	// ピンチエフェクト
+	void SetPinch(bool isPinch) { effectData->isPinch = isPinch; }
+	void SetPinchStrength(float strength) { effectData->pinchStrength = strength; }
+	void SetPinchCenter(const Vector2& center) { effectData->pinchCenter = center; }
+	void SetPinchRadius(float radius) { effectData->pinchRadius = radius; }
 
 	// getter
 	float GetLensFlareGhostDispersal() { return effectData->lensFlareGhostDispersal; }

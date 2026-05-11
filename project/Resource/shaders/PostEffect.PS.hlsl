@@ -90,6 +90,30 @@ struct EffectData
     float speedDistortionStrength; // 歪みの強さ
     float2 pad7; // アライメント調整用
     
+    // 集中線
+    int isConcentrationLines; // ON/OFF
+    float concentrationLineIntensity; // 線の濃さ
+    float2 concentrationLineCenter; // 中心座標 (通常 0.5, 0.5)
+
+    float concentrationLineDensity; // 線の密度（本数）
+    float concentrationLineLength; // 線の長さ（中心からの開始距離 0.0〜1.0）
+    float concentrationLineSpeed; // アニメーション速度
+    float time;
+    
+    // ピンチエフェクト
+    int isPinch; // 16byte境界の開始
+    float pinchStrength; // 歪みの強さ（正の値で吸い込み、負の値で膨張）
+    float2 pinchCenter; // 歪みの中心 (通常 0.5, 0.5)
+
+    float pinchRadius; // 歪みが影響する半径
+    float3 pad8; // 16byteアライメント調整
+    
+    // モノクロ
+    int isTwoColor;
+    float threshold; // 白と黒の境界値 (0.0~1.0)
+    float contrast; // コントラストの強さ
+    float pad9; // パディング
+    
     
 };
 ConstantBuffer<EffectData> gEffectData : register(b0);
@@ -331,6 +355,7 @@ float4 main(VSOutput input) : SV_TARGET
     // *通常描画 ＆ 最終合成* //
     if (gPassId == 0)
     {
+        
         // ★ 新規追加：スピードディストーション（画面中心からの空間の歪み）
         if (gEffectData.isSpeedDistortion)
         {
@@ -355,37 +380,7 @@ float4 main(VSOutput input) : SV_TARGET
             color = gCurrentTexture.Sample(gSampler, input.uv);
         }
         
-        // ★ フルスクリーン色収差（被ダメージ時などの画面全体エフェクト）
-        if (gEffectData.isFullScreenCA)
-        {
-            float2 toCenter = float2(0.5f, 0.5f) - input.uv;
-            // 既存の便利な関数を再利用して、ベースカラーをズレた色で上書き
-            color.rgb = SampleWithCA(gCurrentTexture, gSampler, input.uv, toCenter, gEffectData.fullScreenCAIntensity);
-        }
-        
-        // ★ 2. ビネット（被ダメージ時の画面端の赤み）
-        if (gEffectData.isVignette)
-        {
-            // 画面中心からの距離を計算 (中心0.0 ～ 四隅約0.707)
-            float dist = distance(input.uv, float2(0.5f, 0.5f));
-            
-            // 距離0.3〜0.8の範囲で 0.0 → 1.0 になるグラデーションを作成
-            float vignetteWeight = smoothstep(0.3f, 0.8f, dist);
-            
-            // C++から渡された強さを掛ける
-            vignetteWeight *= saturate(gEffectData.vignetteIntensity);
-
-            // ダメージ用の色（暗めの血の色をイメージ）
-            float3 damageColor = float3(0.6f, 0.0f, 0.0f);
-
-            // 元の色とダメージ色を、vignetteWeightの強さで合成
-            color.rgb = lerp(color.rgb, damageColor, vignetteWeight);
-
-            // ※もし普通の「黒いビネット」にしたい場合は、上のlerpを消して以下を有効にしてください。
-            // color.rgb *= (1.0f - vignetteWeight);
-        }
-        
-        // 放射状ブラー
+         // 放射状ブラー
         if (gEffectData.isRadialBlur)
         {
             float2 direction = input.uv - gEffectData.blurCenter;
@@ -397,32 +392,8 @@ float4 main(VSOutput input) : SV_TARGET
             }
             color = blurColor / float(gEffectData.blurSamples);
         }
-
-        // ディスタンスフォグ
-        if (gEffectData.isDistanceFog)
-        {
-            float depth = gDepthTexture.Sample(gSampler, input.uv);
-            float linearDepth = (gEffectData.zNear * gEffectData.zFar) / (gEffectData.zFar - depth * (gEffectData.zFar - gEffectData.zNear));
-            float fogFactor = saturate((linearDepth - gEffectData.distanceFogStart) / (gEffectData.distanceFogEnd - gEffectData.distanceFogStart));
-            color.rgb = lerp(color.rgb, gEffectData.distanceFogColor, fogFactor);
-        }
-
-        // ハイトフォグ
-        if (gEffectData.isHeightFog)
-        {
-            float depth = gDepthTexture.Sample(gSampler, input.uv);
-            float2 ndcXY = input.uv * 2.0f - 1.0f;
-            ndcXY.y *= -1.0f;
-            float4 ndcPos = float4(ndcXY, depth, 1.0f);
-            float4 worldPosWithW = mul(gEffectData.matInverseViewProjection, ndcPos);
-            float3 worldPos = worldPosWithW.xyz / worldPosWithW.w;
-
-            float heightFactor = saturate((gEffectData.heightFogTop - worldPos.y) / (gEffectData.heightFogTop - gEffectData.heightFogBottom));
-            heightFactor = pow(heightFactor, gEffectData.heightFogDensity);
-            color.rgb = lerp(color.rgb, gEffectData.heightFogColor, heightFactor);
-        }
-
-        // DOF
+        
+         // DOF
         if (gEffectData.isDOF)
         {
             float depth = gDepthTexture.Sample(gSampler, input.uv);
@@ -458,9 +429,7 @@ float4 main(VSOutput input) : SV_TARGET
             }
         }
         
-         // =======================================================
-    // ★ モーションブラー処理
-    // =======================================================
+        // モーションブラー処理
         if (gEffectData.isMotionBlur)
         {
         // 現在のピクセルの速度ベクトルを取得 (RG16Fなどを想定)
@@ -494,6 +463,123 @@ float4 main(VSOutput input) : SV_TARGET
             }
         }
         
+        // ★ 吸い込み（ピンチ）エフェクトの計算
+        if (gEffectData.isPinch)
+        {
+        // 中心からの方向と距離を計算
+            float2 toCenter = input.uv - gEffectData.pinchCenter;
+            float dist = length(toCenter);
+
+        // 中心に近いほど強く歪ませる計算
+            if (dist < gEffectData.pinchRadius)
+            {
+            // 歪みの減衰（半径の端にいくほど 0 になるように）
+                float percent = dist / gEffectData.pinchRadius; // 0.0 ~ 1.0
+            
+            // 指数関数を使って「中心ほど吸い込まれる」ように補間
+            // pinchStrength が大きいほど中心に収束する
+                float weight = pow(percent, gEffectData.pinchStrength);
+            
+            // 新しいUVを再構成
+                input.uv = gEffectData.pinchCenter + normalize(toCenter) * weight * gEffectData.pinchRadius;
+            }
+            
+            // ★ この「uv」を使ってテクスチャをサンプリングする
+            color = gCurrentTexture.Sample(gSampler, input.uv);
+        }
+        
+        // ★ フルスクリーン色収差（被ダメージ時などの画面全体エフェクト）
+        if (gEffectData.isFullScreenCA)
+        {
+            float2 toCenter = float2(0.5f, 0.5f) - input.uv;
+            // 既存の便利な関数を再利用して、ベースカラーをズレた色で上書き
+            color.rgb = SampleWithCA(gCurrentTexture, gSampler, input.uv, toCenter, gEffectData.fullScreenCAIntensity);
+        }
+        
+         // ★ 集中線の実装
+        if (gEffectData.isConcentrationLines)
+        {
+            float2 toCenter = input.uv - gEffectData.concentrationLineCenter;
+            float dist = length(toCenter);
+            float angle = (atan2(toCenter.y, toCenter.x) + 3.14159f) / (2.0f * 3.14159f);
+
+        // --- ランダムロジック ---
+        // 角度を分割して「線のID」を作る
+            float lineId = floor(angle * gEffectData.concentrationLineDensity);
+        
+        // 時間でシードを変化させて動かす (floorを使うとカチカチと切り替わる)
+            float timeSeed = floor(gEffectData.time * gEffectData.concentrationLineSpeed);
+        
+        // 3種類のノイズを生成（シード値をずらして計算）
+            float n_exists = frac(sin(lineId * 12.9898f + timeSeed) * 43758.5453f); // 出現判定
+            float n_length = frac(sin(lineId * 39.1231f + timeSeed) * 753.5453f); // 長さのバラツキ
+            float n_weight = frac(sin(lineId * 71.3521f + timeSeed) * 921.5453f); // 濃さのバラツキ
+
+        // --- 線の描画判定 ---
+        // step(0.5, n_exists) で約半分の角度にだけ線が引かれるようにする
+            float lineMask = step(0.5f, n_exists);
+
+        // --- 長さのバラツキ設定 ---
+        // 基本の長さ(Length)に、ランダムなオフセットを加える
+        // 内側への食い込み具合を 0.2 程度の幅でランダム化
+            float randomStart = gEffectData.concentrationLineLength + (n_length * 0.2f);
+            float distMask = smoothstep(randomStart, randomStart + 0.1f, dist);
+
+        // --- 最終的な合成 ---
+        // n_weight を使って1本ずつの濃さを変える
+            float finalAlpha = lineMask * distMask * gEffectData.concentrationLineIntensity * n_weight;
+
+        // 背景色を維持しつつ、黒い線を乗せる (lerpを使用)
+            float3 lineColor = float3(1, 1, 1);
+            color.rgb = lerp(color.rgb, lineColor, finalAlpha);
+        }
+        
+        // ★ 2. ビネット（被ダメージ時の画面端の赤み）
+        if (gEffectData.isVignette)
+        {
+            // 画面中心からの距離を計算 (中心0.0 ～ 四隅約0.707)
+            float dist = distance(input.uv, float2(0.5f, 0.5f));
+            
+            // 距離0.3〜0.8の範囲で 0.0 → 1.0 になるグラデーションを作成
+            float vignetteWeight = smoothstep(0.3f, 0.8f, dist);
+            
+            // C++から渡された強さを掛ける
+            vignetteWeight *= saturate(gEffectData.vignetteIntensity);
+
+            // ダメージ用の色（暗めの血の色をイメージ）
+            float3 damageColor = float3(0.6f, 0.0f, 0.0f);
+
+            // 元の色とダメージ色を、vignetteWeightの強さで合成
+            color.rgb = lerp(color.rgb, damageColor, vignetteWeight);
+
+            // ※もし普通の「黒いビネット」にしたい場合は、上のlerpを消して以下を有効にしてください。
+            // color.rgb *= (1.0f - vignetteWeight);
+        }
+
+        // ディスタンスフォグ
+        if (gEffectData.isDistanceFog)
+        {
+            float depth = gDepthTexture.Sample(gSampler, input.uv);
+            float linearDepth = (gEffectData.zNear * gEffectData.zFar) / (gEffectData.zFar - depth * (gEffectData.zFar - gEffectData.zNear));
+            float fogFactor = saturate((linearDepth - gEffectData.distanceFogStart) / (gEffectData.distanceFogEnd - gEffectData.distanceFogStart));
+            color.rgb = lerp(color.rgb, gEffectData.distanceFogColor, fogFactor);
+        }
+
+        // ハイトフォグ
+        if (gEffectData.isHeightFog)
+        {
+            float depth = gDepthTexture.Sample(gSampler, input.uv);
+            float2 ndcXY = input.uv * 2.0f - 1.0f;
+            ndcXY.y *= -1.0f;
+            float4 ndcPos = float4(ndcXY, depth, 1.0f);
+            float4 worldPosWithW = mul(gEffectData.matInverseViewProjection, ndcPos);
+            float3 worldPos = worldPosWithW.xyz / worldPosWithW.w;
+
+            float heightFactor = saturate((gEffectData.heightFogTop - worldPos.y) / (gEffectData.heightFogTop - gEffectData.heightFogBottom));
+            heightFactor = pow(heightFactor, gEffectData.heightFogDensity);
+            color.rgb = lerp(color.rgb, gEffectData.heightFogColor, heightFactor);
+        }
+        
     // 1. ブルームの加算（3つのサイズをすべて重ね合わせる）
         float3 b1 = gBloom1Texture.Sample(gSampler, input.uv).rgb * 1.0f;
         float3 b2 = gBloom2Texture.Sample(gSampler, input.uv).rgb * 0.4f;
@@ -514,18 +600,30 @@ float4 main(VSOutput input) : SV_TARGET
             float3 lensFlare = gLensFlareTexture.Sample(gSampler, input.uv).rgb;
             color.rgb += lensFlare;
         }
-
-        // 色反転
-        if (gEffectData.isInversion)
-        {
-            color.rgb = 1.0f - color.rgb;
-        }
         
         // モノクロ
         if (gEffectData.isGrayscale)
         {
             float gray = dot(color.rgb, float3(0.2126, 0.7152, 0.0722));
+            if (gEffectData.isTwoColor)
+            {
+            
+            // A. コントラスト調整 (0.5を中心に色の差を広げる)
+            // (gray - 0.5) * contrast + 0.5
+                gray = saturate((gray - 0.5f) * gEffectData.contrast + 0.5f);
+
+            // B. 二値化 (閾値より上なら1、下なら0)
+            // 単なる step(gEffectData.threshold, gray) だとジャギーがひどいので
+            // 少しだけ smoothstep を使うとエッジが綺麗になります
+                gray = smoothstep(gEffectData.threshold - 0.01f, gEffectData.threshold + 0.01f, gray);
+            }
             color.rgb = float3(gray, gray, gray);
+        }
+        
+        // 色反転
+        if (gEffectData.isInversion)
+        {
+            color.rgb = 1.0f - color.rgb;
         }
 
         color.rgb *= gEffectData.intensity;
