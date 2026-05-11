@@ -3,6 +3,7 @@
 #include "SceneManager.h"
 #include "SpriteCommon.h"
 #include "player.h"
+#include "TrailEffectManager.h"
 #include <cmath> // sqrt用
 
 // Initializeに必要な引数を追加しています（レティクルの位置、最大距離、寿命）
@@ -59,6 +60,27 @@ void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, con
 		}
 	}
 
+	// ヒットエフェクト
+	Transform ptrans = transform_;
+	ptrans.scale = { 1,1,1 };
+	for (int i = 0; i < hitEffectCount; i++) {
+		hitEffect[i] = std::make_unique<ParticleEmitter>();
+		hitEffect[i]->Initialize("hitEffect1", ptrans, 5, 0.2f);
+	}
+	hitEffect[0]->SetActive("hitEffect1");
+	hitEffect[0]->LoadParticle("Resource/particle/hit_1.csv");
+	hitEffect[1]->SetActive("hitEffect2");
+	hitEffect[1]->LoadParticle("Resource/particle/hit_2.csv");
+	hitEffect[2]->SetActive("hitEffect3");
+	hitEffect[2]->LoadParticle("Resource/particle/hit_3.csv");
+	hitEffect[3]->SetActive("hitEffect4");
+	hitEffect[3]->LoadParticle("Resource/particle/hit_4.csv");
+
+	// トレイルエフェクト
+	trailEffect->Initialize("Resource/trail/trail.png", transform_, 1.0f, 1.5f);
+	trailEffect->SetColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	TrailEffectManager::GetInstance()->AddTrail(trailEffect);
+
 	object_->SetScale(transform_.scale);
 	object_->SetTranslate(transform_.translate);
 }
@@ -99,6 +121,17 @@ void PlayerChargeBullet::Update(float cmrvel) {
 	} else {
 		lifeTime_++;
 	}
+
+	// ヒットエフェクト更新
+	for (int i = 0; i < hitEffectCount; i++) {
+		hitEffect[i]->Update();
+		hitEffect[i]->SetTranslate(transform_.translate);
+	}
+
+	// トレイルエフェクト更新
+	trailEffect->AddPoint(transform_.translate);
+	trailEffect->SetTranslate(transform_.translate);
+
 }
 void PlayerChargeBullet::Draw3D() {
 	if (isActive_) {

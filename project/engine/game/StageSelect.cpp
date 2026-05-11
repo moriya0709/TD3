@@ -26,29 +26,6 @@ void StageSelect::Initialize() {
 	easing = std::make_unique<Easing>();
 	easing->Initialize();
 
-	playerObject_ = std::make_unique<Object>();
-	playerObject_->Initialize(camera_.get());
-	switch (currentStyle) {
-	case normal:
-	playerObject_->SetModel("normalMachine.obj");
-	break;
-	case speed:
-	playerObject_->SetModel("speedMachine.obj");
-	break;
-	case power:
-	playerObject_->SetModel("powerMachine.obj");
-	break;
-	case sniper:
-	playerObject_->SetModel("sniperMachine.obj");
-	break;
-	default:
-	playerObject_->SetModel("normalMachine.obj");
-	break;
-	}
-
-	playerObject_->SetTranslate(transform_.translate);
-
-
 	// レーダーチャート
 	radarChart = std::make_unique<RadarChart>();
 	radarChart->Initialize();
@@ -101,10 +78,6 @@ void StageSelect::Update() {
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
-
-	transform_.rotate.y += 0.05f;
-	playerObject_->SetRotate(transform_.rotate);
-	playerObject_->SetTranslate(transform_.translate);
 
 	// 切り換えクールタイム減少
 	switchCooltime = (std::max)(0.0f, switchCooltime - 1.0f / 60.0f);
@@ -189,46 +162,23 @@ void StageSelect::Update() {
 		}
 	}
 
-	if (!isStageSelect) {
-		if (isChanged) {
-			switch (currentStyle) {
-			case normal:
-			playerObject_->SetModel("normalMachine.obj");
-			break;
-			case speed:
-			playerObject_->SetModel("speedMachine.obj");
-			break;
-			case power:
-			playerObject_->SetModel("powerMachine.obj");
-			break;
-			case sniper:
-			playerObject_->SetModel("sniperMachine.obj");
-			break;
-			}
-		}
-	}
-
 	// ENTERキーを押したら
 	if (input->TriggerKey(DIK_RETURN)) {
 		// ゲームプレイシーン(次シーン)を生成
 		if (isStageSelect) {
-			//SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-
-			// シーン切り替え演出
-			isTransition = true;
-			isFullScreenCA = true;
-			isSpeedDistortion = true;
-			isRadialBlur = true;
+			if (book->GetCurrentPageIndex() > 8) {
+				// シーン切り替え演出
+				isTransition = true;
+				isFullScreenCA = true;
+				isSpeedDistortion = true;
+				isRadialBlur = true;
+			}
 
 		} else {
 			isStageSelect = true;
 			isParameterEasing = true; // イージングリセット
 			ParameterEasingSet(currentStyle);
 		}
-	}
-
-	if (!isStageSelect) {
-		playerObject_->Update();
 	}
 
 	// 本の更新
@@ -285,13 +235,6 @@ void StageSelect::Draw3D() {
 	// 3Dオブジェクトの描画準備
 	ObjectCommon::GetInstance()->SetCommonDrawSetting();
 
-	ObjectCommon::GetInstance()->SetCommonPipelineState();
-	// 3Dオブジェクト描画
-	if (!isStageSelect) {
-		if (playerObject_) {
-			playerObject_->Draw();
-		}
-	}
 
 	// 本型UIの描画準備
 	BookUiCommon::GetInstance()->SetCommonPipelineState();

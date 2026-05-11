@@ -39,9 +39,6 @@ public:
 private:
 	Transform transform_;
 
-	// プレイヤーの3Dオブジェクト
-	std::unique_ptr<Object> playerObject_;
-
 	Transform cameraTransform{
 		{1.0f, 1.0f, 1.0f }, // scale
 		{0.0f, 0.0f, 0.0f }, // rotate
