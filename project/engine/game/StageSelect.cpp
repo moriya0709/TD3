@@ -52,10 +52,11 @@ void StageSelect::Initialize() {
 	// レーダーチャート
 	radarChart = std::make_unique<RadarChart>();
 	radarChart->Initialize();
+	radarChart->SetkVertices(kMaxRadarChart);
+	radarChart->SetValues(values);
 	radarChart->SetPosition({ radarPosition });
 	radarChart->SetMaxRadius(radarChartRadius);
 	radarChart->SetColor(radarChartColor);
-	radarChart->SetValues(values);
 	for (int i = 0; i < kMaxRadarChart; i++) {
 		radarChartEasing[i].num = 0.0f;
 		radarChartEasing[i].startNumber = 0.0f;
@@ -239,16 +240,21 @@ void StageSelect::Update() {
 
 	// レーダーチャート
 
-	float radarValues[5];
+	// 1. あらかじめ最大要素数でリサイズしておく
+	std::vector<float> radarValues(kMaxRadarChart);
+
 	for (int i = 0; i < kMaxRadarChart; i++) {
 		if (!isParameterEasing)
 			easing->Number(radarChartEasing[i], 0.01f, 0);
 		else
 			easing->Number(radarChartEasing[i], 0.05f, 0);
 
+		// 2. 確保済みの要素に代入
 		radarValues[i] = radarChartEasing[i].num;
-		radarChart->SetValues(radarValues);
 	}
+
+	// 3. 全ての値が決まった後に、ループの外で 1回だけ呼び出す
+	radarChart->SetValues(radarValues);
 
 
 	//イージング
