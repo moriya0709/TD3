@@ -18,8 +18,9 @@ void TitleScene::Initialize() {
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
 	// スプライト
-	sprite = std::make_unique <Sprite>();
-	sprite->Initialize("Resource/monsterBall.png");
+	title_ = std::make_unique <Sprite>();
+	title_->Initialize("Resource/titleF.jpg");
+	title_->SetPosition({ 900.0f, 500.0f }); // 画面中央
 
 	// 3Dオブジェクト
 	for (int i = 0; i < 2; i++) {
@@ -159,7 +160,7 @@ void TitleScene::Update() {
 
 	// *スプライト* //
 	// sprite更新
-	sprite->Update();
+	title_->Update();
 
 
 	radarChart->SetValues(values);
@@ -469,7 +470,7 @@ void TitleScene::Draw2D() {
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
 	// スプライト描画
-	//sprite->Draw();
+	title_->Draw();
 
 	RadarChartCommon::GetInstance()->SetCommonPipelineState();
 
