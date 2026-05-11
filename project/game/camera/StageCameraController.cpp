@@ -57,6 +57,7 @@ void StageCameraController::Initialize(Camera* targetCamera) {
 
 	// 軌跡描画用のレールモデルを事前生成 (数は要件に合わせて調整)
 	InitializeRailModels(200);
+	camera->SetRotate({0.0f, 0.0f, 0.0f}); // カメラの初期回転を設定
 
 	// ステージ1をロード
 	ChangeStage(1);
@@ -67,39 +68,47 @@ void StageCameraController::Update() {
 	float deltaTime = 1.0f / 60.0f;
 
 	if (isPlaying) {
+		// --- 1. タイマー更新 ---
 		timer += deltaTime;
 		if (timer >= totalDuration) {
 			timer = totalDuration;
 			isPlaying = false;
 		}
 
+		// --- 2. 履歴から現在の回転速度を検索して適用 ---
+		// 履歴は時間順に並んでいることを前提に、現在のtimer以下の最新ログを探す
+		for (const auto& log : rotationHistory) {
+			if (timer >= log.time) {
+				currentRotationSpeed = log.rotationSpeed;
+			} else {
+				// 履歴は時間順なので、timerを超えたらそれ以降を見る必要はない
+				break;
+			}
+		}
+
+		// --- 3. 位置の計算 (ベジェ曲線) ---
 		float t = std::clamp(timer / totalDuration, 0.0f, 1.0f);
 		Vector3 currentPos = EvaluateBezier(t);
 
-		// 速度計算
-		float dx = currentPos.x - lastPosition.x;
-		float dy = currentPos.y - lastPosition.y;
-		float dz = currentPos.z - lastPosition.z;
-		float dist = std::sqrt(dx * dx + dy * dy + dz * dz);
-		currentSpeed = dist / deltaTime;
-		lastPosition = currentPos;
-		// 進行方向を向かせる
+		// --- 4. 回転の適用 ---
+		// 初期の向き(initialRotate)に、時間経過による回転(速度 * 時間)を加算する
+		// ※もし速度が「その瞬間の角度」を指すなら += ではなく = にしてください
+		stageStatus.rotate.x = initialRotate.x + (currentRotationSpeed.x * timer);
+		stageStatus.rotate.y = initialRotate.y + (currentRotationSpeed.y * timer);
+		stageStatus.rotate.z = initialRotate.z + (currentRotationSpeed.z * timer);
 
-		// 回転速度(倍率)を適用（例：ベース回転に係数を掛ける、または加算する）
-		stageStatus.rotate.x = currentRotationSpeed.x;
-		stageStatus.rotate.y = currentRotationSpeed.y;
-		stageStatus.rotate.z = currentRotationSpeed.z;
-
+		// --- 5. カメラへの反映 ---
 		if (camera) {
 			camera->SetTranslate(currentPos);
 			camera->SetRotate(stageStatus.rotate);
 			camera->SetFovY(std::clamp(stageStatus.fov, kMinFov, kMaxFov));
 		}
+
+		lastPosition = currentPos;
 	} else {
 		currentSpeed = 0.0f;
 	}
 }
-
 // =========================================================
 // エディタUI・描画関連
 // =========================================================
@@ -144,9 +153,23 @@ void StageCameraController::EditorUpdate() {
 	if (ImGui::Button(isPlaying ? "Pause" : "Play Path"))
 		isPlaying = !isPlaying;
 	ImGui::SameLine();
+	if (ImGui::CollapsingHeader("Initial Settings")) {
+		if (ImGui::DragFloat3("Initial Rotate", &initialRotate.x, 0.1f)) {
+			if (!isPlaying && timer == 0.0f) {
+				camera->SetRotate(initialRotate); // 編集時に見た目を更新
+			}
+		}
+	}
+
+	// Reset ボタンの処理
 	if (ImGui::Button("Reset")) {
 		timer = 0.0f;
 		isPlaying = false;
+		currentRotationSpeed = {1.0f, 1.0f, 1.0f}; // 速度も初期化
+		if (camera && !points.empty()) {
+			camera->SetTranslate(points[0].position);
+			camera->SetRotate(initialRotate); // 初期の向きに戻す
+		}
 	}
 
 	ImGui::Separator();
@@ -376,6 +399,7 @@ void StageCameraController::SaveToJSON(const std::string& filename) {
         });
 	}
 	j["rotationHistory"] = historyJson;
+	j["initialRotate"] = {{"x", initialRotate.x}, {"y", initialRotate.y}, {"z", initialRotate.z}};
 
 	// ファイル書き出し
 	std::ofstream file(filename);
@@ -385,9 +409,10 @@ void StageCameraController::SaveToJSON(const std::string& filename) {
 }
 void StageCameraController::LoadFromJSON(const std::string& filename) {
 	std::ifstream file(filename);
+
+	// ファイルが開けない場合は初期化して終了
 	if (!file.is_open()) {
-		// ... (既存のデフォルト初期化) ...
-		rotationHistory.clear();
+		ResetToDefaults(); // 全てを0やデフォルト値にする補助関数（後述）
 		return;
 	}
 
@@ -395,37 +420,73 @@ void StageCameraController::LoadFromJSON(const std::string& filename) {
 		json j;
 		file >> j;
 
-		// --- 既存の読み込み処理 ---
-		totalDuration = j.value("totalDuration", 5.0f);
-		stageStatus.rotate = {j["rotate"]["x"], j["rotate"]["y"], j["rotate"]["z"]};
-		stageStatus.fov = j.value("fov", 45.0f);
+		// --- 基本パラメータ (value関数で、なければ第2引数の値を代入) ---
+		totalDuration = j.value("totalDuration", 0.0f);
+		stageStatus.fov = j.value("fov", 0.0f);
 
-		points.clear();
-		for (const auto& p : j["controlPoints"]) {
-			points.push_back({
-			    {p["x"], p["y"], p["z"]}
-            });
+		// --- 回転 (rotate) の読み込み ---
+		if (j.contains("rotate")) {
+			stageStatus.rotate.x = j["rotate"].value("x", 0.0f);
+			stageStatus.rotate.y = j["rotate"].value("y", 0.0f);
+			stageStatus.rotate.z = j["rotate"].value("z", 0.0f);
+		} else {
+			stageStatus.rotate = {0.0f, 0.0f, 0.0f};
 		}
 
-		// --- 【追加】回転速度履歴の読み込み ---
+		// --- 初期回転 (initialRotate) の読み込み ---
+		if (j.contains("initialRotate")) {
+			initialRotate.x = j["initialRotate"].value("x", 0.0f);
+			initialRotate.y = j["initialRotate"].value("y", 0.0f);
+			initialRotate.z = j["initialRotate"].value("z", 0.0f);
+		} else {
+			initialRotate = {0.0f, 0.0f, 0.0f};
+		}
+
+		// --- 制御点 (controlPoints) の読み込み ---
+		points.clear();
+		if (j.contains("controlPoints") && j["controlPoints"].is_array()) {
+			for (const auto& p : j["controlPoints"]) {
+				points.push_back({
+				    {p.value("x", 0.0f), p.value("y", 0.0f), p.value("z", 0.0f)}
+                });
+			}
+		}
+
+		// --- 回転速度履歴 (rotationHistory) の読み込み ---
 		rotationHistory.clear();
 		if (j.contains("rotationHistory") && j["rotationHistory"].is_array()) {
 			for (const auto& item : j["rotationHistory"]) {
 				RotationSpeedKey log;
-				log.time = item["time"];
-				log.rotationSpeed.x = item["speed"]["x"];
-				log.rotationSpeed.y = item["speed"]["y"];
-				log.rotationSpeed.z = item["speed"]["z"];
+				log.time = item.value("time", 0.0f);
+				if (item.contains("speed")) {
+					log.rotationSpeed.x = item["speed"].value("x", 0.0f);
+					log.rotationSpeed.y = item["speed"].value("y", 0.0f);
+					log.rotationSpeed.z = item["speed"].value("z", 0.0f);
+				} else {
+					log.rotationSpeed = {0.0f, 0.0f, 0.0f};
+				}
 				rotationHistory.push_back(log);
 			}
 		}
 
 		SyncSpheres();
+
 	} catch (...) {
-		// エラーハンドリング（ログ出力など）
+		// 解析エラーが起きても止まらないように安全策
+		ResetToDefaults();
 	}
 }
 
+// 安全のためにデフォルト値へリセットする関数
+void StageCameraController::ResetToDefaults() {
+	totalDuration = 5.0f;
+	stageStatus.rotate = {0, 0, 0};
+	initialRotate = {0, 0, 0};
+	stageStatus.fov = 45.0f;
+	points.clear();
+	rotationHistory.clear();
+	// 制御点がないとエラーになる場合は、ここで1点追加するなどの処理を
+}
 Vector3 StageCameraController::GetForward(float distance) {
 	float look = 0.01f;
 	Vector3 p0 = Evaluate(distance);

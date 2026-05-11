@@ -29,7 +29,8 @@ void to_json(nlohmann::json& j, const Player::Statas& statas) {
 	     {"hommingAccuracy", statas.hommingAccuracy},
 	     {"renge", statas.renge},
 	     {"chargeTime", statas.chargeTime},
-	     {"haste", statas.haste}}
+	     {"haste", statas.haste},
+	     {"cosr", statas.cost}}
     };
 }
 
@@ -42,6 +43,7 @@ void from_json(const nlohmann::json& j, Player::Statas& statas) {
 	j.at("renge").get_to(statas.renge);
 	j.at("chargeTime").get_to(statas.chargeTime);
 	j.at("haste").get_to(statas.haste);
+	j.at("cost").get_to(statas.cost);
 }
 
 std::string Player::GetFilePath() const { return "Resource/Data/playerStatas.json"; }
@@ -61,7 +63,8 @@ void Player::LoadStatas(const std::string& filePath) {
 		       {"hommingAccuracy", statas_[0].hommingAccuracy},
 		       {"renge", statas_[0].renge},
 		       {"chargeTime", statas_[0].chargeTime},
-		       {"haste", statas_[0].haste}},
+		       {"haste", statas_[0].haste},
+		       {"cost", statas_[0].cost}},
 		      {{"hp", statas_[1].hp},
 		       {"attack", statas_[1].attack},
 		       {"chargeAttack", statas_[1].chargeAttack},
@@ -70,7 +73,8 @@ void Player::LoadStatas(const std::string& filePath) {
 		       {"hommingAccuracy", statas_[1].hommingAccuracy},
 		       {"renge", statas_[1].renge},
 		       {"chargeTime", statas_[1].chargeTime},
-		       {"haste", statas_[1].haste}},
+		       {"haste", statas_[1].haste},
+		       {"cost", statas_[1].cost}},
 		      {{"hp", statas_[2].hp},
 		       {"attack", statas_[2].attack},
 		       {"chargeAttack", statas_[2].chargeAttack},
@@ -88,7 +92,8 @@ void Player::LoadStatas(const std::string& filePath) {
 		       {"hommingAccuracy", statas_[3].hommingAccuracy},
 		       {"renge", statas_[3].renge},
 		       {"chargeTime", statas_[3].chargeTime},
-		       {"haste", statas_[3].haste}}}}
+		       {"haste", statas_[3].haste},
+		       {"cost", statas_[3].cost}}}}
         };
 		std::ofstream outFile(filePath);
 		if (!outFile.is_open()) {
@@ -111,6 +116,7 @@ void Player::LoadStatas(const std::string& filePath) {
 		statas_[i].renge = j["Statas"][i]["renge"];
 		statas_[i].chargeTime = j["Statas"][i]["chargeTime"];
 		statas_[i].haste = j["Statas"][i]["haste"];
+		statas_[i].cost = j["Statas"][i]["cost"];
 	}
 }
 
@@ -128,6 +134,7 @@ void Player::SaveStatas(const std::string& filePath) const {
 		j["Statas"][i]["renge"] = statas_[i].renge;
 		j["Statas"][i]["chargeTime"] = statas_[i].chargeTime;
 		j["Statas"][i]["haste"] = statas_[i].haste;
+		j["Statas"][i]["cost"] = statas_[i].cost;
 	}
 	std::ofstream outFile(filePath);
 	if (!outFile.is_open()) {
@@ -286,7 +293,7 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies);
 			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy + 0.2f, statas_[currentStyle].chargeAttack);
 			newBullet->SetSize(1.5f); // チャージ弾のサイズを設定
-			bullets.push_back(std::move(newBullet));    
+			bullets.push_back(std::move(newBullet));
 			chargeTimer = 0;                            // チャージタイマーリセット
 			coolTime = statas_[currentStyle].haste * 2; // チャージ攻撃後のクールタイムも長くする
 			maxHaste = statas_[currentStyle].haste * 2;
@@ -294,7 +301,7 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
 			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge, enemies);
 			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy, statas_[currentStyle].attack);
-			bullets.push_back(std::move(newBullet)); 
+			bullets.push_back(std::move(newBullet));
 			coolTime = statas_[currentStyle].haste;
 			maxHaste = statas_[currentStyle].haste;
 
@@ -460,6 +467,7 @@ void Player::UpdateImGui() {
 	ImGui::DragFloat("Renge", &statas_[currentStyle].renge, 0.1f);
 	ImGui::DragInt("Charge Time", &statas_[currentStyle].chargeTime, 1);
 	ImGui::DragInt("Haste", &statas_[currentStyle].haste, 1);
+	ImGui::DragInt("Cost", &statas_[currentStyle].cost, 1);
 	if (ImGui::Button("■ SaveStatas", ImVec2(240, 30))) {
 
 		ImGui::DragFloat2("Move Pad", &movePad.x, 0.0f);

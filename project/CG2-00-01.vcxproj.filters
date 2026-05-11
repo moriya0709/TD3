@@ -180,7 +180,7 @@
     <ClInclude Include="application\BookUi\Book.h" />
     <ClInclude Include="game\camera\BananaCameraController.h" />
     <ClInclude Include="game\camera\StageCameraController.h" />
-    <ClInclude Include="GrapeCameraController.h" />
+    <ClInclude Include="game\camera\GrapeCameraController.h" />
     <ClInclude Include="RadarChart.h" />
     <ClInclude Include="RadarChartCommon.h" />
   </ItemGroup>

@@ -32,6 +32,7 @@ private:
 	// データ保存・読み込み
 	void SaveToJSON(const std::string& filename);
 	void LoadFromJSON(const std::string& filename);
+	void ResetToDefaults();
 	Vector3 GetForward(float distance);
 	Vector3 Evaluate(float distance);
 	Vector3 CatmullRom(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float t);
@@ -77,4 +78,5 @@ private:
 	Vector3 currentRotationSpeed = {1.0f, 1.0f, 1.0f}; // 現在の回転倍率
 	std::vector<RotationSpeedKey> rotationHistory;     // 履歴
 	bool speedChangedDuringPause = false;              // 一時停止中に変更されたか
+	Vector3 initialRotate = {0.0f, 0.0f, 0.0f};        // 再生開始時の回転角度
 };

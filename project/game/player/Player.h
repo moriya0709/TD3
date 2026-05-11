@@ -28,6 +28,7 @@ public:
 		float renge = 0.0f;           // 弾速
 		int chargeTime = 0;           // チャージ時間
 		int haste = 0;                // 攻撃頻度
+		int cost = 0;                 // 価格
 	};
 	void Initialize(Camera* camera, Style style);
 	void Update(const std::list<std::shared_ptr<Enemy>>& enemies, float cmrvel);
