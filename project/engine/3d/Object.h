@@ -11,6 +11,7 @@
 
 #include "Calc.h"
 #include "RayMarching.h"
+#include "CommonStructs.h"
 
 class Model;
 class Camera;
@@ -85,7 +86,8 @@ public:
 
 	// setter
 	void SetModel(Model* model) { model_ = model; }
-	void SetModel(const std::string& filePath);
+	void SetModel(const std::string& filePath, bool isAnimation = false);
+	void PlayAnimation(const Animation& animation);
 	void SetScale(const Vector3& scale) { transform.scale = scale; }
 	void SetRotate(const Vector3& rotate) { transform.rotate = rotate; }
 	void SetTranslate(const Vector3& translate) { transform.translate = translate; }
@@ -124,6 +126,11 @@ public:
 	const Vector3& GetRotate() const { return transform.rotate; }
 	const Vector3& GetTranslate() const { return transform.translate; }
 
+	//スケルトンを取得
+	Skeleton& GetSkeleton() { return skeleton_; }
+
+	//外部からアニメーションモデルかどうか判定
+	bool IsSkeletal() const { return isSkeletal_; }
 
 private:
 	// バッファリソース
@@ -167,5 +174,13 @@ private:
 	// 空の色をモデルに反映
 	void SunLight();
 
+	//アニメーション
+	Animation currentAnimation_;//アニメーション読み込み
+	float animationTime_ = 0.0f;// アニメーションの再生時間を管理
+	bool isAnimating_ = false;
+
+	Skeleton skeleton_; // このオブジェクト専用の骨
+	bool isSkeletal_ = false;  // スケルトンを持っているかどうか
+	SkinCluster skinCluster_;
 };
 

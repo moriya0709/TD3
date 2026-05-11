@@ -20,6 +20,7 @@
     <FxCompile Include="Resource\shaders\BookUi.HS.hlsl" />
     <FxCompile Include="Resource\shaders\BookUi.PS.hlsl" />
     <FxCompile Include="Resource\shaders\BookUi.VS.hlsl" />
+    <FxCompile Include="Resource\shaders\SkinningObject3d.VS.hlsl" />
     <FxCompile Include="Resource\shaders\RadarChart.PS.hlsl" />
     <FxCompile Include="Resource\shaders\RadarChart.VS.hlsl" />
   </ItemGroup>

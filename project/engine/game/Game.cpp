@@ -22,20 +22,20 @@ void Game::Initialize() {
 	BookUiCommon::GetInstance()->Initialize(windowAPI.get());
 
 	// SRVマネージャ
-	srvManager = std::make_unique<SrvManager>();
-	srvManager->Initialize(dxCommon);
+	//srvManager = std::make_unique<SrvManager>();
+	SrvManager::GetInstance()->Initialize(dxCommon);
 
 	// ImGui
 	imGuiManager = std::make_unique<ImGuiManager>();
-	imGuiManager->Initialize(windowAPI.get(), dxCommon, srvManager.get());
+	imGuiManager->Initialize(windowAPI.get(), dxCommon, SrvManager::GetInstance());
 
 
 	// テクスチャマネージャの初期化
-	TextureManager::GetInstance()->Initialize(dxCommon, srvManager.get());
+	TextureManager::GetInstance()->Initialize(dxCommon, SrvManager::GetInstance());
 	// 3Dモデルマネージャの初期化
 	ModelManager::GetInstance()->Initialize(dxCommon);
 	// Particleマネージャ
-	ParticleManager::GetInstance()->Initialize(dxCommon, srvManager.get(), "Resource/plane", "plane.obj");
+	ParticleManager::GetInstance()->Initialize(dxCommon, SrvManager::GetInstance(), "Resource/plane", "plane.obj");
 
 #pragma endregion
 
@@ -65,7 +65,7 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/machine/kamihikouki", "speedMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/houki", "powerMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/nasu", "sniperMachine.obj");
-	ModelManager::GetInstance()->LoadModel("Resource/enemy/tometo", "tometo.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/enemy/tometo", "tometo.obj");//トマトの代わり
 	ModelManager::GetInstance()->LoadModel("Resource/enemy/bossGrape", "bossGrapesOnly.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/enemy/bossGrape", "bossGrapesBranch.obj");
     ModelManager::GetInstance()->LoadModel("Resource/enemy/bossBanana", "bossBananAttack.obj");
@@ -77,16 +77,17 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.obj"); // レールエディター
 	ModelManager::GetInstance()->LoadModel("Resource/rail", "rail.obj"); // レールエディター
 	//ModelManager::GetInstance()->LoadModel("skydome.obj"); 
-
+	ModelManager::GetInstance()->LoadModel("./Resource","simpleSkin.gltf");//スケルトン(細かいアニメーション)
+	ModelManager::GetInstance()->LoadModel("./Resource","walk.gltf");
 	// サウンド
 	SoundManager::GetInstance()->Initialize();
 	SoundManager::GetInstance()->Load("bgm", "game.mp3");
 
 	// ポストエフェクト
-	PostEffect::GetInstance()->Initialize(dxCommon, windowAPI.get(),srvManager.get());
+	PostEffect::GetInstance()->Initialize(dxCommon, windowAPI.get(), SrvManager::GetInstance());
 	
 	// レイマーチング
-	RayMarching::GetInstance()->Initialize(srvManager.get());
+	RayMarching::GetInstance()->Initialize(SrvManager::GetInstance());
 	// 3Dテクスチャに雲を書き込む
 	RayMarching::GetInstance()->ComputeCloud();
 
@@ -129,7 +130,7 @@ void Game::Update() {
 void Game::Draw() {
 	// 描画前処理
 	M_Framework::BeginFrame();
-	srvManager->PreDraw();
+	SrvManager::GetInstance()->PreDraw();
 	PostEffect::GetInstance()->PreDraw();
 
 	// レイマーチング描画

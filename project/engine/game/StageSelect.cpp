@@ -277,6 +277,8 @@ void StageSelect::Draw2D() {
 
 void StageSelect::Draw3D() {
 	// 3Dオブジェクトの描画準備
+	ObjectCommon::GetInstance()->SetCommonDrawSetting();
+
 	ObjectCommon::GetInstance()->SetCommonPipelineState();
 	// 3Dオブジェクト描画
 	if (!isStageSelect) {
