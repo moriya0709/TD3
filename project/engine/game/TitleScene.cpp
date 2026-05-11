@@ -42,28 +42,13 @@ void TitleScene::Initialize() {
 
 	// パーティクル
 	particleEmitter = std::make_unique<ParticleEmitter>();
-	particleEmitter->Initialize("group1", transformParticle, 5, 0.1f);
-	particleEmitter->SetActive("group1");
-	particleEmitter->LoadParticle("Resource/particle/hit_1.csv");
+	particleEmitter->Initialize("Special3", transformParticle, 5, 0.1f);
+	particleEmitter->SetActive("Special3");
+	particleEmitter->LoadParticle("Resource/particle/special_2.csv");
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	object[0]->SetModel("emission.obj");
 	object[1]->SetModel("skydome.obj");
-
-	// 本型UI
-	std::vector<std::string> textures = {
-	"Resource/bookUi/bookUi_1.png",
-	"Resource/bookUi/bookUi_1.png",
-	"Resource/bookUi/bookUi_1.png",
-	"Resource/bookUi/bookUi_1.png",
-	};
-	book = std::make_unique<Book>();
-	book->Initialize(textures);
-	book->SetPosition({ 640.0f, 360.0f, 0.0f });
-
-	// レーダーチャート
-	radarChart = std::make_unique<RadarChart>();
-	radarChart->Initialize();
 
 	// 音声再生
 	//SoundManager::GetInstance()->Play("bgm");
@@ -75,11 +60,6 @@ void TitleScene::Update() {
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
-
-	// 本型UI更新
-	if (input->TriggerKey(DIK_D)) book->NextPage();
-	if (input->TriggerKey(DIK_A))  book->PrevPage();
-	book->Update();
 
 	// ENTERキーを押したら
 	if (input->TriggerKey(DIK_RETURN)) {
@@ -108,7 +88,7 @@ void TitleScene::Update() {
 	//}
 
 	// パーティクル更新
-	//particleEmitter->Update();
+	particleEmitter->Update();
 	particleEmitter->Editor();
 
 
@@ -116,10 +96,6 @@ void TitleScene::Update() {
 	// sprite更新
 	sprite->Update();
 
-
-	radarChart->SetValues(values);
-	radarChart->SetPosition(radarPosition);
-	radarChart->Update();
 
 #pragma region ライティング
 	// *ライティング* //
@@ -156,6 +132,9 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetInversion(isInversion);
 	// グレースケール
 	PostEffect::GetInstance()->SetGrayscale(isGrayscale);
+	PostEffect::GetInstance()->SetTwoColor(isTwoColor);
+	PostEffect::GetInstance()->SetThreshold(threshold);
+	PostEffect::GetInstance()->SetContrast(contrast);
 	// 放射線ブラー
 	PostEffect::GetInstance()->SetRadialBlur(isRadialBlur);
 	PostEffect::GetInstance()->SetBlurCenter(blurCenter);
@@ -195,6 +174,21 @@ void TitleScene::Update() {
 	// 色収差
 	PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
 	PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
+	// スピードディストーション
+	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
+	PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
+	// 集中線
+	PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
+	PostEffect::GetInstance()->SetConcentrationLineIntensity(concentrationLineIntensity);
+	PostEffect::GetInstance()->SetConcentrationLineCenter(concentrationLineCenter);
+	PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
+	PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
+	PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
+	// ピンチエフェクト
+	PostEffect::GetInstance()->SetPinch(isPinchEffect);
+	PostEffect::GetInstance()->SetPinchStrength(pinchStrength);
+	PostEffect::GetInstance()->SetPinchCenter(pinchCenter);
+	PostEffect::GetInstance()->SetPinchRadius(pinchRadius);
 
 #pragma endregion
 
@@ -292,6 +286,11 @@ void TitleScene::Update() {
 	// グレースケール
 	if (ImGui::TreeNode("grayscale")) {
 		ImGui::Checkbox("OnOff", &isGrayscale);
+		if (isGrayscale) {
+			ImGui::Checkbox("isTwoColor", &isTwoColor);
+			ImGui::DragFloat("threshold", &threshold, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("contrast", &contrast, 0.01f, 0.0f, 10.0f);
+		}
 
 		ImGui::TreePop();
 	}
@@ -381,10 +380,40 @@ void TitleScene::Update() {
 	if (ImGui::TreeNode("CA")) {
 		ImGui::Checkbox("OnOff", &isFullScreenCA);
 
-		if (isLensFlare) {
+		if (isFullScreenCA) {
 			ImGui::DragFloat("fullScreenCAIntensity", &fullScreenCAIntensity, 0.001f, 0.0f, 1.0f);
 		}
 
+		ImGui::TreePop();
+	}
+	// スピードディストーション
+	if (ImGui::TreeNode("SpeedDistortion")) {
+		ImGui::Checkbox("OnOff", &isSpeedDistortion);
+		if (isSpeedDistortion) {
+			ImGui::DragFloat("speedDistortionStrength", &speedDistortionStrength, 0.01f, 0.0f, 10.0f);
+		}
+		ImGui::TreePop();
+	}
+	// 集中線
+	if (ImGui::TreeNode("ConcentrationLines")) {
+		ImGui::Checkbox("OnOff", &isConcentrationLines);
+		if (isConcentrationLines) {
+			ImGui::DragFloat("concentrationLineIntensity", &concentrationLineIntensity, 0.01f, 0.0f, 10.0f);
+			ImGui::DragFloat2("concentrationLineCenter", &concentrationLineCenter.x, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("concentrationLineDensity", &concentrationLineDensity, 1.0f, 0.0f, 2000.0f);
+			ImGui::DragFloat("concentrationLineLength", &concentrationLineLength, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("concentrationLineSpeed", &concentrationLineSpeed, 0.01f, 0.0f, 20.0f);
+		}
+		ImGui::TreePop();
+	}
+	// ピンチエフェクト
+	if (ImGui::TreeNode("PinchEffect")) {
+		ImGui::Checkbox("OnOff", &isPinchEffect);
+		if (isPinchEffect) {
+			ImGui::DragFloat("pinchStrength", &pinchStrength, 0.01f, 0.0f, 10.0f);
+			ImGui::DragFloat2("pinchCenter", &pinchCenter.x, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("pinchRadius", &pinchRadius, 0.01f, 0.0f, 1.0f);
+		}
 		ImGui::TreePop();
 	}
 
@@ -408,13 +437,6 @@ void TitleScene::Update() {
 
 #pragma endregion
 
-	ImGui::DragFloat("radarValue0", &values[0], 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat("radarValue1", &values[1], 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat("radarValue2", &values[2], 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat("radarValue3", &values[3], 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat("radarValue4", &values[4], 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat2("radarPosition", &radarPosition.x, 0.1f, 0.0f, 2000.0f);
-
 #endif
 
 }
@@ -425,10 +447,6 @@ void TitleScene::Draw2D() {
 
 	// スプライト描画
 	//sprite->Draw();
-
-	RadarChartCommon::GetInstance()->SetCommonPipelineState();
-
-	radarChart->Draw();
 
 }
 void TitleScene::Draw3D() {

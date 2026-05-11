@@ -50,6 +50,10 @@ void Game::Initialize() {
 	ParticleManager::GetInstance()->CreateParticleGroup("hitEffect2", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("hitEffect3", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("hitEffect4", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("SpecialAttack", "Resource/particle/particle2.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("Special2", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("Special3", "Resource/particle/particle2.png");
+
 
 	// .objファイルからモデル読み込み
 	ModelManager::GetInstance()->LoadModel("Resource/plane","plane.obj");

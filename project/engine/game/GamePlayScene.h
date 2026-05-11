@@ -95,6 +95,9 @@ private:
     bool isInversion = false;
     // グレースケール
     bool isGrayscale = false;
+    bool isTwoColor = false; // モノクロのON/OFF
+    float threshold = 0.5f; // 白と黒の境界値 (0.0~1.0)
+    float contrast = 1.0f; // コントラストの強さ
 
     // 放射線ブラー
     bool isRadialBlur = true;
@@ -143,6 +146,13 @@ private:
 	// スピードディストーション
 	bool isSpeedDistortion = true; // スピードディストーションのON/OFF
     float speedDistortionStrength = 1.0f; // 歪みの強さ
+    // 集中線
+    bool isConcentrationLines = false; // 集中線のON/OFF
+    float concentrationLineIntensity = 0.4f; // 線の濃さ
+    Vector2 concentrationLineCenter = { 0.5f, 0.5f };  // 中心座標 (通常 0.5, 0.5)
+    float concentrationLineDensity = 1000.0f;   // 線の密度（本数）
+    float concentrationLineLength = 0.0f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
+    float concentrationLineSpeed = 20.0f;     // 線の動く速さ
 
     // レイマーチング
     //float rayMarchingTime = 0.0f; ;
@@ -214,6 +224,9 @@ private:
 
     //スコア管理用
     ScoreManager scoreManager_;
+
+    // 特殊攻撃エフェクト
+    std::unique_ptr <ParticleEmitter> specialAttackEffect = nullptr;
 
     // シーン切り替わり後
 	bool isSceneChanged_ = true;

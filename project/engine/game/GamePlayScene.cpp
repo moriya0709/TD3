@@ -68,6 +68,12 @@ void GamePlayScene::Initialize() {
 	pauseBg_->SetPosition({ 960.0f, 540.0f });
 	pauseBg_->SetSize({ 1920.0f,1080.0f });
 
+	// 特殊攻撃のエフェクト
+	specialAttackEffect = std::make_unique<ParticleEmitter>();
+	specialAttackEffect->Initialize("SpecialAttack", transformParticle, 100, 0.1f);
+	specialAttackEffect->SetActive("SpecialAttack");
+    specialAttackEffect->LoadParticle("Resource/particle/special_1.csv");
+
 	// イージング
 	easing = std::make_unique<Easing>();
 	easing->Initialize();
@@ -161,9 +167,6 @@ void GamePlayScene::Draw3D()
 
     cameraController_->EditorDraw();
 
-    // パーティクル描画
-    // ParticleManager::GetInstance()->Draw();
-
     // アウトライン描画準備
     ObjectCommon::GetInstance()->SetOutlinePipelineState();
 
@@ -193,12 +196,41 @@ void GamePlayScene::ChekeAllCollision()
     CheckCollisionPlayerBulletBananaBoss(player_.get(), BBoss);
     CheckCollisionPlayerBananaBoss(player_.get(), BBoss);
     CheckCollisionPlayerBananaBossBullet(player_.get(), BBoss);
+    
     if (player_->GetIsSpecialAttack() && specialAttackTimer <= 0) {
         CheckCollisionSpecialAtackEnemy(enemies);
         specialAttackTimer = 60; // 特殊攻撃のエフェクト時間（例: 60フレーム）
+
+        // エフェクト初期化
+		isInversion = true; // 反転エフェクトa
+		isGrayscale = true; // グレースケールエフェクト
+		isTwoColor = true; // 2色エフェクト
+		isConcentrationLines = true; // 集中線エフェクト
+
     }
     if (specialAttackTimer > 0) {
         specialAttackTimer--;
+
+        // 毎フレーム色反転
+        if (specialAttackTimer > 50) {
+            if(specialAttackTimer % 2 == 1){
+                isInversion = true;
+            } else {
+				isInversion = false;
+            }
+        }
+        // 最初の10フレームのみエフェクトをかける
+        if (specialAttackTimer == 50) {
+            isInversion = false; // 反転エフェクト
+            isGrayscale = false; // グレースケールエフェクト
+            isTwoColor = false; // 2色エフェクト
+			isConcentrationLines = false; // 集中線エフェクト
+        }
+
+		// パーティクルの更新
+        specialAttackEffect->SetTranslate(player_->GetPosition()); // プレイヤーの位置にエフェクトを移動
+        specialAttackEffect->Update();
+		
         if (specialAttackTimer <= 0) {
             player_->SetIsSpecialAttack(false); // 特殊攻撃の当たり判定は1フレームだけ
 
@@ -417,6 +449,9 @@ void GamePlayScene::LithingEffect()
     PostEffect::GetInstance()->SetInversion(isInversion);
     // グレースケール
     PostEffect::GetInstance()->SetGrayscale(isGrayscale);
+    PostEffect::GetInstance()->SetTwoColor(isTwoColor);
+    PostEffect::GetInstance()->SetThreshold(threshold);
+    PostEffect::GetInstance()->SetContrast(contrast);
     // 放射線ブラー
     PostEffect::GetInstance()->SetRadialBlur(isRadialBlur);
     PostEffect::GetInstance()->SetBlurCenter(blurCenter);
@@ -442,6 +477,7 @@ void GamePlayScene::LithingEffect()
     // ブルーム
     PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
     PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
+    PostEffect::GetInstance()->SetBloomBlurRadius(bloomBlurRadius);
     // レンズフレア
     PostEffect::GetInstance()->SetLensFlare(isLensFlare);
     PostEffect::GetInstance()->SetLensFlareGhostCount(lensFlareGhostCount);
@@ -452,14 +488,21 @@ void GamePlayScene::LithingEffect()
     PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
     PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
     PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
-    if (isSceneChanged_) {
-        // 色収差
-        PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
-        PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
-        // スピードディストーション
-        PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
-        PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
-    }
+    // 色収差
+    PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
+    PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
+    // スピードディストーション
+    PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
+    PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
+    // 集中線
+    PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
+    PostEffect::GetInstance()->SetConcentrationLineIntensity(concentrationLineIntensity);
+    PostEffect::GetInstance()->SetConcentrationLineCenter(concentrationLineCenter);
+    PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
+    PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
+    PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
+   
+
 #pragma endregion
 
 #pragma region レイマーチング
@@ -567,6 +610,11 @@ void GamePlayScene::UpdateImGui()
     // グレースケール
     if (ImGui::TreeNode("grayscale")) {
         ImGui::Checkbox("OnOff", &isGrayscale);
+        if (isGrayscale) {
+            ImGui::Checkbox("isTwoColor", &isTwoColor);
+            ImGui::DragFloat("threshold", &threshold, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat("contrast", &contrast, 0.01f, 0.0f, 10.0f);
+        }
 
         ImGui::TreePop();
     }
@@ -651,6 +699,16 @@ void GamePlayScene::UpdateImGui()
 
         ImGui::TreePop();
     }
+    // 色収差
+    if (ImGui::TreeNode("CA")) {
+        ImGui::Checkbox("OnOff", &isFullScreenCA);
+
+        if (isFullScreenCA) {
+            ImGui::DragFloat("fullScreenCAIntensity", &fullScreenCAIntensity, 0.001f, 0.0f, 1.0f);
+        }
+
+        ImGui::TreePop();
+    }
     // スピードディストーション
     if (ImGui::TreeNode("SpeedDistortion")) {
         ImGui::Checkbox("OnOff", &isSpeedDistortion);
@@ -659,6 +717,19 @@ void GamePlayScene::UpdateImGui()
         }
         ImGui::TreePop();
     }
+    // 集中線
+    if (ImGui::TreeNode("ConcentrationLines")) {
+        ImGui::Checkbox("OnOff", &isConcentrationLines);
+        if (isConcentrationLines) {
+            ImGui::DragFloat("concentrationLineIntensity", &concentrationLineIntensity, 0.01f, 0.0f, 10.0f);
+            ImGui::DragFloat2("concentrationLineCenter", &concentrationLineCenter.x, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat("concentrationLineDensity", &concentrationLineDensity, 1.0f, 0.0f, 2000.0f);
+            ImGui::DragFloat("concentrationLineLength", &concentrationLineLength, 0.01f, 0.0f, 1.0f);
+            ImGui::DragFloat("concentrationLineSpeed", &concentrationLineSpeed, 0.01f, 0.0f, 20.0f);
+        }
+        ImGui::TreePop();
+    }
+
 
     cameraController_->EditorUpdate();
     enemy_->DrawImGui();
