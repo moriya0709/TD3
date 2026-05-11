@@ -13,8 +13,6 @@
 #include "ImGuiManager.h"
 #include "BaseScene.h"
 #include "PostEffect.h"
-#include "Book.h"
-#include "RadarChart.h"
 
 using namespace DirectX;
 
@@ -78,6 +76,9 @@ private:
 	bool isInversion = false;
 	// グレースケール
 	bool isGrayscale = false;
+	bool isTwoColor = false; // モノクロのON/OFF
+	float threshold = 0.5f; // 白と黒の境界値 (0.0~1.0)
+	float contrast = 1.0f; // コントラストの強さ
 
 
 	// 放射線ブラー
@@ -124,7 +125,22 @@ private:
 
 	// 色収差
 	bool isFullScreenCA = false; // 画面全体の色収差ON/OFF
-	float fullScreenCAIntensity = 0.005f; // 画面全体の色収差の強さ
+	float fullScreenCAIntensity = 0.05f; // 画面全体の色収差の強さ
+	// スピードディストーション
+	bool isSpeedDistortion = false; // スピードディストーションのON/OFF
+	float speedDistortionStrength = 1.0f; // 歪みの強さ
+	// 集中線
+	bool isConcentrationLines = false; // 集中線のON/OFF
+	float concentrationLineIntensity = 1.0f; // 線の濃さ
+	Vector2 concentrationLineCenter = { 0.5f, 0.5f };  // 中心座標 (通常 0.5, 0.5)
+	float concentrationLineDensity = 1000.0f;   // 線の密度（本数）
+	float concentrationLineLength = 0.0f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
+	float concentrationLineSpeed = 20.0f;     // 線の動く速さ
+	// ピンチエフェクト
+	bool isPinchEffect = false;
+	float pinchStrength = 0.0f; // 歪みの強さ
+	Vector2 pinchCenter = { 0.5f, 0.5f }; // 歪みの中心
+	float pinchRadius = 0.5f; // 歪みの半径
 
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
@@ -159,9 +175,6 @@ private:
 
 	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
 
-	// 本型UI
-	std::unique_ptr <Book> book = nullptr;
-
 	// Updateで直接操作したい特定のオブジェクトへのポインタ(アニメーションモデル)
 	Object* walkAnimation = nullptr;
 
@@ -174,8 +187,4 @@ private:
 	Animation simpleAnimation_;//スケルトン
 	Animation walkAnimation_;//歩きモーション
 
-	// レーダーチャート
-	std::unique_ptr <RadarChart> radarChart = nullptr;
-	float values[5] = { 0.8f, 0.6f, 0.9f, 0.5f, 0.7f };
-	Vector2 radarPosition = { 960.0f, 540.0f };
 };

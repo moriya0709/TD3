@@ -12,6 +12,7 @@
 #include "PostEffect.h"
 #include "SoundManager.h"
 #include "Sprite.h"
+#include "TrailEffect.h"
 
 class PlayerChargeBullet : public PlayerBullet {
 public:
@@ -48,4 +49,11 @@ private:
 	std::weak_ptr<Enemy> targetEnemy_; // ホーミング対象の敵
 	float bulletSpeed_;                // 弾の速さ
 	int damage_ = 0;                   // 弾のダメージ量
+
+	// ヒットエフェクト
+	std::unique_ptr <ParticleEmitter> hitEffect[4] = {};
+	const int hitEffectCount = 4; // ヒットエフェクトの数
+	// トレイルエフェクト
+	std::shared_ptr<TrailEffect> trailEffect = std::make_shared<TrailEffect>();
+
 };

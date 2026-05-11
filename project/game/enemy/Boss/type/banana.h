@@ -24,13 +24,12 @@ public:
     };
 
     struct CollisionVolume {
-        CollisionShape shape; // 形状の判定
-        Vector3 position; // 面の中心座標
-        Vector3 normal; // 面の正面方向（法線）
-        float depth;
-        float width; // 横幅の半分
-        float height;
+        Vector3 position; // 中心座標
+        Vector3 width; // 各軸の半径 (x=幅/2, y=高さ/2, z=厚み/2)
+        Vector3 axes[3]; // OBBの方向ベクトル (0:右, 1:上, 2:前)
+        CollisionShape shape;
         uint32_t partId;
+        Vector3 normal; // 反射用
     };
 
     // 各パーツの情報
@@ -41,16 +40,16 @@ public:
         bool isAnimating = false;
 
         // 当たり判定のサイズ
-        static inline const float radiusX = 1.0f;
+        static inline const float radiusX = 3.0f;
         static inline const float radiusY = 20.0f;
 
         // 体力
         int PartsHp = 100;
-        static inline const int kPartsHp = 100;
+        static inline const int kPartsHp = 1000;
 
         // --- 以下を追加 ---
         float repairTimer = 0.0f; // 修理までの時間
-        static inline const float kRepairTime = 30.0f; // 修理にかかる時間
+        static inline const float kRepairTime = 10.0f; // 修理にかかる時間
         // ------------------
 
         bool isWeakPoint;

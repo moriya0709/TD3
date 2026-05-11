@@ -39,9 +39,6 @@ public:
 private:
 	Transform transform_;
 
-	// プレイヤーの3Dオブジェクト
-	std::unique_ptr<Object> playerObject_;
-
 	Transform cameraTransform{
 		{1.0f, 1.0f, 1.0f }, // scale
 		{0.0f, 0.0f, 0.0f }, // rotate
@@ -163,22 +160,23 @@ private:
 
 	// レーダーチャート
 	std::unique_ptr <RadarChart> radarChart = nullptr;
-	float values[5] = { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
+	std::vector<float> values = {0.0f,0.0f,0.0f,0.0f,0.0f,0.0f};
 	Vector2 radarPosition = { 1247.0f, 530.0f };
 	float radarChartRadius = 204.0f;
-	EasingSet radarChartEasing[5];
-	int kMaxRadarChart = 5;
-	DirectX::XMFLOAT4 radarChartColor = { 0.0f, 1.0f, 0.0f, 0.5f };
+	EasingSet radarChartEasing[6];
+	int kMaxRadarChart = 6;
+	DirectX::XMFLOAT4 radarChartColor = { 0.0f, 1.0f, 1.0f, 0.5f };
 
 	// 切り換えクールタイム
 	float switchCooltime = 0.0f;
 
-	float parameterSetting[5][4] = {
+	float parameterSetting[6][4] = {
 		{0.88f, 0.2f, 1.44f, 0.8f},	// 体力
-		{0.25f, 0.08f, 2.0f, 0.2f},	// 攻撃力
+		{0.5f, 0.16f, 4.0f, 0.4f},	// 攻撃力
 		{0.6f, 1.2f, 0.1f, 0.02f},	// チャージ速度
-		{0.5f, 0.3f, 0.5f, 2.0f},	// チャージ攻撃力
+		{0.59f, 0.1f, 0.54f, 0.0f},	// ホーミング精度
 		{0.5f, 1.5f, 0.2f, 0.1f},	// 連射速度
+		{0.5f, 0.3f, 0.5f, 2.0f},	// チャージ攻撃力
 		//Normal	Speed	Power	Sniper
 	};
 	bool isParameterEasing = false;
