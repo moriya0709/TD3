@@ -216,7 +216,6 @@ void CheckCollisionPlayerBulletBananaBoss(Player* player, const std::list<std::s
         std::vector<banana::CollisionVolume> volumes = boss->GetCollisionVolumes();
 
         for (auto& bullet : playerBullets) {
-            // 弾がすでに消滅している場合はスキップ（関数名はプロジェクトに合わせてください）
             if (!bullet->IsActive())
                 continue;
 
@@ -224,50 +223,22 @@ void CheckCollisionPlayerBulletBananaBoss(Player* player, const std::list<std::s
             float bRad = bullet->GetHitSize();
 
             for (const auto& volume : volumes) {
-                bool isHit = false;
-
-                if (volume.shape == banana::CollisionShape::kPlane) {
-                    // ------------------------------------------
-                    // 【面(皮) vs 球(弾) の判定】
-                    // ------------------------------------------
-                    Vector3 diff = { bPos.x - volume.position.x, bPos.y - volume.position.y, bPos.z - volume.position.z };
-
-                    // 面からの距離 (内積)
-                    float distToPlane = diff.x * volume.normal.x + diff.y * volume.normal.y + diff.z * volume.normal.z;
-
-                    if (std::abs(distToPlane) <= bRad) {
-                        // 面上のローカル座標へ投影
-                        float localX = diff.x * volume.right.x + diff.y * volume.right.y + diff.z * volume.right.z;
-                        float localY = diff.x * volume.up.x + diff.y * volume.up.y + diff.z * volume.up.z;
-
-                        // 面の範囲内に収まっているか
-                        if (std::abs(localX) <= volume.width && std::abs(localY) <= volume.height) {
-                            isHit = true;
-                        }
-                    }
-                } else if (volume.shape == banana::CollisionShape::kBox) {
-                    // ------------------------------------------
-                    // 【矩形/AABB(身) vs 球(弾) の判定】
-                    // ------------------------------------------
-                    // ※奥行き(Z)は横幅(width)と同じと仮定
+                // 皮も本体も kBox として判定
+                if (volume.shape == banana::CollisionShape::kBox) {
+                    // 各軸で最も近い点をクランプで求める (AABB判定)
                     float closestX = std::clamp(bPos.x, volume.position.x - volume.width, volume.position.x + volume.width);
                     float closestY = std::clamp(bPos.y, volume.position.y - volume.height, volume.position.y + volume.height);
-                    float closestZ = std::clamp(bPos.z, volume.position.z - volume.width, volume.position.z + volume.width);
+                    float closestZ = std::clamp(bPos.z, volume.position.z - volume.depth, volume.position.z + volume.depth);
 
                     Vector3 diff = { bPos.x - closestX, bPos.y - closestY, bPos.z - closestZ };
                     float distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
 
                     if (distSq <= bRad * bRad) {
-                        isHit = true;
+                        if (boss->OnCollision(volume, bullet.get())) {
+                            bullet->SetActive(false);
+                        }
+                        break;
                     }
-                }
-
-                if (isHit) {
-                    // ボス側の被弾処理を呼び出し、反射またはダメージ処理を行う
-                    if (boss->OnCollision(volume, bullet.get())) {
-                        bullet->SetActive(false); // 弾を消す
-                    }
-                    break; // 1つの弾は1フレームに1つの部位にのみ判定する
                 }
             }
         }
@@ -289,19 +260,7 @@ void CheckCollisionPlayerBananaBoss(Player* player, const std::list<std::shared_
         for (const auto& volume : volumes) {
             bool isHit = false;
 
-            if (volume.shape == banana::CollisionShape::kPlane) {
-                // 皮とプレイヤーの当たり判定
-                Vector3 diff = { pPos.x - volume.position.x, pPos.y - volume.position.y, pPos.z - volume.position.z };
-                float distToPlane = diff.x * volume.normal.x + diff.y * volume.normal.y + diff.z * volume.normal.z;
-
-                if (std::abs(distToPlane) <= pRad) {
-                    float localX = diff.x * volume.right.x + diff.y * volume.right.y + diff.z * volume.right.z;
-                    float localY = diff.x * volume.up.x + diff.y * volume.up.y + diff.z * volume.up.z;
-                    if (std::abs(localX) <= volume.width && std::abs(localY) <= volume.height) {
-                        isHit = true;
-                    }
-                }
-            } else if (volume.shape == banana::CollisionShape::kBox) {
+            if (volume.shape == banana::CollisionShape::kBox) {
                 // 身とプレイヤーの当たり判定
                 float closestX = std::clamp(pPos.x, volume.position.x - volume.width, volume.position.x + volume.width);
                 float closestY = std::clamp(pPos.y, volume.position.y - volume.height, volume.position.y + volume.height);
@@ -314,12 +273,6 @@ void CheckCollisionPlayerBananaBoss(Player* player, const std::list<std::shared_
             }
 
             if (isHit) {
-                // デバッグ出力
-                char debugMsg[256];
-                sprintf_s(debugMsg, "Hit! PartID: %u, Type: %s\n",
-                    volume.partId,
-                    (volume.shape == banana::CollisionShape::kPlane ? "Peel(Plane)" : "Body(Box)"));
-                OutputDebugStringA(debugMsg); // Visual Studioの出力ウィンドウに表示
 
                 int test = 1;
 
