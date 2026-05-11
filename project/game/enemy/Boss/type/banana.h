@@ -24,7 +24,7 @@ public:
     };
 
     struct CollisionVolume {
-        Vector3 position; // 中心座標
+        Vector3 position;
         Vector3 width; // 各軸の半径 (x=幅/2, y=高さ/2, z=厚み/2)
         Vector3 axes[3]; // OBBの方向ベクトル (0:右, 1:上, 2:前)
         CollisionShape shape;
