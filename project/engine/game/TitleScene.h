@@ -172,9 +172,6 @@ private:
 
 	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
 
-	// 本型UI
-	std::unique_ptr <Book> book = nullptr;
-
 	// Updateで直接操作したい特定のオブジェクトへのポインタ(アニメーションモデル)
 	Object* walkAnimation = nullptr;
 
@@ -186,10 +183,5 @@ private:
 
 	Animation simpleAnimation_;//スケルトン
 	Animation walkAnimation_;//歩きモーション
-
-	// レーダーチャート
-	std::unique_ptr <RadarChart> radarChart = nullptr;
-	float values[5] = { 0.8f, 0.6f, 0.9f, 0.5f, 0.7f };
-	Vector2 radarPosition = { 960.0f, 540.0f };
 
 };
