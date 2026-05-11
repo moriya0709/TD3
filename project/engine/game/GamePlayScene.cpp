@@ -604,8 +604,6 @@ void GamePlayScene::UpdateImGui()
     camera->SetTranslate({ cameraTransform.translate });
     camera->SetRotate({ cameraTransform.rotate });
 
-    
-
 #pragma region ライティング
     // *ライティング* //
     ImGui::Text("Lighting"); // ライティングのテキスト
