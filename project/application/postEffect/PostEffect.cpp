@@ -136,7 +136,12 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	effectResource = dxCommon_->CreateBufferResource(sizeof(EffectData));
 	effectResource->Map(0, nullptr, reinterpret_cast<void**>(&effectData));
 	effectData->isInversion = false;
+	// グレースケール
 	effectData->isGrayscale = false;
+	effectData->isTwoColor = false;
+	effectData->threshold = 0.5f;
+	effectData->contrast = 1.0f;
+
 	effectData->isRadialBlur = false;
 	effectData->isDistanceFog = false;
 	effectData->isHeightFog = false;
@@ -184,6 +189,19 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	// スピードディストーション
 	effectData->isSpeedDistortion = false; // スピードディストーションのON/OFF
 	effectData->speedDistortionStrength = 0.5f; // 歪みの強さ
+	// 集中線
+	effectData->isConcentrationLines = false; // 集中線ON/OFF
+	effectData->concentrationLineIntensity = 1.0f; // 線の濃さ
+	effectData->concentrationLineCenter = { 0.5f, 0.5f }; // 線の中心
+	effectData->concentrationLineDensity = 10.0f; // 線の密度
+	effectData->concentrationLineLength = 0.5f; // 線の長さ
+	effectData->concentrationLineSpeed = 1.0f; // 線の速度
+	effectData->time = 0.0f; // アニメーション用の時間
+	// ピンチエフェクト
+	effectData->isPinch = false; // ピンチエフェクトON/OFF
+	effectData->pinchStrength = 0.5f; // 歪みの強さ
+	effectData->pinchCenter = { 0.5f, 0.5f }; // 歪みの中心
+	effectData->pinchRadius = 0.5f; // 歪みの半径
 
 	effectData->intensity = 1.0f;
 
@@ -242,6 +260,12 @@ void PostEffect::Update(Camera* camera) {
 			}
 		}
 	}
+
+	// 集中線のアニメーション制御
+	if (effectData->isConcentrationLines) {
+		effectData->time += 1.0f / 60.0f; // フレームごとに時間を進める（例: 60FPSなら約0.016秒）
+	}
+
 }
 
 void PostEffect::Draw() {
