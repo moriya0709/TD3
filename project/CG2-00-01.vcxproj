@@ -348,7 +348,7 @@
     <ClInclude Include="game\enemy\Normal\type\ShieldEnemy.h" />
     <ClInclude Include="game\enemy\Boss\type\grapesBoss.h" />
     <ClInclude Include="engine\game\StageSelect.h" />
-    <ClInclude Include="GrapeCameraController.h" />
+    <ClInclude Include="game\camera\GrapeCameraController.h" />
     <ClInclude Include="RadarChart.h" />
     <ClInclude Include="RadarChartCommon.h" />
     <ClInclude Include="ResultScene.h" />
