@@ -212,7 +212,6 @@ void CheckCollisionPlayerBulletBananaBoss(Player* player, const std::list<std::s
     for (auto& boss : enemies) {
         if (boss->GetIsDead())
             continue;
-
         std::vector<banana::CollisionVolume> volumes = boss->GetCollisionVolumes();
 
         for (auto& bullet : playerBullets) {
@@ -223,22 +222,32 @@ void CheckCollisionPlayerBulletBananaBoss(Player* player, const std::list<std::s
             float bRad = bullet->GetHitSize();
 
             for (const auto& volume : volumes) {
-                // 皮も本体も kBox として判定
-                if (volume.shape == banana::CollisionShape::kBox) {
-                    // 各軸で最も近い点をクランプで求める (AABB判定)
-                    float closestX = std::clamp(bPos.x, volume.position.x - volume.width, volume.position.x + volume.width);
-                    float closestY = std::clamp(bPos.y, volume.position.y - volume.height, volume.position.y + volume.height);
-                    float closestZ = std::clamp(bPos.z, volume.position.z - volume.depth, volume.position.z + volume.depth);
+                // --- OBB判定ロジック ---
 
-                    Vector3 diff = { bPos.x - closestX, bPos.y - closestY, bPos.z - closestZ };
-                    float distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
+                // 1. OBBの中心から弾へのベクトル
+                Vector3 relPos = { bPos.x - volume.position.x, bPos.y - volume.position.y, bPos.z - volume.position.z };
 
-                    if (distSq <= bRad * bRad) {
-                        if (boss->OnCollision(volume, bullet.get())) {
-                            bullet->SetActive(false);
-                        }
-                        break;
+                // 2. 各軸に投影してローカル座標を求める（ドット積）
+                Vector3 localPos;
+                localPos.x = relPos.x * volume.axes[0].x + relPos.y * volume.axes[0].y + relPos.z * volume.axes[0].z;
+                localPos.y = relPos.x * volume.axes[1].x + relPos.y * volume.axes[1].y + relPos.z * volume.axes[1].z;
+                localPos.z = relPos.x * volume.axes[2].x + relPos.y * volume.axes[2].y + relPos.z * volume.axes[2].z;
+
+                // 3. ローカル空間でのクランプ（AABBと同じ手法）
+                float closestX = std::clamp(localPos.x, -volume.width.x, volume.width.x);
+                float closestY = std::clamp(localPos.y, -volume.width.y, volume.width.y);
+                float closestZ = std::clamp(localPos.z, -volume.width.z, volume.width.z);
+
+                // 4. 距離の判定
+                Vector3 diff = { localPos.x - closestX, localPos.y - closestY, localPos.z - closestZ };
+                float distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
+
+                if (distSq <= bRad * bRad) {
+                    // ヒット！
+                    if (boss->OnCollision(volume, bullet.get())) {
+                        bullet->SetActive(false);
                     }
+                    break;
                 }
             }
         }
@@ -258,26 +267,31 @@ void CheckCollisionPlayerBananaBoss(Player* player, const std::list<std::shared_
         std::vector<banana::CollisionVolume> volumes = boss->GetCollisionVolumes();
 
         for (const auto& volume : volumes) {
-            bool isHit = false;
+            // --- OBB判定ロジック ---
 
-            if (volume.shape == banana::CollisionShape::kBox) {
-                // 身とプレイヤーの当たり判定
-                float closestX = std::clamp(pPos.x, volume.position.x - volume.width, volume.position.x + volume.width);
-                float closestY = std::clamp(pPos.y, volume.position.y - volume.height, volume.position.y + volume.height);
-                float closestZ = std::clamp(pPos.z, volume.position.z - volume.width, volume.position.z + volume.width);
+            // 1. OBBの中心から弾へのベクトル
+            Vector3 relPos = { pPos.x - volume.position.x, pPos.y - volume.position.y, pPos.z - volume.position.z };
 
-                Vector3 diff = { pPos.x - closestX, pPos.y - closestY, pPos.z - closestZ };
-                if (diff.x * diff.x + diff.y * diff.y + diff.z * diff.z <= pRad * pRad) {
-                    isHit = true;
-                }
-            }
+            // 2. 各軸に投影してローカル座標を求める（ドット積）
+            Vector3 localPos;
+            localPos.x = relPos.x * volume.axes[0].x + relPos.y * volume.axes[0].y + relPos.z * volume.axes[0].z;
+            localPos.y = relPos.x * volume.axes[1].x + relPos.y * volume.axes[1].y + relPos.z * volume.axes[1].z;
+            localPos.z = relPos.x * volume.axes[2].x + relPos.y * volume.axes[2].y + relPos.z * volume.axes[2].z;
 
-            if (isHit) {
+            // 3. ローカル空間でのクランプ（AABBと同じ手法）
+            float closestX = std::clamp(localPos.x, -volume.width.x, volume.width.x);
+            float closestY = std::clamp(localPos.y, -volume.width.y, volume.width.y);
+            float closestZ = std::clamp(localPos.z, -volume.width.z, volume.width.z);
+
+            // 4. 距離の判定
+            Vector3 diff = { localPos.x - closestX, localPos.y - closestY, localPos.z - closestZ };
+            float distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
+
+            if (distSq <= pRad * pRad) {
 
                 int test = 1;
 
                 player->Damage(test);
-                break;
             }
         }
     }

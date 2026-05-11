@@ -112,6 +112,17 @@ void banana::Update()
     Vector3 cameraPos = camera_->GetTranslate();
 
     for (auto& part : parts_) {
+
+        part.transform.rotate.y += 1.0f / 60.0f;
+
+        float theta = part.transform.rotate.y;
+
+        // モデルの表示位置も回転に合わせて計算
+        Vector3 rotatedPos;
+        rotatedPos.x = part.collisionLocalPos.x * cosf(theta) + part.collisionLocalPos.z * sinf(theta);
+        rotatedPos.y = part.collisionLocalPos.y;
+        rotatedPos.z = -part.collisionLocalPos.x * sinf(theta) + part.collisionLocalPos.z * cosf(theta);
+
         if (!part.isWeakPoint && part.PartsHp <= 0) {
             part.repairTimer -= 1.0f / 60.0f;
             if (part.repairTimer <= 0.0f) {
@@ -123,15 +134,29 @@ void banana::Update()
         // 動く場合の座標セット
         Vector3 worldPos = part.transform.translate + baseTransform_.translate;
         part.object->SetTranslate(worldPos);
+        part.object->SetRotate(part.transform.rotate);
         part.object->Update();
     }
+
+    // ImGuiでのステータス表示
+    ImGui::Begin("Banana Boss Debug");
+    ImGui::Text("Total Health: %d", health_);
+    for (int i = 0; i < parts_.size(); i++) {
+        ImGui::Separator();
+        ImGui::Text("Part [%d] %s", i, parts_[i].isWeakPoint ? "BODY" : "PEEL");
+        ImGui::Text("HP: %d", parts_[i].PartsHp);
+        if (parts_[i].repairTimer > 0) {
+            ImGui::Text("Repairing... %.1f", parts_[i].repairTimer);
+        }
+    }
+    ImGui::End();
 }
 
 void banana::Draw3D()
 {
 
     for (auto& part : parts_) {
-        if (part.PartsHp >= 0) {
+        if (part.PartsHp > 1) {
             part.object->Draw();
         }
     }
@@ -199,27 +224,34 @@ void banana::BulletMirror(const CollisionVolume& volume, PlayerBullet* bullet)
 banana::CollisionVolume banana::CreateVolumeFromPart(uint32_t i, Vector3 bossPos, Vector3 cameraPos)
 {
     banana::CollisionVolume volume;
-    Vector3 partWorldPos = {
-        parts_[i].collisionLocalPos.x + bossPos.x + cameraPos.x,
-        parts_[i].collisionLocalPos.y + bossPos.y + cameraPos.y,
-        parts_[i].collisionLocalPos.z + bossPos.z + cameraPos.z
-    };
+    const auto& part = parts_[i];
+    float theta = part.transform.rotate.y;
 
-    volume.position = partWorldPos;
-    volume.width = parts_[i].radiusX;
-    volume.height = parts_[i].radiusY;
-    // 奥行き（厚み）の設定。1.0f〜2.0f程度持たせると突き抜けにくくなります
-    volume.depth = 2.0f;
+    // 1. 中心座標の計算（回転を考慮）
+    Vector3 rotatedLocalPos;
+    rotatedLocalPos.x = part.collisionLocalPos.x * cosf(theta) + part.collisionLocalPos.z * sinf(theta);
+    rotatedLocalPos.y = part.collisionLocalPos.y;
+    rotatedLocalPos.z = -part.collisionLocalPos.x * sinf(theta) + part.collisionLocalPos.z * cosf(theta);
+
+    volume.position = rotatedLocalPos + bossPos + cameraPos;
+
+    // 2. OBBの3軸を決定 (Y軸回転のみを想定)
+    // 右方向 (X軸)
+    volume.axes[0] = { cosf(theta), 0.0f, -sinf(theta) };
+    // 上方向 (Y軸)
+    volume.axes[1] = { 0.0f, 1.0f, 0.0f };
+    // 前方向 (Z軸)
+    volume.axes[2] = { sinf(theta), 0.0f, cosf(theta) };
+
+    // 3. 各軸の半分のサイズ
+    volume.width = { part.radiusX, part.radiusY, 10.0f }; // z=2.0は厚み
+
+    volume.shape = CollisionShape::kBox; // OBBとして扱う
     volume.partId = i;
 
-   if (parts_[i].isWeakPoint) {
-        volume.shape = CollisionShape::kBox;
-        volume.normal = { 0.0f, 0.0f, -1.0f }; // 正面向き
-    } else {
-        volume.shape = CollisionShape::kBox;
-        // 重要：矩形になっても「反射に使うための法線」として外向きベクトルを入れておく
-        volume.normal = Normalize(parts_[i].collisionLocalPos);
-    }
+    // 反射用の法線（箱の正面方向をセット）
+    volume.normal = volume.axes[2];
+
     return volume;
 }
 

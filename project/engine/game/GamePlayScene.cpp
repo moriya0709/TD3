@@ -557,10 +557,10 @@ void GamePlayScene::UpdateImGui()
     camera->SetTranslate({ cameraTransform.translate });
     camera->SetRotate({ cameraTransform.rotate });
 
-    if (Input::GetInstance()->TriggerKey(DIK_BACKSPACE)) {
-        // ゲームプレイシーン(次シーン)を生成
-        SceneManager::GetInstance()->ChangeScene("RESULT");
-    }
+    //if (Input::GetInstance()->TriggerKey(DIK_BACKSPACE)) {
+    //    // ゲームプレイシーン(次シーン)を生成
+    //    SceneManager::GetInstance()->ChangeScene("RESULT");
+    //}
 
 #pragma region ライティング
     // *ライティング* //
