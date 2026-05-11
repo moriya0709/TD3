@@ -49,10 +49,12 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
 
         p.object->SetScale(p.transform.scale);
         p.object->SetRotate(p.transform.rotate);
-        p.object->SetTranslate(p.transform.translate + baseTransform_.translate + cameraPos);
+        p.object->SetTranslate(p.transform.translate + baseTransform_.translate);
         p.object->Update();
+        p.repairTimer = p.kRepairTime;
+        p.PartsHp = p.kPartsHp;
 
-        float offsetRadius = 12.0f; // 本体(0,0,0)を囲む半径。少し広めにするのがコツ
+        float offsetRadius = 5.0f; // 本体(0,0,0)を囲む半径。少し広めにするのがコツ
 
         if (i == 0) { // 皮1: 正面 (Zマイナス側をふさぐ)
             p.collisionLocalPos = { 0.0f, 0.0f, -offsetRadius };
@@ -111,7 +113,7 @@ void banana::Update()
 
     for (auto& part : parts_) {
         if (!part.isWeakPoint && part.PartsHp <= 0) {
-            part.repairTimer -= 1.0f/60.0f;
+            part.repairTimer -= 1.0f / 60.0f;
             if (part.repairTimer <= 0.0f) {
                 part.PartsHp = BossPart::kPartsHp; // 修理完了
                 part.repairTimer = BossPart::kRepairTime;
@@ -119,22 +121,10 @@ void banana::Update()
         }
 
         // 動く場合の座標セット
-        Vector3 worldPos = part.transform.translate + baseTransform_.translate + cameraPos;
+        Vector3 worldPos = part.transform.translate + baseTransform_.translate;
         part.object->SetTranslate(worldPos);
         part.object->Update();
     }
-
-    ImGui::Begin("Banana Boss Debug");
-    ImGui::Text("Total Health: %d", health_);
-    for (int i = 0; i < parts_.size(); i++) {
-        ImGui::Separator();
-        ImGui::Text("Part [%d] %s", i, parts_[i].isWeakPoint ? "BODY" : "PEEL");
-        ImGui::Text("HP: %d", parts_[i].PartsHp);
-        if (parts_[i].repairTimer > 0) {
-            ImGui::Text("Repairing... %.1f", parts_[i].repairTimer);
-        }
-    }
-    ImGui::End();
 }
 
 void banana::Draw3D()
@@ -154,42 +144,51 @@ void banana::Draw3D()
 
 void banana::BulletMirror(const CollisionVolume& volume, PlayerBullet* bullet)
 {
-
     Vector3 bulletPos = bullet->GetPosition();
     Vector3 bulletVelocity = bullet->GetVelocity();
-
-    // ==========================================
-    // 1. 法線の取得（面の法線をそのまま使う）
-    // ==========================================
-    // volume.normal は前回の GetCollisionVolumes で計算した「面の向き」
     Vector3 normal = volume.normal;
 
     // ==========================================
-    // 2. 反射ベクトルの計算
+    // 1. 反射ベクトルの計算
     // ==========================================
-    // 公式: R = V - 2 * (V ・ N) * N
     float dot = bulletVelocity.x * normal.x + bulletVelocity.y * normal.y + bulletVelocity.z * normal.z;
+
+    // 弾が内側に向かっている場合のみ反射（念のため）
+    if (dot > 0)
+        return;
 
     Vector3 reflectVelocity;
     reflectVelocity.x = bulletVelocity.x - 2.0f * dot * normal.x;
     reflectVelocity.y = bulletVelocity.y - 2.0f * dot * normal.y;
     reflectVelocity.z = bulletVelocity.z - 2.0f * dot * normal.z;
 
-    // ゲーム的な調整（プレイヤーの方へ押し出す力）
-    reflectVelocity.z *= 1.3f;
+    // ゲーム的な調整：少し加速させてプレイヤーに突き返す
+    float speedBoost = 1.2f;
+    reflectVelocity.x *= speedBoost;
+    reflectVelocity.y *= speedBoost;
+    reflectVelocity.z *= speedBoost;
 
     // ==========================================
-    // 3. 反射弾（敵の弾）の生成
+    // 2. 発生位置の補正（めり込み防止）
+    // ==========================================
+    // 矩形の表面から少し浮かせた位置に移動させる
+    Vector3 spawnPos = bulletPos;
+    float pushOutDist = 0.5f; // 少し外側にずらす
+    spawnPos.x += normal.x * pushOutDist;
+    spawnPos.y += normal.y * pushOutDist;
+    spawnPos.z += normal.z * pushOutDist;
+
+    // ==========================================
+    // 3. 反射弾（ホーミング弾）の生成
     // ==========================================
     std::unique_ptr<HomingEnemyBullet> newBulletEnemy = std::make_unique<HomingEnemyBullet>();
 
-    // 発生位置は「当たった位置」でOK
-    newBulletEnemy->Initialize(camera_, bulletPos);
+    newBulletEnemy->Initialize(camera_, spawnPos);
 
-    // 【重要】加速度ではなく、初速として反射ベクトルを渡す
-    // ※クラス設計によりますが、SetVelocityのようなものがあればそちらへ
+    // 反射ベクトルをセット（クラスの仕様に合わせて調整してください）
     newBulletEnemy->SetBulletAcceleration(reflectVelocity);
 
+    // プレイヤーを狙わせる
     newBulletEnemy->SetTargetPosition(player_->GetPosition());
     newBulletEnemy->SetUpgrade(1.0f);
     newBulletEnemy->Update();
@@ -209,17 +208,17 @@ banana::CollisionVolume banana::CreateVolumeFromPart(uint32_t i, Vector3 bossPos
     volume.position = partWorldPos;
     volume.width = parts_[i].radiusX;
     volume.height = parts_[i].radiusY;
+    // 奥行き（厚み）の設定。1.0f〜2.0f程度持たせると突き抜けにくくなります
+    volume.depth = 2.0f;
     volume.partId = i;
 
-    if (parts_[i].isWeakPoint) {
+   if (parts_[i].isWeakPoint) {
         volume.shape = CollisionShape::kBox;
+        volume.normal = { 0.0f, 0.0f, -1.0f }; // 正面向き
     } else {
-        volume.shape = CollisionShape::kPlane;
-        // 常に中心(0,0,0)から外側を向くように法線を計算
-        Vector3 toOut = Normalize(parts_[i].collisionLocalPos);
-        volume.normal = toOut;
-        volume.right = { toOut.z, 0.0f, -toOut.x };
-        volume.up = { 0.0f, 1.0f, 0.0f };
+        volume.shape = CollisionShape::kBox;
+        // 重要：矩形になっても「反射に使うための法線」として外向きベクトルを入れておく
+        volume.normal = Normalize(parts_[i].collisionLocalPos);
     }
     return volume;
 }
