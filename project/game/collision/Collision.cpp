@@ -222,6 +222,7 @@ void CheckCollisionPlayerBulletBananaBoss(Player* player, const std::list<std::s
             float bRad = bullet->GetHitSize();
 
             for (const auto& volume : volumes) {
+
                 // --- OBB判定ロジック ---
 
                 // 1. OBBの中心から弾へのベクトル

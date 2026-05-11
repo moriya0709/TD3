@@ -24,7 +24,7 @@ public:
     };
 
     struct CollisionVolume {
-        Vector3 position; // 中心座標
+        Vector3 position;
         Vector3 width; // 各軸の半径 (x=幅/2, y=高さ/2, z=厚み/2)
         Vector3 axes[3]; // OBBの方向ベクトル (0:右, 1:上, 2:前)
         CollisionShape shape;
@@ -34,22 +34,24 @@ public:
 
     // 各パーツの情報
     struct BossPart {
-        Transform transform; // モデル用座標
-        Vector3 collisionLocalPos; // 当たり判定のローカル座標
+        Transform transform;
+        Vector3 collisionLocalPos; // TransformからVector3へ変更（座標のみ保持）
+        float baseAngle = 0.0f;
+        float collisionRotationY = 0.0f; // 当たり判定の回転専用変数
 
         bool isAnimating = false;
 
         // 当たり判定のサイズ
-        static inline const float radiusX = 3.0f;
-        static inline const float radiusY = 20.0f;
+        static inline const float radiusX = 4.0f;
+        static inline const float radiusY = 6.0f;
 
         // 体力
         int PartsHp = 100;
-        static inline const int kPartsHp = 1000;
+        static inline const int kPartsHp = 200;
 
         // --- 以下を追加 ---
         float repairTimer = 0.0f; // 修理までの時間
-        static inline const float kRepairTime = 10.0f; // 修理にかかる時間
+        static inline const float kRepairTime = 20.0f; // 修理にかかる時間
         // ------------------
 
         bool isWeakPoint;
@@ -71,6 +73,8 @@ public:
     void Update();
 
     void Draw3D();
+
+    void DrawDebugCollision();
 
     void BulletMirror(const CollisionVolume& volume, PlayerBullet* bullet);
 
@@ -103,6 +107,10 @@ public:
     void BehaviorDefeated();
 
 private:
+    bool showDebugCollision_ = true;
+    // パーツ数分のデバッグ表示用オブジェクト
+    std::vector<std::unique_ptr<Object>> debugCollisionObjects_;
+
     // スコア
     int score_ = 2500;
 
