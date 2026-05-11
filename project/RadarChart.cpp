@@ -2,58 +2,32 @@
 #include "DirectXCommon.h"
 
 void RadarChart::Initialize() {
-	// 中心座標をローカル変数にまとめておくとスッキリします
-	float centerX = position_.x;
-	float centerY = position_.y;
 
-	// 0: 中心点
-	vertices.push_back({ {centerX, centerY, 0.0f}, color });
+}
 
-	// 1~n: 各項目の頂点
-	float screenWidth = 1920.0f;
-	float screenHeight = 1080.0f;
-
-	for (int i = 0; i < kVertices; ++i) {
-		float r = maxRadius * values[i];
-		float theta = (2.0f * DirectX::XM_PI * i / kVertices) - (DirectX::XM_PI / 2.0f);
-
-		// ピクセル座標を NDC 座標に変換
-		float x = ((centerX + r * cosf(theta)) / screenWidth) * 2.0f - 1.0f;
-		float y = -(((centerY + r * sinf(theta)) / screenHeight) * 2.0f - 1.0f);
-
-		vertices.push_back({ {x, y, 0.0f}, color });
-	}
-
-	indices.clear();
-	for (int i = 1; i <= kVertices; ++i) {
-		indices.push_back(0);                     // 中心
-		indices.push_back(i);                     // 現在の頂点
-		indices.push_back((i % kVertices) + 1);    // 次の頂点
-	}
-
+void RadarChart::RebuildBuffers() {
 	auto device = DirectXCommon::GetInstance()->GetDevice();
 
-	// 1. 頂点バッファの作成 (Upload Heap)
-	size_t sizeVB = sizeof(RadarVertex) * vertices.size();
-
-	// 自作エンジンのバッファ作成関数があればそれを使う
-	// 無ければ device->CreateCommittedResource で作成
-	vertexBuffer = CreateBuffer(device, sizeVB); // ヘルパー関数を想定
-
-	// 2. データの転送
-	void* pData = nullptr;
-	vertexBuffer->Map(0, nullptr, &pData);
-	memcpy(pData, vertices.data(), sizeVB);
-	vertexBuffer->Unmap(0, nullptr);
-
-	// 3. Viewの設定
+	// 1. 頂点バッファの再作成 (中心1点 + kVertices)
+	size_t sizeVB = sizeof(RadarVertex) * (kVertices + 1);
+	vertexBuffer = CreateBuffer(device, sizeVB);
 	vbView.BufferLocation = vertexBuffer->GetGPUVirtualAddress();
 	vbView.SizeInBytes = static_cast<UINT>(sizeVB);
 	vbView.StrideInBytes = sizeof(RadarVertex);
 
-	// --- インデックスバッファも同様に作成 ---
+	// 2. インデックス配列の再構築
+	indices.clear();
+	for (int i = 1; i <= kVertices; ++i) {
+		indices.push_back(0);                     // 中心
+		indices.push_back(i);                     // 現在の頂点
+		indices.push_back((i % kVertices) + 1);   // 次の頂点
+	}
+
+	// 3. インデックスバッファの再作成とデータ転送
 	size_t sizeIB = sizeof(uint16_t) * indices.size();
 	indexBuffer = CreateBuffer(device, sizeIB);
+
+	void* pData = nullptr;
 	indexBuffer->Map(0, nullptr, &pData);
 	memcpy(pData, indices.data(), sizeIB);
 	indexBuffer->Unmap(0, nullptr);
@@ -61,12 +35,14 @@ void RadarChart::Initialize() {
 	ibView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
 	ibView.Format = DXGI_FORMAT_R16_UINT;
 	ibView.SizeInBytes = static_cast<UINT>(sizeIB);
-
-
 }
 
 void RadarChart::Update() {
-	// 1. 頂点配列をクリアして、毎フレーム 0 から作り直す
+	// 安全策：頂点数が 0、またはデータが足りない場合は何もしない
+	if (kVertices <= 0 || values.size() < (size_t)kVertices) {
+		return;
+	}
+
 	vertices.clear();
 
 	float centerX = position_.x;
@@ -77,12 +53,11 @@ void RadarChart::Update() {
 	// 0: 中心点
 	float centerNdcX = (centerX / screenWidth) * 2.0f - 1.0f;
 	float centerNdcY = -((centerY / screenHeight) * 2.0f - 1.0f);
-
-	vertices.push_back({ {centerNdcX, centerNdcY, 0.0f},color});
+	vertices.push_back({ {centerNdcX, centerNdcY, 0.0f}, color });
 
 	// 1~n: 各項目の頂点
 	for (int i = 0; i < kVertices; ++i) {
-		float r = maxRadius * values[i]; // values[i] を直接使う
+		float r = maxRadius * values[i];
 		float theta = (2.0f * DirectX::XM_PI * i / kVertices) - (DirectX::XM_PI / 2.0f);
 
 		float x = ((centerX + r * cosf(theta)) / screenWidth) * 2.0f - 1.0f;
@@ -91,7 +66,7 @@ void RadarChart::Update() {
 		vertices.push_back({ {x, y, 0.0f}, color });
 	}
 
-	// 2. 新しく計算した頂点データを GPU バッファに書き込む
+	// GPUに転送
 	TransferToGPU();
 }
 
@@ -104,6 +79,26 @@ void RadarChart::Draw() {
 	DirectXCommon::GetInstance()->GetCommandList()->IASetIndexBuffer(&ibView);
 	// 4. 描画実行
 	DirectXCommon::GetInstance()->GetCommandList()->DrawIndexedInstanced(static_cast<UINT>(indices.size()), 1, 0, 0, 0);
+}
+
+void RadarChart::SetkVertices(int newKVertices) {
+	kVertices = newKVertices;
+	// ここで vector のサイズを確定させる
+	values.resize(kVertices, 0.0f);
+
+	// サイズが決まったので、ここで初めてバッファを作る
+	RebuildBuffers();
+}
+
+void RadarChart::SetValues(const std::vector<float>& newValues) {
+	// 渡された vector をそのままコピー
+	values = newValues;
+
+	// もし要素数が設定と違っていたら更新してバッファを作り直す
+	if (kVertices != (int)values.size()) {
+		kVertices = (int)values.size();
+		RebuildBuffers();
+	}
 }
 
 Microsoft::WRL::ComPtr<ID3D12Resource> RadarChart::CreateBuffer(ID3D12Device* device, size_t size) {
@@ -139,13 +134,13 @@ Microsoft::WRL::ComPtr<ID3D12Resource> RadarChart::CreateBuffer(ID3D12Device* de
 }
 
 void RadarChart::TransferToGPU() {
+	// 安全策：バッファがまだ作られていなければスキップ
+	if (!vertexBuffer) return;
+
 	void* pData = nullptr;
-	// バッファを CPU からアクセス可能にする
 	HRESULT hr = vertexBuffer->Map(0, nullptr, &pData);
 	if (SUCCEEDED(hr)) {
-		// std::vector の中身を丸ごとコピー
 		memcpy(pData, vertices.data(), sizeof(RadarVertex) * vertices.size());
-		// 書き込み終了
 		vertexBuffer->Unmap(0, nullptr);
 	}
 }
