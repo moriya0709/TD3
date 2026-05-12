@@ -42,7 +42,13 @@ void StageSelect::Initialize() {
 		radarChartEasing[i].numberEasedT = 0.0f;
 	}
 
+	return_ = std::make_unique<Sprite>();
+	return_->Initialize("Resource/return.png"); // 戻る
+	return_->SetPosition({ 1000.0f, 100.0f });
 
+	enter_ = std::make_unique<Sprite>();
+	enter_->Initialize("Resource/Enter.png"); // 進める
+	enter_->SetPosition({ 1000.0f, 1000.0f });
 
 	// 本型UI
 	std::vector<std::string> textures = {
@@ -93,6 +99,14 @@ void StageSelect::Update() {
 			}
 		}
 	} else {
+		if (switchCooltime <= 0.0f)
+		{//マシーンセレクトからステージセレクトへ戻す
+			if (book->GetCurrentPageIndex() > 5)
+			{
+				book->PrevPage();
+				switchCooltime = 0.3f;
+			}
+		}
 		if (switchCooltime <= 0.0f) {
 			// パラメータのイージングセット
 			if (isParameterEasing) {
@@ -175,12 +189,33 @@ void StageSelect::Update() {
 		}
 	}
 
+	//タイトルに戻す
+	if (input->TriggerKey(DIK_W))
+	{
+		if (switchCooltime <= 0.0f)
+		{
+			if (isStageSelect)
+			{//ステージセレクトならマシーンセレクトに(演出)
+				isStageSelect = false;
+				isParameterEasing = true;
+				ParameterEasingSet(currentStyle);
+				switchCooltime = 0.5f;
+			} else
+			{
+				SceneManager::GetInstance()->ChangeScene("TITLE");
+				return;
+			}
+		}
+	}
+
 	// 本の更新
 	book->Update();
 	// シーン切り替え演出
 	TransitionUpdate();
 	radarChart->Update();
 
+	return_->Update();
+	enter_->Update();
 
 	// レーダーチャート
 
@@ -210,6 +245,9 @@ void StageSelect::Update() {
 void StageSelect::Draw2D() {
 	// 2Dオブジェクトの描画準備
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
+
+	return_->Draw();
+	enter_->Draw();
 
 	//if (switchCooltime <= 0.0f) {
 	//	for (int i = 0; i < kMaxParameter; i++) {
