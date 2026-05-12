@@ -154,6 +154,11 @@ private:
 	bool rayMarchingIsMotionBlur = false;
 	float rayMarchingCloudOpacity = 0.01f;
 
+	//スプライト
+	std::unique_ptr<Sprite> return_ = nullptr;
+	std::unique_ptr<Sprite> enter_ = nullptr;
+
+
 	// 本型UI
 	std::unique_ptr <Book> book = nullptr;
 	EasingSet bookEasing;
