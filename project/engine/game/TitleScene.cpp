@@ -36,7 +36,7 @@ void TitleScene::Initialize() {
 	Model* model = ModelManager::GetInstance()->FindModel("simpleSkin.gltf");//スケルトンアクセス権
 	skeleton_ = model->CreateSkeleton(model->GetModelData().rootNode);//動く仕組み
 
-	//アニメーションデータの読み込み(モデル自体はGame.cppに入れること)
+/*	//アニメーションデータの読み込み(モデル自体はGame.cppに入れること)
 	simpleAnimation_ = Model::LoadAnimationFile("./Resource", "simpleSkin.gltf");//スケルトン
 	walkAnimation_ = Model::LoadAnimationFile("./Resource", "walk.gltf");
 
@@ -51,7 +51,7 @@ void TitleScene::Initialize() {
 	walkAnim->PlayAnimation(walkAnimation_);//アニメーション読み込み
 	walkAnimation = walkAnim.get();//アニメーション読み込み
 
-	animationObjects.push_back(std::move(walkAnim));//アニメーションモデル専用のリストに入れる
+	animationObjects.push_back(std::move(walkAnim));//アニメーションモデル専用のリストに入れる*/
 
 	// ヒットエフェクト
 	for (int i = 0; i < hitEffectCount; i++) {
@@ -124,13 +124,13 @@ void TitleScene::Update() {
 	//}
 
 	// パーティクル更新
-	particleEmitter->Update();
-	particleEmitter->Editor();
+	//particleEmitter->Update();
+	//particleEmitter->Editor();
 
 
 	// *スプライト* //
 	// sprite更新
-	//title_->Update();
+	title_->Update();
 
 
 #pragma region ライティング

@@ -56,6 +56,10 @@ void StageSelect::Initialize() {
 	"Resource/bookUi/bookUi_1.png",
 	"Resource/bookUi/bookUi_1.png",
 	"Resource/bookUi/stage1.png",// stage1
+	"Resource/bookUi/stage2.png",// stage2
+	"Resource/bookUi/stage3.png",// stage3
+	"Resource/bookUi/stage4.png",// stage4
+	"Resource/bookUi/stage5.png",// stage5
 	};
 	book = std::make_unique<Book>();
 	book->Initialize(textures);
@@ -83,82 +87,72 @@ void StageSelect::Update() {
 	switchCooltime = (std::max)(0.0f, switchCooltime - 1.0f / 60.0f);
 	if (isStageSelect) {
 		if (switchCooltime <= 0.0f) {
-			book->NextPage();
-			switchCooltime = 0.3f; // クールタイムリセット
+			if (book->GetCurrentPageIndex() < 9) {
+				book->NextPage();
+				switchCooltime = 0.3f; // クールタイムリセット
+			}
 		}
-	}
-	if (switchCooltime <= 0.0f) {
-		// パラメータのイージングセット
-		if (isParameterEasing) {
-			isParameterEasing = false;
-			ParameterEasingSet(currentStyle);
+	} else {
+		if (switchCooltime <= 0.0f) {
+			// パラメータのイージングセット
+			if (isParameterEasing) {
+				isParameterEasing = false;
+				ParameterEasingSet(currentStyle);
+			}
 		}
 	}
 
 
-	bool isChanged = false; // マシン変更
 	if (input->TriggerKey(DIK_D) || input->TriggerKey(DIK_RIGHT)) {
 		if (switchCooltime <= 0.0f) {
-			if (currentStyle != sniper) {
-				if (!isStageSelect) {
+			if (!isStageSelect) {
+				// 本のページをめくる
+				if (book->GetCurrentPageIndex() < 5) {
+					book->NextPage();
+
+					// スタイルを切り替える
 					currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 1) % 4);
-					isChanged = true;
-
-					// 本のページをめくる
-					if (book->GetCurrentPageIndex() < 5)
-					book->NextPage();
-
 					isParameterEasing = true; // イージングリセット
 					ParameterEasingSet(currentStyle);
-
-				} else {
-					if (currentStage < 5) {
-						currentStage++;
-					} else {
-						currentStage = 0;
-					}
-
-					// 本のページをめくる
-					book->NextPage();
-
-					isParameterEasing = true; // イージングリセット
-					ParameterEasingSet(currentStyle);
-
 				}
-				switchCooltime = 0.8f; // クールタイムリセット
+
+			} else {
+				if (currentStage < 5) {
+					currentStage++;
+				}
+
+				// 本のページをめくる
+				if (book->GetCurrentPageIndex() < 10)
+					book->NextPage();
+
 			}
+			switchCooltime = 0.8f; // クールタイムリセット
 		}
 	} else if (input->TriggerKey(DIK_A) || input->TriggerKey(DIK_LEFT)) {
 		if (switchCooltime <= 0.0f) {
-			if (currentStyle != normal) {
-				if (!isStageSelect) {
+			if (!isStageSelect) {
+				// 本のページを戻す
+				book->PrevPage();
+
+				if (book->GetCurrentPageIndex() > 3) {
+					// スタイルを切り替える
 					currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 3) % 4);
-					isChanged = true;
-
-					// 本のページを戻す
-					book->PrevPage();
-
 					isParameterEasing = true; // イージングリセット
 					ParameterEasingSet(currentStyle);
-
-				} else {
-					if (currentStage > 0) {
-						currentStage--;
-					} else {
-						currentStage = 5;
-					}
-
-					if (book->GetCurrentPageIndex() > 8) {
-						// 本のページを戻す
-						book->PrevPage();
-
-						isParameterEasing = true; // イージングリセット
-						ParameterEasingSet(currentStyle);
-					}
-
 				}
-				switchCooltime = 0.8f; // クールタイムリセット
+
+			} else {
+				if (currentStage > 1) {
+					currentStage--;
+				}
+
+				if (book->GetCurrentPageIndex() > 9) {
+					// 本のページを戻す
+					book->PrevPage();
+				}
+
 			}
+			switchCooltime = 0.8f; // クールタイムリセット
 		}
 	}
 
