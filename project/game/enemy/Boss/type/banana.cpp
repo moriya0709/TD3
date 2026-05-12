@@ -26,10 +26,10 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
 
     // 時計回りに設置
     int pats = 4;
+    float offsetRadius = 2.0f;
 
     for (int i = 0; i < pats; ++i) {
         BossPart p;
-
         p.transform.rotate = { 0.0f, 0.0f, 0.0f };
         p.transform.scale = { 14.0f, 14.0f, 14.0f };
         p.transform.translate = { 0.0f, 0.0f, 0.0f };
@@ -37,38 +37,35 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
         // モデル生成
         p.object = std::make_unique<Object>();
         p.object->Initialize(camera_);
-        if (i == 0) {
+        if (i == 0)
             p.object->SetModel("bossBananPeelBuck.obj");
-        } else if (i == 1) {
+        else if (i == 1)
             p.object->SetModel("bossBananPeelLeft.obj");
-        } else if (i == 2) {
+        else if (i == 2)
             p.object->SetModel("bossBananPeelRight.obj");
-        } else if (i == 3) {
+        else if (i == 3)
             p.object->SetModel("bossBananBody.obj");
-        }
 
         p.object->SetScale(p.transform.scale);
-        p.object->SetRotate(p.transform.rotate);
-        p.object->SetTranslate(p.transform.translate + baseTransform_.translate);
-        p.object->Update();
-        p.repairTimer = p.kRepairTime;
-        p.PartsHp = p.kPartsHp;
+        p.repairTimer = BossPart::kRepairTime;
+        p.PartsHp = BossPart::kPartsHp;
+        p.isWeakPoint = (i == 3); // i=3 を本体（弱点）とする
 
-        float offsetRadius = 5.0f; // 本体(0,0,0)を囲む半径。少し広めにするのがコツ
-
-        if (i == 0) { // 皮1: 正面 (Zマイナス側をふさぐ)
-            p.collisionLocalPos = { 0.0f, 0.0f, -offsetRadius };
-            p.isWeakPoint = false;
-        } else if (i == 1) { // 皮2: 右後ろ (120度の位置)
-            p.collisionLocalPos = { offsetRadius * 0.866f, 0.0f, offsetRadius * 0.5f };
-            p.isWeakPoint = false;
-        } else if (i == 2) { // 皮3: 左後ろ (240度の位置)
-            p.collisionLocalPos = { -offsetRadius * 0.866f, 0.0f, offsetRadius * 0.5f };
-            p.isWeakPoint = false;
-        } else if (i == 3) { // 本体: 中心
-            p.collisionLocalPos = { 0.0f, 0.0f, 0.0f };
-            p.isWeakPoint = true;
+        // --- 逆三角形（Apex Forward）の配置ロジック ---
+        if (i == 0) { // 正面頂点 (0度方向)
+            p.baseAngle = 0.0f;
+            p.collisionLocalPos = { (2.0f), 0.0f, offsetRadius };
+        } else if (i == 1) { // 右後ろ (120度方向)
+            p.baseAngle = 2.094f; // (2 * PI / 3)
+            p.collisionLocalPos = { 2.0f + (offsetRadius * 0.866f), 0.0f, -offsetRadius * 0.5f };
+        } else if (i == 2) { // 左後ろ (240度方向)
+            p.baseAngle = 4.188f; // (4 * PI / 3)
+            p.collisionLocalPos = { 2.0f + (-offsetRadius * 0.866f), 0.0f, -offsetRadius * 0.5f };
+        } else { // 本体（中央）
+            p.baseAngle = 0.0f;
+            p.collisionLocalPos = { 2.0f, 0.0f, 0.0f };
         }
+
         parts_.push_back(std::move(p));
     }
 }
@@ -110,34 +107,33 @@ void banana::Update()
     BulletUpdate();
 
     Vector3 cameraPos = camera_->GetTranslate();
-
     for (auto& part : parts_) {
+        float theta = part.collisionRotationY;
 
-        part.transform.rotate.y += 1.0f / 60.0f;
-
-        float theta = part.transform.rotate.y;
-
-        // モデルの表示位置も回転に合わせて計算
+        // 2. 当たり判定の公転座標計算
         Vector3 rotatedPos;
         rotatedPos.x = part.collisionLocalPos.x * cosf(theta) + part.collisionLocalPos.z * sinf(theta);
         rotatedPos.y = part.collisionLocalPos.y;
         rotatedPos.z = -part.collisionLocalPos.x * sinf(theta) + part.collisionLocalPos.z * cosf(theta);
 
+        // 3. 修理タイマー処理 (維持)
         if (!part.isWeakPoint && part.PartsHp <= 0) {
             part.repairTimer -= 1.0f / 60.0f;
             if (part.repairTimer <= 0.0f) {
-                part.PartsHp = BossPart::kPartsHp; // 修理完了
+                part.PartsHp = BossPart::kPartsHp;
                 part.repairTimer = BossPart::kRepairTime;
             }
         }
 
-        // 動く場合の座標セット
-        Vector3 worldPos = part.transform.translate + baseTransform_.translate;
-        part.object->SetTranslate(worldPos);
-        part.object->SetRotate(part.transform.rotate);
+        // 4. モデルの座標設定 (モデル自体は中心、または指定位置に固定)
+        // ユーザー要望：モデルは回転させない = baseTransform_.translate の位置に固定
+        Vector3 modelPos = baseTransform_.translate + cameraPos;
+        part.object->SetTranslate(modelPos);
+        // 回転も初期状態(0,0,0)を維持
+        part.object->SetRotate({ 0.0f, 0.0f, 0.0f });
         part.object->Update();
     }
-
+#ifdef USE_IMGUI
     // ImGuiでのステータス表示
     ImGui::Begin("Banana Boss Debug");
     ImGui::Text("Total Health: %d", health_);
@@ -150,6 +146,7 @@ void banana::Update()
         }
     }
     ImGui::End();
+#endif
 }
 
 void banana::Draw3D()
@@ -225,31 +222,28 @@ banana::CollisionVolume banana::CreateVolumeFromPart(uint32_t i, Vector3 bossPos
 {
     banana::CollisionVolume volume;
     const auto& part = parts_[i];
-    float theta = part.transform.rotate.y;
 
-    // 1. 中心座標の計算（回転を考慮）
+    // 衝突判定専用の回転角を使用
+    float currentRotation = part.collisionRotationY;
+    float totalTheta = currentRotation + part.baseAngle;
+
+    // 1. 中心座標の回転（公転）計算
     Vector3 rotatedLocalPos;
-    rotatedLocalPos.x = part.collisionLocalPos.x * cosf(theta) + part.collisionLocalPos.z * sinf(theta);
+    rotatedLocalPos.x = part.collisionLocalPos.x * cosf(currentRotation) + part.collisionLocalPos.z * sinf(currentRotation);
     rotatedLocalPos.y = part.collisionLocalPos.y;
-    rotatedLocalPos.z = -part.collisionLocalPos.x * sinf(theta) + part.collisionLocalPos.z * cosf(theta);
+    rotatedLocalPos.z = -part.collisionLocalPos.x * sinf(currentRotation) + part.collisionLocalPos.z * cosf(currentRotation);
 
     volume.position = rotatedLocalPos + bossPos + cameraPos;
 
-    // 2. OBBの3軸を決定 (Y軸回転のみを想定)
-    // 右方向 (X軸)
-    volume.axes[0] = { cosf(theta), 0.0f, -sinf(theta) };
-    // 上方向 (Y軸)
-    volume.axes[1] = { 0.0f, 1.0f, 0.0f };
-    // 前方向 (Z軸)
-    volume.axes[2] = { sinf(theta), 0.0f, cosf(theta) };
+    // 2. OBBの3軸を決定 (totalThetaで自転させる)
+    volume.axes[0] = { cosf(totalTheta), 0.0f, -sinf(totalTheta) }; // Right
+    volume.axes[1] = { 0.0f, 1.0f, 0.0f }; // Up
+    volume.axes[2] = { sinf(totalTheta), 0.0f, cosf(totalTheta) }; // Forward (法線)
 
-    // 3. 各軸の半分のサイズ
-    volume.width = { part.radiusX, part.radiusY, 10.0f }; // z=2.0は厚み
-
-    volume.shape = CollisionShape::kBox; // OBBとして扱う
+    // 3. サイズ設定
+    volume.width = part.isWeakPoint ? Vector3 { 0.5f, part.radiusY, 1.0f } : Vector3 { part.radiusX, part.radiusY, 1.0f };
+    volume.shape = CollisionShape::kBox;
     volume.partId = i;
-
-    // 反射用の法線（箱の正面方向をセット）
     volume.normal = volume.axes[2];
 
     return volume;

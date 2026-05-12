@@ -219,7 +219,7 @@ private:
     //今のプレイ時間
     float playTimer_ = 0.0f;
     //制限時間
-    const float kMaxTime_ = 180.0f;
+    float kMaxTime_ = 180.0f;
     //クリアしたかどうか
     bool isFinished_ = false;
 
@@ -228,6 +228,8 @@ private:
 
     // 特殊攻撃エフェクト
     std::unique_ptr <ParticleEmitter> specialAttackEffect = nullptr;
+	// ヒットエフェクト
+    std::unique_ptr <ParticleEmitter> hitEffect = nullptr;
 
     // Updateで直接操作したい特定のオブジェクトへのポインタ(アニメーションモデル)
     Object* walkAnimation = nullptr;

@@ -31,6 +31,7 @@ void GamePlayScene::Initialize() {
 	} else {
 	cameraController_->SetCurrentStage(currentStage_);
 	cameraController_->StartReplay();
+	kMaxTime_ = cameraController_->GetTotalDuration();
 	}
 	enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
 
@@ -111,6 +112,12 @@ void GamePlayScene::Initialize() {
 	specialAttackEffect->SetActive("SpecialAttack");
     specialAttackEffect->LoadParticle("Resource/particle/special_1.csv");
 
+	// ヒットエフェクト
+	hitEffect = std::make_unique<ParticleEmitter>();
+	hitEffect->Initialize("HitEffect", transformParticle, 50, 0.1f);
+	hitEffect->SetActive("HitEffect");
+	hitEffect->LoadParticle("Resource/particle/hit_10.csv");
+
 	// イージング
 	easing = std::make_unique<Easing>();
 	easing->Initialize();
@@ -153,15 +160,13 @@ void GamePlayScene::Update() {
 		return;
 
 	// 時間の計測
-	float deltaTime = 1.0f / 60.0f;
-	playTimer_ += deltaTime;
+	
 
 	// クリア条件の分岐
 	if (isBossBattle_) {
 		// ボス倒したらクリア
 	} else { // 制限時間来たらリザルトへ
-		if (playTimer_ >= kMaxTime_) {
-			playTimer_ = kMaxTime_;
+		if (cameraController_->GetElapsedTime() >= kMaxTime_) {
 			StageClear();
 		}
 	}
@@ -257,11 +262,11 @@ void GamePlayScene::ChekeAllCollision()
     const std::list<std::shared_ptr<banana>>& BBoss = enemy_->GetBBoss();
     CheckCollisionPlayerEnemy(player_.get(), enemies);
     CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
-    CheckCollisionPlayerBulletEnemy(player_.get(), enemies);
-    CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss);
+    CheckCollisionPlayerBulletEnemy(player_.get(), enemies, hitEffect);
+    CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss, hitEffect);
     CheckCollisionPlayerBossEnemy(player_.get(), Boss);
     CheckCollisionPlayerBossEnemyBullet(player_.get(), Boss);
-    CheckCollisionPlayerBulletBananaBoss(player_.get(), BBoss);
+    CheckCollisionPlayerBulletBananaBoss(player_.get(), BBoss, hitEffect);
     CheckCollisionPlayerBananaBoss(player_.get(), BBoss);
     CheckCollisionPlayerBananaBossBullet(player_.get(), BBoss);
     

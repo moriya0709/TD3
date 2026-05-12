@@ -55,6 +55,7 @@ void Game::Initialize() {
 	ParticleManager::GetInstance()->CreateParticleGroup("SpecialAttack", "Resource/particle/particle2.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("Special2", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("Special3", "Resource/particle/particle2.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("HitEffect", "Resource/particle/particle2.png");
 
 
 	// .objファイルからモデル読み込み
@@ -83,6 +84,7 @@ void Game::Initialize() {
     ModelManager::GetInstance()->LoadModel("Resource/enemy/bossBanana", "bossBananPeelBuck.obj");
     ModelManager::GetInstance()->LoadModel("Resource/enemy/bossBanana", "bossBananPeelLeft.obj");
     ModelManager::GetInstance()->LoadModel("Resource/enemy/bossBanana", "bossBananPeelRight.obj");
+    ModelManager::GetInstance()->LoadModel("Resource/enemy/bossBanana", "Test.obj");
     ModelManager::GetInstance()->LoadModel("Resource/test", "test.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.obj"); // レールエディター
 	ModelManager::GetInstance()->LoadModel("Resource/rail", "rail.obj"); // レールエディター

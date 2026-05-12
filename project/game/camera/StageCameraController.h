@@ -75,7 +75,7 @@ private:
 
 	DirectXCommon* dxCommon_ = nullptr;
 	std::unique_ptr<WindowAPI> windowAPI_ = nullptr;
-	Vector3 currentRotationSpeed = {1.0f, 1.0f, 1.0f}; // 現在の回転倍率
+	Vector3 currentRotationSpeed = {0.0f, 0.0f, 0.0f}; // 現在の回転倍率
 	std::vector<RotationSpeedKey> rotationHistory;     // 履歴
 	bool speedChangedDuringPause = false;              // 一時停止中に変更されたか
 	Vector3 initialRotate = {0.0f, 0.0f, 0.0f};        // 再生開始時の回転角度

@@ -6,8 +6,6 @@
 #include "Input.h"
 #include "ModelManager.h"
 #include "Object.h"
-#include "ParticleEmitter.h"
-#include "ParticleManager.h"
 #include "PlayerBullet.h"
 #include "PostEffect.h"
 #include "SoundManager.h"
@@ -50,9 +48,6 @@ private:
 	float bulletSpeed_;                // 弾の速さ
 	int damage_ = 0;                   // 弾のダメージ量
 
-	// ヒットエフェクト
-	std::unique_ptr <ParticleEmitter> hitEffect[4] = {};
-	const int hitEffectCount = 4; // ヒットエフェクトの数
 	// トレイルエフェクト
 	std::shared_ptr<TrailEffect> trailEffect = std::make_shared<TrailEffect>();
 
