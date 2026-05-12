@@ -94,16 +94,6 @@ void TitleScene::Update() {
 		SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 	}
 
-	// 数字の０キーが押されていたら
-	if (input->TriggerKey(DIK_0)) {
-		OutputDebugStringA("Hit 0\n"); // 出力ウィンドウに「Hit ０」と表示
-		// テクスチャ変更
-		sprite->ChangeTexture("Resource/uvChecker.png");
-
-		// エフェクト有効化(色反転)
-		PostEffect::GetInstance()->SetInversion(true);
-	}
-
 	// * 3Dオブジェクト* //
 	for (int i = 0; i < 2; i++) {
 		object[i]->Update();
@@ -140,7 +130,7 @@ void TitleScene::Update() {
 
 	// *スプライト* //
 	// sprite更新
-	title_->Update();
+	//title_->Update();
 
 
 #pragma region ライティング
