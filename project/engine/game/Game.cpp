@@ -54,6 +54,7 @@ void Game::Initialize() {
 	ParticleManager::GetInstance()->CreateParticleGroup("SpecialAttack", "Resource/particle/particle2.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("Special2", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("Special3", "Resource/particle/particle2.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("HitEffect", "Resource/particle/particle2.png");
 
 
 	// .objファイルからモデル読み込み

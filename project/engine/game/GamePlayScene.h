@@ -228,6 +228,8 @@ private:
 
     // 特殊攻撃エフェクト
     std::unique_ptr <ParticleEmitter> specialAttackEffect = nullptr;
+	// ヒットエフェクト
+    std::unique_ptr <ParticleEmitter> hitEffect = nullptr;
 
     // Updateで直接操作したい特定のオブジェクトへのポインタ(アニメーションモデル)
     Object* walkAnimation = nullptr;
