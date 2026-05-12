@@ -19,8 +19,8 @@ void TitleScene::Initialize() {
 
 	// スプライト
 	title_ = std::make_unique <Sprite>();
-	title_->Initialize("Resource/titleF.jpg");
-	title_->SetPosition({ 900.0f, 500.0f }); // 画面中央
+	title_->Initialize("Resource/titleF.png");
+	title_->SetPosition({ 900.0f, 300.0f }); // 画面中央
 
 	// 3Dオブジェクト
 	for (int i = 0; i < 2; i++) {
