@@ -93,9 +93,9 @@ void StageCameraController::Update() {
 		// --- 4. 回転の適用 ---
 		// 初期の向き(initialRotate)に、時間経過による回転(速度 * 時間)を加算する
 		// ※もし速度が「その瞬間の角度」を指すなら += ではなく = にしてください
-		stageStatus.rotate.x = initialRotate.x + (currentRotationSpeed.x * timer);
-		stageStatus.rotate.y = initialRotate.y + (currentRotationSpeed.y * timer);
-		stageStatus.rotate.z = initialRotate.z + (currentRotationSpeed.z * timer);
+		stageStatus.rotate.x += (currentRotationSpeed.x*deltaTime);
+		stageStatus.rotate.y += (currentRotationSpeed.y*deltaTime);
+		stageStatus.rotate.z += (currentRotationSpeed.z*deltaTime);
 
 		// --- 5. カメラへの反映 ---
 		if (camera) {
@@ -165,7 +165,7 @@ void StageCameraController::EditorUpdate() {
 	if (ImGui::Button("Reset")) {
 		timer = 0.0f;
 		isPlaying = false;
-		currentRotationSpeed = {1.0f, 1.0f, 1.0f}; // 速度も初期化
+		currentRotationSpeed = {0.0f, 0.0f, 0.0f}; // 速度も初期化
 		if (camera && !points.empty()) {
 			camera->SetTranslate(points[0].position);
 			camera->SetRotate(initialRotate); // 初期の向きに戻す
@@ -218,6 +218,15 @@ void StageCameraController::EditorUpdate() {
 
 	// --- セーブ ---
 	if (ImGui::Button("Save Current Stage", ImVec2(-1, 30))) {
+		if (speedChangedDuringPause) {
+			// 変更を履歴に記録
+			rotationHistory.push_back({timer, currentRotationSpeed});
+			// 時間順にソート（念のため）
+			std::sort(rotationHistory.begin(), rotationHistory.end(), [](const RotationSpeedKey& a, const RotationSpeedKey& b) { return a.time < b.time; });
+
+			speedChangedDuringPause = false; // 変更を適用したらフラグをリセット
+		}
+
 		SaveToJSON(GetFilePath(currentStage));
 	}
 	Vector3 camPos = camera ? camera->GetTranslate() : Vector3{0, 0, 0};
@@ -359,6 +368,7 @@ void StageCameraController::SelectPointByMouse() {
 void StageCameraController::ChangeStage(int newStage) {
 	currentStage = newStage;
 	LoadFromJSON(GetFilePath(currentStage));
+	camera->SetRotate(initialRotate); // 初期の向きにリセット
 
 	timer = 0.0f;
 	isPlaying = false;
@@ -389,7 +399,11 @@ void StageCameraController::SaveToJSON(const std::string& filename) {
         });
 	}
 	j["controlPoints"] = ptsJson;
-
+	j["initialRotate"] = {
+	    {"x", initialRotate.x},
+        {"y", initialRotate.y},
+        {"z", initialRotate.z}
+    };
 	// --- 【追加】回転速度履歴の保存 ---
 	json historyJson = json::array();
 	for (const auto& log : rotationHistory) {
@@ -399,7 +413,6 @@ void StageCameraController::SaveToJSON(const std::string& filename) {
         });
 	}
 	j["rotationHistory"] = historyJson;
-	j["initialRotate"] = {{"x", initialRotate.x}, {"y", initialRotate.y}, {"z", initialRotate.z}};
 
 	// ファイル書き出し
 	std::ofstream file(filename);
