@@ -7,13 +7,31 @@
 #include <cmath> // sqrt用
 
 // Initializeに必要な引数を追加しています（レティクルの位置、最大距離、寿命）
-void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies) {
+void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies,int style) {
 	// --- 1. 基本設定（既存） ---
 	transform_.scale = {0.2f, 0.2f, 0.2f};
 	transform_.translate = position;
 	object_ = std::make_unique<Object>();
 	object_->Initialize(camera);
-	object_->SetModel("player.obj");
+	switch (style)
+	{
+	case normal:
+		object_->SetModel("normalCBullet.obj");
+		break;
+	case speed:
+		object_->SetModel("speedCBullet.obj");
+		break;
+	case power:
+		object_->SetModel("powerCBullet.obj");
+		break;
+	case sniper:
+		object_->SetModel("sniperCBullet.obj");
+		break;
+	default:
+		object_->SetModel("normalCBullet.obj");
+		break;
+	}
+
 	camera_ = camera;
 	lifeTime_ = 0;
 	isActive_ = true;
@@ -60,22 +78,6 @@ void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, con
 		}
 	}
 
-	// ヒットエフェクト
-	Transform ptrans = transform_;
-	ptrans.scale = { 1,1,1 };
-	for (int i = 0; i < hitEffectCount; i++) {
-		hitEffect[i] = std::make_unique<ParticleEmitter>();
-		hitEffect[i]->Initialize("hitEffect1", ptrans, 5, 0.2f);
-	}
-	hitEffect[0]->SetActive("hitEffect1");
-	hitEffect[0]->LoadParticle("Resource/particle/hit_1.csv");
-	hitEffect[1]->SetActive("hitEffect2");
-	hitEffect[1]->LoadParticle("Resource/particle/hit_2.csv");
-	hitEffect[2]->SetActive("hitEffect3");
-	hitEffect[2]->LoadParticle("Resource/particle/hit_3.csv");
-	hitEffect[3]->SetActive("hitEffect4");
-	hitEffect[3]->LoadParticle("Resource/particle/hit_4.csv");
-
 	// トレイルエフェクト
 	trailEffect->Initialize("Resource/trail/trail.png", transform_, 1.0f, 1.5f);
 	trailEffect->SetColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -120,12 +122,6 @@ void PlayerChargeBullet::Update(float cmrvel) {
 		isActive_ = false;
 	} else {
 		lifeTime_++;
-	}
-
-	// ヒットエフェクト更新
-	for (int i = 0; i < hitEffectCount; i++) {
-		hitEffect[i]->Update();
-		hitEffect[i]->SetTranslate(transform_.translate);
 	}
 
 	// トレイルエフェクト更新

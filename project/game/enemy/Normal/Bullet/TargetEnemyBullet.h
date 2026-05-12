@@ -25,6 +25,7 @@ public:
     void SetAcceleration(float num) { accelerationScalar = num; }
     void SetObject(std::string text) override;
     void SetTargetPosition(Vector3 Pos);
+    void SetTargetPositionUpdate(Vector3 pos) override { };
     void OnCollision() override;
 
 private:

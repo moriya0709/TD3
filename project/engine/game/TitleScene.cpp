@@ -19,8 +19,8 @@ void TitleScene::Initialize() {
 
 	// スプライト
 	title_ = std::make_unique <Sprite>();
-	title_->Initialize("Resource/titleF.jpg");
-	title_->SetPosition({ 900.0f, 500.0f }); // 画面中央
+	title_->Initialize("Resource/titleF.png");
+	title_->SetPosition({ 900.0f, 300.0f }); // 画面中央
 
 	// 3Dオブジェクト
 	for (int i = 0; i < 2; i++) {
@@ -94,16 +94,6 @@ void TitleScene::Update() {
 		SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 	}
 
-	// 数字の０キーが押されていたら
-	if (input->TriggerKey(DIK_0)) {
-		OutputDebugStringA("Hit 0\n"); // 出力ウィンドウに「Hit ０」と表示
-		// テクスチャ変更
-		sprite->ChangeTexture("Resource/uvChecker.png");
-
-		// エフェクト有効化(色反転)
-		PostEffect::GetInstance()->SetInversion(true);
-	}
-
 	// * 3Dオブジェクト* //
 	for (int i = 0; i < 2; i++) {
 		object[i]->Update();
@@ -140,7 +130,7 @@ void TitleScene::Update() {
 
 	// *スプライト* //
 	// sprite更新
-	title_->Update();
+	//title_->Update();
 
 
 #pragma region ライティング

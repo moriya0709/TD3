@@ -1,6 +1,6 @@
 ﻿#include "PlayerBullet.h"
 
-void PlayerBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies) {};
+void PlayerBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies, int style) {};
 void PlayerBullet::Update(float cmrvel) {};
 void PlayerBullet::Draw3D() {};
 void PlayerBullet::Draw2D() {}
