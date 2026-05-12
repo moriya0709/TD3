@@ -122,7 +122,7 @@ void StageSelect::Update() {
 				}
 
 				// 本のページをめくる
-				if (book->GetCurrentPageIndex() < 10)
+				if (book->GetCurrentPageIndex() < 13)
 					book->NextPage();
 
 			}
@@ -131,12 +131,14 @@ void StageSelect::Update() {
 	} else if (input->TriggerKey(DIK_A) || input->TriggerKey(DIK_LEFT)) {
 		if (switchCooltime <= 0.0f) {
 			if (!isStageSelect) {
-				// 本のページを戻す
-				book->PrevPage();
-
-				if (book->GetCurrentPageIndex() > 3) {
+				if (book->GetCurrentPageIndex() > 2) {
 					// スタイルを切り替える
 					currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 3) % 4);
+
+					// 本のページを戻す
+					book->PrevPage();
+
+
 					isParameterEasing = true; // イージングリセット
 					ParameterEasingSet(currentStyle);
 				}
