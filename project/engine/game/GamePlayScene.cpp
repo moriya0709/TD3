@@ -31,6 +31,7 @@ void GamePlayScene::Initialize() {
 	} else {
 	cameraController_->SetCurrentStage(currentStage_);
 	cameraController_->StartReplay();
+	kMaxTime_ = cameraController_->GetTotalDuration();
 	}
 	enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
 
@@ -153,15 +154,13 @@ void GamePlayScene::Update() {
 		return;
 
 	// 時間の計測
-	float deltaTime = 1.0f / 60.0f;
-	playTimer_ += deltaTime;
+	
 
 	// クリア条件の分岐
 	if (isBossBattle_) {
 		// ボス倒したらクリア
 	} else { // 制限時間来たらリザルトへ
-		if (playTimer_ >= kMaxTime_) {
-			playTimer_ = kMaxTime_;
+		if (cameraController_->GetElapsedTime() >= kMaxTime_) {
 			StageClear();
 		}
 	}

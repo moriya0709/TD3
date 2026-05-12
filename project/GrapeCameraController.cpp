@@ -7,7 +7,11 @@ void GrapeCameraController::Initialize(Camera* camera) {
 
 }
 
-void GrapeCameraController::Update() { pCamera->SetTranslate(Vector3(pCamera->GetTranslate().x, pCamera->GetTranslate().y, pCamera->GetTranslate().z + moveSpeed)); }
+void GrapeCameraController::Update() { 
+	Vector3 cmrTranslate = pCamera->GetTranslate();
+	cmrTranslate.z += moveSpeed * 1.0f / 60.0f;
+	pCamera->SetTranslate(cmrTranslate);
+}
 
 void GrapeCameraController::ChangeStage(int stage) {
 	currentStage = stage;
@@ -16,7 +20,7 @@ void GrapeCameraController::ChangeStage(int stage) {
 		moveSpeed = 0.02f;
 		break;
 	case 2:
-		moveSpeed = 0.05f;
+		moveSpeed = 10.0f;
 		break;
 	case 3:
 		moveSpeed = 0.1f;

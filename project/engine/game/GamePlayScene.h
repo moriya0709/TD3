@@ -219,7 +219,7 @@ private:
     //今のプレイ時間
     float playTimer_ = 0.0f;
     //制限時間
-    const float kMaxTime_ = 180.0f;
+    float kMaxTime_ = 180.0f;
     //クリアしたかどうか
     bool isFinished_ = false;
 
