@@ -133,7 +133,7 @@ void banana::Update()
         part.object->SetRotate({ 0.0f, 0.0f, 0.0f });
         part.object->Update();
     }
-
+#ifdef USE_IMGUI
     // ImGuiでのステータス表示
     ImGui::Begin("Banana Boss Debug");
     ImGui::Text("Total Health: %d", health_);
@@ -146,6 +146,7 @@ void banana::Update()
         }
     }
     ImGui::End();
+#endif
 }
 
 void banana::Draw3D()
@@ -156,8 +157,6 @@ void banana::Draw3D()
             part.object->Draw();
         }
     }
-
-  
 
     // 更新処理
     for (auto& bullet : enemyBullet_) {
