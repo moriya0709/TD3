@@ -42,8 +42,8 @@ public:
         bool isAnimating = false;
 
         // 当たり判定のサイズ
-        static inline const float radiusX = 4.0f;
-        static inline const float radiusY = 6.0f;
+        static inline const float radiusX = 1.0f;
+        static inline const float radiusY = 3.0f;
 
         // 体力
         int PartsHp = 100;
@@ -73,8 +73,6 @@ public:
     void Update();
 
     void Draw3D();
-
-    void DrawDebugCollision();
 
     void BulletMirror(const CollisionVolume& volume, PlayerBullet* bullet);
 
@@ -107,9 +105,6 @@ public:
     void BehaviorDefeated();
 
 private:
-    bool showDebugCollision_ = true;
-    // パーツ数分のデバッグ表示用オブジェクト
-    std::vector<std::unique_ptr<Object>> debugCollisionObjects_;
 
     // スコア
     int score_ = 2500;

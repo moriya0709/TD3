@@ -26,7 +26,7 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
 
     // 時計回りに設置
     int pats = 4;
-    float offsetRadius = 4.0f;
+    float offsetRadius = 2.0f;
 
     for (int i = 0; i < pats; ++i) {
         BossPart p;
@@ -54,27 +54,19 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
         // --- 逆三角形（Apex Forward）の配置ロジック ---
         if (i == 0) { // 正面頂点 (0度方向)
             p.baseAngle = 0.0f;
-            p.collisionLocalPos = { 0.0f, 0.0f, offsetRadius };
+            p.collisionLocalPos = { (2.0f), 0.0f, offsetRadius };
         } else if (i == 1) { // 右後ろ (120度方向)
             p.baseAngle = 2.094f; // (2 * PI / 3)
-            p.collisionLocalPos = { offsetRadius * 0.866f, 0.0f, -offsetRadius * 0.5f };
+            p.collisionLocalPos = { 2.0f + (offsetRadius * 0.866f), 0.0f, -offsetRadius * 0.5f };
         } else if (i == 2) { // 左後ろ (240度方向)
             p.baseAngle = 4.188f; // (4 * PI / 3)
-            p.collisionLocalPos = { -offsetRadius * 0.866f, 0.0f, -offsetRadius * 0.5f };
+            p.collisionLocalPos = { 2.0f + (-offsetRadius * 0.866f), 0.0f, -offsetRadius * 0.5f };
         } else { // 本体（中央）
             p.baseAngle = 0.0f;
-            p.collisionLocalPos = { 0.0f, 0.0f, 0.0f };
+            p.collisionLocalPos = { 2.0f, 0.0f, 0.0f };
         }
 
         parts_.push_back(std::move(p));
-    }
-
-    debugCollisionObjects_.clear();
-    for (int i = 0; i < 4; ++i) {
-        auto debugObj = std::make_unique<Object>();
-        debugObj->Initialize(camera_);
-        debugObj->SetModel("Test.obj"); // 1x1x1 または指定の立方体モデル
-        debugCollisionObjects_.push_back(std::move(debugObj));
     }
 }
 
@@ -114,10 +106,8 @@ void banana::Update()
     // 発射
     BulletUpdate();
 
-  Vector3 cameraPos = camera_->GetTranslate();
+    Vector3 cameraPos = camera_->GetTranslate();
     for (auto& part : parts_) {
-        // 1. モデルの回転は行わず、判定用の角度だけを更新
-        part.collisionRotationY += 1.0f / 60.0f;
         float theta = part.collisionRotationY;
 
         // 2. 当たり判定の公転座標計算
@@ -167,39 +157,11 @@ void banana::Draw3D()
         }
     }
 
-    DrawDebugCollision();
+  
 
     // 更新処理
     for (auto& bullet : enemyBullet_) {
         bullet->Draw3D();
-    }
-}
-
-void banana::DrawDebugCollision()
-{
-    if (!showDebugCollision_)
-        return;
-
-    std::vector<CollisionVolume> volumes = GetCollisionVolumes();
-    for (size_t i = 0; i < volumes.size(); ++i) {
-        const auto& vol = volumes[i];
-        uint32_t id = vol.partId;
-        if (id >= debugCollisionObjects_.size())
-            continue;
-
-        // 座標同期：計算済みのワールド座標（公転後）を適用
-        debugCollisionObjects_[id]->SetTranslate(vol.position);
-
-        // ★修正点：OBBの計算角（公転角 + 初期配置角）をデバッグオブジェクトに適用
-        float totalTheta = parts_[id].collisionRotationY + parts_[id].baseAngle;
-        debugCollisionObjects_[id]->SetRotate({ 0.0f, totalTheta, 0.0f });
-
-        // スケール同期
-        Vector3 fullScale = { vol.width.x * 2.0f, vol.width.y * 2.0f, vol.width.z * 2.0f };
-        debugCollisionObjects_[id]->SetScale(fullScale);
-
-        debugCollisionObjects_[id]->Update();
-        debugCollisionObjects_[id]->Draw();
     }
 }
 
@@ -280,7 +242,7 @@ banana::CollisionVolume banana::CreateVolumeFromPart(uint32_t i, Vector3 bossPos
     volume.axes[2] = { sinf(totalTheta), 0.0f, cosf(totalTheta) }; // Forward (法線)
 
     // 3. サイズ設定
-    volume.width = part.isWeakPoint ? Vector3 { 1.5f, part.radiusY, 1.0f } : Vector3 { part.radiusX, part.radiusY, 3.0f };
+    volume.width = part.isWeakPoint ? Vector3 { 0.5f, part.radiusY, 1.0f } : Vector3 { part.radiusX, part.radiusY, 1.0f };
     volume.shape = CollisionShape::kBox;
     volume.partId = i;
     volume.normal = volume.axes[2];
