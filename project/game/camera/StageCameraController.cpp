@@ -136,7 +136,7 @@ void StageCameraController::EditorUpdate() {
 	if (ImGui::CollapsingHeader("Stage Parameters", ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::DragFloat("Duration (s)", &totalDuration, 0.1f, 0.1f, 180.0f);
 		ImGui::DragFloat3("Base Rotate", &stageStatus.rotate.x, 0.1f);
-		ImGui::SliderFloat("Base FOV", &stageStatus.fov, kMinFov, kMaxFov);
+		ImGui::DragFloat("Base FOV", &stageStatus.fov, 0.1f, kMinFov, kMaxFov);
 	}
 
 	ImGui::Separator();
