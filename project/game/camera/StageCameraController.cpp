@@ -423,11 +423,6 @@ std::string StageCameraController::GetFilePath(int slot) const { return "Resourc
 void StageCameraController::SaveToJSON(const std::string& filename) {
 	json j;
 	j["totalDuration"] = totalDuration;
-	j["rotate"] = {
-	    {"x", stageStatus.rotate.x},
-        {"y", stageStatus.rotate.y},
-        {"z", stageStatus.rotate.z}
-    };
 	j["fov"] = stageStatus.fov;
 
 	// --- 制御点の保存 (既存) ---
@@ -479,14 +474,9 @@ void StageCameraController::LoadFromJSON(const std::string& filename) {
 		totalDuration = j.value("totalDuration", 0.0f);
 		stageStatus.fov = j.value("fov", 0.0f);
 
-		// --- 回転 (rotate) の読み込み ---
-		if (j.contains("rotate")) {
-			stageStatus.rotate.x = j["rotate"].value("x", 0.0f);
-			stageStatus.rotate.y = j["rotate"].value("y", 0.0f);
-			stageStatus.rotate.z = j["rotate"].value("z", 0.0f);
-		} else {
-			stageStatus.rotate = {0.0f, 0.0f, 0.0f};
-		}
+		
+		stageStatus.rotate = {0.0f, 0.0f, 0.0f};
+	
 
 		// --- 初期回転 (initialRotate) の読み込み ---
 		if (j.contains("initialRotate")) {
