@@ -75,27 +75,42 @@ void StageCameraController::Update() {
 			isPlaying = false;
 		}
 
-		// --- 2. 履歴から現在の回転速度を検索して適用 ---
-		// 履歴は時間順に並んでいることを前提に、現在のtimer以下の最新ログを探す
-		for (const auto& log : rotationHistory) {
-			if (timer >= log.time) {
-				currentRotationSpeed = log.rotationSpeed;
-			} else {
-				// 履歴は時間順なので、timerを超えたらそれ以降を見る必要はない
-				break;
-			}
-		}
-
 		// --- 3. 位置の計算 (ベジェ曲線) ---
 		float t = std::clamp(timer / totalDuration, 0.0f, 1.0f);
 		Vector3 currentPos = EvaluateBezier(t);
+		// --- 回転速度の補間計算 ---
+		Vector3 targetSpeed = {0, 0, 0};
+		Vector3 startSpeed = {0, 0, 0};
+		float startTime = 0.0f;
+		float duration = 0.0f;
 
-		// --- 4. 回転の適用 ---
-		// 初期の向き(initialRotate)に、時間経過による回転(速度 * 時間)を加算する
-		// ※もし速度が「その瞬間の角度」を指すなら += ではなく = にしてください
-		stageStatus.rotate.x += (currentRotationSpeed.x*deltaTime);
-		stageStatus.rotate.y += (currentRotationSpeed.y*deltaTime);
-		stageStatus.rotate.z += (currentRotationSpeed.z*deltaTime);
+		// 現在のtimerがどの履歴区間にいるか探す
+		for (size_t i = 0; i < rotationHistory.size(); ++i) {
+			if (timer >= rotationHistory[i].time) {
+				// 現在のターゲット
+				targetSpeed = rotationHistory[i].rotationSpeed;
+				startTime = rotationHistory[i].time;
+				duration = rotationHistory[i].transitionTime;
+
+				// 開始時の速度（1つ前の履歴の速度。なければ0）
+				startSpeed = (i > 0) ? rotationHistory[i - 1].rotationSpeed : Vector3{0, 0, 0};
+			}
+		}
+
+		// 補間係数 (t) を計算: 0.0 (開始) ～ 1.0 (完了)
+		float t_interp = 1.0f;
+		if (duration > 0.001f) {
+			t_interp = std::clamp((timer - startTime) / duration, 0.0f, 1.0f);
+		}
+
+		// 線形補間で現在の速度を算出
+		currentRotationSpeed.x = startSpeed.x + (targetSpeed.x - startSpeed.x) * t_interp;
+		currentRotationSpeed.y = startSpeed.y + (targetSpeed.y - startSpeed.y) * t_interp;
+		currentRotationSpeed.z = startSpeed.z + (targetSpeed.z - startSpeed.z) * t_interp;
+
+		stageStatus.rotate.x += currentRotationSpeed.x * deltaTime;
+		stageStatus.rotate.y += currentRotationSpeed.y * deltaTime;
+		stageStatus.rotate.z += currentRotationSpeed.z * deltaTime;
 
 		// --- 5. カメラへの反映 ---
 		if (camera) {
@@ -156,7 +171,8 @@ void StageCameraController::EditorUpdate() {
 	if (ImGui::CollapsingHeader("Initial Settings")) {
 		if (ImGui::DragFloat3("Initial Rotate", &initialRotate.x, 0.1f)) {
 			if (!isPlaying && timer == 0.0f) {
-				camera->SetRotate(initialRotate); // 編集時に見た目を更新
+				camera->SetRotate(initialRotate);   // 編集時に見た目を更新
+				stageStatus.rotate = initialRotate; // 再生開始後もこの角度からスタートするようにする
 			}
 		}
 	}
@@ -190,11 +206,14 @@ void StageCameraController::EditorUpdate() {
 			ImGui::PushID(i);
 
 			// 履歴情報の表示
-			ImGui::Text(
-			    "[%d] Time: %.2fs | Speed: (%.2f, %.2f, %.2f)", i, rotationHistory[i].time, rotationHistory[i].rotationSpeed.x, rotationHistory[i].rotationSpeed.y, rotationHistory[i].rotationSpeed.z);
-
+			ImGui::DragFloat("time", &rotationHistory[i].time, 0.05f, 0.0f, totalDuration);
+			ImGui::DragFloat3("speed", &rotationHistory[i].rotationSpeed.x, 0.01f);
 			ImGui::SameLine(); // 同じ行にボタンを配置
+			                   // 【追加】補間時間の編集
+			ImGui::SetNextItemWidth(80);
+			ImGui::DragFloat("Trans(s)", &rotationHistory[i].transitionTime, 0.05f, 0.0f, 10.0f);
 
+			ImGui::SameLine();
 			// 個別削除ボタン
 			if (ImGui::Button("Delete")) {
 				rotationHistory.erase(rotationHistory.begin() + i);
@@ -430,8 +449,9 @@ void StageCameraController::SaveToJSON(const std::string& filename) {
 	json historyJson = json::array();
 	for (const auto& log : rotationHistory) {
 		historyJson.push_back({
-		    {"time",  log.time		                                                                    },
-            {"speed", {{"x", log.rotationSpeed.x}, {"y", log.rotationSpeed.y}, {"z", log.rotationSpeed.z}}}
+		    {"time",       log.time		                                                                    },
+            {"speed",      {{"x", log.rotationSpeed.x}, {"y", log.rotationSpeed.y}, {"z", log.rotationSpeed.z}}},
+            {"transition", log.transitionTime                                                                  }
         });
 	}
 	j["rotationHistory"] = historyJson;
@@ -500,6 +520,7 @@ void StageCameraController::LoadFromJSON(const std::string& filename) {
 				} else {
 					log.rotationSpeed = {0.0f, 0.0f, 0.0f};
 				}
+				log.transitionTime = item.value("transition", 0.0f);
 				rotationHistory.push_back(log);
 			}
 		}
