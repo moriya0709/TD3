@@ -183,14 +183,36 @@ void StageCameraController::EditorUpdate() {
 	} else {
 		ImGui::Text("Pause to edit rotation speed");
 	}
-
 	// --- 履歴の表示 ---
 	if (ImGui::CollapsingHeader("Rotation History")) {
-		for (const auto& log : rotationHistory) {
-			ImGui::Text("Time: %.2fs | Speed: (%.2f, %.2f, %.2f)", log.time, log.rotationSpeed.x, log.rotationSpeed.y, log.rotationSpeed.z);
+		for (int i = 0; i < (int)rotationHistory.size(); ++i) {
+			// 各履歴項目に固有のIDを割り振る（ボタンの衝突回避）
+			ImGui::PushID(i);
+
+			// 履歴情報の表示
+			ImGui::Text(
+			    "[%d] Time: %.2fs | Speed: (%.2f, %.2f, %.2f)", i, rotationHistory[i].time, rotationHistory[i].rotationSpeed.x, rotationHistory[i].rotationSpeed.y, rotationHistory[i].rotationSpeed.z);
+
+			ImGui::SameLine(); // 同じ行にボタンを配置
+
+			// 個別削除ボタン
+			if (ImGui::Button("Delete")) {
+				rotationHistory.erase(rotationHistory.begin() + i);
+				// 要素を削除した後はインデックスを調整
+				i--;
+			}
+
+			ImGui::PopID();
 		}
-		if (ImGui::Button("Clear History"))
-			rotationHistory.clear();
+
+		if (!rotationHistory.empty()) {
+			ImGui::Separator();
+			if (ImGui::Button("Clear All History")) {
+				rotationHistory.clear();
+			}
+		} else {
+			ImGui::Text("No history recorded.");
+		}
 	}
 	// --- 制御点管理 ---
 	if (ImGui::Button("Add Point")) {
