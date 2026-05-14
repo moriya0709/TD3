@@ -204,10 +204,22 @@ void StageSelect::Update() {
 				switchCooltime = 0.5f;
 			} else
 			{
-				SceneManager::GetInstance()->ChangeScene("TITLE");
+				isBackTransition = true;
 				return;
 			}
 		}
+	}
+
+	if (isBackTransition) {
+		intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
+
+		if (intensity <= 0.0f) {
+			// シーン切り替え処理
+			SceneManager::GetInstance()->ChangeScene("TITLE");
+		}
+	} else {
+		if (intensity <= 1.0f)
+			intensity += 1.0f / 30.0f; // 1秒かけて明るくする
 	}
 
 	// 本の更新
@@ -360,6 +372,8 @@ void StageSelect::LithingEffect() {
 	// スピードディストーション
 	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
 	PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
+	// エフェクトの強さ
+	PostEffect::GetInstance()->SetIntensity(intensity);
 
 #pragma endregion
 

@@ -143,6 +143,8 @@ private:
 	bool isSpeedDistortion = false; // スピードディストーションのON/OFF
 	float speedDistortionStrength = 0.0f; // 歪みの強さ
 
+	float intensity = 0.0f; // エフェクト全体の強さ
+
 	// レイマーチング
 	// float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = {0.07f, -0.17f, -0.75f};
@@ -186,7 +188,10 @@ private:
 	};
 	bool isParameterEasing = false;
 
+	// セレクト->ゲーム
 	bool isTransition = false;
+	// セレクト->タイトル
+	bool isBackTransition = false;
 
 	void TransitionUpdate();
 

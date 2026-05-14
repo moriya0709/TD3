@@ -19,7 +19,7 @@ void TitleScene::Initialize() {
 
 	// スプライト
 	title_ = std::make_unique <Sprite>();
-	title_->Initialize("Resource/titleF.png");
+	title_->Initialize("Resource/title/title.png");
 	title_->SetPosition({ 900.0f, 300.0f }); // 画面中央
 
 	// 3Dオブジェクト
@@ -88,10 +88,31 @@ void TitleScene::Update() {
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
 
+	// カメラ更新
+	//cameraTransform.translate.x += 0.05f;
+	//cameraTransform.translate.z += 0.05f;
+	//camera->SetTranslate(cameraTransform.translate);
+
+	// エフェクトの強さ減少
+	if (isTransition) {
+		intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
+
+		if(intensity <= 0.0f){
+			// シーン切り替え処理
+			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
+		}
+
+	} else {
+		if (intensity <= 1.0f)
+			intensity += 1.0f / 30.0f; // 1秒かけて明るくする
+	}
+
+
 	// ENTERキーを押したら
 	if (input->TriggerKey(DIK_RETURN)) {
 		// ゲームプレイシーン(次シーン)を生成
-		SceneManager::GetInstance()->ChangeScene("GAMESELECT");
+		//SceneManager::GetInstance()->ChangeScene("GAMESELECT");
+		isTransition = true;
 	}
 
 	// * 3Dオブジェクト* //
@@ -124,8 +145,8 @@ void TitleScene::Update() {
 	//}
 
 	// パーティクル更新
-	//particleEmitter->Update();
-	//particleEmitter->Editor();
+	particleEmitter->Update();
+	particleEmitter->Editor();
 
 
 	// *スプライト* //
@@ -225,6 +246,8 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetPinchStrength(pinchStrength);
 	PostEffect::GetInstance()->SetPinchCenter(pinchCenter);
 	PostEffect::GetInstance()->SetPinchRadius(pinchRadius);
+	// エフェクトの強さ
+	PostEffect::GetInstance()->SetIntensity(intensity);
 
 #pragma endregion
 

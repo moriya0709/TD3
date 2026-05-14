@@ -76,7 +76,9 @@ private:
 	bool isInversion = false;
 	// グレースケール
 	bool isGrayscale = false;
-
+	bool isTwoColor = false; // モノクロのON/OFF
+	float threshold = 0.5f; // 白と黒の境界値 (0.0~1.0)
+	float contrast = 1.0f; // コントラストの強さ
 
 	// 放射線ブラー
 	bool isRadialBlur = false;
@@ -123,18 +125,26 @@ private:
 	// 色収差
 	bool isFullScreenCA = false; // 画面全体の色収差ON/OFF
 	float fullScreenCAIntensity = 0.005f; // 画面全体の色収差の強さ
+	// 集中線
+	bool isConcentrationLines = false; // 集中線のON/OFF
+	float concentrationLineIntensity = 1.0f; // 線の濃さ
+	Vector2 concentrationLineCenter = { 0.5f, 0.5f };  // 中心座標 (通常 0.5, 0.5)
+	float concentrationLineDensity = 1000.0f;   // 線の密度（本数）
+	float concentrationLineLength = 0.0f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
+	float concentrationLineSpeed = 20.0f;     // 線の動く速さ
+
 
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
-	float rayMarchingCloudCoverage = 1.00f;
-	float rayMarchingCloudBottom = -90.0f;
-	float rayMarchingCloudTop = 2900.0f;
+	float rayMarchingCloudCoverage = 0.22f;
+	float rayMarchingCloudBottom = 70.0f;
+	float rayMarchingCloudTop = -300.0f;
 	bool rayMarchingIsRialLight = false;
 	bool rayMarchingIsAnimeLight = true;
-	bool  rayMarchingIsMotionBlur = true;
+	bool  rayMarchingIsMotionBlur = false;
 	float  rayMarchingCloudOpacity = 0.04f;
-	bool isStorm = true;
+	bool isStorm = false;
 	float thunderFrequency = 0.3f;
 	float thunderBrightness = 120.0f;
 
@@ -150,8 +160,6 @@ private:
 	std::unique_ptr<Sprite> numberSprites_[10][5];
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
-	// パーティクルエミッタ
-	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
 	
 	//スコア演出
 

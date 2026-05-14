@@ -216,6 +216,8 @@ public:
 	void SetPinchStrength(float strength) { effectData->pinchStrength = strength; }
 	void SetPinchCenter(const Vector2& center) { effectData->pinchCenter = center; }
 	void SetPinchRadius(float radius) { effectData->pinchRadius = radius; }
+	// エフェクトの強さ
+	void SetIntensity(float intensity) { effectData->intensity = intensity; }
 
 	// getter
 	float GetLensFlareGhostDispersal() { return effectData->lensFlareGhostDispersal; }
