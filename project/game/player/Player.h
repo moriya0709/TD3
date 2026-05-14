@@ -136,6 +136,8 @@ private:
 	int inbincileTimer = 0; // 無敵時間
 	void InputMove();
 	void UpdateImGui();
+	int specialAttackCounter = 3;
+	const int specialAttackMaxCounter = 3;
 
 	static int cureentStyleStatasLevels[4][2];
 	void StyleLevelUp(Style style, int statas);

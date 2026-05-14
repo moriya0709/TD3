@@ -98,7 +98,7 @@
     <ClCompile Include="application\BookUi\Book.cpp" />
     <ClCompile Include="game\camera\BananaCameraController.cpp" />
     <ClCompile Include="game\camera\StageCameraController.cpp" />
-    <ClCompile Include="GrapeCameraController.cpp" />
+    <ClCompile Include="game\camera\GrapeCameraController.cpp" />
     <ClCompile Include="RadarChart.cpp" />
     <ClCompile Include="RadarChartCommon.cpp" />
   </ItemGroup>

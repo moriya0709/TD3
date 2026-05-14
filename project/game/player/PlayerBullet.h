@@ -15,7 +15,7 @@
 
 class PlayerBullet {
 public:
-	virtual void Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies);
+	virtual void Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies, int style);
 	virtual void Update(float cmrvel);
 	virtual void Draw3D();
 	virtual void Draw2D();
@@ -29,8 +29,13 @@ public:
 	virtual int GetDamage() const { return 0; };
 	virtual Vector3 GetVelocity() const { return Vector3(); };
 
-
 private:
+
+protected: // 派生クラスからアクセスできるように protected に変数をまとめる
+
+	Transform transform_;
+	std::unique_ptr<Object> object_;
+
 	// プレイヤーの弾のステータス
 	//Transform transform_;
 	//std::unique_ptr<Object> object_;

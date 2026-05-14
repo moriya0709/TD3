@@ -209,6 +209,7 @@ void Player::Initialize(Camera* camera, Style style) {
 	statas_[currentStyle].renge = 80.0f;
 
 	LoadStatas(GetFilePath());
+	specialAttackCounter = specialAttackMaxCounter;
 
 	velocity_ = {0.0f, 0.0f, 0.0f};
 	coolTime = 0;
@@ -281,16 +282,19 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 		isCharging = false;
 		chargeTimer++;
 	}
-	if (input->TriggerKey(DIK_SPACE) || input->IsPadButtonPressed(0, 6)) {
-		isSpecialAttack = true;
-		coolTime = 60;
+	if (specialAttackCounter > 0) {
+		if (input->TriggerKey(DIK_SPACE) || input->IsPadButtonPressed(0, 6)) {
+			isSpecialAttack = true;
+			coolTime = 60;
+			specialAttackCounter--;
+		}
 	}
 
 	if (input->IsMouseButtonPressed(0) || input->IsPadButtonPressed(0, 5)) {
 		if (isCharging) {
 			// チャージ攻撃
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies, currentStyle);
 			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy + 0.2f, statas_[currentStyle].chargeAttack);
 			newBullet->SetSize(1.5f); // チャージ弾のサイズを設定
 			bullets.push_back(std::move(newBullet));
@@ -299,7 +303,7 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 			maxHaste = statas_[currentStyle].haste * 2;
 		} else {
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge, enemies);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge, enemies,currentStyle);
 			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy, statas_[currentStyle].attack);
 			bullets.push_back(std::move(newBullet));
 			coolTime = statas_[currentStyle].haste;

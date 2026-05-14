@@ -7,13 +7,31 @@
 #include <cmath> // sqrt用
 
 // Initializeに必要な引数を追加しています（レティクルの位置、最大距離、寿命）
-void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies) {
+void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies,int style) {
 	// --- 1. 基本設定（既存） ---
 	transform_.scale = {0.2f, 0.2f, 0.2f};
 	transform_.translate = position;
 	object_ = std::make_unique<Object>();
 	object_->Initialize(camera);
-	object_->SetModel("player.obj");
+	switch (style)
+	{
+	case normal:
+		object_->SetModel("normalCBullet.obj");
+		break;
+	case speed:
+		object_->SetModel("speedCBullet.obj");
+		break;
+	case power:
+		object_->SetModel("powerCBullet.obj");
+		break;
+	case sniper:
+		object_->SetModel("sniperCBullet.obj");
+		break;
+	default:
+		object_->SetModel("normalCBullet.obj");
+		break;
+	}
+
 	camera_ = camera;
 	lifeTime_ = 0;
 	isActive_ = true;

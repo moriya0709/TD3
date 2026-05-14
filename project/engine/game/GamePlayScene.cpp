@@ -72,6 +72,7 @@ void GamePlayScene::Initialize() {
 	resume_ = std::make_unique<Sprite>();
 	resume_->Initialize("Resource/resume.png"); // 続ける
 	resume_->SetPosition({960.0f, 216.0f});
+
 	resumeEasing.size = {0.0f, 0.0f};
 	resumeEasing.startSizeV2 = {0.0f, 0.0f};
 	resumeEasing.endSizeV2 = {400.0f, 400.0f};
