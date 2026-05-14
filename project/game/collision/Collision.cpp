@@ -111,7 +111,7 @@ void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared
 
 				// ヒットエフェクトの発生
 				hitEffect->SetTranslate(enemyPos);
-				hitEffect->Emit(); // 発生
+				hitEffect->Update(); // 発生
 
                 break; // この弾は消えるので、他の敵との判定は不要
             }
@@ -147,7 +147,7 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
 
                         // ヒットエフェクトの発生
                         hitEffect->SetTranslate(volume.position);
-                        hitEffect->Emit(); // 発生
+                        hitEffect->Update(); // 発生
 
                         break; // この弾の判定は終了
                     }
@@ -258,7 +258,7 @@ void CheckCollisionPlayerBulletBananaBoss(Player* player, const std::list<std::s
 
                         // ヒットエフェクトの発生
                         hitEffect->SetTranslate(volume.position);
-                        hitEffect->Emit(); // 発生
+                        hitEffect->Update(); // 発生
 
                     }
                     break;

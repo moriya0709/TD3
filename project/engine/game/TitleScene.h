@@ -142,6 +142,8 @@ private:
 	Vector2 pinchCenter = { 0.5f, 0.5f }; // 歪みの中心
 	float pinchRadius = 0.5f; // 歪みの半径
 
+	float intensity = 0.0f; // エフェクト全体の強さ
+
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
 	Vector3 rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
@@ -186,5 +188,7 @@ private:
 
 	Animation simpleAnimation_;//スケルトン
 	Animation walkAnimation_;//歩きモーション
+
+	bool isTransition = false;
 
 };

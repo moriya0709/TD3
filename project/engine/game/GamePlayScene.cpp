@@ -117,7 +117,7 @@ void GamePlayScene::Initialize() {
 	hitEffect = std::make_unique<ParticleEmitter>();
 	hitEffect->Initialize("HitEffect", transformParticle, 50, 0.1f);
 	hitEffect->SetActive("HitEffect");
-	hitEffect->LoadParticle("Resource/particle/hit_10.csv");
+	hitEffect->LoadParticle("Resource/particle/hit_1.csv");
 
 	// イージング
 	easing = std::make_unique<Easing>();
@@ -280,6 +280,7 @@ void GamePlayScene::ChekeAllCollision()
 		isGrayscale = true; // グレースケールエフェクト
 		isTwoColor = true; // 2色エフェクト
 		isConcentrationLines = true; // 集中線エフェクト
+		 isInversion = true;
 
     }
     if (specialAttackTimer > 0) {
@@ -287,7 +288,7 @@ void GamePlayScene::ChekeAllCollision()
 
         // 毎フレーム色反転
         if (specialAttackTimer > 50) {
-            if(specialAttackTimer % 2 == 1){
+            if(specialAttackTimer % 5 == 1){
                 isInversion = true;
             } else {
 				isInversion = false;

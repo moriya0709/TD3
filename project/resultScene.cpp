@@ -68,11 +68,6 @@ void ResultScene::Initialize()
 		object[i]->Initialize(camera.get());
 	}
 
-	// Emitパーティクル発生
-	particleEmitter = std::make_unique <ParticleEmitter>();
-	particleEmitter->Initialize("group1", transformParticle, 5, 1.0f);
-	particleEmitter->Emit();
-	//particleEmitter->LoadParticle("Resource/particle/fire.csv");
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	//object[0]->SetModel("emission.obj");
@@ -141,11 +136,6 @@ void ResultScene::Update()
 		object[i]->Update();
 	}
 
-	// パーティクルエミッタ更新
-	particleEmitter->Editor();
-	particleEmitter->Update();
-
-
 	// *スプライト* //
 	// sprite更新
 	sprite->Update();
@@ -185,6 +175,9 @@ void ResultScene::Update()
 	PostEffect::GetInstance()->SetInversion(isInversion);
 	// グレースケール
 	PostEffect::GetInstance()->SetGrayscale(isGrayscale);
+	PostEffect::GetInstance()->SetTwoColor(isTwoColor);
+	PostEffect::GetInstance()->SetThreshold(threshold);
+	PostEffect::GetInstance()->SetContrast(contrast);
 	// 放射線ブラー
 	PostEffect::GetInstance()->SetRadialBlur(isRadialBlur);
 	PostEffect::GetInstance()->SetBlurCenter(blurCenter);
@@ -224,6 +217,13 @@ void ResultScene::Update()
 	// 色収差
 	PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
 	PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
+	// 集中線
+	PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
+	PostEffect::GetInstance()->SetConcentrationLineIntensity(concentrationLineIntensity);
+	PostEffect::GetInstance()->SetConcentrationLineCenter(concentrationLineCenter);
+	PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
+	PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
+	PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
 
 #pragma endregion
 
