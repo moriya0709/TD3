@@ -59,13 +59,13 @@ void TitleScene::Initialize() {
 		hitEffect[i]->Initialize("hitEffect1", Transform{}, 5, 0.2f);
 	}
 	hitEffect[0]->SetActive("hitEffect1");
-	hitEffect[0]->LoadParticle("Resource/particle/hit_1.csv");
+	hitEffect[0]->LoadParticle("Resource/particle/death_1.csv");
 	hitEffect[1]->SetActive("hitEffect2");
-	hitEffect[1]->LoadParticle("Resource/particle/hit_2.csv");
+	hitEffect[1]->LoadParticle("Resource/particle/death_2.csv");
 	hitEffect[2]->SetActive("hitEffect3");
-	hitEffect[2]->LoadParticle("Resource/particle/hit_3.csv");
+	hitEffect[2]->LoadParticle("Resource/particle/death_3.csv");
 	hitEffect[3]->SetActive("hitEffect4");
-	hitEffect[3]->LoadParticle("Resource/particle/hit_4.csv");
+	hitEffect[3]->LoadParticle("Resource/particle/death_4.csv");
 
 	// パーティクル
 	particleEmitter = std::make_unique<ParticleEmitter>();
