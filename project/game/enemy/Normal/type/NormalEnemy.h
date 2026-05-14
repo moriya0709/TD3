@@ -60,6 +60,7 @@ private:
     std::unique_ptr<Object> object_; // オブジェ
     Camera* camera_ = nullptr; // カメラ―
 
+    Vector3 localPos_; // カメラから見た相対座標を保持する
     Transform transform_; // 座標系
     static inline const float kwalkSpeed = 0.02f; // 歩きの速さ
     Vector3 velocity_ = {}; // 速度
