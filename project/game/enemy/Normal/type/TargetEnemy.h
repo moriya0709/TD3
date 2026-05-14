@@ -52,6 +52,8 @@ private:
     Camera* camera_ = nullptr; // カメラ―
 
     Transform transform_; // 座標系
+    Vector3 localPos_; // カメラから見た相対座標を保持する
+
     static inline const float kwalkSpeed = 0.02f; // 歩きの速さ
     Vector3 velocity_ = {}; // 速度
     Vector3 acceleration; // 弾の速さ(個別で設定)

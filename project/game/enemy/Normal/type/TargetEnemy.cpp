@@ -9,6 +9,7 @@ void TargetEnemy::Initialize(Camera* camera, Vector3 pos, int health)
     transform_.scale = { 2.0f, 2.0f, 2.0f };
     transform_.rotate = { 0.0f, 0.0f, 0.0f };
     transform_.translate = pos;
+    localPos_ = pos;
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
@@ -52,13 +53,18 @@ void TargetEnemy::Update()
         break;
     }
 
-    // 射撃
-    BulletUpdate();
-
     // 生きていないならやられモーション処理を入れる
     if (!isAvile) {
         behaviorRequest_ = Behavior::kDefeated;
     }
+
+    // カメラの位置に応じて変換
+    const Matrix4x4& camMat = camera_->GetWorldMatrix();
+
+    transform_.translate = TransformCoord(localPos_, camMat);
+
+    // 射撃
+    BulletUpdate();
 
     // 敵に対して向きを合わせる
     Vector3 playerPos = player_->GetPosition();
@@ -130,11 +136,7 @@ void TargetEnemy::EnemyMove()
             currentWayPointIndex_++;
             wayPointTimer_ = 0.0f;
 
-            // --- 【修正ポイント2】 ---
-            // 現在の「カメラからの相対位置」を出発点として記録する
-            Vector3 cameraPos = camera_->GetTranslate();
-            startPos_ = transform_.translate - cameraPos;
-            // ------------------------
+            startPos_ = localPos_;
         }
     }
 
@@ -147,16 +149,7 @@ void TargetEnemy::EnemyMove()
         if (t > 1.0f)
             t = 1.0f;
 
-        // --- 【修正ポイント1】 ---
-        // カメラの現在の座標を取得
-        Vector3 cameraPos = camera_->GetTranslate();
-
-        // 1. Lerpで計算するのは「カメラからの相対的な位置」
-        Vector3 relativePos = startPos_ + (currentWP.target - startPos_) * t;
-
-        // 2. それにカメラのワールド座標を足して、敵の最終的な位置にする
-        transform_.translate = relativePos + cameraPos;
-        // ------------------------
+        localPos_ = startPos_ + (currentWP.target - startPos_) * t;
 
         if (t >= 1.0f && !isStop_) {
             wayStopTimer_ = currentWP.timeToStop;
@@ -218,9 +211,7 @@ void TargetEnemy::BehaviorAway()
             t = 1.0f;
 
         // 逃走先へ向かってLerp
-        transform_.translate.x = fleeStartPos_.x + (fleeWaypoint_.target.x - fleeStartPos_.x) * t;
-        transform_.translate.y = fleeStartPos_.y + (fleeWaypoint_.target.y - fleeStartPos_.y) * t;
-        transform_.translate.z = fleeStartPos_.z + (fleeWaypoint_.target.z - fleeStartPos_.z) * t;
+        localPos_ = fleeStartPos_ + (fleeWaypoint_.target - fleeStartPos_) * t;
 
         // 逃走地点に完全に到着したら、存在を消去する
         if (t >= 1.0f) {
@@ -228,13 +219,10 @@ void TargetEnemy::BehaviorAway()
         }
     } else {
         // JSONに逃走先が書かれていなかった場合のデフォルト動作（保険）
-        transform_.translate.z += 0.5f;
-        transform_.translate.y += 0.2f;
-
-        float cameraZ = camera_->GetTranslate().z;
-        if (transform_.translate.z > cameraZ + 200.0f) {
+        localPos_.z += 0.5f;
+        localPos_.y += 0.2f;
+        if (localPos_.z > 200.0f)
             isDead_ = true;
-        }
     }
 }
 

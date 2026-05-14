@@ -1,8 +1,7 @@
 ﻿#include "rushEnemy.h"
+#include "../../../../engine/math/Calc.h"
 #include "../Bullet/rushEnemyBullet.h"
 #include "Player.h"
-
-// TODO カメラが動いている際の挙動を確認
 
 void rushEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 {
@@ -11,6 +10,7 @@ void rushEnemy::Initialize(Camera* camera, Vector3 pos, int health)
     transform_.scale = { 2.0f, 2.0f, 2.0f };
     transform_.rotate = { 0.0f, 0.0f, 0.0f };
     transform_.translate = pos;
+    localPos_ = pos;
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
@@ -64,12 +64,17 @@ void rushEnemy::Update()
         behaviorRequest_ = Behavior::kDefeated;
     }
 
+    // カメラの位置に応じて変換
+    const Matrix4x4& camMat = camera_->GetWorldMatrix();
+
+    transform_.translate = TransformCoord(localPos_, camMat);
+
+    BulletUpdate();
+
     // 敵に対して向きを合わせる
     Vector3 playerPos = player_->GetPosition();
-
     Vector3 pToE = playerPos - transform_.translate;
     transform_.rotate.y = std::atan2(pToE.x, pToE.z);
-
     float heightDifference = std::sqrt(pToE.x * pToE.x + pToE.z * pToE.z);
     transform_.rotate.x = std::atan2(-pToE.y, heightDifference);
 
@@ -134,12 +139,7 @@ void rushEnemy::EnemyMove()
 
             currentWayPointIndex_++;
             wayPointTimer_ = 0.0f;
-
-            // --- 【修正ポイント2】 ---
-            // 現在の「カメラからの相対位置」を出発点として記録する
-            Vector3 cameraPos = camera_->GetTranslate();
-            startPos_ = transform_.translate - cameraPos;
-            // ------------------------
+            startPos_ = localPos_;
         }
     }
 
@@ -152,16 +152,7 @@ void rushEnemy::EnemyMove()
         if (t > 1.0f)
             t = 1.0f;
 
-        // --- 【修正ポイント1】 ---
-        // カメラの現在の座標を取得
-        Vector3 cameraPos = camera_->GetTranslate();
-
-        // 1. Lerpで計算するのは「カメラからの相対的な位置」
-        Vector3 relativePos = startPos_ + (currentWP.target - startPos_) * t;
-
-        // 2. それにカメラのワールド座標を足して、敵の最終的な位置にする
-        transform_.translate = relativePos + cameraPos;
-        // ------------------------
+        localPos_ = startPos_ + (currentWP.target - startPos_) * t;
 
         if (t >= 1.0f && !isStop_) {
             wayStopTimer_ = currentWP.timeToStop;
