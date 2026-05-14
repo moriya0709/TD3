@@ -98,6 +98,9 @@ Matrix4x4& operator*=(Matrix4x4& lhm, const Matrix4x4& rhm);
 // 2項演算子オーバーロード
 Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2);
 
+// 平行移動・回転・スケールをすべて適用する関数
+Vector3 TransformCoord(const Vector3& v, const Matrix4x4& m);
+
 // 行列の乗算
 Matrix4x4 Multiply(Matrix4x4 matrix1, Matrix4x4 matrix2);
 

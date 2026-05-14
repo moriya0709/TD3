@@ -18,6 +18,7 @@ struct ControlPoint {
 struct RotationSpeedKey {
 	float time;            // 変化した瞬間の時間(timer)
 	Vector3 rotationSpeed; // その時の回転速度
+	float transitionTime;  // その速度に達するまでの時間（秒）
 };
 class CameraController {
 public:
