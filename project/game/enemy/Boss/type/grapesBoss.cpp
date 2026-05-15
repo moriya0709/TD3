@@ -16,6 +16,7 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
     baseTransform_.scale = { 14.0f, 14.0f, 14.0f };
     baseTransform_.rotate = { 0.0f, 0.0f, 0.0f };
     baseTransform_.translate = pos;
+    baseTransform_.translate = pos;
 
     BehaviorchangeTimer = kBehaviorchangeTimer;
     interval = maxInterval;
@@ -27,7 +28,6 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
     stemobject->SetModel("bossGrapesBranch.obj");
     stemobject->SetScale(baseTransform_.scale);
     stemobject->SetRotate(baseTransform_.rotate);
-    stemobject->SetTranslate(baseTransform_.translate + cameraPos + baseStem);
 
     parts_.clear();
 
@@ -67,8 +67,6 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
             p.object->SetModel("bossGrapesOnly.obj");
             p.object->SetScale(baseTransform_.scale);
             p.object->SetRotate(p.transform.rotate);
-            p.object->SetTranslate(baseTransform_.translate + p.transform.translate + cameraPos);
-            // object->SetModel(texture); テクスチャを直で変えられるコードが今はない
             p.object->Update();
 
             parts_.push_back(std::move(p)); // unique_ptrを含むので std::move
@@ -114,13 +112,36 @@ void grapesBoss::Update()
     // 発射
     BulletUpdate();
 
-    Vector3 cameraPos = camera_->GetTranslate();
+    const Matrix4x4& camMat = camera_->GetWorldMatrix();
+    Vector3 cameraRot = camera_->GetRotate();
 
-    stemobject->SetTranslate(baseTransform_.translate + cameraPos + baseStem);
+    Vector3 stemLocalPos = baseTransform_.translate + baseStem;
+    stemobject->SetTranslate(TransformCoord(stemLocalPos, camMat));
+    // 茎もカメラ目線にするならカメラの回転をセット
+    stemobject->SetRotate(cameraRot);
     stemobject->Update();
+
     for (auto& part : parts_) {
-        Vector3 worldPos = part.transform.translate + baseTransform_.translate + cameraPos;
+        // 1. 位置の追従（ローカル座標をワールド座標に変換）
+        Vector3 partLocalPos = baseTransform_.translate + part.transform.translate;
+        Vector3 worldPos = TransformCoord(partLocalPos, camMat);
         part.object->SetTranslate(worldPos);
+
+        float xFlip = 1.0f;
+        // Y回転が pi (180度) に近いかどうかで判定
+        if (std::abs(part.transform.rotate.y - (float)std::numbers::pi) < 0.1f) {
+            xFlip = -1.0f; // ダミーの場合はXの傾きを逆にする
+        }
+
+        // 2. 回転の追従（カメラ目線 + パーツ固有のアニメーション回転）
+        // ※エンジン仕様により、オイラー角の単純加算で破綻する場合はクォータニオンや行列合成が必要です
+        Vector3 finalRot = {
+            cameraRot.x * xFlip + part.transform.rotate.x,
+            cameraRot.y + part.transform.rotate.y,
+            cameraRot.z + part.transform.rotate.z
+        };
+        part.object->SetRotate(finalRot);
+
         part.object->Update();
     }
 }
@@ -276,29 +297,20 @@ bool grapesBoss::OnCollision(const grapesBoss::CollisionVolume& volume, PlayerBu
 std::vector<grapesBoss::CollisionVolume> grapesBoss::GetCollisionVolumes()
 {
     std::vector<CollisionVolume> volumes;
+    const Matrix4x4& camMat = camera_->GetWorldMatrix();
 
     // ボスの現在の中心座標 (GrapesBoss が持っている Transform)
     Vector3 bossPos = baseTransform_.translate;
 
     for (uint32_t i = 0; i < parts_.size(); ++i) {
-
-        // 1. パーツのワールド座標を計算
-        // ボスの中心座標に、パーツごとの配置オフセット（ローカル座標）を足す
-        Vector3 cameraPos = camera_->GetTranslate();
-
-        Vector3 partWorldPos = {
-            parts_[i].transform.translate.x + bossPos.x + cameraPos.x,
-            parts_[i].transform.translate.y + bossPos.y + cameraPos.y,
-            parts_[i].transform.translate.z + bossPos.z + cameraPos.z
-        };
-
-        // 2. 判定用のボリューム構造体を作成
         CollisionVolume volume;
-        volume.position = partWorldPos; // 計算したワールド座標
-        volume.radius = parts_[i].radius; // パーツ個別の当たり判定サイズ
-        volume.partId = i; // 何番目のパーツか（OnHitで使う）
 
-        // 3. リストに追加
+        Vector3 partLocalPos = baseTransform_.translate + parts_[i].transform.translate;
+        volume.position = TransformCoord(partLocalPos, camMat);
+
+        volume.radius = parts_[i].radius;
+        volume.partId = i;
+
         volumes.push_back(volume);
     }
 
@@ -325,7 +337,10 @@ void grapesBoss::BulletUpdate()
             if (!part.isWeakPoint)
                 continue;
 
-            newBulletEnemy->Initialize(camera_, part.transform.translate + baseTransform_.translate + camera_->GetTranslate());
+            const Matrix4x4& camMat = camera_->GetWorldMatrix();
+            Vector3 spawnWorldPos = TransformCoord(baseTransform_.translate + part.transform.translate, camMat);
+
+            newBulletEnemy->Initialize(camera_, spawnWorldPos);
             break;
         }
 
@@ -399,135 +414,133 @@ void grapesBoss::MoveUpdate()
 
 void grapesBoss::RoatetUpdate()
 {
-
     const float rotationSpeed = (float)std::numbers::pi * 2.0f;
-    const float deltaTime = 1.0f / 60.0f; // フレーム間隔（仮）
+    const float deltaTime = 1.0f / 60.0f;
+
+    // カメラの現在の回転を取得
+    Vector3 cameraRot = camera_->GetRotate();
 
     for (auto& part : parts_) {
-
-        // --- 回転アニメーション処理 ---
+        // --- 1. 回転アニメーション（補間）の計算 ---
         if (part.isAnimating) {
             float currentY = part.transform.rotate.y;
             float targetY = part.targetRotate.y;
             float diffY = targetY - currentY;
-
-            // このフレームでの回転量
             float step = rotationSpeed * deltaTime;
 
             if (std::abs(diffY) <= step) {
-                // 目標角度にほぼ着いたので、完全に一致させてアニメーションを終了
                 part.transform.rotate.y = targetY;
                 part.isAnimating = false;
-
             } else {
-                // ターゲットに向かって少し回す
-                if (diffY > 0.0f) {
-                    part.transform.rotate.y += step;
-                } else {
-                    part.transform.rotate.y -= step;
-                }
+                part.transform.rotate.y += (diffY > 0.0f) ? step : -step;
             }
         }
 
-        part.object->SetRotate(part.transform.rotate);
+        // --- 2. 【重要】カメラの回転をベースに、アニメーションの回転を足す ---
+        // これにより、カメラがどこを向いていても、パーツはその方向を基準に回転します。
+        Vector3 finalRotation = {
+            cameraRot.x + part.transform.rotate.x,
+            cameraRot.y + part.transform.rotate.y,
+            cameraRot.z + part.transform.rotate.z
+        };
+
+        // オブジェクトに最終的な回転をセット
+        part.object->SetRotate(finalRotation);
     }
 }
 
 void grapesBoss::MoveRush()
 {
+    // プレイヤーのワールド座標
+    Vector3 targetWorldPos = player_->GetPosition();
 
-    // 本体を含むランダムに3個突進をする敵を設定　→　2秒おきに順番に突進　→　最後に戻る際プレイヤー当たらないように下側(又は上側)に弧を描いて帰宅。
+    const Matrix4x4& camMat = camera_->GetWorldMatrix();
+    Matrix4x4 invCamMat = Inverse(camMat); // ローカルに戻すための逆行列
 
-    Vector3 targetPos_;
-    targetPos_ = player_->GetPosition();
-    Vector3 cameraPos = camera_->GetTranslate();
-    const Matrix4x4& worldMat = camera_->GetWorldMatrix();
-    Vector3 cameraForward = { worldMat.m[2][0], worldMat.m[2][1], worldMat.m[2][2] };
-    cameraForward = Normalize(cameraForward);
-    bool isLock = false; // 1体ずつの更新にするため
-
-    // ランダム関数とかでいいから3体突進する対象を決める
-
-    // X = 7 Y = 3
+    bool isLock = false;
 
     for (auto& patr : parts_) {
-
-        // 突進も帰還もしていないなら何もしない
         if (!patr.isDashing && !patr.isReturning && !patr.isDashschedule)
             continue;
 
+        // 1体ずつの発射待機タイマー
         if (patr.isDashschedule && !isLock) {
             dashTimer -= 1.0f / 60.0f;
             isLock = true;
-
             if (dashTimer <= 0.0f) {
                 dashTimer = kdashTimer;
                 patr.isDashschedule = false;
                 patr.isDashing = true;
+
+                // 【重要】突進開始時に、現在のローカル速度をワールド速度に変換しておく
+                // （もし初期速度 {0,0,-0.5} を使うなら、それをワールド方向に変換）
+                Vector3 localVel = patr.velocity;
+                // 方向だけをカメラの向きに合わせて変換
+                patr.velocity.x = localVel.x * camMat.m[0][0] + localVel.y * camMat.m[1][0] + localVel.z * camMat.m[2][0];
+                patr.velocity.y = localVel.x * camMat.m[0][1] + localVel.y * camMat.m[1][1] + localVel.z * camMat.m[2][1];
+                patr.velocity.z = localVel.x * camMat.m[0][2] + localVel.y * camMat.m[1][2] + localVel.z * camMat.m[2][2];
             }
         }
 
         if (patr.isDashing) {
-            // ターゲットへのベクトル ＝ 目的地の座標 － 現在の座標
-            Vector3 currentWorldPos = baseTransform_.translate + patr.transform.translate + cameraPos;
-            Vector3 toPlayer = targetPos_ - currentWorldPos;
-            Vector3 direction = Normalize(toPlayer);
+            // --- A. 現在のワールド座標を算出 ---
+            Vector3 currentLocalPos = baseTransform_.translate + patr.transform.translate;
+            Vector3 currentWorldPos = TransformCoord(currentLocalPos, camMat);
 
-            // ホーミングの変更
-            if ((targetPos_.x + patr.targetTranslate.x) * 0.5f >= 7.0f) {
-                homingPower = 0.010f;
-                if ((targetPos_.y + patr.targetTranslate.y) * 0.5f >= 3.0f) {
-                    homingPower = 0.015f;
-                }
+            // --- B. ワールド空間での追跡計算 ---
+            Vector3 toPlayerWorld = targetWorldPos - currentWorldPos;
+            Vector3 directionWorld = Normalize(toPlayerWorld);
 
-            } else {
-                homingPower = khomingPower;
-            }
+            // ホーミング性能の計算 (既存ロジック)
+            float hPower = khomingPower;
+            if (targetWorldPos.x >= 7.0f)
+                hPower = 0.010f; // 適宜調整
 
-            // 加速度をターゲット方向に向ける
-            patr.velocity.x += direction.x * homingPower;
-            patr.velocity.y += direction.y * homingPower;
-            patr.velocity.z += direction.z * homingPower;
+            // ワールド速度を更新
+            patr.velocity.x += directionWorld.x * hPower;
+            patr.velocity.y += directionWorld.y * hPower;
+            patr.velocity.z += directionWorld.z * hPower;
 
-            // 速度超過だった場合の処理
-            float currentSpeed = sqrtf(patr.velocity.x * patr.velocity.x + patr.velocity.y * patr.velocity.y + patr.velocity.z * patr.velocity.z);
-
-            if (currentSpeed > maxSpeed) {
+            float speed = sqrtf(Dot(patr.velocity, patr.velocity));
+            if (speed > maxSpeed) {
                 patr.velocity = Normalize(patr.velocity) * maxSpeed;
             }
 
-            patr.transform.translate += patr.velocity;
+            // ワールド座標を移動させる
+            currentWorldPos.x += patr.velocity.x;
+            currentWorldPos.y += patr.velocity.y;
+            currentWorldPos.z += patr.velocity.z;
 
-            // カメラの奥に行ったかどうか
-            Vector3 toPart = (baseTransform_.translate + patr.transform.translate + cameraPos) - cameraPos;
-            float dot = Dot(cameraForward, toPart);
-            if (dot < -2.0f) {
+            // --- C. 移動後のワールド座標を「カメラのローカル座標」へ逆変換して保存 ---
+            // これにより、Update関数の TransformCoord で正しく描画される
+            Vector3 nextLocalPos = TransformCoord(currentWorldPos, invCamMat);
+            patr.transform.translate = nextLocalPos - baseTransform_.translate;
+
+            // --- D. カメラ通過判定 (ワールド空間で行う) ---
+            Vector3 cameraPos = camera_->GetTranslate();
+            Vector3 camForward = { camMat.m[2][0], camMat.m[2][1], camMat.m[2][2] };
+            Vector3 toPart = currentWorldPos - cameraPos;
+
+            if (Dot(camForward, toPart) < -5.0f) { // カメラの5ユニット後ろに行ったら
                 patr.isDashing = false;
                 patr.isReturning = true;
                 patr.returnTimer = 0.0f;
                 patr.startReturnPos = patr.transform.translate; // 通過した瞬間のローカル座標を保存
             }
         } else if (patr.isReturning) {
+            // 帰還は「ボスの定位置（カメラ相対）」に戻る動作なので、
+            // 既存のベジェ曲線（ローカル計算）のままでOKです。
             patr.returnTimer += 1.0f / 60.0f;
-
             if (patr.returnTimer >= 2.0f) {
-                patr.transform.translate = patr.targetTranslate; // 本来の定位置
+                patr.transform.translate = patr.targetTranslate;
                 patr.isReturning = false;
                 patr.velocity = { 0, 0, 0 };
             } else {
-                // P0: 画面外（通過地点）
-                // P1: 制御点（大きく横に膨らませる）
-                // P2: ボス本体の定位置
+                float t = patr.returnTimer / 2.0f;
                 Vector3 p0 = patr.startReturnPos;
                 Vector3 p2 = patr.targetTranslate;
-                Vector3 p1 = {
-                    (p0.x + p2.x) * 0.5f, // Xは中間地点のまま（横には膨らませない）
-                    (p0.y + p2.y) * 0.5f - 50.0f, // Yをマイナス方向に大きくズラす（下に膨らむ）
-                    p0.z * 0.5f
-                };
+                Vector3 p1 = { (p0.x + p2.x) * 0.5f, (p0.y + p2.y) * 0.5f - 50.0f, (p0.z + p2.z) * 0.5f };
 
-                // 2次ベジエ曲線公式: (1-t)^2*P0 + 2(1-t)t*P1 + t^2*P2
-                float t = patr.returnTimer / 2.0f;
                 patr.transform.translate.x = (1 - t) * (1 - t) * p0.x + 2 * (1 - t) * t * p1.x + t * t * p2.x;
                 patr.transform.translate.y = (1 - t) * (1 - t) * p0.y + 2 * (1 - t) * t * p1.y + t * t * p2.y;
                 patr.transform.translate.z = (1 - t) * (1 - t) * p0.z + 2 * (1 - t) * t * p1.z + t * t * p2.z;
