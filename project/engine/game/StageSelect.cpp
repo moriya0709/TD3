@@ -43,12 +43,12 @@ void StageSelect::Initialize() {
 	}
 
 	return_ = std::make_unique<Sprite>();
-	return_->Initialize("Resource/return.png"); // 戻る
-	return_->SetPosition({ 1000.0f, 100.0f });
+	return_->Initialize("Resource/return.png"); // Wで戻る
+	return_->SetPosition({ 950.0f, 100.0f });
 
-	enter_ = std::make_unique<Sprite>();
-	enter_->Initialize("Resource/Enter.png"); // 進める
-	enter_->SetPosition({ 1000.0f, 1000.0f });
+	space_ = std::make_unique<Sprite>();
+	space_->Initialize("Resource/space.png"); // space進める
+	space_->SetPosition({ 950.0f, 1000.0f });
 
 	// 本型UI
 	std::vector<std::string> textures = {
@@ -173,7 +173,7 @@ void StageSelect::Update() {
 	}
 
 	// ENTERキーを押したら
-	if (input->TriggerKey(DIK_RETURN)) {
+	if (input->TriggerKey(DIK_SPACE)) {
 		// ゲームプレイシーン(次シーン)を生成
 		if (isStageSelect) {
 			if (book->GetCurrentPageIndex() > 8) {
@@ -229,7 +229,7 @@ void StageSelect::Update() {
 	radarChart->Update();
 
 	return_->Update();
-	enter_->Update();
+	space_->Update();
 
 	// レーダーチャート
 
@@ -261,7 +261,7 @@ void StageSelect::Draw2D() {
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
 	return_->Draw();
-	enter_->Draw();
+	space_->Draw();
 
 	//if (switchCooltime <= 0.0f) {
 	//	for (int i = 0; i < kMaxParameter; i++) {

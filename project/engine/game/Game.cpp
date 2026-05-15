@@ -75,8 +75,11 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("Resource/machine/nasu", "sniperMachine.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/nasu", "sniperNBullet.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/machine/nasu", "sniperCBullet.obj");
-	ModelManager::GetInstance()->LoadModel("Resource/enemy/tometo", "tometo.obj");
-	ModelManager::GetInstance()->LoadModel("Resource/enemy/suican", "suican.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/enemy/anple", "anple.obj");//normalEnemy
+	ModelManager::GetInstance()->LoadModel("Resource/enemy/tometo", "tometo.obj");//targetEnemy
+	ModelManager::GetInstance()->LoadModel("Resource/enemy/pepa", "pepa.obj");//homingEnemy
+	ModelManager::GetInstance()->LoadModel("Resource/enemy/itugo", "itugo.obj");//rushEnemy
+	ModelManager::GetInstance()->LoadModel("Resource/enemy/suican", "suican.obj");//shieldEnemy
 	ModelManager::GetInstance()->LoadModel("Resource/enemy/bossGrape", "bossGrapesOnly.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/enemy/bossGrape", "bossGrapesBranch.obj");
     ModelManager::GetInstance()->LoadModel("Resource/enemy/bossBanana", "bossBananAttack.obj");

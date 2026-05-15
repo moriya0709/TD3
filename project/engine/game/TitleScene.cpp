@@ -20,7 +20,11 @@ void TitleScene::Initialize() {
 	// スプライト
 	title_ = std::make_unique <Sprite>();
 	title_->Initialize("Resource/title/title.png");
-	title_->SetPosition({ 900.0f, 300.0f }); // 画面中央
+	title_->SetPosition({ 950.0f, 300.0f }); // 画面中央
+
+	space_ = std::make_unique<Sprite>();
+	space_->Initialize("Resource/space.png"); // 進める
+	space_->SetPosition({ 950.0f, 900.0f });
 
 	// 3Dオブジェクト
 	for (int i = 0; i < 2; i++) {
@@ -108,8 +112,8 @@ void TitleScene::Update() {
 	}
 
 
-	// ENTERキーを押したら
-	if (input->TriggerKey(DIK_RETURN)) {
+	// SPACEキーを押したら
+	if (input->TriggerKey(DIK_SPACE)) {
 		// ゲームプレイシーン(次シーン)を生成
 		//SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		isTransition = true;
@@ -139,6 +143,10 @@ void TitleScene::Update() {
 		}
 	}
 
+	spaceTimer_ += 0.05f;
+	float sinTimer = std::sin(spaceTimer_);//-1.0f～1.0fの範囲
+	space_->SetColor(Vector4(1.0f, 1.0f, 1.0f, ((sinTimer + 1.0f) / 2.0f)));//透明演出
+
 	// ヒットエフェクト更新
 	//for (int i = 0; i < hitEffectCount; i++) {
 	//	hitEffect[i]->Update();
@@ -152,6 +160,7 @@ void TitleScene::Update() {
 	// *スプライト* //
 	// sprite更新
 	title_->Update();
+	space_->Update();
 
 
 #pragma region ライティング
@@ -506,6 +515,7 @@ void TitleScene::Draw2D() {
 
 	// スプライト描画
 	title_->Draw();
+	space_->Draw();
 
 }
 void TitleScene::Draw3D() {

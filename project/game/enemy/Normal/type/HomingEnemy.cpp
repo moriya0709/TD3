@@ -14,7 +14,7 @@ void HomingEnemy::Initialize(Camera* camera, Vector3 pos, int health)
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
-    object_->SetModel("suican.obj");
+    object_->SetModel("pepa.obj");
     object_->SetScale(transform_.scale);
     object_->SetRotate(transform_.rotate);
     object_->SetTranslate(transform_.translate);

@@ -180,12 +180,15 @@ private:
     
     //スプライト
     std::unique_ptr<Sprite> pause_ = nullptr;
+    std::unique_ptr<Sprite> pauseBg_ = nullptr;
     std::unique_ptr<Sprite> resume_ = nullptr;
     std::unique_ptr<Sprite> retry_ = nullptr;
     std::unique_ptr<Sprite> select_ = nullptr;
     //playerHPバー
-    std::unique_ptr<Sprite> playerHpUI_ = nullptr;
-    std::unique_ptr<Sprite> pauseBg_ = nullptr;
+    std::unique_ptr<Sprite> playerHpUI_ = nullptr;//hpUI部分(縁)
+    std::unique_ptr<Sprite> playerHPGauge_ = nullptr; // ゲージ部分
+    std::unique_ptr<Sprite> playerHPEmpty_ = nullptr; // HPバー空部分
+    float side = 0.0f;//HPの端
 
     Style style_ = Style::normal;
     // リスト

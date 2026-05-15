@@ -169,6 +169,7 @@ private:
 	std::unique_ptr<Camera> camera = nullptr;
 	// スプライト
 	std::unique_ptr <Sprite> sprite = nullptr;
+	std::unique_ptr<Sprite> space_ = nullptr;
 	// タイトル
 	std::unique_ptr <Sprite> title_ = nullptr;
 
@@ -190,5 +191,7 @@ private:
 	Animation walkAnimation_;//歩きモーション
 
 	bool isTransition = false;
+
+	float spaceTimer_ = 0.0f;//space点滅タイマー
 
 };
