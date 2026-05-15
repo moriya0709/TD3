@@ -67,7 +67,7 @@ void GamePlayScene::Initialize() {
 	// スプライト
 	pause_ = std::make_unique<Sprite>();
 	pause_->Initialize("Resource/pause.png"); // ポーズ
-	pause_->SetPosition({100.0f, 50.0f});     // 画面中央
+	pause_->SetPosition({1850.0f, 50.0f});
 
 	resume_ = std::make_unique<Sprite>();
 	resume_->Initialize("Resource/resume.png"); // 続ける
@@ -97,10 +97,23 @@ void GamePlayScene::Initialize() {
 	selectEasing.sizeTime = 0.0f;
 	selectEasing.sizeEasedT = 0.0f;
 
-	// playerHPバー
+	// playerHPバーのUI部分(外枠)
 	playerHpUI_ = std::make_unique<Sprite>();
 	playerHpUI_->Initialize("Resource/UI/playerHp.png");
-	playerHpUI_->SetPosition({100.0f, 50.0f});
+	playerHpUI_->SetAnchorPoint({ 0.0f, 0.0f });
+	playerHpUI_->SetPosition({8.0f, 10.0f});
+	playerHpUI_->SetSize({ 240.0f,50.0f });
+	//playerHPのHPゲージ部分
+	playerHPGauge_ = std::make_unique<Sprite>();
+	playerHPGauge_->Initialize("Resource/white.png");
+	playerHPGauge_->SetAnchorPoint({ 0.0f, 0.0f });//サイズ調整
+	playerHPGauge_->SetPosition({ 39.0f, 22.0f });//UIの透過部分に合うように右に
+	//playerHPのゲージが減った時の空部分
+	playerHPEmpty_ = std::make_unique<Sprite>();
+	playerHPEmpty_->Initialize("Resource/white.png");
+	playerHPEmpty_->SetAnchorPoint({ 0.0f, 0.0f });//サイズ調整
+	playerHPEmpty_->SetPosition({ 39.0f, 22.0f });//UIの透過部分に合うように
+
 
 	pauseBg_ = std::make_unique<Sprite>();
 	pauseBg_->Initialize("Resource/pauseBg.png"); // ポーズ背景
@@ -173,8 +186,16 @@ void GamePlayScene::Update() {
 	if (isPause_ || isFinished_)
 		return;
 
-	// 時間の計測
-	
+	//hpが0以下にならないようにclamp
+	float hpRate = std::clamp((float)player_->GetHP() / 100.0f, 0.0f, 1.0f);
+	float maxBarWidth = 200.0f; // 枠に収まる最大幅
+	//ゲージサイズを設定{横幅, 縦幅}
+	playerHPGauge_->SetSize({ maxBarWidth * hpRate, 30.0f });
+	playerHPEmpty_->SetSize({ maxBarWidth, 30.0f });
+
+	//ゲージの色を変える
+	playerHPGauge_->SetColor(Vector4(0.0f, 1.0f, 1.0f, 1.0f)); // 水色(ゲージ部分)
+	playerHPEmpty_->SetColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f)); // 暗いグレー(空部分)
 
 	// クリア条件の分岐
 	if (isBossBattle_) {
@@ -183,11 +204,17 @@ void GamePlayScene::Update() {
 		if (cameraController_->GetElapsedTime() >= kMaxTime_) {
 			StageClear();
 		}
+		else if (player_->GetHP() <= 0)
+		{//playerのHPが0になったらリザルトへ
+			StageClear();
+		}
 	}
 
 	// スプライト更新
 	pause_->Update();
-
+	playerHpUI_->Update();
+	playerHPEmpty_->Update();
+	playerHPGauge_->Update();
 	LithingEffect();
 	UpdateImGui();
 
@@ -218,6 +245,8 @@ void GamePlayScene::Draw2D() {
 	pause_->Draw(); // ポーズ
 
 	playerHpUI_->Draw();
+	playerHPEmpty_->Draw();
+	playerHPGauge_->Draw();
 
 	if (isPause_) {
 		pauseBg_->Draw(); // ポーズ背景

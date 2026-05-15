@@ -158,7 +158,7 @@ private:
 
 	//スプライト
 	std::unique_ptr<Sprite> return_ = nullptr;
-	std::unique_ptr<Sprite> enter_ = nullptr;
+	std::unique_ptr<Sprite> space_ = nullptr;
 
 
 	// 本型UI

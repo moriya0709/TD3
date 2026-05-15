@@ -154,10 +154,10 @@ private:
 	// カメラ
 	std::unique_ptr<Camera> camera = nullptr;
 	// スプライト
-	std::unique_ptr <Sprite> sprite = nullptr;
 
 	//数字
 	std::unique_ptr<Sprite> numberSprites_[10][5];
+	std::unique_ptr<Sprite> space_ = nullptr;
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
 	

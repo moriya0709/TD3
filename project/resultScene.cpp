@@ -57,10 +57,9 @@ void ResultScene::Initialize()
 		}
 	}
 
-
-
-	sprite = std::make_unique <Sprite>();
-	sprite->Initialize("Resource/monsterBall.png");
+	space_ = std::make_unique<Sprite>();
+	space_->Initialize("Resource/space.png"); // 進める
+	space_->SetPosition({ 950.0f, 900.0f });
 
 	// 3Dオブジェクト
 	for (int i = 0; i < 2; i++) {
@@ -88,44 +87,46 @@ void ResultScene::Update()
 		if (input->TriggerKey(DIK_SPACE))
 		{
 			currentDigitIndex_ = 5;//スコア全部強制確定
-		}
-
-		//まだ出てない桁があればタイマーを進める
-		if (currentDigitIndex_ < 5)
-		{
-			countTimer_ += 1.0f / 60.0f;
-
-			// 全5桁の表示用数字を計算
-			for (int i = 0; i < 5; i++)
-			{
-				// currentDigitIndex_ が 0 の時：全員シャッフル
-				// 1 の時：i=4(右端)が確定
-				if (i >= (5 - currentDigitIndex_)) {
-					displayNumbers_[i] = actualDigits_[i]; // 確定(スコアを上書き)
-				} else {
-					displayNumbers_[i] = rand() % 10; // シャッフル中
-				}
-			}
-
-			//2秒経過したら、次の桁のシャッフル開始
-			if (countTimer_ >= kMaxCount_)
-			{
-				countTimer_ = 0.0f;//タイマーリセット
-				currentDigitIndex_++;//確定する1桁を1つ進める
-			}
-		} else {//5桁全て確定したらステージセレクト(Enterキー押せるよう)にする
-			for (int i = 0; i < 5; i++)
-			{
-				displayNumbers_[i] = actualDigits_[i];//一応全部本物のスコアに変える
-			}
 			isCanPress_ = true;
+		} else
+		{
+			//まだ出てない桁があればタイマーを進める
+			if (currentDigitIndex_ < 5)
+			{
+				countTimer_ += 1.0f / 60.0f;
+
+				// 全5桁の表示用数字を計算
+				for (int i = 0; i < 5; i++)
+				{
+					// currentDigitIndex_ が 0 の時：全員シャッフル
+					// 1 の時：i=4(右端)が確定
+					if (i >= (5 - currentDigitIndex_)) {
+						displayNumbers_[i] = actualDigits_[i]; // 確定(スコアを上書き)
+					} else {
+						displayNumbers_[i] = rand() % 10; // シャッフル中
+					}
+				}
+
+				//2秒経過したら、次の桁のシャッフル開始
+				if (countTimer_ >= kMaxCount_)
+				{
+					countTimer_ = 0.0f;//タイマーリセット
+					currentDigitIndex_++;//確定する1桁を1つ進める
+				}
+			} else {//5桁全て確定したらステージセレクト(Spaceキー押せるよう)にする
+				for (int i = 0; i < 5; i++)
+				{
+					displayNumbers_[i] = actualDigits_[i];//一応全部本物のスコアに変える
+				}
+				isCanPress_ = true;
+			}
 		}
 	}
 		//ステージセレクトへ
-	if (isCanPress_)
+	else if (isCanPress_)
 	{
-		//Enterキーで
-		if (input->TriggerKey(DIK_RETURN)) {
+		//SPACEキーで
+		if (input->TriggerKey(DIK_SPACE)) {
 			// ゲームプレイシーン(次シーン)を生成
 			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		}
@@ -138,7 +139,7 @@ void ResultScene::Update()
 
 	// *スプライト* //
 	// sprite更新
-	sprite->Update();
+	space_->Update();
 
 #pragma region ライティング
 	// *ライティング* //
@@ -459,6 +460,7 @@ void ResultScene::Draw2D()
 			numberSprites_[number][i]->Draw();
 		}
 	}
+	space_->Draw();
 }
 
 void ResultScene::Draw3D()
