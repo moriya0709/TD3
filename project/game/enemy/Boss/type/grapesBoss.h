@@ -109,6 +109,8 @@ private:
     Vector3 baseStem = { 0.0f, 8.0f, 0.0f };
 
     Transform baseTransform_; // ボス本体のベース（カメラ相対座標）
+    Vector3 localPos_; // カメラから見た相対座標を保持する
+
     std::vector<BossPart> parts_; // 7つのパーツを格納するリスト（vector）
 
     int currentWeakPointIndex_ = 0; // 現在、何番目が「本体」か

@@ -138,6 +138,19 @@ void GamePlayScene::Initialize() {
 }
 
 void GamePlayScene::Update() {
+	// ヒットストップ
+	if (isHitStop) {
+		hitStopTime = (std::max)(0.0f, hitStopTime - 1.0f / 60.0f);
+
+		if (hitStopTime <= 0.0f) {
+			isHitStop = false;
+		}
+
+		return;
+	} else {
+		hitStopTime = 0.05f;
+	}
+
 
 	if (!isPause_) {
 		// セレクトからシーン切り替えした時のエフェクト
@@ -292,16 +305,16 @@ void GamePlayScene::ChekeAllCollision()
     const std::list<std::shared_ptr<banana>>& BBoss = enemy_->GetBBoss();
     CheckCollisionPlayerEnemy(player_.get(), enemies);
     CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
-    CheckCollisionPlayerBulletEnemy(player_.get(), enemies, hitEffect);
-    CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss, hitEffect);
+    CheckCollisionPlayerBulletEnemy(player_.get(), enemies, hitEffect, isHitStop);
+    CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss, hitEffect, isHitStop);
     CheckCollisionPlayerBossEnemy(player_.get(), Boss);
     CheckCollisionPlayerBossEnemyBullet(player_.get(), Boss);
-    CheckCollisionPlayerBulletBananaBoss(player_.get(), BBoss, hitEffect);
+    CheckCollisionPlayerBulletBananaBoss(player_.get(), BBoss, hitEffect, isHitStop);
     CheckCollisionPlayerBananaBoss(player_.get(), BBoss);
     CheckCollisionPlayerBananaBossBullet(player_.get(), BBoss);
     
     if (player_->GetIsSpecialAttack() && specialAttackTimer <= 0) {
-        CheckCollisionSpecialAtackEnemy(enemies);
+        CheckCollisionSpecialAtackEnemy(enemies, isHitStop);
         specialAttackTimer = 60; // 特殊攻撃のエフェクト時間（例: 60フレーム）
 
         // エフェクト初期化
