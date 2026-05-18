@@ -299,6 +299,20 @@ void ShieldEnemy::BehaviorWalk()
 
         float heightDifference = std::sqrt(pToE.x * pToE.x + pToE.z * pToE.z);
         transform_.rotate.x = std::atan2(-pToE.y, heightDifference);
+
+        Vector3 cameRat = camera_->GetRotate();
+
+        float xFlip = 1.0f;
+        if (std::abs(transform_.rotate.y - (float)std::numbers::pi) < 0.1f) {
+            xFlip = -1.0f;
+        }
+
+        Vector3 finalRot = {
+            cameRat.x * xFlip + transform_.rotate.x,
+            cameRat.y + transform_.rotate.y,
+            cameRat.z + transform_.rotate.z
+        };
+        object_->SetRotate(finalRot);
     } else {
         float targetRotate = 0.0f;
         transform_.rotate.y = Lerp(startRotate.y, targetRotate, leap);
