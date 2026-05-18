@@ -168,6 +168,7 @@ private:
     bool isStorm = false;
     float thunderFrequency = 0.3f;
     float thunderBrightness = 120.0f;
+	int bossPopFlag = 0;
 
     // カメラ
     std::unique_ptr<Camera> camera = nullptr;
@@ -225,6 +226,7 @@ private:
     float kMaxTime_ = 180.0f;
     //クリアしたかどうか
     bool isFinished_ = false;
+
 
     //スコア管理用
     ScoreManager scoreManager_;
