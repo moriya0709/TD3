@@ -22,7 +22,7 @@ void GamePlayScene::Initialize() {
 
 	player_ = std::make_unique<Player>();
 	player_->Initialize(camera.get(), style_);
-
+	maxHP_ = player_->GetHP();
 	enemy_ = std::make_unique<EnemyManager>();
 	if (currentStage_ == 1) {
 		isBossBattle_ = true;
@@ -178,8 +178,8 @@ void GamePlayScene::Update() {
 		return;
 
 	// hpが0以下にならないようにclamp
-	float hpRate = std::clamp((float)player_->GetHP() / 100.0f, 0.0f, 1.0f);
-	float maxBarWidth = 200.0f; // 枠に収まる最大幅
+	float hpRate = std::clamp((float)player_->GetHP() / (float)maxHP_, 0.0f, 1.0f);
+	float maxBarWidth = 194.0f; // 枠に収まる最大幅
 	// ゲージサイズを設定{横幅, 縦幅}
 	playerHPGauge_->SetSize({maxBarWidth * hpRate, 30.0f});
 	playerHPEmpty_->SetSize({maxBarWidth, 30.0f});
