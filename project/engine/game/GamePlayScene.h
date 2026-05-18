@@ -227,6 +227,7 @@ private:
     //クリアしたかどうか
     bool isFinished_ = false;
 
+
     //スコア管理用
     ScoreManager scoreManager_;
 

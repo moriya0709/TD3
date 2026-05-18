@@ -141,17 +141,7 @@ void GamePlayScene::Initialize() {
 
 void GamePlayScene::Update() {
 	// ヒットストップ
-	if (isHitStop) {
-		hitStopTime = (std::max)(0.0f, hitStopTime - 1.0f / 60.0f);
 
-		if (hitStopTime <= 0.0f) {
-			isHitStop = false;
-		}
-
-		return;
-	} else {
-		hitStopTime = 0.05f;
-	}
 
 	if (!isPause_) {
 		// セレクトからシーン切り替えした時のエフェクト
@@ -206,22 +196,25 @@ void GamePlayScene::Update() {
 				cameraController_ = std::make_unique<GrapeCameraController>();
 				cameraController_->Initialize(camera.get());
 				enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
+				bossPopFlag = 0;
 			} else if (bossPopFlag == 3) {
 				cameraController_ = std::make_unique<BananaCameraController>();
 				cameraController_->Initialize(camera.get());
 				cameraController_->SetTargetPosition({0, 0, 60});
 				enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
+				bossPopFlag = 0;
 			}
 		}
+
 		// ボス倒したらクリア
 	} else { // 制限時間来たらリザルトへ
 		if (cameraController_->GetElapsedTime() >= kMaxTime_) {
 			StageClear();
-		} else if (player_->GetHP() <= 0) { // playerのHPが0になったらリザルトへ
-			StageClear();
 		}
 	}
-
+	if (player_->GetHP() <= 0) { // playerのHPが0になったらリザルトへ
+		StageClear();
+	}
 	// スプライト更新
 	pause_->Update();
 	playerHpUI_->Update();

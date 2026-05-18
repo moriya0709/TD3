@@ -21,7 +21,7 @@ public:
 private:
 	float timer = 0.0f;
 	bool isPlaying = false;
-	int currentStage = 1;
+	int currentStage = 51;
 	void ChangeStage(int stage);
 
 	Vector3 bananaPosition = {0.0f, 0.0f, 0.0f}; // バナナの位置
