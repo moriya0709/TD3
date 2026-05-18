@@ -68,13 +68,20 @@ void ShieldEnemy::Update()
 
     // カメラの位置に応じて変換
     const Matrix4x4& camMat = camera_->GetWorldMatrix();
-
     transform_.translate = TransformCoord(localPos_, camMat);
     BulletUpdate();
 
+    // ★ オブジェクトのセット（カメラの回転を合成する）
+    Vector3 cameraRot = camera_->GetRotate();
+    Vector3 finalRot = {
+        cameraRot.x + transform_.rotate.x,
+        cameraRot.y + transform_.rotate.y,
+        cameraRot.z + transform_.rotate.z
+    };
+
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);
-    object_->SetRotate(transform_.rotate);
+    object_->SetRotate(finalRot);
     object_->Update();
 
     // ここにIMGUI
@@ -268,8 +275,11 @@ void ShieldEnemy::BehaviorShield()
     if (leap >= 1.0f) {
         leap = 1.0f;
     }
-    float targetRotate = startRotate.y + (float)std::numbers::pi;
-    transform_.rotate.y = Lerp(startRotate.y, targetRotate, leap);
+
+    float targetRotateY = startRotate.y + (float)std::numbers::pi;
+    transform_.rotate.y = Lerp(startRotate.y, targetRotateY, leap);
+    // シールド構え時は上下の傾きをリセット（お好みで）
+    transform_.rotate.x = Lerp(startRotate.x, 0.0f, leap);
 
     // 移動
     EnemyMove();
@@ -286,36 +296,27 @@ void ShieldEnemy::BehaviorShield()
 
 void ShieldEnemy::BehaviorWalk()
 {
+    Matrix4x4 invCamMat = Inverse(camera_->GetWorldMatrix());
+    Vector3 playerPos = player_->GetPosition();
+    Vector3 playerLocalPos = TransformCoord(playerPos, invCamMat);
+
+    Vector3 eToPLocal = playerLocalPos - localPos_;
+
+    float targetRotY = std::atan2(eToPLocal.x, eToPLocal.z);
+    float heightDifference = std::sqrt(eToPLocal.x * eToPLocal.x + eToPLocal.z * eToPLocal.z);
+    float targetRotX = std::atan2(-eToPLocal.y, heightDifference);
+
     // 振り向き処理
     leap += 0.05f;
     if (leap >= 1.0f) {
         leap = 1.0f;
 
-        // 敵に対して向きを合わせる
-        Vector3 playerPos = player_->GetPosition();
-
-        Vector3 pToE = playerPos - transform_.translate;
-        transform_.rotate.y = std::atan2(pToE.x, pToE.z);
-
-        float heightDifference = std::sqrt(pToE.x * pToE.x + pToE.z * pToE.z);
-        transform_.rotate.x = std::atan2(-pToE.y, heightDifference);
-
-        Vector3 cameRat = camera_->GetRotate();
-
-        float xFlip = 1.0f;
-        if (std::abs(transform_.rotate.y - (float)std::numbers::pi) < 0.1f) {
-            xFlip = -1.0f;
-        }
-
-        Vector3 finalRot = {
-            cameRat.x * xFlip + transform_.rotate.x,
-            cameRat.y + transform_.rotate.y,
-            cameRat.z + transform_.rotate.z
-        };
-        object_->SetRotate(finalRot);
+        // 完全に振り向いた後は毎フレーム追従
+        transform_.rotate.y = targetRotY;
+        transform_.rotate.x = targetRotX;
     } else {
-        float targetRotate = 0.0f;
-        transform_.rotate.y = Lerp(startRotate.y, targetRotate, leap);
+        transform_.rotate.y = Lerp(startRotate.y, targetRotY, leap);
+        transform_.rotate.x = Lerp(startRotate.x, targetRotX, leap);
     }
 
     // 移動
