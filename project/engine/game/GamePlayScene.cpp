@@ -28,7 +28,12 @@ void GamePlayScene::Initialize() {
 		isBossBattle_ = true;
 		cameraController_ = std::make_unique<GrapeCameraController>();
 		cameraController_->Initialize(camera.get());
-	} else {
+	} else if (currentStage_ == 3) {
+		cameraController_ = std::make_unique<BananaCameraController>();
+		cameraController_->Initialize(camera.get());
+		cameraController_->SetTargetPosition({0,0,60});
+	}
+	else {
 	cameraController_->SetCurrentStage(currentStage_);
 	cameraController_->StartReplay();
 	kMaxTime_ = cameraController_->GetTotalDuration();
