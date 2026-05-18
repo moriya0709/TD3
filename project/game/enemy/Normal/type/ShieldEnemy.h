@@ -70,6 +70,7 @@ private:
     int health_; // 体力
     float interval; // 弾を発射する間隔
     Vector3 startRotate;
+    Vector3 finalRot;
     static inline const float maxInterval = 2.0f; // 間隔
 
     // フラグ
