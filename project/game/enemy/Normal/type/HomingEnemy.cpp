@@ -69,13 +69,23 @@ void HomingEnemy::Update()
     // 敵に対して向きを合わせる
     Vector3 playerPos = player_->GetPosition();
     Vector3 pToE = playerPos - transform_.translate;
-    transform_.rotate.y = std::atan2(pToE.x, pToE.z);
-    float heightDifference = std::sqrt(pToE.x * pToE.x + pToE.z * pToE.z);
-    transform_.rotate.x = std::atan2(-pToE.y, heightDifference);
+
+    Vector3 cameRat = camera_->GetRotate();
+
+    float xFlip = 1.0f;
+    if (std::abs(transform_.rotate.y - (float)std::numbers::pi) < 0.1f) {
+        xFlip = -1.0f;
+    }
+
+    Vector3 finalRot = {
+        cameRat.x * xFlip + transform_.rotate.x,
+        cameRat.y + transform_.rotate.y,
+        cameRat.z + transform_.rotate.z
+    };
+    object_->SetRotate(finalRot);
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);
-    object_->SetRotate(transform_.rotate);
 
     // ここにIMGUI
 
