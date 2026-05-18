@@ -11,6 +11,9 @@ void GrapeCameraController::Update() {
 	Vector3 cmrTranslate = pCamera->GetTranslate();
 	cmrTranslate.z += moveSpeed * 1.0f / 60.0f;
 	pCamera->SetTranslate(cmrTranslate);
+	float deltaTime = 1.0f / 60.0f;
+	timer += deltaTime;
+
 }
 
 void GrapeCameraController::ChangeStage(int stage) {
