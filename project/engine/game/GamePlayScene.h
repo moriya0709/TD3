@@ -249,10 +249,6 @@ private:
     // シーン切り替わり後
 	bool isSceneChanged_ = true;
 
-    // ヒットストップ
-    bool isHitStop = false;
-    float hitStopTime = 0.05f;
-
     void SceneChangedEffect();
 
 };
