@@ -140,8 +140,6 @@ void GamePlayScene::Initialize() {
 }
 
 void GamePlayScene::Update() {
-	// ヒットストップ
-
 
 	if (!isPause_) {
 		// セレクトからシーン切り替えした時のエフェクト
@@ -302,28 +300,29 @@ void GamePlayScene::SetPlayerStyle(int style) { style_ = static_cast<Style>(styl
 
 void GamePlayScene::SetCurrentStage(int currentStage) { currentStage_ = currentStage; }
 
-void GamePlayScene::ChekeAllCollision() {
-	const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
-	const std::list<std::shared_ptr<grapesBoss>>& Boss = enemy_->GetGBoss();
-	const std::list<std::shared_ptr<banana>>& BBoss = enemy_->GetBBoss();
-	CheckCollisionPlayerEnemy(player_.get(), enemies);
-	CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
-	CheckCollisionPlayerBulletEnemy(player_.get(), enemies, hitEffect, isHitStop);
-	CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss, hitEffect, isHitStop);
-	CheckCollisionPlayerBossEnemy(player_.get(), Boss);
-	CheckCollisionPlayerBossEnemyBullet(player_.get(), Boss);
-	CheckCollisionPlayerBulletBananaBoss(player_.get(), BBoss, hitEffect, isHitStop);
-	CheckCollisionPlayerBananaBoss(player_.get(), BBoss);
-	CheckCollisionPlayerBananaBossBullet(player_.get(), BBoss);
+void GamePlayScene::ChekeAllCollision()
+{
+    const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
+    const std::list<std::shared_ptr<grapesBoss>>& Boss = enemy_->GetGBoss();
+    const std::list<std::shared_ptr<banana>>& BBoss = enemy_->GetBBoss();
+    CheckCollisionPlayerEnemy(player_.get(), enemies);
+    CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
+    CheckCollisionPlayerBulletEnemy(player_.get(), enemies, hitEffect);
+    CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss, hitEffect);
+    CheckCollisionPlayerBossEnemy(player_.get(), Boss);
+    CheckCollisionPlayerBossEnemyBullet(player_.get(), Boss);
+    CheckCollisionPlayerBulletBananaBoss(player_.get(), BBoss, hitEffect);
+    CheckCollisionPlayerBananaBoss(player_.get(), BBoss);
+    CheckCollisionPlayerBananaBossBullet(player_.get(), BBoss);
+    
+    if (player_->GetIsSpecialAttack() && specialAttackTimer <= 0) {
+        CheckCollisionSpecialAtackEnemy(enemies);
+        specialAttackTimer = 60; // 特殊攻撃のエフェクト時間（例: 60フレーム）
 
-	if (player_->GetIsSpecialAttack() && specialAttackTimer <= 0) {
-		CheckCollisionSpecialAtackEnemy(enemies, isHitStop);
-		specialAttackTimer = 60; // 特殊攻撃のエフェクト時間（例: 60フレーム）
-
-		// エフェクト初期化
-		isInversion = true;          // 反転エフェクトa
-		isGrayscale = true;          // グレースケールエフェクト
-		isTwoColor = true;           // 2色エフェクト
+        // エフェクト初期化
+		isInversion = true; // 反転エフェクトa
+		isGrayscale = true; // グレースケールエフェクト
+		isTwoColor = true; // 2色エフェクト
 		isConcentrationLines = true; // 集中線エフェクト
 		isInversion = true;
 	}

@@ -77,7 +77,7 @@ void CheckCollisionPlayerEnemyBullet(Player* player, const std::list<std::shared
     }
 }
 
-void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared_ptr<Enemy>>& enemies, std::unique_ptr <ParticleEmitter>& hitEffect, bool& isHitStop)
+void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared_ptr<Enemy>>& enemies, std::unique_ptr <ParticleEmitter>& hitEffect)
 {
     for (const auto& bullet : player->GetBullets()) {
         // すでに当たって消える予定の弾はスキップ
@@ -112,16 +112,13 @@ void CheckCollisionPlayerBulletEnemy(Player* player, const std::list<std::shared
 				hitEffect->SetTranslate(enemyPos);
 				hitEffect->Update(); // 発生
 
-                // ヒットストップ
-                isHitStop = true;
-
                 break; // この弾は消えるので、他の敵との判定は不要
             }
         }
     }
 }
 
-void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::shared_ptr<grapesBoss>>& enemies, std::unique_ptr <ParticleEmitter>& hitEffect, bool& isHitStop)
+void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::shared_ptr<grapesBoss>>& enemies, std::unique_ptr <ParticleEmitter>& hitEffect)
 {
     // 葡萄用の当たり判定なので触らないでください(継承クラスを破壊して個別にするため修正中です!!!!!!)
     for (const auto& bullet : player->GetBullets()) {
@@ -151,9 +148,7 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
                         hitEffect->SetTranslate(volume.position);
                         hitEffect->Update(); // 発生
 
-                        // ヒットストップ
-                        isHitStop = true;
-
+                       
                         break; // この弾の判定は終了
                     }
                 }
@@ -218,7 +213,7 @@ void CheckCollisionPlayerBossEnemyBullet(Player* player, const std::list<std::sh
     }
 }
 
-void CheckCollisionPlayerBulletBananaBoss(Player* player, const std::list<std::shared_ptr<banana>>& enemies, std::unique_ptr <ParticleEmitter>& hitEffect, bool& isHitStop)
+void CheckCollisionPlayerBulletBananaBoss(Player* player, const std::list<std::shared_ptr<banana>>& enemies, std::unique_ptr <ParticleEmitter>& hitEffect)
 {
     const auto& playerBullets = player->GetBullets();
 
@@ -264,9 +259,6 @@ void CheckCollisionPlayerBulletBananaBoss(Player* player, const std::list<std::s
                         // ヒットエフェクトの発生
                         hitEffect->SetTranslate(volume.position);
                         hitEffect->Update(); // 発生
-
-                        // ヒットストップ
-                        isHitStop = true;
 
                     }
                     break;
@@ -354,7 +346,7 @@ void CheckCollisionPlayerBananaBossBullet(Player* player, const std::list<std::s
 
 void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet) { }
 
-void CheckCollisionSpecialAtackEnemy(const std::list<std::shared_ptr<Enemy>>& enemies, bool& isHitStop)
+void CheckCollisionSpecialAtackEnemy(const std::list<std::shared_ptr<Enemy>>& enemies)
 {
     // 存在するすべての敵に当たる
     for (const auto& enemy : enemies) {
@@ -364,9 +356,6 @@ void CheckCollisionSpecialAtackEnemy(const std::list<std::shared_ptr<Enemy>>& en
         // 敵に爆弾のダメージを与える
 
         enemy->OnCollision(10, enemy->GetWorldPosition(), Vector3 { 0, 0, 0 }); // 例として100ダメージを与える
-
-        // ヒットストップ
-        isHitStop = true;
 
     }
 }
