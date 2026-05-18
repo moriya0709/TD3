@@ -28,8 +28,8 @@ void CheckCollisionPlayerEnemy(Player* player, const std::list<std::shared_ptr<E
 
             // 敵の攻撃力を受け取る
 
-            int test = 1;
-            player->Damage(test);
+           int Damge = enemy->GetDameg();
+            player->Damage(Damge);
         }
     }
 }
@@ -57,8 +57,8 @@ void CheckCollisionPlayerEnemyBullet(Player* player, const std::list<std::shared
                 // hit
 
                 // 敵の攻撃力を受け取る
-                int test = 1;
-                player->Damage(test);
+                int Damge = enemyBullets_->GetDameg();
+                player->Damage(Damge);
 
                 // 弾の消す処理
                 bullet->OnCollision();
@@ -66,8 +66,7 @@ void CheckCollisionPlayerEnemyBullet(Player* player, const std::list<std::shared
                 // ダメージエフェクト(色収差、ビネット)
                 if (distance <= playerSize + enemySize) {
                     // hit
-                    int test = 1;
-                    player->Damage(test);
+                    player->Damage(Damge);
                     bullet->OnCollision();
 
                     // ★ ダメージエフェクトを最大化（トリガー）
@@ -186,8 +185,8 @@ void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_p
             if (distnance <= player->GetHitSize() + Bullet->GetRadius()) {
 
                 // 敵の攻撃力を受け取る
-                int test = 1;
-                player->Damage(test);
+                int Damge = boss->GetDameg();
+                player->Damage(Damge);
 
                 // 弾の消す処理
                 Bullet->OnCollision();
@@ -212,8 +211,8 @@ void CheckCollisionPlayerBossEnemyBullet(Player* player, const std::list<std::sh
             float distnance = sqrtf(diff.x * diff.x + diff.y * diff.y + diff.z * diff.z);
             if (distnance <= player->GetHitSize() + boss->GetRadius()) {
 
-                int test = 1;
-                player->Damage(test);
+                int Damge = boss->GetDamegBullet();
+                player->Damage(Damge);
             }
         }
     }
@@ -311,10 +310,9 @@ void CheckCollisionPlayerBananaBoss(Player* player, const std::list<std::shared_
             float distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
 
             if (distSq <= pRad * pRad) {
-
-                int test = 1;
-
-                player->Damage(test);
+                // 敵の攻撃力を受け取る
+                int Damge = boss->GetDameg();
+                player->Damage(Damge);
             }
         }
     }
@@ -344,9 +342,9 @@ void CheckCollisionPlayerBananaBossBullet(Player* player, const std::list<std::s
             float radSum = pRad + bRad;
 
             if (distSq <= radSum * radSum) {
-                int test = 1;
+                int Damge = boss->GetDamegBullet();
 
-                player->Damage(test); // プレイヤーにダメージ
+                player->Damage(Damge); // プレイヤーにダメージ
 
                 bullet->OnCollision(); // 敵の弾を消す（関数名は適宜合わせてください）
             }
