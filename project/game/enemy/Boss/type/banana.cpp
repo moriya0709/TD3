@@ -270,6 +270,11 @@ bool banana::GetIsDead() const
     return isDead_;
 }
 
+bool banana::GetIsAlive() const
+{
+    return isAlive_;
+}
+
 std::vector<banana::CollisionVolume> banana::GetCollisionVolumes()
 {
     std::vector<banana::CollisionVolume> volumes;
@@ -343,6 +348,8 @@ bool banana::OnCollision(const CollisionVolume& volume, PlayerBullet* bullet)
         if (health_ <= 0) {
             health_ = 0;
             isDead_ = true;
+            behaviorRequest_ = Behavior::kDefeated;
+            deadTimer_ = kdeadTimer_;
         }
 
         return true; // プレイヤーの弾を消滅させる
@@ -431,4 +438,11 @@ void banana::BehaviorShield()
 
 void banana::BehaviorDefeated()
 {
+    if (isDead_) {
+        deadTimer_ -= 1.0f / 60.0f;
+        if (deadTimer_ <= 0.0f) {
+            isAlive_ = false;
+        }
+    }
+
 }
