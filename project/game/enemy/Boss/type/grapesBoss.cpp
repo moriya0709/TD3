@@ -282,6 +282,8 @@ bool grapesBoss::OnCollision(const grapesBoss::CollisionVolume& volume, PlayerBu
 
         if (this->health_ <= 0 || isDead_) {
             this->health_ = 0; // マイナスにならないよう補正
+            behaviorRequest_ = Behavior::kDefeated;
+            deadTimer_ = kdeadTimer_;
             isDead_ = true;
         }
 
@@ -595,4 +597,15 @@ void grapesBoss::BehaviorShield()
 
 void grapesBoss::BehaviorDefeated()
 {
+    if (isDead_) {
+        deadTimer_ -= 1.0f / 60.0f;
+        if (deadTimer_ <= 0.0f) {
+            isAlive_ = false;
+        }
+    }
+}
+
+bool grapesBoss::GetIsAlive() const
+{
+    return isAlive_;
 }

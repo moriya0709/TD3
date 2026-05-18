@@ -76,6 +76,7 @@ public:
     Vector3 GetWorldPosition() const;
     float GetRadius() const;
     bool GetIsDead() const;
+    bool GetIsAlive() const;
     std::vector<CollisionVolume> GetCollisionVolumes();
     const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
     int GetScore() const { return score_; }
@@ -147,6 +148,9 @@ private:
 
     // 脂肪フラグ
     bool isDead_ = false;
+    bool isAlive_ = false;
+    static inline const float KAliveTimer = 60.0f;
+    float KAliveTimer = 0.0f;
     float deadTimer_;
     static inline const float kdeadTimer_ = 10.0f;
 
