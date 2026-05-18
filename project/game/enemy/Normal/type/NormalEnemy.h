@@ -41,6 +41,7 @@ public:
     bool GetIsDead() const override { return isDead_; }
     bool GetIsAlive() const override { return isAvile; }
     int GetScore() const override { return score_; }
+    int GetDameg() const override { return Dameg_; }
 
 private:
     void EnemyMove();
@@ -53,6 +54,8 @@ private:
 private:
     // スコア
     int score_ = 100;
+
+    int Dameg_ = 10;
 
     Behavior behavior_ = Behavior::kWalk;
     Behavior behaviorRequest_ = Behavior::kUnknown;
