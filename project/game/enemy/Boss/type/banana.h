@@ -88,6 +88,8 @@ public:
     const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
     int GetScore() const { return score_; }
     Vector3 GetBodyWorldPosition() const;
+    int GetDameg() const { return Dameg_; }
+    int GetDamegBullet() const { return DamegBullet_; }
 
     // Set
     void SetTargetPlayer(Player* target);
@@ -109,6 +111,9 @@ private:
 
     // スコア
     int score_ = 2500;
+    int DamegBullet_ = 10; // 弾
+    int Dameg_ = 15; // 突進
+
 
     Behavior behavior_ = Behavior::kStillness;
     Behavior behaviorRequest_ = Behavior::kUnknown;
