@@ -50,6 +50,7 @@ public:
 
     /* Set関数 */
     void SetcurrentTimer_(float timer);
+    void SetEnemyclear();
 
     /* Get関数 */
     // 【当たり判定用】生きている敵のリストを取得する

@@ -16,11 +16,12 @@ public:
 		isPlaying = true;
 	}
 	void SetTargetPosition(const Vector3& position) override { bananaPosition = position; }
+	float GetElapsedTime() const override { return timer; }
 
 private:
 	float timer = 0.0f;
 	bool isPlaying = false;
-	int currentStage = 1;
+	int currentStage = 50;
 	void ChangeStage(int stage);
 
 	Vector3 bananaPosition = {0.0f, 0.0f, 0.0f}; // バナナの位置

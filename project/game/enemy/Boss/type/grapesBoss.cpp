@@ -77,6 +77,9 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
 
 void grapesBoss::Update()
 {
+    std::random_device seedGenerator;
+    std::mt19937 randomEngine(seedGenerator());
+    std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
 
     if (behaviorRequest_ != Behavior::kUnknown) {
         behavior_ = behaviorRequest_;
@@ -125,6 +128,11 @@ void grapesBoss::Update()
         // 1. 位置の追従（ローカル座標をワールド座標に変換）
         Vector3 partLocalPos = baseTransform_.translate + part.transform.translate;
         Vector3 worldPos = TransformCoord(partLocalPos, camMat);
+        if (behavior_ == Behavior::kDefeated) {
+            worldPos.x += distribution(randomEngine);
+            worldPos.y += distribution(randomEngine);
+            worldPos.z += distribution(randomEngine);
+        }
         part.object->SetTranslate(worldPos);
 
         float xFlip = 1.0f;
@@ -140,6 +148,12 @@ void grapesBoss::Update()
             cameraRot.y + part.transform.rotate.y,
             cameraRot.z + part.transform.rotate.z
         };
+
+        if (behavior_ == Behavior::kDefeated) {
+            finalRot.x += distribution(randomEngine);
+            finalRot.y += distribution(randomEngine);
+            finalRot.z += distribution(randomEngine);
+        }
         part.object->SetRotate(finalRot);
 
         part.object->Update();
@@ -282,6 +296,8 @@ bool grapesBoss::OnCollision(const grapesBoss::CollisionVolume& volume, PlayerBu
 
         if (this->health_ <= 0 || isDead_) {
             this->health_ = 0; // マイナスにならないよう補正
+            behaviorRequest_ = Behavior::kDefeated;
+            deadTimer_ = kdeadTimer_;
             isDead_ = true;
         }
 
@@ -595,4 +611,15 @@ void grapesBoss::BehaviorShield()
 
 void grapesBoss::BehaviorDefeated()
 {
+    if (isDead_) {
+        deadTimer_ -= 1.0f / 60.0f;
+        if (deadTimer_ <= 0.0f) {
+            isAlive_ = false;
+        }
+    }
+}
+
+bool grapesBoss::GetIsAlive() const
+{
+    return isAlive_;
 }

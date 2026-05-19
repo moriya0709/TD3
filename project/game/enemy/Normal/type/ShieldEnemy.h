@@ -31,6 +31,7 @@ public:
     bool GetIsDead() const override { return isDead_; }
     bool GetIsAlive() const override { return isAvile; }
     int GetScore() const override { return score_; }
+    int GetDameg() const override { return Dameg_; }
 
 private:
     void EnemyMove();
@@ -47,6 +48,8 @@ private:
 private:
     // スコア
     int score_ = 800;
+
+    int Dameg_ = 6;
 
     Behavior behavior_ = Behavior::kWalk;
     Behavior behaviorRequest_ = Behavior::kUnknown;
@@ -70,6 +73,7 @@ private:
     int health_; // 体力
     float interval; // 弾を発射する間隔
     Vector3 startRotate;
+    Vector3 finalRot;
     static inline const float maxInterval = 2.0f; // 間隔
 
     // フラグ

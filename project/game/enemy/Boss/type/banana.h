@@ -83,10 +83,13 @@ public:
     Vector3 GetWorldPosition() const;
     float GetRadius() const;
     bool GetIsDead() const;
+    bool GetIsAlive() const;
     std::vector<CollisionVolume> GetCollisionVolumes();
     const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
     int GetScore() const { return score_; }
     Vector3 GetBodyWorldPosition() const;
+    int GetDameg() const { return Dameg_; }
+    int GetDamegBullet() const { return DamegBullet_; }
 
     // Set
     void SetTargetPlayer(Player* target);
@@ -108,6 +111,9 @@ private:
 
     // スコア
     int score_ = 2500;
+    int DamegBullet_ = 10; // 弾
+    int Dameg_ = 15; // 突進
+
 
     Behavior behavior_ = Behavior::kStillness;
     Behavior behaviorRequest_ = Behavior::kUnknown;
@@ -148,6 +154,9 @@ private:
 
     // 脂肪フラグ
     bool isDead_ = false;
+    bool isAlive_ = false;
+    static inline const float KAliveTimer = 60.0f;
+    float AliveTimer = 0.0f;
     float deadTimer_;
     static inline const float kdeadTimer_ = 10.0f;
 

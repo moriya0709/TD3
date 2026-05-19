@@ -168,6 +168,7 @@ private:
     bool isStorm = false;
     float thunderFrequency = 0.3f;
     float thunderBrightness = 120.0f;
+	int bossPopFlag = 0;
 
     // カメラ
     std::unique_ptr<Camera> camera = nullptr;
@@ -188,6 +189,7 @@ private:
     std::unique_ptr<Sprite> playerHpUI_ = nullptr;//hpUI部分(縁)
     std::unique_ptr<Sprite> playerHPGauge_ = nullptr; // ゲージ部分
     std::unique_ptr<Sprite> playerHPEmpty_ = nullptr; // HPバー空部分
+	int maxHP_ = 0;                                    // HPの最大値
     float side = 0.0f;//HPの端
 
     Style style_ = Style::normal;
@@ -226,6 +228,7 @@ private:
     //クリアしたかどうか
     bool isFinished_ = false;
 
+
     //スコア管理用
     ScoreManager scoreManager_;
 
@@ -248,10 +251,6 @@ private:
 
     // シーン切り替わり後
 	bool isSceneChanged_ = true;
-
-    // ヒットストップ
-    bool isHitStop = false;
-    float hitStopTime = 0.05f;
 
     void SceneChangedEffect();
 

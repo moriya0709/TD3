@@ -47,6 +47,7 @@ public:
     virtual bool GetIsDead() const = 0;
     virtual bool GetIsAlive() const = 0;
     virtual int GetScore() const = 0;
+    virtual int GetDameg() const = 0;
 
     /* Set関数 */
     virtual void SetTargetPlayer(Player* target) { };

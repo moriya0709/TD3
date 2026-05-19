@@ -53,7 +53,6 @@ private:
 		Vector3 rotate = {0, 0, 0};
 		float fov = 45.0f;
 	} stageStatus;
-
 	// --- 実行時データ ---
 	float timer = 0.0f;
 	float currentSpeed = 0.0f;

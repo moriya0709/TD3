@@ -72,6 +72,10 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
 
 void banana::Update()
 {
+    std::random_device seedGenerator;
+    std::mt19937 randomEngine(seedGenerator());
+    std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+
     if (behaviorRequest_ != Behavior::kUnknown) {
         behavior_ = behaviorRequest_;
 
@@ -127,7 +131,12 @@ void banana::Update()
 
         // 4. モデルの座標設定 (モデル自体は中心、または指定位置に固定)
         // ユーザー要望：モデルは回転させない = baseTransform_.translate の位置に固定
-        Vector3 modelPos = baseTransform_.translate + cameraPos;
+        Vector3 modelPos = baseTransform_.translate;
+        if (behavior_ == Behavior::kDefeated) {
+            modelPos.x += distribution(randomEngine);
+            modelPos.y += distribution(randomEngine);
+            modelPos.z += distribution(randomEngine);
+        }
         part.object->SetTranslate(modelPos);
         // 回転も初期状態(0,0,0)を維持
         part.object->SetRotate({ 0.0f, 0.0f, 0.0f });
@@ -153,7 +162,7 @@ void banana::Draw3D()
 {
 
     for (auto& part : parts_) {
-        if (part.PartsHp > 1) {
+        if (part.PartsHp > 1 || isAlive_ || !isDead_) {
             part.object->Draw();
         }
     }
@@ -270,6 +279,11 @@ bool banana::GetIsDead() const
     return isDead_;
 }
 
+bool banana::GetIsAlive() const
+{
+    return isAlive_;
+}
+
 std::vector<banana::CollisionVolume> banana::GetCollisionVolumes()
 {
     std::vector<banana::CollisionVolume> volumes;
@@ -343,6 +357,8 @@ bool banana::OnCollision(const CollisionVolume& volume, PlayerBullet* bullet)
         if (health_ <= 0) {
             health_ = 0;
             isDead_ = true;
+            behaviorRequest_ = Behavior::kDefeated;
+            deadTimer_ = kdeadTimer_;
         }
 
         return true; // プレイヤーの弾を消滅させる
@@ -431,4 +447,11 @@ void banana::BehaviorShield()
 
 void banana::BehaviorDefeated()
 {
+
+    if (isDead_) {
+        deadTimer_ -= 1.0f / 60.0f;
+        if (deadTimer_ <= 0.0f) {
+            isAlive_ = false;
+        }
+    }
 }
