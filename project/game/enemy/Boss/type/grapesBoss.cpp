@@ -77,6 +77,9 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
 
 void grapesBoss::Update()
 {
+    std::random_device seedGenerator;
+    std::mt19937 randomEngine(seedGenerator());
+    std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
 
     if (behaviorRequest_ != Behavior::kUnknown) {
         behavior_ = behaviorRequest_;
@@ -140,6 +143,12 @@ void grapesBoss::Update()
             cameraRot.y + part.transform.rotate.y,
             cameraRot.z + part.transform.rotate.z
         };
+
+        if (behavior_ == Behavior::kDefeated) {
+            finalRot.x += distribution(randomEngine);
+            finalRot.y += distribution(randomEngine);
+            finalRot.z += distribution(randomEngine);
+        }
         part.object->SetRotate(finalRot);
 
         part.object->Update();
