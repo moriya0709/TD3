@@ -87,7 +87,7 @@ void EnemyManager::Update()
     }
 
     // --- 修正ポイント：引数を std::shared_ptr に変更 ---
-    enemies_.remove_if([](const std::shared_ptr<Enemy>& enemy) { return enemy->GetIsAlive(); });
+    enemies_.remove_if([](const std::shared_ptr<Enemy>& enemy) { return !enemy->GetIsAlive(); });
     gboss_.remove_if([](const std::shared_ptr<grapesBoss>& enemy) { return enemy->GetIsAlive(); });
     bboss_.remove_if([](const std::shared_ptr<banana>& enemy) { return enemy->GetIsAlive(); });
 }
@@ -118,6 +118,11 @@ void EnemyManager::SetcurrentTimer_(float timer)
         bboss_.remove_if([](const std::shared_ptr<banana>& enemy) { return true; });
     }
     currentTimer_ = timer;
+}
+
+void EnemyManager::SetEnemyclear()
+{
+    enemies_.clear();
 }
 
 void EnemyManager::LoadEnemyData(const std::string& filePath)

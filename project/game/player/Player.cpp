@@ -244,6 +244,49 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, float cmrv
 	}
 	UpdateAttackMove();
 	InputMove();
+	// --- ★ここから追加: レティクルの色変更判定 ---
+	bool isTargetInReticle = false;
+
+	for (const auto& enemy : enemies) {
+		// 1. 敵とプレイヤーの距離を計算
+		Vector3 enemyPos = enemy->GetWorldPosition();
+		Vector3 playerPos = transform_.translate;
+		Vector3 toEnemy = {enemyPos.x - playerPos.x, enemyPos.y - playerPos.y, enemyPos.z - playerPos.z};
+		float distToEnemy = std::sqrt(toEnemy.x * toEnemy.x + toEnemy.y * toEnemy.y + toEnemy.z * toEnemy.z);
+
+		// プレイヤーの射程範囲内かチェック
+		if (distToEnemy <= statas_[currentStyle].renge) {
+
+			// 2. 敵の3D座標を2Dの画面座標（スクリーン座標）に変換する
+			// ※ご注意: お使いのエンジンやCameraクラスにある変換関数をご使用ください。
+			// （関数名の例: WorldToScreen, GetScreenSpacePosition など）
+			// ここでは仮に camera_->WorldToScreen(enemyPos) という関数があると想定しています。
+			Vector2 enemyScreenPos = camera_->WorldToScreen(enemyPos);
+
+			// 3. レティクルの範囲内（256x256 = 中心から半径128ピクセル以内）かチェック
+			float dx = enemyScreenPos.x - reticlePosition_.x;
+			float dy = enemyScreenPos.y - reticlePosition_.y;
+			float distToReticle = std::sqrt(dx * dx + dy * dy);
+
+			// レティクルの範囲内に敵がいる場合
+			if (distToReticle <= 128.0f) {
+				isTargetInReticle = true; // 条件を満たす敵がいた！
+				break;                    // 1体でもいれば色は変わるので、これ以上のチェックは不要としてループを抜けます
+			}
+		}
+	}
+
+	// 4. 判定結果によってSpriteの色を変える
+	// ※Spriteクラスに SetColor({R, G, B, A}) のような色変更関数があることを想定しています
+	if (isTargetInReticle) {
+		// 範囲内にいる場合は赤色 (Red: 1.0f, Green: 0.0f, Blue: 0.0f, Alpha: 1.0f)
+		reticle_->SetColor({1.0f, 0.0f, 0.0f, 1.0f});
+		chargeReticle_->SetColor({1.0f, 0.0f, 0.0f, 1.0f});
+	} else {
+		// いない場合は白色 (通常) に戻す
+		reticle_->SetColor({1.0f, 1.0f, 1.0f, 1.0f});
+		chargeReticle_->SetColor({1.0f, 1.0f, 1.0f, 1.0f});
+	}
 	chargeReticle_->SetPosition(reticlePosition_);
 	chargeReticle_->Update();
 	reticle_->SetPosition(reticlePosition_);
@@ -303,17 +346,24 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 		if (isCharging) {
 			// チャージ攻撃
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies, currentStyle);
+
+			// ★修正: Initialize内でhommingAccuracy_を使うため、SetStatusを先に呼び出します
 			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy, statas_[currentStyle].chargeAttack);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies, currentStyle);
 			newBullet->SetSize(1.5f); // チャージ弾のサイズを設定
+
 			bullets.push_back(std::move(newBullet));
 			chargeTimer = 0;                            // チャージタイマーリセット
-			coolTime = statas_[currentStyle].haste * 2; // チャージ攻撃後のクールタイムも長くする
-			maxHaste = statas_[currentStyle].haste * 2;
+			coolTime = int(statas_[currentStyle].haste * 1.5f); // チャージ攻撃後のクールタイムも長くする
+			maxHaste = int(statas_[currentStyle].haste * 1.5f);
 		} else {
+			// 通常攻撃
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge, enemies,currentStyle);
+
+			// ★修正: Initialize内でhommingAccuracy_を使うため、SetStatusを先に呼び出します
 			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy, statas_[currentStyle].attack);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge, enemies, currentStyle);
+
 			bullets.push_back(std::move(newBullet));
 			coolTime = statas_[currentStyle].haste;
 			maxHaste = statas_[currentStyle].haste;

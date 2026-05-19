@@ -8,6 +8,7 @@ public:
 	void Update() override;
 	void EditorUpdate() override;
 	void EditorDraw() override;
+	float GetElapsedTime() const override { return timer; }
 
 	// --- ゲッター ---
 	int GetCurrentStage() const override { return currentStage; }
@@ -17,6 +18,7 @@ public:
 		isPlaying = true;
 	}
 	void SetTargetPosition(const Vector3& position) override { bananaPosition = position; }
+
 
 private:
 	float timer = 0.0f;

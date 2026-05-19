@@ -59,22 +59,34 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 
 	float minAngle = 0.5f; // 探索範囲（ラジアン。約30度以内など）
 
+	// hommingAccuracy_ から探索範囲（角度）を算出します
+	// ※ hommingAccuracy_ は値が小さい(0.01等)ため、10.0f を掛けて角度を広げています。
+	// この 10.0f の部分はお好みの探索範囲に合わせて調整してください！
+	float searchAngle = hommingAccuracy_ * 10.0f;
+	float minDotThreshold = std::cos(searchAngle);
+
+	float maxDot = -1.0f; // これまでで一番レティクルに近い（内積が大きい）値を記憶する変数
+	targetEnemy_.reset(); // ターゲットを一度リセットしておきます
+
 	for (const auto& enemy : enemies) {
 		Vector3 enemyPos = enemy->GetWorldPosition();
 		Vector3 toEnemy = {enemyPos.x - position.x, enemyPos.y - position.y, enemyPos.z - position.z};
 		float distToEnemy = std::sqrt(toEnemy.x * toEnemy.x + toEnemy.y * toEnemy.y + toEnemy.z * toEnemy.z);
 
-		// 弾の進行方向と敵への方向の内積から角度を計算
+		// 【仕様5】敵とプレイヤー(発射位置)の距離が射程(renge)より遠い場合は除外
+		if (distToEnemy > renge) {
+			continue; // この敵はスキップして次の敵をチェックします
+		}
+
+		// 弾の進行方向(レティクル方向)と、敵への方向の内積を計算
 		Vector3 dirToEnemy = {toEnemy.x / distToEnemy, toEnemy.y / distToEnemy, toEnemy.z / distToEnemy};
 		Vector3 currentDir = {velocity_.x / bulletSpeed_, velocity_.y / bulletSpeed_, velocity_.z / bulletSpeed_};
-
 		float dot = currentDir.x * dirToEnemy.x + currentDir.y * dirToEnemy.y + currentDir.z * dirToEnemy.z;
 
-		// 内積が1に近いほど方向が一致している。一定範囲内かつ一番近い敵を選ぶ等の処理
-		if (dot > std::cos(minAngle)) {
-			targetEnemy_ = enemy; // 修正: unique_ptr<Enemy> ではなく Enemy* 型にする
-			// 最初に見つかった敵、あるいは一番近い敵をセット
-			break;
+		// 【仕様3】探索範囲内であり、かつ「今まで見つけたどの敵よりもレティクルに近い」場合
+		if (dot > minDotThreshold && dot > maxDot) {
+			maxDot = dot;         // 最も高い内積の値を更新
+			targetEnemy_ = enemy; // ターゲット候補をこの敵に更新
 		}
 	}
 
@@ -82,9 +94,16 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	trailEffect->Initialize("Resource/trail/trail.png", transform_, 1.0f, 1.5f);
 	trailEffect->SetColor(Vector4(1.0f,1.0f,1.0f,1.0f));
 	TrailEffectManager::GetInstance()->AddTrail(trailEffect);
+	// 進んでいる方向（velocity_）に合わせて向き（回転）を計算
+	float speedXZ = std::sqrt(velocity_.x * velocity_.x + velocity_.z * velocity_.z);
+	if (speedXZ > 0.0001f || std::abs(velocity_.y) > 0.0001f) {
+		transform_.rotate.y = std::atan2(velocity_.x, velocity_.z); // 左右の向き(Yaw)
+		transform_.rotate.x = std::atan2(-velocity_.y, speedXZ);    // 上下の向き(Pitch)
+	}
 
 	object_->SetScale(transform_.scale);
 	object_->SetTranslate(transform_.translate);
+	object_->SetRotate(transform_.rotate); // ★追加：回転を適用
 
 	// モーションブラー
 	object_->SetMotionBlur(isMotionBlur);
@@ -117,9 +136,18 @@ void PlayerNormalBullet::Update(float cmrvel) {
 	}
 
 	// 3. 座標更新（共通）
-	transform_.translate += velocity_+cvel;
+	transform_.translate += velocity_ + cvel;
+
+	// --- 修正箇所：座標更新の直後に追加 ---
+	// 進んでいる方向（velocity_）に合わせて向き（回転）を計算
+	float speedXZ = std::sqrt(velocity_.x * velocity_.x + velocity_.z * velocity_.z);
+	if (speedXZ > 0.0001f || std::abs(velocity_.y) > 0.0001f) {
+		transform_.rotate.y = std::atan2(velocity_.x, velocity_.z); // 左右の向き(Yaw)
+		transform_.rotate.x = std::atan2(-velocity_.y, speedXZ);    // 上下の向き(Pitch)
+	}
 
 	object_->SetTranslate(transform_.translate);
+	object_->SetRotate(transform_.rotate); // ★追加：回転を適用
 	object_->Update();
 
 	if (lifeTime_ >= maxLifeTime_) {
