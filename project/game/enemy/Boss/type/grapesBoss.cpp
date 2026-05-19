@@ -128,6 +128,11 @@ void grapesBoss::Update()
         // 1. 位置の追従（ローカル座標をワールド座標に変換）
         Vector3 partLocalPos = baseTransform_.translate + part.transform.translate;
         Vector3 worldPos = TransformCoord(partLocalPos, camMat);
+        if (behavior_ == Behavior::kDefeated) {
+            worldPos.x += distribution(randomEngine);
+            worldPos.y += distribution(randomEngine);
+            worldPos.z += distribution(randomEngine);
+        }
         part.object->SetTranslate(worldPos);
 
         float xFlip = 1.0f;

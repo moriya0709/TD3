@@ -120,6 +120,11 @@ void EnemyManager::SetcurrentTimer_(float timer)
     currentTimer_ = timer;
 }
 
+void EnemyManager::SetEnemyclear()
+{
+    enemies_.clear();
+}
+
 void EnemyManager::LoadEnemyData(const std::string& filePath)
 {
     std::ifstream file(filePath);
