@@ -345,8 +345,8 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 
 			bullets.push_back(std::move(newBullet));
 			chargeTimer = 0;                            // チャージタイマーリセット
-			coolTime = statas_[currentStyle].haste * 2; // チャージ攻撃後のクールタイムも長くする
-			maxHaste = statas_[currentStyle].haste * 2;
+			coolTime = int(statas_[currentStyle].haste * 1.5f); // チャージ攻撃後のクールタイムも長くする
+			maxHaste = int(statas_[currentStyle].haste * 1.5f);
 		} else {
 			// 通常攻撃
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
