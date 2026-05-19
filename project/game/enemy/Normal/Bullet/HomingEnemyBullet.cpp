@@ -11,7 +11,7 @@ void HomingEnemyBullet::Initialize(Camera* camera, Vector3 Pos)
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
-    object_->SetModel("test.obj");
+    object_->SetModel("pepaBullet.obj");
     object_->SetScale(transform_.scale);
     object_->SetRotate(transform_.rotate);
     object_->SetTranslate(transform_.translate);
