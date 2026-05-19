@@ -28,6 +28,25 @@ void Camera::Update() {
 
 }
 
+const Vector2 Camera::WorldToScreen(const Vector3& worldPos) const { 
+	Matrix4x4 vpMat = viewProjectionMatrix;
+	Vector4 clipPos = {
+		worldPos.x * vpMat.m[0][0] + worldPos.y * vpMat.m[1][0] + worldPos.z * vpMat.m[2][0] + vpMat.m[3][0],
+		worldPos.x * vpMat.m[0][1] + worldPos.y * vpMat.m[1][1] + worldPos.z * vpMat.m[2][1] + vpMat.m[3][1],
+		worldPos.x * vpMat.m[0][2] + worldPos.y * vpMat.m[1][2] + worldPos.z * vpMat.m[2][2] + vpMat.m[3][2],
+		worldPos.x * vpMat.m[0][3] + worldPos.y * vpMat.m[1][3] + worldPos.z * vpMat.m[2][3] + vpMat.m[3][3]
+	};
+	if (clipPos.w != 0.0f) {
+		float ndcX = clipPos.x / clipPos.w;
+		float ndcY = clipPos.y / clipPos.w;
+		float screenX = (ndcX + 1.0f) * 0.5f * WindowAPI::kClientWidth;
+		float screenY = (1.0f - (ndcY + 1.0f) * 0.5f) * WindowAPI::kClientHeight;
+		return {screenX, screenY};
+	} else {
+		return { -10000.0f, -10000.0f };
+	}
+}
+
 // シングルトンインスタンスの取得
 Camera* Camera::GetInstance() {
 	if (instance == nullptr) {

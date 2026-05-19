@@ -3,6 +3,8 @@
 
 class Camera {
 public:
+	// シングルトンインスタンスの取得
+	static Camera* GetInstance();
 	// デフォルトコンストラクタ
 	Camera();
 	// 更新
@@ -25,9 +27,7 @@ public:
 	const Vector3& GetRotate() const { return transform.rotate; }
 	const Vector3& GetTranslate() const { return transform.translate; }
 	const float GetFovY() const { return fovY_; }
-
-	// シングルトンインスタンスの取得
-	static Camera* GetInstance();
+	const Vector2 WorldToScreen(const Vector3& worldPos) const;
 
 private:
 	// ビュー行列
