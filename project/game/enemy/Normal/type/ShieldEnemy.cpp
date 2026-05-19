@@ -340,6 +340,6 @@ void ShieldEnemy::BehaviorDefeated()
     // 上に断末のコードを角
     if (deadTimer_ <= 0.0f) {
         isDead_ = true;
-        isAvile = true;
+        isAvile = false;
     }
 }
