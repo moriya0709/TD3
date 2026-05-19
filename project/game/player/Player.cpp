@@ -294,17 +294,24 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 		if (isCharging) {
 			// チャージ攻撃
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerChargeBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies, currentStyle);
+
+			// ★修正: Initialize内でhommingAccuracy_を使うため、SetStatusを先に呼び出します
 			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy, statas_[currentStyle].chargeAttack);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge * 1.5f, enemies, currentStyle);
 			newBullet->SetSize(1.5f); // チャージ弾のサイズを設定
+
 			bullets.push_back(std::move(newBullet));
 			chargeTimer = 0;                            // チャージタイマーリセット
 			coolTime = statas_[currentStyle].haste * 2; // チャージ攻撃後のクールタイムも長くする
 			maxHaste = statas_[currentStyle].haste * 2;
 		} else {
+			// 通常攻撃
 			std::unique_ptr<PlayerBullet> newBullet = std::make_unique<PlayerNormalBullet>();
-			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge, enemies,currentStyle);
+
+			// ★修正: Initialize内でhommingAccuracy_を使うため、SetStatusを先に呼び出します
 			newBullet->SetStatus(statas_[currentStyle].hommingAccuracy, statas_[currentStyle].attack);
+			newBullet->Initialize(transform_.translate, camera_, reticlePosition_, statas_[currentStyle].renge, enemies, currentStyle);
+
 			bullets.push_back(std::move(newBullet));
 			coolTime = statas_[currentStyle].haste;
 			maxHaste = statas_[currentStyle].haste;
