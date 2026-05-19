@@ -1,20 +1,19 @@
-﻿#include "ObjectCommon.h"
-#include "PlayerChargeBullet.h"
+﻿#include "PlayerChargeBullet.h"
+#include "ObjectCommon.h"
 #include "SceneManager.h"
 #include "SpriteCommon.h"
-#include "player.h"
 #include "TrailEffectManager.h"
+#include "player.h"
 #include <cmath> // sqrt用
 
 // Initializeに必要な引数を追加しています（レティクルの位置、最大距離、寿命）
-void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies,int style) {
+void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, const Vector2 reticlePosition, const float renge, const std::list<std::shared_ptr<Enemy>>& enemies, int style) {
 	// --- 1. 基本設定（既存） ---
 	transform_.scale = {0.2f, 0.2f, 0.2f};
 	transform_.translate = position;
 	object_ = std::make_unique<Object>();
 	object_->Initialize(camera);
-	switch (style)
-	{
+	switch (style) {
 	case normal:
 		object_->SetModel("normalCBullet.obj");
 		break;
@@ -91,8 +90,16 @@ void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, con
 	trailEffect->SetColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 	TrailEffectManager::GetInstance()->AddTrail(trailEffect);
 
+	// 進んでいる方向（velocity_）に合わせて向き（回転）を計算
+	float speedXZ = std::sqrt(velocity_.x * velocity_.x + velocity_.z * velocity_.z);
+	if (speedXZ > 0.0001f || std::abs(velocity_.y) > 0.0001f) {
+		transform_.rotate.y = std::atan2(velocity_.x, velocity_.z);
+		transform_.rotate.x = std::atan2(-velocity_.y, speedXZ);
+	}
+
 	object_->SetScale(transform_.scale);
 	object_->SetTranslate(transform_.translate);
+	object_->SetRotate(transform_.rotate); // ★追加：回転を適用
 }
 void PlayerChargeBullet::Update(float cmrvel) {
 	std::shared_ptr<Enemy> target = targetEnemy_.lock();
@@ -123,7 +130,16 @@ void PlayerChargeBullet::Update(float cmrvel) {
 	// 3. 座標更新（共通）
 	transform_.translate += velocity_ + Vector3{cmrvel, cmrvel, cmrvel};
 
+	// --- 修正箇所：ここから追加 ---
+	// 進んでいる方向（velocity_）に合わせて向き（回転）を計算
+	float speedXZ = std::sqrt(velocity_.x * velocity_.x + velocity_.z * velocity_.z);
+	if (speedXZ > 0.0001f || std::abs(velocity_.y) > 0.0001f) {
+		transform_.rotate.y = std::atan2(velocity_.x, velocity_.z);
+		transform_.rotate.x = std::atan2(-velocity_.y, speedXZ);
+	}
+
 	object_->SetTranslate(transform_.translate);
+	object_->SetRotate(transform_.rotate); // ★追加：回転を適用
 	object_->Update();
 
 	if (lifeTime_ >= maxLifeTime_) {
@@ -135,7 +151,6 @@ void PlayerChargeBullet::Update(float cmrvel) {
 	// トレイルエフェクト更新
 	trailEffect->AddPoint(transform_.translate);
 	trailEffect->SetTranslate(transform_.translate);
-
 }
 void PlayerChargeBullet::Draw3D() {
 	if (isActive_) {

@@ -94,9 +94,16 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	trailEffect->Initialize("Resource/trail/trail.png", transform_, 1.0f, 1.5f);
 	trailEffect->SetColor(Vector4(1.0f,1.0f,1.0f,1.0f));
 	TrailEffectManager::GetInstance()->AddTrail(trailEffect);
+	// 進んでいる方向（velocity_）に合わせて向き（回転）を計算
+	float speedXZ = std::sqrt(velocity_.x * velocity_.x + velocity_.z * velocity_.z);
+	if (speedXZ > 0.0001f || std::abs(velocity_.y) > 0.0001f) {
+		transform_.rotate.y = std::atan2(velocity_.x, velocity_.z); // 左右の向き(Yaw)
+		transform_.rotate.x = std::atan2(-velocity_.y, speedXZ);    // 上下の向き(Pitch)
+	}
 
 	object_->SetScale(transform_.scale);
 	object_->SetTranslate(transform_.translate);
+	object_->SetRotate(transform_.rotate); // ★追加：回転を適用
 
 	// モーションブラー
 	object_->SetMotionBlur(isMotionBlur);
@@ -129,9 +136,18 @@ void PlayerNormalBullet::Update(float cmrvel) {
 	}
 
 	// 3. 座標更新（共通）
-	transform_.translate += velocity_+cvel;
+	transform_.translate += velocity_ + cvel;
+
+	// --- 修正箇所：座標更新の直後に追加 ---
+	// 進んでいる方向（velocity_）に合わせて向き（回転）を計算
+	float speedXZ = std::sqrt(velocity_.x * velocity_.x + velocity_.z * velocity_.z);
+	if (speedXZ > 0.0001f || std::abs(velocity_.y) > 0.0001f) {
+		transform_.rotate.y = std::atan2(velocity_.x, velocity_.z); // 左右の向き(Yaw)
+		transform_.rotate.x = std::atan2(-velocity_.y, speedXZ);    // 上下の向き(Pitch)
+	}
 
 	object_->SetTranslate(transform_.translate);
+	object_->SetRotate(transform_.rotate); // ★追加：回転を適用
 	object_->Update();
 
 	if (lifeTime_ >= maxLifeTime_) {
