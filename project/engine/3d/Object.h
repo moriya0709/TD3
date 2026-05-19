@@ -118,6 +118,9 @@ public:
 	void SetSpotLightDirection(Vector3 direction) { spotLightData->direction = direction; }
 	void SetSpotLightRange(float range) { spotLightData->range = range; }
 	void SetSpotLightIntensity(float intensity) { spotLightData->intensity = intensity; }
+	// 太陽ライティング
+	void SetSunLight(bool isSunLight) { this->isSunLight = isSunLight; }
+
 	// モーションブラー
 	void SetMotionBlur(bool isMotionBlur) { motionBlurData->isMotionBlur = isMotionBlur; }
 

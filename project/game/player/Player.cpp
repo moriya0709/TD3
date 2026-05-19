@@ -217,6 +217,10 @@ void Player::Initialize(Camera* camera, Style style) {
 	isCharging = false;
 	ishit = false;
 	damageTimer = 0;
+
+	// デス演出
+	isDeathAnimation_ = false;
+
 }
 
 // 攻撃モーション
@@ -233,6 +237,11 @@ void Player::UpdateAttackMove() {
 }
 
 void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, float cmrvel) {
+	// デス演出
+	if (isDeathAnimation_) {
+		UpdateDeathAnimation();
+		return;
+	}
 	UpdateAttackMove();
 	InputMove();
 	// --- ★ここから追加: レティクルの色変更判定 ---
@@ -553,3 +562,61 @@ void Player::UpdateImGui() {
 }
 
 void Player::StyleLevelUp(Style style, int statas) {}
+
+void Player::StartDeathAnimation() {
+	isDeathAnimation_ = true;
+	playerObject_->SetModel("player.obj");
+}
+
+void Player::UpdateDeathAnimation() {
+	// 1. カメラに向かって急接近（Z値を減らす）
+	// 初期値10.0fから、一気に手前（0.5f付近）まで近づける
+	float targetX = 0.0f;
+	float targetY = 0.0f;
+	float targetZ = 1.0f; // 画面にぶつかる距離（カメラのほぼ目の前）
+	if (relativePos_.z > targetZ) {
+		relativePos_.z -= 0.2f; // 迫ってくるスピード（好みに合わせて調整）
+
+		float lerpFactor = 0.15f;
+		relativePos_.x += (targetX - relativePos_.x) * lerpFactor;
+		relativePos_.y += (targetY - relativePos_.y) * lerpFactor;
+
+		// 接近中は激しく回転させる（X, Y, Zすべての軸でぐるぐる回す）
+		transform_.rotate.x += 0.2f;
+		transform_.rotate.y += 0.3f;
+		transform_.rotate.z += 0.15f;
+	} else {
+		// 画面にぶつかった後は中央の至近距離に完全固定
+		relativePos_.x = targetX;
+		relativePos_.y = targetY;
+		relativePos_.z = targetZ;
+
+		// ぶつかった衝撃で機体をちょっと平べったく（あるいは横に広く）歪ませる
+		// 画面に張り付いたようなギャグ・演出効果
+		transform_.scale = {0.8f,0.6f,0.1f};
+		transform_.rotate = { 0.0f, 3.14f, 1.0f };
+
+		playerObject_->SetDirectionalLight(true);
+		playerObject_->SetDirectionalLightColor({0.1f,0.1f,0.1f,1.0f});
+		playerObject_->SetAmbientLightColor({0.3f,0.3f,0.3f,1.0f});
+		playerObject_->SetSunLight(false);
+
+		// 画面に張り付いているので回転をピタッと止める（あるいは微振動させる）
+		// transform_.rotate = 固定、もしくは小刻みに揺らす
+	}
+
+	// 3. カメラの向きに合わせてワールド座標を再計算（InputMoveのロジックを流用）
+	Matrix4x4 camRotMat = MakeRotateMatrix(camera_->GetRotate());
+	Vector3 rotatedOffset = TransformNormal(relativePos_, camRotMat);
+
+	Vector3 cameraPos = camera_->GetTranslate();
+	transform_.translate.x = cameraPos.x + rotatedOffset.x;
+	transform_.translate.y = cameraPos.y + rotatedOffset.y;
+	transform_.translate.z = cameraPos.z + rotatedOffset.z;
+
+	// 4. 3Dオブジェクトへの適用
+	playerObject_->SetTranslate(transform_.translate);
+	playerObject_->SetRotate(transform_.rotate);
+	playerObject_->SetScale(transform_.scale);
+	playerObject_->Update();
+}
