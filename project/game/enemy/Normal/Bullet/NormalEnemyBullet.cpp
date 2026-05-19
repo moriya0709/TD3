@@ -10,7 +10,7 @@ void NormalEnemyBullet::Initialize(Camera* camera, Vector3 Pos)
 
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
-    object_->SetModel("plane.obj");
+    object_->SetModel("anpleBullet.obj");
     object_->SetScale({ 0.5f, 0.5f, 0.5f });
     object_->SetRotate(transform_.rotate);
     object_->SetTranslate(transform_.translate);
