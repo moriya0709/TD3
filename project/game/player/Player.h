@@ -70,6 +70,8 @@ public:
 	bool GetIsSpecialAttack() const { return isSpecialAttack; }
 	void SetIsSpecialAttack(bool isSpecial) { isSpecialAttack = isSpecial; }
 
+	// デス演出関連の関数
+	void StartDeathAnimation();     // デス演出開始関数
 
 
 private:
@@ -149,6 +151,11 @@ private:
 	void UpdateAttackMove();
 	int maxHaste;//現状の弾数
 	float attackRotate = 0;
+
+	// デス演出
+	bool isDeathAnimation_ = false; // デス演出中フラグ
+
+	void UpdateDeathAnimation();    // デス演出更新関数
 
 };
 

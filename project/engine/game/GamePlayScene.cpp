@@ -210,8 +210,14 @@ void GamePlayScene::Update() {
 			StageClear();
 		}
 	}
-	if (player_->GetHP() <= 0) { // playerのHPが0になったらリザルトへ
-		StageClear();
+	if (player_->GetHP() <= 0) { // playerのHPが0になったらデス演出
+		if(deathEffectTimer_ == 3.0f)
+			player_->StartDeathAnimation();
+		deathEffectTimer_ = (std::max)(0.0f, deathEffectTimer_ - 1.0f / 60.0f);
+	
+		if(deathEffectTimer_ <= 0.0f) {
+			StageClear();
+		}
 	}
 	// スプライト更新
 	pause_->Update();
