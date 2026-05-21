@@ -123,7 +123,6 @@ private:
     static inline const float ktWeakPointchangeTimer = 10.0f;
 
     int health_; // 体力
-    float isAvile; // 生存しているか
 
     // プレイヤーの情報
     Player* player_ = nullptr;
@@ -152,7 +151,7 @@ private:
 
     // 脂肪フラグ
     bool isDead_ = false;
-    bool isAlive_ = false;
+    bool isAlive_ = true;
     static inline const float KAliveTimer = 60.0f;
     float AliveTimer = 0.0f;
     float deadTimer_;

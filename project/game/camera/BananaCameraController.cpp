@@ -10,10 +10,12 @@ void BananaCameraController::Update() {
 	// ==========================================
 	// 1. カメラの新しい位置を計算する（前回と同じ）
 	// ==========================================
-	timer += rotationSpeed;
+	float deltaTime = 1.0f / 60.0f; // 1フレームの時間（秒）。実際のフレームレートに合わせて調整してください。
+	timer += deltaTime;
+	float angle = timer * rotationSpeed; // 時間に基づいて回転角度を計算します
 
-	float cameraX = bananaPosition.x + (radius * std::sin(timer));
-	float cameraZ = bananaPosition.z + (radius * std::cos(timer));
+	float cameraX = bananaPosition.x + (radius * std::sin(angle));
+	float cameraZ = bananaPosition.z + (radius * std::cos(angle));
 	float cameraY = bananaPosition.y + cameraHeight;
 
 	Vector3 newCameraPos = {cameraX, cameraY, cameraZ};
@@ -38,7 +40,7 @@ void BananaCameraController::Update() {
 
 	// 高さの差(dirY)と水平距離から、見下ろす/見上げる角度を計算します
 	// ※プロジェクトの座標系（上方向が+か-か等）によって、dirY にマイナスをつける場合があります
-	float rotX = std::atan2(-dirY, horizontalDistance);
+	float rotX = 0.0f;
 
 	// [Z軸の回転 (傾き: Roll)]
 	// カメラを左右に傾けることはしないので0にします

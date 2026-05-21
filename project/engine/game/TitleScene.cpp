@@ -60,22 +60,22 @@ void TitleScene::Initialize() {
 	// ヒットエフェクト
 	for (int i = 0; i < hitEffectCount; i++) {
 		hitEffect[i] = std::make_unique<ParticleEmitter>();
-		hitEffect[i]->Initialize("hitEffect1", Transform{}, 5, 0.2f);
+		hitEffect[i]->Initialize("Death1", Transform{}, 5, 0.2f);
 	}
-	hitEffect[0]->SetActive("hitEffect1");
+	hitEffect[0]->SetActive("Death1");
 	hitEffect[0]->LoadParticle("Resource/particle/death_1.csv");
-	hitEffect[1]->SetActive("hitEffect2");
+	hitEffect[1]->SetActive("Death2");
 	hitEffect[1]->LoadParticle("Resource/particle/death_2.csv");
-	hitEffect[2]->SetActive("hitEffect3");
+	hitEffect[2]->SetActive("Death3");
 	hitEffect[2]->LoadParticle("Resource/particle/death_3.csv");
-	hitEffect[3]->SetActive("hitEffect4");
+	hitEffect[3]->SetActive("Death4");
 	hitEffect[3]->LoadParticle("Resource/particle/death_4.csv");
 
 	// パーティクル
 	particleEmitter = std::make_unique<ParticleEmitter>();
-	particleEmitter->Initialize("Special3", transformParticle, 5, 0.1f);
-	particleEmitter->SetActive("Special3");
-	particleEmitter->LoadParticle("Resource/particle/special_2.csv");
+	particleEmitter->Initialize("Death1", transformParticle, 5, 0.1f);
+	particleEmitter->SetActive("Death1");
+	particleEmitter->LoadParticle("Resource/particle/death_1.csv");
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	object[0]->SetModel("emission.obj");

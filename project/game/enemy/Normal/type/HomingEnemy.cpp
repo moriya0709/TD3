@@ -23,6 +23,20 @@ void HomingEnemy::Initialize(Camera* camera, Vector3 pos, int health)
     isAvile = true;
 
     interval = maxInterval;
+
+	// デスエフェクトの初期化
+    for (int i = 0; i < deathEffectCount; i++) {
+        deathEffect[i] = std::make_unique<ParticleEmitter>();
+        deathEffect[i]->Initialize("Death1", Transform{}, 5, 0.2f);
+    }
+    deathEffect[0]->SetActive("Death1");
+    deathEffect[0]->LoadParticle("Resource/particle/death_1.csv");
+    deathEffect[1]->SetActive("Death2");
+    deathEffect[1]->LoadParticle("Resource/particle/death_2.csv");
+    deathEffect[2]->SetActive("Death3");
+    deathEffect[2]->LoadParticle("Resource/particle/death_3.csv");
+    deathEffect[3]->SetActive("Death4");
+    deathEffect[3]->LoadParticle("Resource/particle/death_4.csv");
 }
 
 void HomingEnemy::Update()
@@ -57,6 +71,12 @@ void HomingEnemy::Update()
     // 生きていないならやられモーション処理を入れる
     if (!isAvile) {
         behaviorRequest_ = Behavior::kDefeated;
+
+		// デスエフェクトの発生
+        for (int i = 0; i < deathEffectCount; i++) {
+            deathEffect[i]->SetTranslate(transform_.translate);
+            deathEffect[i]->Emit();
+		}
     }
 
     // カメラの位置に応じて変換

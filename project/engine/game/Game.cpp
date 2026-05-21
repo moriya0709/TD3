@@ -46,16 +46,15 @@ void Game::Initialize() {
 	TextureManager::GetInstance()->LoadTexture("Resource/UI/playerHp.png");//playerHPBar
 
 	// パーティクルマネージャ初期化
-	ParticleManager::GetInstance()->CreateParticleGroup("group1", "Resource/particle/particle.png");
-	ParticleManager::GetInstance()->CreateParticleGroup("group2", "Resource/uvChecker.png");
-	ParticleManager::GetInstance()->CreateParticleGroup("hitEffect1", "Resource/particle/particle.png");
-	ParticleManager::GetInstance()->CreateParticleGroup("hitEffect2", "Resource/particle/particle.png");
-	ParticleManager::GetInstance()->CreateParticleGroup("hitEffect3", "Resource/particle/particle.png");
-	ParticleManager::GetInstance()->CreateParticleGroup("hitEffect4", "Resource/particle/particle.png");
-	ParticleManager::GetInstance()->CreateParticleGroup("SpecialAttack", "Resource/particle/particle2.png");
-	ParticleManager::GetInstance()->CreateParticleGroup("Special2", "Resource/particle/particle.png");
-	ParticleManager::GetInstance()->CreateParticleGroup("Special3", "Resource/particle/particle2.png");
-	ParticleManager::GetInstance()->CreateParticleGroup("HitEffect", "Resource/particle/particle2.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("group1", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("group2", "Resource/plane", "plane.obj", "Resource/uvChecker.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("Death1", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("Death2", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("Death3", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("Death4", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("SpecialAttack", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("Special", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("HitEffect", ParticleManager::GetInstance()->Ring(), "Resource/particle/gradationLine.png");
 
 
 	// .objファイルからモデル読み込み

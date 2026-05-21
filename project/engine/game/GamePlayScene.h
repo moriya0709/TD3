@@ -126,7 +126,7 @@ private:
     float bokehRadius = 5.0f;
 
     // ブルーム
-    float bloomThreshold = 1.5f;
+    float bloomThreshold = 3.0f;
     float bloomIntensity = 1.0f;
     float bloomBlurRadius = 1.0f;
 
@@ -251,6 +251,9 @@ private:
 
     // シーン切り替わり後
 	bool isSceneChanged_ = true;
+
+    // デス演出時間
+	float deathEffectTimer_ = 3.0f;
 
     void SceneChangedEffect();
 

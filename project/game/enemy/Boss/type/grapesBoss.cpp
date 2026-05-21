@@ -21,7 +21,7 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
     BehaviorchangeTimer = kBehaviorchangeTimer;
     interval = maxInterval;
 
-    isAvile = true;
+    isAlive_ = true;
 
     stemobject = std::make_unique<Object>();
     stemobject->Initialize(camera_);

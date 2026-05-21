@@ -161,6 +161,7 @@ void GamePlayScene::Update()
         enemy_->SetcurrentTimer_(cameraController_->GetElapsedTime());
         enemy_->Update();
 
+
         // 当たり判定
         ChekeAllCollision();
 
@@ -197,16 +198,24 @@ void GamePlayScene::Update()
                 cameraController_ = std::make_unique<GrapeCameraController>();
                 cameraController_->Initialize(camera.get());
                 enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
-                bossPopFlag = 0;
+                bossPopFlag = 4;
             } else if (bossPopFlag == 3) {
                 enemy_->SetEnemyclear();
                 cameraController_ = std::make_unique<BananaCameraController>();
                 cameraController_->Initialize(camera.get());
                 cameraController_->SetTargetPosition({ 0, 0, 60 });
                 enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
-                bossPopFlag = 0;
+                bossPopFlag = 4;
             }
         }
+        // ボスがいる場合はフラグを5にする
+		if (enemy_->GetGBoss().size() > 0 && bossPopFlag == 4) {
+			bossPopFlag = 5;
+		}
+
+		if (enemy_->GetGBoss().empty() && bossPopFlag == 5) { // 葡萄のボスがいなくなったら
+			StageClear();
+		}
 
         // ボス倒したらクリア
     } else { // 制限時間来たらリザルトへ
@@ -215,7 +224,12 @@ void GamePlayScene::Update()
         }
     }
     if (player_->GetHP() <= 0) { // playerのHPが0になったらリザルトへ
-        StageClear();
+        if(deathEffectTimer_ == 3.0f)
+			player_->StartDeathAnimation(); // デス演出開始
+        deathEffectTimer_ = (std::max)(0.0f, deathEffectTimer_ - 1.0f / 60.0f);
+        
+		if (deathEffectTimer_ <= 0.0f)
+            StageClear();
     }
     // スプライト更新
     pause_->Update();
