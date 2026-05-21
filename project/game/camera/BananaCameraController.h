@@ -30,7 +30,7 @@ private:
 
 	// --- ここから新しく追加した変数 ---
 	Camera* pCamera = nullptr;   // 操作するカメラを覚えておくための変数
-	float radius = 60.0f;        // バナナからカメラまでの距離（半径）
+	float radius = 50.0f;        // バナナからカメラまでの距離（半径）
 	float rotationSpeed = 0.2f; // カメラが回転するスピード
 	float cameraHeight = 5.0f;   // バナナよりどれくらい高い位置から見下ろすか
 };
