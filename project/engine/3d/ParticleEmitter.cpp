@@ -12,30 +12,6 @@ void ParticleEmitter::Initialize(std::string name, const Transform& transform, u
 }
 
 void ParticleEmitter::Update() {
-	ifTranslate = { 0.0f };
-	velocity = { 0.0f };
-
-	// ランダムにするかどうか
-	if (isRandTranslate[0]) {
-		ifTranslate.x = 1.0f;
-	}
-	if (isRandTranslate[1]) {
-		ifTranslate.y = 1.0f;
-	}
-	if (isRandTranslate[2]) {
-		ifTranslate.z = 1.0f;
-	}
-
-	// ランダムにするかどうか
-	if (isRandVelocity[0]) {
-		velocity.x = 1.0f;
-	}
-	if (isRandVelocity[1]) {
-		velocity.y = 1.0f;
-	}
-	if (isRandVelocity[2]) {
-		velocity.z = 1.0f;
-	}
 
 	// 時間経過によって発生させる
 	emitter.frequencyTime += kDeltaTime; // 時刻を進める
@@ -44,14 +20,20 @@ void ParticleEmitter::Update() {
 			emitter.name,
 			emitter.transform.translate,
 			emitter.transform.scale,
+			emitter.transform.rotate,
 			emitter.count,
-			distTranslate,
+			distPosition,
+			distScale,
+			distRotate,
 			distVelocity,
 			distTime,
-			ifTranslate,
-			velocity, color, emissive, blendMode,
-			finalColor,  colorChangeSpeed,
-			 isColorChange,  isScaleChange,  scaleAdd
+			isRandPosition,
+			isRandScale,
+			isRandRotate,
+			isRandVelocity,
+			color, emissive, blendMode,
+			finalColor, colorChangeSpeed,
+			isColorChange, isScaleChange, scaleAdd, uvScale
 		);
 
 		emitter.frequencyTime -= emitter.frequency; // 余計に過ぎた時間も紙して頻度計算する
@@ -63,14 +45,20 @@ void ParticleEmitter::Emit() {
 		emitter.name,
 		emitter.transform.translate,
 		emitter.transform.scale,
+		emitter.transform.rotate,
 		emitter.count,
-		distTranslate,
-		distVelocity, 
+		distPosition,
+		distScale,
+		distRotate,
+		distVelocity,
 		distTime,
-		ifTranslate, 
-		velocity, color, emissive, blendMode,
+		isRandPosition,
+		isRandScale,
+		isRandRotate,
+		isRandVelocity,
+		color, emissive, blendMode,
 		finalColor, colorChangeSpeed,
-		isColorChange, isScaleChange, scaleAdd
+		isColorChange, isScaleChange, scaleAdd, uvScale
 	);
 
 }
@@ -87,13 +75,19 @@ void ParticleEmitter::SaveParticle(const std::string& filePath) {
 	// パーティクルの座標
 	file << emitter.transform.translate.x << "," << emitter.transform.translate.y << "," << emitter.transform.translate.z << "\n";
 	// パーティクルのスケール
-	file << emitter.transform.scale.x << "," << emitter.transform.scale.y << "," << emitter.transform.translate.z << "\n";
+	file << emitter.transform.scale.x << "," << emitter.transform.scale.y << "," << emitter.transform.scale.z << "\n";
+	// パーティクルの回転
+	file << emitter.transform.rotate.x << "," << emitter.transform.rotate.y << "," << emitter.transform.rotate.z << "\n";
 	// パーティクルの発生数
 	file << emitter.count << "\n";
 	// パーティクルの発生頻度
 	file << emitter.frequency << "\n";
 	// パーティクルのランダム座標
-	file << isRandTranslate[0] << "," << isRandTranslate[1] << "," << isRandTranslate[2] << "\n";
+	file << isRandPosition[0] << "," << isRandPosition[1] << "," << isRandPosition[2] << "\n";
+	// パーティクルのランダムスケール
+	file << isRandScale[0] << "," << isRandScale[1] << "," << isRandScale[2] << "\n";
+	// パーティクルのランダム回転
+	file << isRandRotate[0] << "," << isRandRotate[1] << "," << isRandRotate[2] << "\n";
 	// パーティクルのランダム速度
 	file << isRandVelocity[0] << "," << isRandVelocity[1] << "," << isRandVelocity[2] << "\n";
 	// パーティクルの色
@@ -103,11 +97,15 @@ void ParticleEmitter::SaveParticle(const std::string& filePath) {
 	// パーティクルの色変化速度
 	file << colorChangeSpeed << "\n";
 	// パーティクルの色変化
-	file << isColorChange[0] << "," << isColorChange[1] << "," << isColorChange[2] << "\n";
+	file << isColorChange[0] << "," << isColorChange[1] << "," << isColorChange[2] << "," << isColorChange[3] << "\n";
 	// パーティクルのサイズ変化
 	file << isScaleChange[0] << "," << isScaleChange[1] << "," << isScaleChange[2] << "\n";
 	// パーティクルの発生範囲
-	file << distTranslate.a() << "," << distTranslate.b() << "\n";
+	file << distPosition.a() << "," << distPosition.b() << "\n";
+	// パーティクルのスケール範囲
+	file << distScale.a() << "," << distScale.b() << "\n";
+	// パーティクルの回転範囲
+	file << distRotate.a() << "," << distRotate.b() << "\n";
 	// パーティクルの速度範囲
 	file << distVelocity.a() << "," << distVelocity.b() << "\n";
 	// パーティクルのサイズ追加数
@@ -130,18 +128,17 @@ void ParticleEmitter::LoadParticle(const std::string& filePath) {
 
 	// パーティクルの座標
 	if (std::getline(file, line)) {
-		auto s = line.find(',');
-		emitter.transform.translate.x = std::stof(line.substr(0, s));
-		emitter.transform.translate.y = std::stof(line.substr(s + 1));
-		emitter.transform.translate.z = std::stof(line.substr(s + 1));
+		sscanf_s(line.c_str(), "%f,%f,%f", &emitter.transform.translate.x, &emitter.transform.translate.y, &emitter.transform.translate.z);
 	}
 
-	// パーティクルの座標
+	// パーティクルのスケール
 	if (std::getline(file, line)) {
-		auto s = line.find(',');
-		emitter.transform.scale.x = std::stof(line.substr(0, s));
-		emitter.transform.scale.y = std::stof(line.substr(s + 1));
-		emitter.transform.scale.z = std::stof(line.substr(s + 1));
+		sscanf_s(line.c_str(), "%f,%f,%f", &emitter.transform.scale.x, &emitter.transform.scale.y, &emitter.transform.scale.z);
+	}
+
+	// パーティクルの回転
+	if (std::getline(file, line)) {
+		sscanf_s(line.c_str(), "%f,%f,%f", &emitter.transform.rotate.x, &emitter.transform.rotate.y, &emitter.transform.rotate.z);
 	}
 
 	// パーティクルの発生数
@@ -158,9 +155,27 @@ void ParticleEmitter::LoadParticle(const std::string& filePath) {
 	if (std::getline(file, line)) {
 		int a, b, c;
 		sscanf_s(line.c_str(), "%d,%d,%d", &a, &b, &c);
-		isRandTranslate[0] = (a != 0);
-		isRandTranslate[1] = (b != 0);
-		isRandTranslate[2] = (c != 0);
+		isRandPosition[0] = (a != 0);
+		isRandPosition[1] = (b != 0);
+		isRandPosition[2] = (c != 0);
+	}
+
+	// ランダムスケール（bool）
+	if (std::getline(file, line)) {
+		int a, b, c;
+		sscanf_s(line.c_str(), "%d,%d,%d", &a, &b, &c);
+		isRandScale[0] = (a != 0);
+		isRandScale[1] = (b != 0);
+		isRandScale[2] = (c != 0);
+	}
+
+	// ランダム回転（bool）
+	if (std::getline(file, line)) {
+		int a, b, c;
+		sscanf_s(line.c_str(), "%d,%d,%d", &a, &b, &c);
+		isRandRotate[0] = (a != 0);
+		isRandRotate[1] = (b != 0);
+		isRandRotate[2] = (c != 0);
 	}
 
 	// ランダム速度（bool）
@@ -189,11 +204,12 @@ void ParticleEmitter::LoadParticle(const std::string& filePath) {
 
 	// 色変化（bool）
 	if (std::getline(file, line)) {
-		int a, b, c;
-		sscanf_s(line.c_str(), "%d,%d,%d", &a, &b, &c);
+		int a, b, c, d;
+		sscanf_s(line.c_str(), "%d,%d,%d,%d", &a, &b, &c, &d);
 		isColorChange[0] = (a != 0);
 		isColorChange[1] = (b != 0);
 		isColorChange[2] = (c != 0);
+		isColorChange[3] = (d != 0);
 	}
 
 	// サイズ変化（bool）
@@ -209,7 +225,21 @@ void ParticleEmitter::LoadParticle(const std::string& filePath) {
 	if (std::getline(file, line)) {
 		float a, b;
 		sscanf_s(line.c_str(), "%f,%f", &a, &b);
-		distTranslate = std::uniform_real_distribution<float>(a, b);
+		distPosition = std::uniform_real_distribution<float>(a, b);
+	}
+
+	// スケール範囲
+	if (std::getline(file, line)) {
+		float a, b;
+		sscanf_s(line.c_str(), "%f,%f", &a, &b);
+		distScale = std::uniform_real_distribution<float>(a, b);
+	}
+
+	// 回転範囲
+	if (std::getline(file, line)) {
+		float a, b;
+		sscanf_s(line.c_str(), "%f,%f", &a, &b);
+		distRotate = std::uniform_real_distribution<float>(a, b);
 	}
 
 	// 速度範囲
@@ -263,9 +293,17 @@ void ParticleEmitter::Editor() {
 	// パーティクルの発生頻度
 	ImGui::SliderFloat("EmitterFrequency", &emitter.frequency, 0.01f, 5.0f);
 	// パーティクルのランダム座標
-	ImGui::Checkbox("randTranslate.x", &isRandTranslate[0]);
-	ImGui::Checkbox("randTranslate.y", &isRandTranslate[1]);
-	ImGui::Checkbox("randTranslate.z", &isRandTranslate[2]);
+	ImGui::Checkbox("randPosition.x", &isRandPosition[0]);
+	ImGui::Checkbox("randPosition.y", &isRandPosition[1]);
+	ImGui::Checkbox("randPosition.z", &isRandPosition[2]);
+	// パーティクルのランダムスケール
+	ImGui::Checkbox("randScale.x", &isRandScale[0]);
+	ImGui::Checkbox("randScale.y", &isRandScale[1]);
+	ImGui::Checkbox("randScale.z", &isRandScale[2]);
+	// パーティクルのランダム回転
+	ImGui::Checkbox("randRotate.x", &isRandRotate[0]);
+	ImGui::Checkbox("randRotate.y", &isRandRotate[1]);
+	ImGui::Checkbox("randRotate.z", &isRandRotate[2]);
 	// パーティクルのランダム速度
 	ImGui::Checkbox("randVelocity.x", &isRandVelocity[0]);
 	ImGui::Checkbox("randVelocity.y", &isRandVelocity[1]);
@@ -278,6 +316,7 @@ void ParticleEmitter::Editor() {
 	ImGui::Checkbox("colorChange.x", &isColorChange[0]);
 	ImGui::Checkbox("colorChange.y", &isColorChange[1]);
 	ImGui::Checkbox("colorChange.z", &isColorChange[2]);
+	ImGui::Checkbox("colorChange.w", &isColorChange[3]);
 	// パーティクルのサイズ変化
 	ImGui::Checkbox("scaleChange.x", &isScaleChange[0]);
 	ImGui::Checkbox("scaleChange.y", &isScaleChange[1]);
@@ -294,11 +333,17 @@ void ParticleEmitter::Editor() {
 	}
 
 	// パーティクルの発生範囲
-	ImGui::SliderFloat2("distTranslate", (float*)&distTranslate, -100.0f, 100.0f);
+	ImGui::SliderFloat2("distPosition", (float*)&distPosition, -100.0f, 100.0f);
+	// パーティクルのスケール範囲
+	ImGui::SliderFloat2("distScale", (float*)&distScale, -100.0f, 100.0f);
+	// パーティクルの回転範囲
+	ImGui::SliderFloat2("distRotate", (float*)&distRotate, -360.0f, 360.0f);
 	// パーティクルの速度範囲
 	ImGui::SliderFloat2("distVelocity", (float*)&distVelocity, -100.0f, 100.0f);
 	// パーティクルのサイズ追加数
 	ImGui::SliderFloat("scaleAdd", &scaleAdd, -0.1f, 0.1f);
+	// uvスケール
+	ImGui::SliderFloat2("uvScale", (float*)&uvScale, 0.0f, 10.0f);
 
 	// ファイル名
 	ImGui::InputText("FileName", fileName, IM_ARRAYSIZE(fileName));

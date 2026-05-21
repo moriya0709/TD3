@@ -35,9 +35,10 @@ struct Particle {
 	float emissive;
 	Vector4 finalColor;
 	float colorChangeSpeed;
-	bool isColorChange[3];
+	bool isColorChange[4];
 	bool isScaleChange[3];
 	float scaleAdd;
+	Vector2 uvScale;
 };
 // 場(加速度)
 struct AccelerationField {
@@ -46,24 +47,38 @@ struct AccelerationField {
 };
 // パーティクル描画用データ(GPU用)
 struct ParticleForGPU {
-	Matrix4x4 WVP;
-	Matrix4x4 world;
-	Vector4 color;
+	Matrix4x4 WVP;       // 64バイト
+	Matrix4x4 world;     // 64バイト
+	Vector4 color;       // 16バイト
+	Vector2 uvScale;     // 8バイト
+	Vector2 padding;    // ★追加: 合計160バイト（16の倍数）に合わせるためのダミー
 };
 
 class ParticleManager {
 public:
 	struct ParticleGroup {
-		MaterialData material;
-		std::list<Particle> particles;
-		uint32_t  instancingIndex;
+		// 頂点データ・モデルデータ
+		ModelData modelData;
+		Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
+		D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+
+		// マテリアルデータ（必要に応じて）
+		Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
+		Material* material = nullptr;
+		MaterialData materialData;
+
+		// インスタンシング用のデータ（※現在ParticleManagerにあるものを移動）
 		Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource;
-		uint32_t instancingCount;
-		ParticleForGPU* instancingData;
+		ParticleForGPU* instancingData = nullptr;
+		uint32_t instanceCount = 0;
+		uint32_t  instancingIndex;
+
+		// このグループに属するパーティクルのリスト
+		std::list<Particle> particles;
 		BlendMode blendMode;
 	};
 	std::unordered_map<std::string, ParticleGroup> particleGroups;
-	
+
 
 	// 初期化
 	void Initialize(DirectXCommon* dxCommon, SrvManager* srvManager, const std::string& directoryPath, const std::string& filename);
@@ -72,8 +87,6 @@ public:
 	// 描画
 	void Draw();
 
-	// パーティクルグループの生成
-	void CreateParticleGroup(const std::string name, const std::string textureFilePath);
 	// ルートシグネイチャの作成
 	void CreateRootSignature();
 	// グラフィックスパイプラインの生成
@@ -91,26 +104,44 @@ public:
 		std::mt19937& randomEngine,
 		const Vector3& translate,
 		const Vector3& scale,
-		std::uniform_real_distribution<float>distTransform,
-		std::uniform_real_distribution<float>distVelocity,
-		std::uniform_real_distribution<float>distTime,
-		Vector3 ifTranslate, Vector3 velocity, Vector4 color,
+		const Vector3& rotate,
+		std::uniform_real_distribution<float> distPosition,
+		std::uniform_real_distribution<float>distScale,
+		std::uniform_real_distribution<float>distRotate,
+		std::uniform_real_distribution<float> distVelocity,
+		std::uniform_real_distribution<float> distTime,
+		bool isRandPosition[3], bool isRandScale[3],
+		bool isRandRotate[3], bool isRandVelocity[3], Vector4 color,
 		float emissive, Vector4 finalColor, float colorChangeSpeed,
-		bool isColorChange[3], bool isScaleChange[3], float scaleAdd
+		bool isColorChange[4], bool isScaleChange[3],
+		float scaleAdd, Vector2 uvScale
 	);
 
 	// パーティクルの発生
 	void Emit(const std::string& name,
 		const Vector3& position,
 		const Vector3& scale,
+		const Vector3& rotate,
 		uint32_t count,
-		std::uniform_real_distribution<float>distTransform,
-		std::uniform_real_distribution<float>distVelocity,
-		std::uniform_real_distribution<float>distTime,
-		Vector3 ifTranslate, Vector3 velocity, Vector4 color,
-		float emissive, BlendMode blendMode, Vector4 finalColor, 
-		float colorChangeSpeed,bool isColorChange[3], bool isScaleChange[3], float scaleAdd
+		std::uniform_real_distribution<float> distPosition,
+		std::uniform_real_distribution<float>distScale,
+		std::uniform_real_distribution<float>distRotate,
+		std::uniform_real_distribution<float> distVelocity,
+		std::uniform_real_distribution<float> distTime,
+		bool isRandPosition[3], bool isRandScale[3],
+		bool isRandRotate[3], bool isRandVelocity[3], Vector4 color,
+		float emissive, BlendMode blendMode, Vector4 finalColor,
+		float colorChangeSpeed, bool isColorChange[4], bool isScaleChange[3],
+		float scaleAdd, Vector2 uvScale
 	);
+
+	// OBJファイルからグループを作成
+	void CreateParticleGroup(const std::string& groupName, const std::string& directoryPath, const std::string& filename, const std::string textureFilePath);
+	// 生成した頂点データ(Ringなど)からグループを作成
+	void CreateParticleGroup(const std::string& groupName, const std::vector<VertexData>& vertices, const std::string textureFilePath);
+
+	// リング状の頂点データを生成する関数
+	std::vector<VertexData> Ring();
 
 	// シングルトンインスタンスの取得
 	static ParticleManager* GetInstance();
@@ -171,5 +202,6 @@ private:
 
 	// ブレンドモードに応じた D3D12_BLEND_DESC を生成して返す関数
 	D3D12_BLEND_DESC GetBlendDesc(BlendMode mode);
+
 };
 

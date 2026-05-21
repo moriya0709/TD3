@@ -42,23 +42,26 @@ private:
 	// パーティクルエミッタの設定
 	Emitter emitter;
 	// パーティクル共通データ
-	std::uniform_real_distribution<float> distTranslate; // ランダムな座標範囲
+	std::uniform_real_distribution<float> distPosition; // ランダムな座標範囲
+	std::uniform_real_distribution<float> distScale; // ランダムなスケール範囲
+	std::uniform_real_distribution<float> distRotate; // ランダムな回転範囲
 	std::uniform_real_distribution<float> distVelocity; // ランダムな速度範囲
 	std::uniform_real_distribution<float> distTime = std::uniform_real_distribution(1.0f, 3.0f); // ランダムな寿命範囲
-	Vector3 ifTranslate; // ランダムな座標にするかどうか
-	Vector3 velocity; // ランダムに動かすかどうか
+	bool isRandPosition[3] = { true }; // ランダムな座標にするかどうか
+	bool isRandScale[3] = { true }; // ランダムなスケールにするかどうか
+	bool isRandRotate[3] = { true }; // ランダムな回転にするかどうか
+	bool isRandVelocity[3] = { true }; // ランダムに動かすかどうか
 	Vector4 color; // 色
 	Vector4 finalColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	float colorChangeSpeed = 1.0f;
 	float lifeTime; // 寿命
-	bool isRandTranslate[3] = { true }; // ランダムな座標にするかどうか
-	bool isRandVelocity[3] = { true }; // ランダムに動かすかどうか
-	bool isColorChange[3] = { false }; // 色変更するかどうか
+	bool isColorChange[4] = { false }; // 色変更するかどうか
 	bool isScaleChange[3] = { false }; // スケール変更するかどうか
 	float scaleAdd = 0.005f; // スケール変更量
+	Vector2 uvScale = { 1.0f, 1.0f }; // UVスケール
 
 	char fileName[20]; //パーティクルのファイル名
-	
+
 
 	// デルタタイム(60fps固定)
 	const float kDeltaTime = 1.0f / 60.0f;
@@ -67,5 +70,5 @@ private:
 	float emissive = 10.0f;
 	// ブレンドモード
 	BlendMode blendMode = kBlendModeNormal;
-	
+
 };

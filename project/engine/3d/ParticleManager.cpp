@@ -33,7 +33,7 @@ void ParticleManager::Initialize(DirectXCommon* dxCommon, SrvManager* srvManager
 	// 書き込む
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
-	
+
 	// *マテリアル* //
 
 	// リソース
@@ -97,9 +97,6 @@ void ParticleManager::Update() {
 
 			it->transform.translate += it->velocity * kDeltaTime;
 
-			//float alpha = 1.0f - (it->currentTime / it->lifeTime);
-			it->color.w = 1.0f;
-
 			// 色を徐々に変化させる
 			float progress = (it->currentTime / it->lifeTime) * it->colorChangeSpeed; // ← it-> に変更
 			if (progress > 1.0f) {
@@ -114,6 +111,9 @@ void ParticleManager::Update() {
 			if (it->isColorChange[2]) {
 				it->color.z = it->startColor.z + (it->finalColor.z - it->startColor.z) * progress;
 			}
+			if (it->isColorChange[3]) {
+				it->color.w = it->startColor.w + (it->finalColor.w - it->startColor.w) * progress;
+			}
 
 			// サイズを徐々に変化させる
 			if (it->isScaleChange[0]) {
@@ -125,21 +125,24 @@ void ParticleManager::Update() {
 			if (it->isScaleChange[1]) {
 				it->transform.scale.y += it->scaleAdd;
 
-				if (it->transform.scale.y<= 0.0f)
+				if (it->transform.scale.y <= 0.0f)
 					it->transform.scale.y = 0.0f;
 			}
-			if (it->isScaleChange[2]) { 
+			if (it->isScaleChange[2]) {
 				it->transform.scale.z += it->scaleAdd;
 
 				if (it->transform.scale.z <= 0.0f)
 					it->transform.scale.z = 0.0f;
 			}
-			
+
 			it->currentTime += kDeltaTime;
 
 			Matrix4x4 scale = MakeScaleMatrix(it->transform.scale);
 			Matrix4x4 translate = MakeTranslateMatrix(it->transform.translate);
-			Matrix4x4 world = Multiply(Multiply(scale, billboardMatrix), translate);
+			Matrix4x4 rotateX = MakeRotateXMatrix(it->transform.rotate.x);
+			Matrix4x4 rotateY = MakeRotateZMatrix(it->transform.rotate.z);
+			Matrix4x4 rotate = Multiply(Multiply(rotateX, rotateY), billboardMatrix);
+			Matrix4x4 world = Multiply(Multiply(scale, rotate), translate);
 
 			// 取得した activeCamera からビュープロジェクション行列をもらう
 			Matrix4x4 viewProj = Multiply(activeCamera->GetViewMatrix(), activeCamera->GetProjectionMatrix());
@@ -150,6 +153,7 @@ void ParticleManager::Update() {
 			mapped[index].color.y = it->color.y * it->emissive;
 			mapped[index].color.z = it->color.z * it->emissive;
 			mapped[index].color.w = it->color.w;
+			mapped[index].uvScale = it->uvScale;
 
 			++index;
 			++it;
@@ -164,8 +168,6 @@ void ParticleManager::Draw() {
 	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
 	// プリミティブポロジーを設定
 	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	// VBVを設定
-	dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 
 	// パーティクルグループ描画
 	for (auto& groupPair : particleGroups) {
@@ -174,49 +176,33 @@ void ParticleManager::Draw() {
 		// パーティクルが1つ以上ある場合だけ描画
 		if (group.particles.empty()) continue;
 
-		// ★グループに設定されているブレンドモードのPSOをセット
-		dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineStates[group.blendMode].Get());
+		// グループが持っている固有の頂点バッファをセットする
+		dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &group.vertexBufferView);
+
+		// ★範囲チェックとフォールバックの追加
+		uint32_t blendIndex = static_cast<uint32_t>(group.blendMode);
+		if (blendIndex >= kCountOfBlendMode) {
+			assert(false && "Invalid blend mode specified for particle group.");
+			blendIndex = 0;
+		}
+
+		// 安全に検証されたインデックスでPSOをセット
+		dxCommon_->GetCommandList()->SetPipelineState(graphicsPipelineStates[blendIndex].Get());
 
 		// マテリアルCBufferの場所を設定
 		dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+
 		// パーティクル用 StructuredBuffer(SRV) を設定
 		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(1, srvManager_->GetGPUDescriptorHandle(group.instancingIndex));
+
 		// SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
-		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetGPUDescriptorHandle(group.material.textureIndex));
-		// 描画
-		dxCommon_->GetCommandList()->DrawInstanced(static_cast<UINT>(modelData.vertices.size()), static_cast<UINT>(group.particles.size()), 0, 0);
+		dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, srvManager_->GetGPUDescriptorHandle(group.materialData.textureIndex));
+
+		// ★ 修正2: 描画時の1インスタンスあたりの頂点数を、グループのモデルデータから取得する
+		// （Ringの頂点数で固定しない）
+		dxCommon_->GetCommandList()->DrawInstanced(static_cast<UINT>(group.modelData.vertices.size()), static_cast<UINT>(group.particles.size()), 0, 0);
 	}
-	
-}
 
-// パーティクルグループの生成
-void ParticleManager::CreateParticleGroup(const std::string name, const std::string textureFilePath) {
-	assert(!particleGroups.count(name));
-
-	// パーティクルグループを追加
-	particleGroups[name] = ParticleGroup{};
-	ParticleGroup& group = particleGroups[name];
-
-	// マテリアルデータにテクスチャファイルパスを設定
-	group.material.textureFilePath = textureFilePath;
-	// テクスチャの読み込み
-	TextureManager::GetInstance()->LoadTexture(group.material.textureFilePath);
-	
-	// マテリアルデータにテクスチャのSRVインデックスを記録
-	group.material.textureIndex = TextureManager::GetInstance()->GetSrvIndex(group.material.textureFilePath);
-	
-	// インスタンシング用リソースの生成
-	group.instancingResource = dxCommon_->CreateBufferResource(sizeof(ParticleForGPU) * kMaxParticleInstance);
-
-	// インスタンシング用にSRVを確保してSRVインデックスを記録
-	group.instancingIndex = srvManager_->Allocate(1);
-
-	// SRV生成
-	srvManager_->CreateSRVforStructuredBuffer(
-		group.instancingIndex,
-		group.instancingResource.Get(),
-		kMaxParticleInstance,
-		sizeof(ParticleForGPU));
 }
 
 // ルートシグネチャの作成
@@ -263,7 +249,7 @@ void ParticleManager::CreateRootSignature() {
 	D3D12_STATIC_SAMPLER_DESC staticSamplers[1] = {};
 	staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR; // 倍リニアフィルター
 	staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 0~1の範囲外をリピート
-	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 	staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 	staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER; // 比較しない
 	staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX; // ありったけのMipmapを使う
@@ -486,33 +472,48 @@ Particle ParticleManager::MakeNewParticle(std::mt19937& randomEngine, const Vect
 }
 
 Particle ParticleManager::MakeNewParticleEditor(
-	std::mt19937& randomEngine, 
+	std::mt19937& randomEngine,
 	const Vector3& translate,
 	const Vector3& scale,
-	std::uniform_real_distribution<float> distTransform,
+	const Vector3& rotate,
+	std::uniform_real_distribution<float> distPosition,
+	std::uniform_real_distribution<float>distScale,
+	std::uniform_real_distribution<float>distRotate,
 	std::uniform_real_distribution<float> distVelocity,
-	std::uniform_real_distribution<float> distTime, 
-	Vector3 ifTranslate, Vector3 velocity, Vector4 color, 
-	float emissive,Vector4 finalColor, float colorChangeSpeed,
-	bool isColorChange[3], bool isScaleChange[3], float scaleAdd
+	std::uniform_real_distribution<float> distTime,
+	bool isRandPosition[3], bool isRandScale[3],
+	bool isRandRotate[3], bool isRandVelocity[3], Vector4 color,
+	float emissive, Vector4 finalColor, float colorChangeSpeed,
+	bool isColorChange[4], bool isScaleChange[3],
+	float scaleAdd, Vector2 uvScale
 ) {
 	Particle particle;
-	particle.transform.scale = scale;
-	particle.transform.rotate = { 0.0f,0.0f,0.0f };
-	Vector3 randomTranslate{ distTransform(randomEngine),distTransform(randomEngine),distTransform(randomEngine) };
 
-	// ランダム座標を使用するかどうか(ifTranslateは 0または１)
-	randomTranslate.x *= ifTranslate.x;
-	randomTranslate.y *= ifTranslate.y;
-	randomTranslate.z *= ifTranslate.z;
+	// ランダム
+	// 座標
+	Vector3 randomPosition{ distPosition(randomEngine),distPosition(randomEngine),distPosition(randomEngine) };
+	randomPosition.x *= isRandPosition[0];
+	randomPosition.y *= isRandPosition[1];
+	randomPosition.z *= isRandPosition[2];
+	particle.transform.translate = translate + randomPosition;
+	// スケール
+	Vector3 randomScale{ distScale(randomEngine),distScale(randomEngine),distScale(randomEngine) };
+	randomScale.x *= isRandScale[0];
+	randomScale.y *= isRandScale[1];
+	randomScale.z *= isRandScale[2];
+	particle.transform.scale = scale + randomScale;
+	// 回転
+	Vector3 randomRotate{ distRotate(randomEngine),distRotate(randomEngine),distRotate(randomEngine) };
+	randomRotate.x *= isRandRotate[0];
+	randomRotate.y *= isRandRotate[1];
+	randomRotate.z *= isRandRotate[2];
+	particle.transform.rotate = rotate + randomRotate;
 
-	particle.transform.translate = translate + randomTranslate;
+	// 速度
 	particle.velocity = { distVelocity(randomEngine),distVelocity(randomEngine),distVelocity(randomEngine) };
-
-	// 速度を使用するかどうか(velocityは 0または１)
-	particle.velocity.x *= velocity.x;
-	particle.velocity.y *= velocity.y;
-	particle.velocity.z *= velocity.z;
+	particle.velocity.x *= isRandVelocity[0];
+	particle.velocity.y *= isRandVelocity[1];
+	particle.velocity.z *= isRandVelocity[2];
 
 	// 色
 	particle.color = color;
@@ -531,28 +532,36 @@ Particle ParticleManager::MakeNewParticleEditor(
 	particle.isColorChange[0] = isColorChange[0];
 	particle.isColorChange[1] = isColorChange[1];
 	particle.isColorChange[2] = isColorChange[2];
+	particle.isColorChange[3] = isColorChange[3];
 	// サイズの変化をするかどうか(0または1)
 	particle.isScaleChange[0] = isScaleChange[0];
 	particle.isScaleChange[1] = isScaleChange[1];
 	particle.isScaleChange[2] = isScaleChange[2];
 	// サイズの変化量
 	particle.scaleAdd = scaleAdd;
+	// UVスケール
+	particle.uvScale = uvScale;
 
 	return particle;
 }
 
 // パーティクルの発生
 void ParticleManager::Emit(
-	const std::string& name, 
+	const std::string& name,
 	const Vector3& position,
 	const Vector3& scale,
+	const Vector3& rotate,
 	uint32_t count,
-	std::uniform_real_distribution<float>distTransform,
-	std::uniform_real_distribution<float>distVelocity,
-	std::uniform_real_distribution<float>distTime,
-	Vector3 ifTranslate, Vector3 velocity, Vector4 color,
-	float emissive, BlendMode blendMode, Vector4 finalColor, float colorChangeSpeed,
-	bool isColorChange[3], bool isScaleChange[3], float scaleAdd
+	std::uniform_real_distribution<float> distPosition,
+	std::uniform_real_distribution<float>distScale,
+	std::uniform_real_distribution<float>distRotate,
+	std::uniform_real_distribution<float> distVelocity,
+	std::uniform_real_distribution<float> distTime,
+	bool isRandPosition[3], bool isRandScale[3],
+	bool isRandRotate[3], bool isRandVelocity[3], Vector4 color,
+	float emissive, BlendMode blendMode, Vector4 finalColor,
+	float colorChangeSpeed, bool isColorChange[4], bool isScaleChange[3],
+	float scaleAdd, Vector2 uvScale
 ) {
 	assert(particleGroups.count(name));
 
@@ -566,11 +575,142 @@ void ParticleManager::Emit(
 			break;
 		}
 		group.particles.push_back(
-			MakeNewParticleEditor(randomEngine, position, scale, 
-				distTransform, distVelocity, distTime, ifTranslate,
-				velocity, color, emissive, finalColor,  colorChangeSpeed,
-			 isColorChange,  isScaleChange,  scaleAdd));
+			MakeNewParticleEditor(randomEngine, position, scale, rotate,
+				distPosition, distScale, distRotate, distVelocity, distTime,
+				isRandPosition, isRandScale, isRandRotate, isRandVelocity,
+				color, emissive, finalColor, colorChangeSpeed,
+				isColorChange, isScaleChange, scaleAdd, uvScale));
 	}
+}
+
+void ParticleManager::CreateParticleGroup(const std::string& groupName, const std::string& directoryPath, const std::string& filename, const std::string textureFilePath) {
+	// すでに同じ名前のグループがあれば何もしない
+	if (particleGroups.contains(groupName)) return;
+
+	ParticleGroup newGroup;
+	newGroup.modelData = LoadObjFile(directoryPath, filename);
+
+	// ★ 現在の Initialize 内にある「頂点バッファの作成」「VBVの設定」「マップしてコピー」の処理をここに書く
+	newGroup.vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * newGroup.modelData.vertices.size());
+	newGroup.vertexBufferView.BufferLocation = newGroup.vertexResource->GetGPUVirtualAddress();
+	newGroup.vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * newGroup.modelData.vertices.size());
+	newGroup.vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+	VertexData* vertexData = nullptr;
+	newGroup.vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	std::memcpy(vertexData, newGroup.modelData.vertices.data(), sizeof(VertexData) * newGroup.modelData.vertices.size());
+	newGroup.vertexResource->Unmap(0, nullptr);
+
+	// マテリアルデータにテクスチャファイルパスを設定
+	newGroup.materialData.textureFilePath = textureFilePath;
+	// テクスチャの読み込み
+	TextureManager::GetInstance()->LoadTexture(newGroup.materialData.textureFilePath);
+
+	// マテリアルデータにテクスチャのSRVインデックスを記録
+	newGroup.materialData.textureIndex = TextureManager::GetInstance()->GetSrvIndex(newGroup.materialData.textureFilePath);
+
+	// インスタンシング用リソースの生成
+	newGroup.instancingResource = dxCommon_->CreateBufferResource(sizeof(ParticleForGPU) * kMaxParticleInstance);
+
+	// インスタンシング用にSRVを確保してSRVインデックスを記録
+	newGroup.instancingIndex = srvManager_->Allocate(1);
+
+	// SRV生成
+	srvManager_->CreateSRVforStructuredBuffer(
+		newGroup.instancingIndex,
+		newGroup.instancingResource.Get(),
+		kMaxParticleInstance,
+		sizeof(ParticleForGPU));
+
+	// マップに登録
+	particleGroups[groupName] = std::move(newGroup);
+}
+
+void ParticleManager::CreateParticleGroup(const std::string& groupName, const std::vector<VertexData>& vertices, const std::string textureFilePath) {
+	if (particleGroups.contains(groupName)) return;
+
+	ParticleGroup newGroup;
+	newGroup.modelData.vertices = vertices; // 頂点配列をそのまま代入
+
+	// ★ 現在の Initialize 内にある「頂点バッファの作成」「VBVの設定」「マップしてコピー」の処理をここに書く
+	newGroup.vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * newGroup.modelData.vertices.size());
+	newGroup.vertexBufferView.BufferLocation = newGroup.vertexResource->GetGPUVirtualAddress();
+	newGroup.vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * newGroup.modelData.vertices.size());
+	newGroup.vertexBufferView.StrideInBytes = sizeof(VertexData);
+
+	VertexData* vertexData = nullptr;
+	newGroup.vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	std::memcpy(vertexData, newGroup.modelData.vertices.data(), sizeof(VertexData) * newGroup.modelData.vertices.size());
+	newGroup.vertexResource->Unmap(0, nullptr);
+
+	// マテリアルデータにテクスチャファイルパスを設定
+	newGroup.materialData.textureFilePath = textureFilePath;
+	// テクスチャの読み込み
+	TextureManager::GetInstance()->LoadTexture(newGroup.materialData.textureFilePath);
+
+	// マテリアルデータにテクスチャのSRVインデックスを記録
+	newGroup.materialData.textureIndex = TextureManager::GetInstance()->GetSrvIndex(newGroup.materialData.textureFilePath);
+
+	// インスタンシング用リソースの生成
+	newGroup.instancingResource = dxCommon_->CreateBufferResource(sizeof(ParticleForGPU) * kMaxParticleInstance);
+
+	// インスタンシング用にSRVを確保してSRVインデックスを記録
+	newGroup.instancingIndex = srvManager_->Allocate(1);
+
+	// SRV生成
+	srvManager_->CreateSRVforStructuredBuffer(
+		newGroup.instancingIndex,
+		newGroup.instancingResource.Get(),
+		kMaxParticleInstance,
+		sizeof(ParticleForGPU));
+
+	// マップに登録
+	particleGroups[groupName] = std::move(newGroup);
+}
+
+std::vector<VertexData> ParticleManager::Ring() {
+	std::vector<VertexData> vertices;
+
+	const uint32_t kRingDivide = 32;
+	const float kOuterRadius = 1.0f;
+	const float kInnerRadius = 0.2f;
+	const float radianPerDivide = 2.0f * std::numbers::pi_v<float> / float(kRingDivide);
+	const float kUScale = 3.0f;
+
+	for (uint32_t index = 0; index < kRingDivide; ++index) {
+		float s = std::sin(index * radianPerDivide);
+		float c = std::cos(index * radianPerDivide);
+		float sNext = std::sin((index + 1) * radianPerDivide);
+		float cNext = std::cos((index + 1) * radianPerDivide);
+		float u = (float(index) / float(kRingDivide)) * kUScale;
+		float uNext = (float(index + 1) / float(kRingDivide)) * kUScale;
+
+		// 法線はXY平面に対する垂直方向（画面手前）を設定
+		Vector3 normal = { 0.0f, 0.0f, -1.0f };
+
+		// ① 外側・現在の頂点
+		VertexData v1 = { { -s * kOuterRadius, c * kOuterRadius, 0.0f, 1.0f }, { u, 0.0f }, normal };
+		// ② 外側・次の頂点
+		VertexData v2 = { { -sNext * kOuterRadius, cNext * kOuterRadius, 0.0f, 1.0f }, { uNext, 0.0f }, normal };
+		// ③ 内側・現在の頂点
+		VertexData v3 = { { -s * kInnerRadius, c * kInnerRadius, 0.0f, 1.0f }, { u, 1.0f }, normal };
+		// ④ 内側・次の頂点
+		VertexData v4 = { { -sNext * kInnerRadius, cNext * kInnerRadius, 0.0f, 1.0f }, { uNext, 1.0f }, normal };
+
+		// 1区画につき2つの三角形（合計6頂点）を「時計回り」になるように追加する
+
+		// 三角形1: ① -> ② -> ③
+		vertices.push_back(v1);
+		vertices.push_back(v2);
+		vertices.push_back(v3);
+
+		// 三角形2: ② -> ④ -> ③
+		vertices.push_back(v2);
+		vertices.push_back(v4);
+		vertices.push_back(v3);
+	}
+
+	return vertices;
 }
 
 // シングルトンインスタンスの取得
