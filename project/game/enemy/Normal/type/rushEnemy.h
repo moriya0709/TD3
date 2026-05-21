@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "../../Enemy.h"
 #include <memory>
+#include "ParticleEmitter.h"
 
 class Player;
 
@@ -98,4 +99,8 @@ private:
     bool hasFleeData_ = false;
     float fleeTimer_ = 0.0f;
     Vector3 fleeStartPos_; // 逃走を開始した瞬間の座標
+
+    // デスエフェクト
+    std::unique_ptr <ParticleEmitter> deathEffect[4] = {};
+    const int deathEffectCount = 4; // 数
 };
