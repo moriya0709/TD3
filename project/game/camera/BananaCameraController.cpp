@@ -20,6 +20,7 @@ void BananaCameraController::Update() {
 
 	Vector3 newCameraPos = {cameraX, cameraY, cameraZ};
 	pCamera->SetTranslate(newCameraPos);
+	pCamera->SetFovY(44.5f);
 
 	// ==========================================
 	// 2. バナナの方向を向くための回転角度を計算する
