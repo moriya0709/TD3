@@ -198,16 +198,24 @@ void GamePlayScene::Update()
                 cameraController_ = std::make_unique<GrapeCameraController>();
                 cameraController_->Initialize(camera.get());
                 enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
-                bossPopFlag = 0;
+                bossPopFlag = 4;
             } else if (bossPopFlag == 3) {
                 enemy_->SetEnemyclear();
                 cameraController_ = std::make_unique<BananaCameraController>();
                 cameraController_->Initialize(camera.get());
                 cameraController_->SetTargetPosition({ 0, 0, 60 });
                 enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
-                bossPopFlag = 0;
+                bossPopFlag = 4;
             }
         }
+        // ボスがいる場合はフラグを5にする
+		if (enemy_->GetGBoss().size() > 0 && bossPopFlag == 4) {
+			bossPopFlag = 5;
+		}
+
+		if (enemy_->GetGBoss().empty() && bossPopFlag == 5) { // 葡萄のボスがいなくなったら
+			StageClear();
+		}
 
         // ボス倒したらクリア
     } else { // 制限時間来たらリザルトへ
