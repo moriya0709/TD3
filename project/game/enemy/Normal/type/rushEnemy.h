@@ -69,7 +69,7 @@ private:
     int health_; // 体力
     float interval; // 弾を発射する間隔
     static inline const float maxInterval = 2.0f; // 間隔
-    static inline const float maxSpeed = 0.60f; // 突進の速度
+    static inline const float maxSpeed = 1.00f; // 突進の速度
 
     // フラグ
     bool isDead_ = false;
