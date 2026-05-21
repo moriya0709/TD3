@@ -464,6 +464,8 @@ void GamePlayScene::PauseSelect() {
 		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 			// ゲームプレイシーン(次シーン)を生成
 			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+
+
 		}
 		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
 			currentPause_ = Pause::kResume;
