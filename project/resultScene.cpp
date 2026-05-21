@@ -87,6 +87,10 @@ void ResultScene::Update()
 		if (input->TriggerKey(DIK_SPACE))
 		{
 			currentDigitIndex_ = 5;//スコア全部強制確定
+			for (int i = 0; i < 5; ++i)
+			{
+				displayNumbers_[i] = actualDigits_[i];//一応全部本物のスコアに変える
+			}
 			isCanPress_ = true;
 		} else
 		{
