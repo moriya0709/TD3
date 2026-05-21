@@ -161,6 +161,7 @@ void GamePlayScene::Update()
         enemy_->SetcurrentTimer_(cameraController_->GetElapsedTime());
         enemy_->Update();
 
+
         // 当たり判定
         ChekeAllCollision();
 
