@@ -76,7 +76,7 @@ public:
 
     void BulletMirror(const CollisionVolume& volume, PlayerBullet* bullet);
 
-    CollisionVolume CreateVolumeFromPart(uint32_t i, Vector3 bossPos, Vector3 cameraPos);
+    CollisionVolume CreateVolumeFromPart(uint32_t i, Vector3 bossPos);
 
 public:
     // Get
@@ -108,6 +108,11 @@ public:
     void BehaviorDefeated();
 
 private:
+    void DrawDebugCollision();
+
+     bool showDebugCollision_ = true;
+    // パーツ数分のデバッグ表示用オブジェクト
+    std::vector<std::unique_ptr<Object>> debugCollisionObjects_;
 
     // スコア
     int score_ = 2500;

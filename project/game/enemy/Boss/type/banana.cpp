@@ -68,6 +68,16 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
 
         parts_.push_back(std::move(p));
     }
+
+#ifdef USE_IMGUI
+    debugCollisionObjects_.clear();
+    for (int i = 0; i < 4; ++i) {
+        auto debugObj = std::make_unique<Object>();
+        debugObj->Initialize(camera_);
+        debugObj->SetModel("Test.obj"); // 1x1x1 または指定の立方体モデル
+        debugCollisionObjects_.push_back(std::move(debugObj));
+    }
+#endif
 }
 
 void banana::Update()
@@ -110,7 +120,6 @@ void banana::Update()
     // 発射
     BulletUpdate();
 
-    Vector3 cameraPos = camera_->GetTranslate();
     for (auto& part : parts_) {
         float theta = part.collisionRotationY;
 
@@ -166,7 +175,9 @@ void banana::Draw3D()
             part.object->Draw();
         }
     }
-
+#ifdef USE_IMGUI
+    DrawDebugCollision();
+#endif
     // 更新処理
     for (auto& bullet : enemyBullet_) {
         bullet->Draw3D();
@@ -227,7 +238,7 @@ void banana::BulletMirror(const CollisionVolume& volume, PlayerBullet* bullet)
     enemyBullet_.push_back(std::move(newBulletEnemy));
 }
 
-banana::CollisionVolume banana::CreateVolumeFromPart(uint32_t i, Vector3 bossPos, Vector3 cameraPos)
+banana::CollisionVolume banana::CreateVolumeFromPart(uint32_t i, Vector3 bossPos)
 {
     banana::CollisionVolume volume;
     const auto& part = parts_[i];
@@ -242,7 +253,7 @@ banana::CollisionVolume banana::CreateVolumeFromPart(uint32_t i, Vector3 bossPos
     rotatedLocalPos.y = part.collisionLocalPos.y;
     rotatedLocalPos.z = -part.collisionLocalPos.x * sinf(currentRotation) + part.collisionLocalPos.z * cosf(currentRotation);
 
-    volume.position = rotatedLocalPos + bossPos + cameraPos;
+    volume.position = rotatedLocalPos + bossPos;
 
     // 2. OBBの3軸を決定 (totalThetaで自転させる)
     volume.axes[0] = { cosf(totalTheta), 0.0f, -sinf(totalTheta) }; // Right
@@ -260,12 +271,10 @@ banana::CollisionVolume banana::CreateVolumeFromPart(uint32_t i, Vector3 bossPos
 
 Vector3 banana::GetWorldPosition() const
 {
-    Vector3 cameraPos = camera_->GetTranslate();
-
     return {
-        baseTransform_.translate.x + cameraPos.x,
-        baseTransform_.translate.y + cameraPos.y,
-        baseTransform_.translate.z + cameraPos.z
+        baseTransform_.translate.x,
+        baseTransform_.translate.y,
+        baseTransform_.translate.z
     };
 }
 
@@ -288,7 +297,6 @@ std::vector<banana::CollisionVolume> banana::GetCollisionVolumes()
 {
     std::vector<banana::CollisionVolume> volumes;
     Vector3 bossPos = baseTransform_.translate;
-    Vector3 cameraPos = camera_->GetTranslate();
 
     // --- 1巡目：まず「皮(Plane)」だけをリストに追加する ---
     for (uint32_t i = 0; i < parts_.size(); ++i) {
@@ -297,7 +305,7 @@ std::vector<banana::CollisionVolume> banana::GetCollisionVolumes()
         if (parts_[i].PartsHp <= 0)
             continue; // 壊れている皮は判定を作らない
 
-        banana::CollisionVolume vol = CreateVolumeFromPart(i, bossPos, cameraPos); // 共通処理へ
+        banana::CollisionVolume vol = CreateVolumeFromPart(i, bossPos); // 共通処理へ
         volumes.push_back(vol);
     }
 
@@ -306,7 +314,7 @@ std::vector<banana::CollisionVolume> banana::GetCollisionVolumes()
         if (!parts_[i].isWeakPoint)
             continue;
 
-        banana::CollisionVolume vol = CreateVolumeFromPart(i, bossPos, cameraPos);
+        banana::CollisionVolume vol = CreateVolumeFromPart(i, bossPos);
         volumes.push_back(vol);
     }
 
@@ -315,16 +323,14 @@ std::vector<banana::CollisionVolume> banana::GetCollisionVolumes()
 
 Vector3 banana::GetBodyWorldPosition() const
 {
-    Vector3 cameraPos = camera_->GetTranslate();
-
     for (const auto& part : parts_) {
         // 本体（弱点属性を持つパーツ）を探す
         if (part.isWeakPoint) {
             // Update関数と同じ計算式でワールド座標を算出
             Vector3 worldPos = {
-                part.transform.translate.x + baseTransform_.translate.x + cameraPos.x,
-                part.transform.translate.y + baseTransform_.translate.y + cameraPos.y,
-                part.transform.translate.z + baseTransform_.translate.z + cameraPos.z
+                part.transform.translate.x + baseTransform_.translate.x,
+                part.transform.translate.y + baseTransform_.translate.y,
+                part.transform.translate.z + baseTransform_.translate.z
             };
             return worldPos;
         }
@@ -392,7 +398,7 @@ void banana::BulletUpdate()
             if (!part.isWeakPoint)
                 continue;
 
-            newBulletEnemy->Initialize(camera_, part.transform.translate + baseTransform_.translate + camera_->GetTranslate());
+            newBulletEnemy->Initialize(camera_, part.transform.translate + baseTransform_.translate);
             newBulletEnemy->SetObject("bossBananAttack.obj");
             break;
         }
@@ -454,4 +460,34 @@ void banana::BehaviorDefeated()
             isAlive_ = false;
         }
     }
+}
+
+void banana::DrawDebugCollision()
+{
+#ifdef USE_IMGUI
+    if (!showDebugCollision_)
+        return;
+
+    std::vector<CollisionVolume> volumes = GetCollisionVolumes();
+    for (size_t i = 0; i < volumes.size(); ++i) {
+        const auto& vol = volumes[i];
+        uint32_t id = vol.partId;
+        if (id >= debugCollisionObjects_.size())
+            continue;
+
+        // 座標同期：計算済みのワールド座標（公転後）を適用
+        debugCollisionObjects_[id]->SetTranslate(vol.position);
+
+        // ★修正点：OBBの計算角（公転角 + 初期配置角）をデバッグオブジェクトに適用
+        float totalTheta = parts_[id].collisionRotationY + parts_[id].baseAngle;
+        debugCollisionObjects_[id]->SetRotate({ 0.0f, totalTheta, 0.0f });
+
+        // スケール同期
+        Vector3 fullScale = { vol.width.x * 2.0f, vol.width.y * 2.0f, vol.width.z * 2.0f };
+        debugCollisionObjects_[id]->SetScale(fullScale);
+
+        debugCollisionObjects_[id]->Update();
+        debugCollisionObjects_[id]->Draw();
+    }
+#endif
 }
