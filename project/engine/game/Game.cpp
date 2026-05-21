@@ -91,6 +91,9 @@ void Game::Initialize() {
     ModelManager::GetInstance()->LoadModel("Resource/enemy/bossBanana", "bossBananPeelBuck.obj");
     ModelManager::GetInstance()->LoadModel("Resource/enemy/bossBanana", "bossBananPeelLeft.obj");
     ModelManager::GetInstance()->LoadModel("Resource/enemy/bossBanana", "bossBananPeelRight.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/building/bananabuil", "bananaBulding.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/building/skyIsland","skyBulding.obj");
+	ModelManager::GetInstance()->LoadModel("Resource/building/rocket", "rocket.obj");
     ModelManager::GetInstance()->LoadModel("Resource/enemy/bossBanana", "Test.obj");
     ModelManager::GetInstance()->LoadModel("Resource/test", "test.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.obj"); // レールエディター
