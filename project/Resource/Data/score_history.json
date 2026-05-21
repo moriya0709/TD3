@@ -347,6 +347,24 @@
             "score": 0,
             "stageName": "Stage 1",
             "time": 0.0
+        },
+        {
+            "ModelName": "cloud",
+            "score": 0,
+            "stageName": "Stage 3",
+            "time": 0.0
+        },
+        {
+            "ModelName": "cloud",
+            "score": 0,
+            "stageName": "Stage 1",
+            "time": 0.0
+        },
+        {
+            "ModelName": "cloud",
+            "score": 0,
+            "stageName": "Stage 3",
+            "time": 0.0
         }
     ]
 }
