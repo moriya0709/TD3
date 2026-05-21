@@ -172,7 +172,7 @@ void StageSelect::Update() {
 		}
 	}
 
-	// ENTERキーを押したら
+	// Spaceキーを押したら
 	if (input->TriggerKey(DIK_SPACE)) {
 		// ゲームプレイシーン(次シーン)を生成
 		if (isStageSelect) {
