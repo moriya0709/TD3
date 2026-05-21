@@ -253,7 +253,7 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, float cmrv
 		Vector3 playerPos = transform_.translate;
 		Vector3 toEnemy = {enemyPos.x - playerPos.x, enemyPos.y - playerPos.y, enemyPos.z - playerPos.z};
 		float distToEnemy = std::sqrt(toEnemy.x * toEnemy.x + toEnemy.y * toEnemy.y + toEnemy.z * toEnemy.z);
-
+		
 		// プレイヤーの射程範囲内かチェック
 		if (distToEnemy <= statas_[currentStyle].renge) {
 
@@ -274,7 +274,9 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, float cmrv
 				break;                    // 1体でもいれば色は変わるので、これ以上のチェックは不要としてループを抜けます
 			}
 		}
+	
 	}
+
 
 	// 4. 判定結果によってSpriteの色を変える
 	// ※Spriteクラスに SetColor({R, G, B, A}) のような色変更関数があることを想定しています
