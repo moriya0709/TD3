@@ -93,7 +93,9 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	// トレイルエフェクト
 	trailEffect->Initialize("Resource/trail/trail.png", transform_, 1.0f, 1.5f);
 	trailEffect->SetColor(Vector4(1.0f,1.0f,1.0f,1.0f));
+	trailEffect->LoadCsv("Resource/trail/shot.csv");
 	TrailEffectManager::GetInstance()->AddTrail(trailEffect);
+
 	// 進んでいる方向（velocity_）に合わせて向き（回転）を計算
 	float speedXZ = std::sqrt(velocity_.x * velocity_.x + velocity_.z * velocity_.z);
 	if (speedXZ > 0.0001f || std::abs(velocity_.y) > 0.0001f) {
@@ -160,7 +162,6 @@ void PlayerNormalBullet::Update(float cmrvel) {
 	// トレイルエフェクト更新
 	trailEffect->AddPoint(transform_.translate);
 	trailEffect->SetTranslate(transform_.translate);
-
 }
 void PlayerNormalBullet::Draw3D() {
 	if (isActive_) {

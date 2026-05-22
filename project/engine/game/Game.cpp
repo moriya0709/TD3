@@ -54,6 +54,8 @@ void Game::Initialize() {
 	ParticleManager::GetInstance()->CreateParticleGroup("Death4", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("SpecialAttack", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("Special", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("ChargeShot", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("ChargeShot2", ParticleManager::GetInstance()->Ring(), "Resource/particle/gradationLine.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("HitEffect", ParticleManager::GetInstance()->Ring(), "Resource/particle/gradationLine.png");
 
 

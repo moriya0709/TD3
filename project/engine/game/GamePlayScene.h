@@ -21,6 +21,7 @@
 
 #include "RayMarching.h"
 #include "Easing.h"
+#include "TrailEffect.h"
 
 class SpriteCommon;
 class ObjectCommon;
@@ -141,9 +142,6 @@ private:
     bool isMotionBlur = true;    // モーションブラーのON/OFF
     int motionBlurSamples = 16; // サンプル数（例：8〜16）
     float motionBlurScale = 1.0f;   // ブラーの強さ
-    // 色収差
-    bool isFullScreenCA = true; // 画面全体の色収差ON/OFF
-    float fullScreenCAIntensity = 1.0f; // 画面全体の色収差の強さ
 	// スピードディストーション
 	bool isSpeedDistortion = true; // スピードディストーションのON/OFF
     float speedDistortionStrength = 1.0f; // 歪みの強さ
@@ -254,6 +252,8 @@ private:
 
     // デス演出時間
 	float deathEffectTimer_ = 3.0f;
+
+    std::shared_ptr<TrailEffect> trailEffect;
 
     void SceneChangedEffect();
 
