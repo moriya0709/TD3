@@ -125,6 +125,7 @@ void GamePlayScene::Initialize() {
 	// イージング
 	easing = std::make_unique<Easing>();
 	easing->Initialize();
+
 }
 
 void GamePlayScene::Update() {
@@ -855,9 +856,6 @@ void GamePlayScene::UpdateImGui() {
 	ImGui::DragFloat("thunderBrightness", &thunderBrightness, 0.01f, 0.0f, 300.0f);
 
 #pragma endregion
-
-    trailEffect->Editor();
-
 
 #endif
 }
