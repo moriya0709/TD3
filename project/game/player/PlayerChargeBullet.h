@@ -11,6 +11,7 @@
 #include "SoundManager.h"
 #include "Sprite.h"
 #include "TrailEffect.h"
+#include "ParticleEmitter.h"
 
 class PlayerChargeBullet : public PlayerBullet {
 public:
@@ -50,5 +51,7 @@ private:
 
 	// トレイルエフェクト
 	std::shared_ptr<TrailEffect> trailEffect = std::make_shared<TrailEffect>();
-
+	// ショットエフェクト
+	int shotEffectCount = 2; // ショットエフェクトの数
+	std::shared_ptr <ParticleEmitter> shotEffect[2];
 };

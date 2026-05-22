@@ -73,9 +73,9 @@ void TitleScene::Initialize() {
 
 	// パーティクル
 	particleEmitter = std::make_unique<ParticleEmitter>();
-	particleEmitter->Initialize("Death1", transformParticle, 5, 0.1f);
-	particleEmitter->SetActive("Death1");
-	particleEmitter->LoadParticle("Resource/particle/death_1.csv");
+	particleEmitter->Initialize("ChargeShot", transformParticle, 5, 0.1f);
+	particleEmitter->SetActive("ChargeShot");
+	particleEmitter->LoadParticle("Resource/particle/shot_1.csv");
 
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	object[0]->SetModel("emission.obj");

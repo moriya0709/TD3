@@ -135,10 +135,6 @@ private:
 	int motionBlurSamples = 16;   // サンプル数（例：8〜16）
 	float motionBlurScale = 1.0f; // ブラーの強さ
 
-	// 色収差
-	bool isFullScreenCA = false; // 画面全体の色収差ON/OFF
-	float fullScreenCAIntensity = 0.0f; // 画面全体の色収差の強さ
-
 	// スピードディストーション
 	bool isSpeedDistortion = false; // スピードディストーションのON/OFF
 	float speedDistortionStrength = 0.0f; // 歪みの強さ

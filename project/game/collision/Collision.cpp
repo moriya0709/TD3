@@ -30,6 +30,9 @@ void CheckCollisionPlayerEnemy(Player* player, const std::list<std::shared_ptr<E
 
            int Damge = enemy->GetDameg();
             player->Damage(Damge);
+
+            // ★ ダメージエフェクトを最大化（トリガー）
+            PostEffect::GetInstance()->SetDamageEffectRatio(1.0f);
         }
     }
 }
@@ -185,6 +188,9 @@ void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_p
 
                 // 弾の消す処理
                 Bullet->OnCollision();
+
+                // ★ ダメージエフェクトを最大化（トリガー）
+                PostEffect::GetInstance()->SetDamageEffectRatio(1.0f);
             }
         }
     }
@@ -208,6 +214,9 @@ void CheckCollisionPlayerBossEnemyBullet(Player* player, const std::list<std::sh
 
                 int Damge = boss->GetDamegBullet();
                 player->Damage(Damge);
+
+                // ★ ダメージエフェクトを最大化（トリガー）
+                PostEffect::GetInstance()->SetDamageEffectRatio(1.0f);
             }
         }
     }
@@ -305,6 +314,9 @@ void CheckCollisionPlayerBananaBoss(Player* player, const std::list<std::shared_
                 // 敵の攻撃力を受け取る
                 int Damge = boss->GetDameg();
                 player->Damage(Damge);
+
+                // ★ ダメージエフェクトを最大化（トリガー）
+                PostEffect::GetInstance()->SetDamageEffectRatio(1.0f);
             }
         }
     }
@@ -339,6 +351,9 @@ void CheckCollisionPlayerBananaBossBullet(Player* player, const std::list<std::s
                 player->Damage(Damge); // プレイヤーにダメージ
 
                 bullet->OnCollision(); // 敵の弾を消す（関数名は適宜合わせてください）
+            
+                // ★ ダメージエフェクトを最大化（トリガー）
+                PostEffect::GetInstance()->SetDamageEffectRatio(1.0f);
             }
         }
     }

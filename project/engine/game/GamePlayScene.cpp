@@ -7,6 +7,7 @@
 #include "ScoreManager.h"
 #include "SpriteCommon.h"
 #include "StageCameraController.h"
+#include "TrailEffectManager.h"
 void GamePlayScene::Initialize()
 {
     // カメラ初期化
@@ -138,11 +139,15 @@ void GamePlayScene::Initialize()
     // イージング
     easing = std::make_unique<Easing>();
     easing->Initialize();
+
+	trailEffect = std::make_unique<TrailEffect>();
+	trailEffect->Initialize("Resource/trail/trail.png", transformParticle, 1.0f, 1.5f);
+    TrailEffectManager::GetInstance()->AddTrail(trailEffect);
+
 }
 
 void GamePlayScene::Update()
 {
-
     if (!isPause_) {
         // セレクトからシーン切り替えした時のエフェクト
         SceneChangedEffect();
@@ -619,9 +624,6 @@ void GamePlayScene::LithingEffect()
     PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
     PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
     PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
-    // 色収差
-    PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
-    PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
     // スピードディストーション
     PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
     PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
@@ -824,16 +826,6 @@ void GamePlayScene::UpdateImGui()
 
         ImGui::TreePop();
     }
-    // 色収差
-    if (ImGui::TreeNode("CA")) {
-        ImGui::Checkbox("OnOff", &isFullScreenCA);
-
-        if (isFullScreenCA) {
-            ImGui::DragFloat("fullScreenCAIntensity", &fullScreenCAIntensity, 0.001f, 0.0f, 1.0f);
-        }
-
-        ImGui::TreePop();
-    }
     // スピードディストーション
     if (ImGui::TreeNode("SpeedDistortion")) {
         ImGui::Checkbox("OnOff", &isSpeedDistortion);
@@ -878,6 +870,9 @@ void GamePlayScene::UpdateImGui()
 
 #pragma endregion
 
+    trailEffect->Editor();
+
+
 #endif
 }
 
@@ -885,11 +880,6 @@ void GamePlayScene::SceneChangedEffect()
 {
     // セレクトから遷移した時のエフェクトを元に戻す
     if (isSceneChanged_) {
-        if (fullScreenCAIntensity > 0.0f)
-            fullScreenCAIntensity -= 0.05f;
-        else
-            isFullScreenCA = false;
-
         if (speedDistortionStrength > 0.0f)
             speedDistortionStrength -= 0.1f;
         else
@@ -900,7 +890,7 @@ void GamePlayScene::SceneChangedEffect()
         else
             isRadialBlur = false;
 
-        if (!isFullScreenCA && !isSpeedDistortion && !isRadialBlur)
+        if (!isSpeedDistortion && !isRadialBlur)
             isSceneChanged_ = false;
     }
 }

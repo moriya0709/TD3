@@ -117,95 +117,92 @@ void StageSelect::Update() {
 	}
 
 
-	if (input->TriggerKey(DIK_D) || input->TriggerKey(DIK_RIGHT)) {
-		if (switchCooltime <= 0.0f) {
-			if (!isStageSelect) {
-				// 本のページをめくる
-				if (book->GetCurrentPageIndex() < 5) {
-					book->NextPage();
+	if (!isTransition) {
+		if (input->TriggerKey(DIK_D) || input->TriggerKey(DIK_RIGHT)) {
+			if (switchCooltime <= 0.0f) {
+				if (!isStageSelect) {
+					// 本のページをめくる
+					if (book->GetCurrentPageIndex() < 5) {
+						book->NextPage();
 
-					// スタイルを切り替える
-					currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 1) % 4);
-					isParameterEasing = true; // イージングリセット
-					ParameterEasingSet(currentStyle);
+						// スタイルを切り替える
+						currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 1) % 4);
+						isParameterEasing = true; // イージングリセット
+						ParameterEasingSet(currentStyle);
+					}
+
+				} else {
+					if (currentStage < 5) {
+						currentStage++;
+					}
+
+					// 本のページをめくる
+					if (book->GetCurrentPageIndex() < 13)
+						book->NextPage();
+
+				}
+				switchCooltime = 0.8f; // クールタイムリセット
+			}
+		} else if (input->TriggerKey(DIK_A) || input->TriggerKey(DIK_LEFT)) {
+			if (switchCooltime <= 0.0f) {
+				if (!isStageSelect) {
+					if (book->GetCurrentPageIndex() > 2) {
+						// スタイルを切り替える
+						currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 3) % 4);
+
+						// 本のページを戻す
+						book->PrevPage();
+
+
+						isParameterEasing = true; // イージングリセット
+						ParameterEasingSet(currentStyle);
+					}
+
+				} else {
+					if (currentStage > 1) {
+						currentStage--;
+					}
+
+					if (book->GetCurrentPageIndex() > 9) {
+						// 本のページを戻す
+						book->PrevPage();
+					}
+
+				}
+				switchCooltime = 0.8f; // クールタイムリセット
+			}
+		}
+
+		// ENTERキーを押したら
+		if (input->TriggerKey(DIK_SPACE)) {
+			// ゲームプレイシーン(次シーン)を生成
+			if (isStageSelect) {
+				if (book->GetCurrentPageIndex() > 8) {
+					// シーン切り替え演出
+					isTransition = true;
+					isSpeedDistortion = true;
+					isRadialBlur = true;
 				}
 
 			} else {
-				if (currentStage < 5) {
-					currentStage++;
-				}
-
-				// 本のページをめくる
-				if (book->GetCurrentPageIndex() < 13)
-					book->NextPage();
-
-			}
-			switchCooltime = 0.8f; // クールタイムリセット
-		}
-	} else if (input->TriggerKey(DIK_A) || input->TriggerKey(DIK_LEFT)) {
-		if (switchCooltime <= 0.0f) {
-			if (!isStageSelect) {
-				if (book->GetCurrentPageIndex() > 2) {
-					// スタイルを切り替える
-					currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 3) % 4);
-
-					// 本のページを戻す
-					book->PrevPage();
-
-
-					isParameterEasing = true; // イージングリセット
-					ParameterEasingSet(currentStyle);
-				}
-
-			} else {
-				if (currentStage > 1) {
-					currentStage--;
-				}
-
-				if (book->GetCurrentPageIndex() > 9) {
-					// 本のページを戻す
-					book->PrevPage();
-				}
-
-			}
-			switchCooltime = 0.8f; // クールタイムリセット
-		}
-	}
-
-	// ENTERキーを押したら
-	if (input->TriggerKey(DIK_SPACE)) {
-		// ゲームプレイシーン(次シーン)を生成
-		if (isStageSelect) {
-			if (book->GetCurrentPageIndex() > 8) {
-				// シーン切り替え演出
-				isTransition = true;
-				isFullScreenCA = true;
-				isSpeedDistortion = true;
-				isRadialBlur = true;
-			}
-
-		} else {
-			isStageSelect = true;
-			isParameterEasing = true; // イージングリセット
-			ParameterEasingSet(currentStyle);
-		}
-	}
-
-	//タイトルに戻す
-	if (input->TriggerKey(DIK_W))
-	{
-		if (switchCooltime <= 0.0f)
-		{
-			if (isStageSelect)
-			{//ステージセレクトならマシーンセレクトに(演出)
-				isStageSelect = false;
-				isParameterEasing = true;
+				isStageSelect = true;
+				isParameterEasing = true; // イージングリセット
 				ParameterEasingSet(currentStyle);
-				switchCooltime = 0.5f;
-			} else
-			{
-				isBackTransition = true;
-				return;
+			}
+		}
+
+		//タイトルに戻す
+		if (input->TriggerKey(DIK_W)) {
+			if (switchCooltime <= 0.0f) {
+				if (isStageSelect) {//ステージセレクトならマシーンセレクトに(演出)
+					isStageSelect = false;
+					isParameterEasing = true;
+					ParameterEasingSet(currentStyle);
+					switchCooltime = 0.5f;
+				} else {
+					isBackTransition = true;
+					return;
+				}
 			}
 		}
 	}
@@ -296,8 +293,6 @@ void StageSelect::TransitionUpdate() {
 		easing->Size(bookEasing, 0.01f, 1);
 
 		if (bookEasing.sizeEasedT >= 0.1f) {
-			if(fullScreenCAIntensity < 1.0f)
-				fullScreenCAIntensity += 0.01f;
 			if(speedDistortionStrength < 1.0f)
 				speedDistortionStrength += 0.1f;
 			if(blurWidth <= 0.01f)
@@ -366,9 +361,6 @@ void StageSelect::LithingEffect() {
 	PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
 	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
 	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
-	// 色収差
-	PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
-	PostEffect::GetInstance()->SetFullScreenCAIntensity(fullScreenCAIntensity);
 	// スピードディストーション
 	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
 	PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);

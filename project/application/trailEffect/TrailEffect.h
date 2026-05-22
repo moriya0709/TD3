@@ -1,8 +1,11 @@
 #pragma once
 #include <deque>
 #include <vector>
-#include <string>
 #include <memory>
+#include <cassert>
+#include <fstream>
+#include <iostream>
+#include <string>
 
 #include "Calc.h"
 
@@ -25,6 +28,11 @@ public:
     void UpdateLifetimes();
     void AddPoint(const Vector3& currentEmitterPos);
     void GenerateVertices(const Vector3& cameraPos, std::vector<TrailVertex>& outVertices);
+
+	void LoadCsv(const std::string& filePath);
+	void SaveCsv(const std::string& filePath);
+
+	void Editor();
 
     // setter
     void SetTranslate(Vector3 translate) { translate_ = translate; }
@@ -50,5 +58,7 @@ private:
 	float MAX_LIFETIME = 1.5f; // 消えるまでの時間
 	float MIN_DISTANCE = 0.1f; // ユニット以上動いたら新しいポイントを追加
     std::string m_TextureName;
-	float m_Emissive = 10.0f;
+	float m_Emissive = 50.0f;
+
+    char fileName[20];
 };

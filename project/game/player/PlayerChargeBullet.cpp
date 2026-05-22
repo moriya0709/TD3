@@ -86,9 +86,21 @@ void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, con
 	}
 
 	// トレイルエフェクト
-	trailEffect->Initialize("Resource/trail/trail.png", transform_, 1.0f, 1.5f);
-	trailEffect->SetColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+	trailEffect->Initialize("Resource/trail/trail.png", transform_, 3.0f, 3.0f);
+	trailEffect->LoadCsv("Resource/trail/chargeShot.csv");
 	TrailEffectManager::GetInstance()->AddTrail(trailEffect);
+
+	// ショットエフェクト
+	for (int i = 0; i < shotEffectCount; i++) {
+		shotEffect[i] = std::make_shared<ParticleEmitter>();
+		shotEffect[i]->Initialize("ChargeShot", transform_, 5, 0.1f);
+	}
+	shotEffect[0]->SetActive("ChargeShot");
+	shotEffect[0]->LoadParticle("Resource/particle/shot_1.csv");
+	shotEffect[1]->SetActive("ChargeShot2");
+	shotEffect[1]->LoadParticle("Resource/particle/shot_2.csv");
+	shotEffect[1]->SetTranslate(transform_.translate);
+	shotEffect[1]->Emit();
 
 	// 進んでいる方向（velocity_）に合わせて向き（回転）を計算
 	float speedXZ = std::sqrt(velocity_.x * velocity_.x + velocity_.z * velocity_.z);
@@ -151,6 +163,11 @@ void PlayerChargeBullet::Update(float cmrvel) {
 	// トレイルエフェクト更新
 	trailEffect->AddPoint(transform_.translate);
 	trailEffect->SetTranslate(transform_.translate);
+	// ショットエフェクト更新
+	for (int i = 0; i < shotEffectCount; i++) {
+		shotEffect[i]->SetTranslate(transform_.translate);
+		shotEffect[i]->Update();
+	}
 }
 void PlayerChargeBullet::Draw3D() {
 	if (isActive_) {

@@ -1,4 +1,5 @@
 #include "TrailEffect.h"
+#include "ImGuiManager.h"
 
 void TrailEffect::Initialize(const std::string& textureName, const Transform& transform, float width, float maxLifetime) {
     // 渡された引数を使ってメンバ変数を初期化
@@ -89,4 +90,57 @@ void TrailEffect::GenerateVertices(const Vector3& cameraPos, std::vector<TrailVe
         outVertices.push_back(vLeft);
         outVertices.push_back(vRight);
     }
+}
+
+void TrailEffect::LoadCsv(const std::string& filePath) {
+    // ファイル読み込み
+    std::ifstream file(filePath);
+    assert(file.is_open());
+
+    std::string line;
+
+    // 色
+    if (std::getline(file, line)) {
+        sscanf_s(line.c_str(), "%f,%f,%f,%f", &m_Color.x, &m_Color.y, &m_Color.z, &m_Color.w);
+    }
+
+    file.close();
+}
+
+void TrailEffect::SaveCsv(const std::string& filePath) {
+    std::ofstream file(filePath, std::ios::binary);
+    assert(file.is_open());
+
+    // パーティクルの色
+    file << m_Color.x << "," << m_Color.y << "," << m_Color.z << "," << m_Color.w << "\n";
+
+	file.close();
+}
+
+void TrailEffect::Editor() {
+#ifdef USE_IMGUI
+    ImGui::Begin("TrailEffect");
+
+    ImGui::ColorEdit4("Color", &m_Color.x);
+
+    // ファイル名
+    ImGui::InputText("FileName", fileName, IM_ARRAYSIZE(fileName));
+    // セーブ
+    if (ImGui::Button("Save")) {
+        std::string path = "Resource/trail/";
+        path += fileName;
+        path += ".csv";   // 拡張子を自動付与
+
+        SaveCsv(path);
+    }
+    // ロード
+    if (ImGui::Button("Load")) {
+        std::string path = "Resource/trail/";
+        path += fileName;
+        path += ".csv";   // 拡張子を自動付与
+
+        LoadCsv(path);
+    }
+    ImGui::End();
+#endif
 }

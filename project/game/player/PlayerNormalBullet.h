@@ -49,7 +49,6 @@ private:
 	// トレイルエフェクト
 	std::shared_ptr<TrailEffect> trailEffect = std::make_shared<TrailEffect>();
 
-
 	// モーションブラー
 	bool isMotionBlur = true;
 
