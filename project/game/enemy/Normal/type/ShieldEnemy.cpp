@@ -30,7 +30,7 @@ void ShieldEnemy::Initialize(Camera* camera, Vector3 pos, int health)
     // デスエフェクトの初期化
     for (int i = 0; i < deathEffectCount; i++) {
         deathEffect[i] = std::make_unique<ParticleEmitter>();
-        deathEffect[i]->Initialize("Death1", Transform{}, 5, 0.2f);
+        deathEffect[i]->Initialize("Death1", Transform {}, 5, 0.2f);
     }
     deathEffect[0]->SetActive("Death1");
     deathEffect[0]->LoadParticle("Resource/particle/death_1.csv");
@@ -87,8 +87,10 @@ void ShieldEnemy::Update()
     }
 
     // カメラの位置に応じて変換
-    const Matrix4x4& camMat = camera_->GetWorldMatrix();
-    transform_.translate = TransformCoord(localPos_, camMat);
+    if (behavior_ == Behavior::kWalk || behavior_ == Behavior::kShield) {
+        const Matrix4x4& camMat = camera_->GetWorldMatrix();
+        transform_.translate = TransformCoord(localPos_, camMat);
+    }
     BulletUpdate();
 
     // ★ オブジェクトのセット（カメラの回転を合成する）
@@ -280,10 +282,12 @@ void ShieldEnemy::BehaviorAway()
             isDead_ = true;
         }
     } else {
-        // JSONに逃走先が書かれていなかった場合のデフォルト動作（保険）
-        localPos_.z += 0.5f;
-        localPos_.y += 0.2f;
-        if (localPos_.z > 200.0f)
+        // ★修正：データがない場合の保険処理もワールド座標を直接進める
+        transform_.translate.z += 0.5f;
+        transform_.translate.y += 0.2f;
+
+        // 念のためカメラから大きく離れたら消える判定（数値はカメラの進み具合に合わせて調整してください）
+        if (transform_.translate.z > 200.0f)
             isDead_ = true;
     }
 }

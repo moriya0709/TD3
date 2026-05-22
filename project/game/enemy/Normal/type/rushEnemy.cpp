@@ -85,26 +85,28 @@ void rushEnemy::Update()
     }
 
     // カメラの位置に応じて変換
-    const Matrix4x4& camMat = camera_->GetWorldMatrix();
+    if (behavior_ == Behavior::kWalk) {
+        // 【kWalkの時のみ】カメラの位置・回転にビルボード追従させる
+        const Matrix4x4& camMat = camera_->GetWorldMatrix();
+        transform_.translate = TransformCoord(localPos_, camMat);
 
-    transform_.translate = TransformCoord(localPos_, camMat);
+        Vector3 cameRat = camera_->GetRotate();
+        float xFlip = 1.0f;
+        if (std::abs(transform_.rotate.y - (float)std::numbers::pi) < 0.1f) {
+            xFlip = -1.0f;
+        }
 
-    BulletUpdate();
-
-    // 敵に対して向きを合わせる
-    Vector3 cameRat = camera_->GetRotate();
-
-    float xFlip = 1.0f;
-    if (std::abs(transform_.rotate.y - (float)std::numbers::pi) < 0.1f) {
-        xFlip = -1.0f;
+        Vector3 finalRot = {
+            cameRat.x * xFlip + transform_.rotate.x,
+            cameRat.y + transform_.rotate.y,
+            cameRat.z + transform_.rotate.z
+        };
+        object_->SetRotate(finalRot);
+    } else if (behavior_ == Behavior::kAway) {
+        // 【kAway(突進)の時】
+        // BehaviorAway() 内で自前のワールド座標・回転を更新しているため、
+        // ここでのカメラによる強制上書きは行いません。
     }
-
-    Vector3 finalRot = {
-        cameRat.x * xFlip + transform_.rotate.x,
-        cameRat.y + transform_.rotate.y,
-        cameRat.z + transform_.rotate.z
-    };
-    object_->SetRotate(finalRot);
 
     // オブジェクトのセット
     object_->SetTranslate(transform_.translate);

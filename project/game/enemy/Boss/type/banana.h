@@ -76,7 +76,7 @@ public:
 
     void BulletMirror(const CollisionVolume& volume, PlayerBullet* bullet);
 
-    CollisionVolume CreateVolumeFromPart(uint32_t i, Vector3 bossPos, Vector3 cameraPos);
+    CollisionVolume CreateVolumeFromPart(uint32_t i, Vector3 bossPos);
 
 public:
     // Get
@@ -108,6 +108,11 @@ public:
     void BehaviorDefeated();
 
 private:
+    void DrawDebugCollision();
+
+     bool showDebugCollision_ = true;
+    // パーツ数分のデバッグ表示用オブジェクト
+    std::vector<std::unique_ptr<Object>> debugCollisionObjects_;
 
     // スコア
     int score_ = 2500;
@@ -125,7 +130,6 @@ private:
     std::vector<BossPart> parts_; // 4つのパーツを格納するリスト（vector）
 
     int health_; // 体力
-    float isAvile; // 生存しているか
 
     // プレイヤーの情報
     Player* player_ = nullptr;
@@ -154,7 +158,7 @@ private:
 
     // 脂肪フラグ
     bool isDead_ = false;
-    bool isAlive_ = false;
+    bool isAlive_ = true;
     static inline const float KAliveTimer = 60.0f;
     float AliveTimer = 0.0f;
     float deadTimer_;
