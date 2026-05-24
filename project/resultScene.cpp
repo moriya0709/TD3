@@ -7,16 +7,19 @@ void ResultScene::Initialize()
 {
 	//初期化
 	targetScore_ = 0;
+	stageNumber_ = 0;
+	modelIndex_ = 0;
 	for (int i = 0; i < 5; i++)
 	{
 		actualDigits_[i] = 0;
 		displayNumbers_[i] = 0;
+		stageSprites_[i] = 0;
 	}
 
 
 	ScoreManager scoreManager;
 	//過去の全データを読み込む
-	history_ = scoreManager.LoadHistory();
+	history_ = scoreManager.LoadHistory();//LoadHistoryに全データ取得済み
 
 	if (!history_.empty())
 	{
@@ -29,6 +32,18 @@ void ResultScene::Initialize()
 		actualDigits_[2] = (targetScore_ / 100) % 10;
 		actualDigits_[3] = (targetScore_ / 10) % 10;
 		actualDigits_[4] = targetScore_ % 10;
+
+		//ステージ取得
+		stageNumber_ = std::stoi(history_.back().stageName);
+
+		//文字を数字に変える
+		std::string modelName = history_.back().model;
+
+		if (modelName == "speed.obj") modelIndex_ = 1;
+		else if (modelName == "power.obj") modelIndex_ = 2;
+		else if (modelName == "sniper.obj") modelIndex_ = 3;
+		else modelIndex_ = 0;
+
 	}
 
 	//スコアシャッフル
@@ -57,6 +72,21 @@ void ResultScene::Initialize()
 		}
 	}
 
+	for (int i = 0; i < 5; i++)
+	{
+		stageSprites_[i] = std::make_unique<Sprite>();
+		//数字(ステージ0のpngはないので)
+		std::string filePath = "Resource/sNumber/stage" + std::to_string(i + 1) + ".png";
+		stageSprites_[i]->Initialize(filePath);
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		modelSprites_[i] = std::make_unique<Sprite>();
+		std::string filePath = "Resource/mNumber/number" + std::to_string(i) + ".png";
+		modelSprites_[i]->Initialize(filePath);
+	}
+
 	space_ = std::make_unique<Sprite>();
 	space_->Initialize("Resource/space.png"); // 進める
 	space_->SetPosition({ 950.0f, 900.0f });
@@ -66,12 +96,6 @@ void ResultScene::Initialize()
 		object[i] = std::make_unique <Object>();
 		object[i]->Initialize(camera.get());
 	}
-
-
-	// 初期化済みの3Dオブジェクトにモデルを紐づける
-	//object[0]->SetModel("emission.obj");
-	//object[1]->SetModel("skydome.obj");
-
 }
 
 void ResultScene::Update()
@@ -89,7 +113,7 @@ void ResultScene::Update()
 			currentDigitIndex_ = 5;//スコア全部強制確定
 			for (int i = 0; i < 5; ++i)
 			{
-				displayNumbers_[i] = actualDigits_[i];//一応全部本物のスコアに変える
+				displayNumbers_[i] = actualDigits_[i];//全部本物のスコアに変える
 			}
 			isCanPress_ = true;
 		} else
@@ -120,7 +144,7 @@ void ResultScene::Update()
 			} else {//5桁全て確定したらステージセレクト(Spaceキー押せるよう)にする
 				for (int i = 0; i < 5; i++)
 				{
-					displayNumbers_[i] = actualDigits_[i];//一応全部本物のスコアに変える
+					displayNumbers_[i] = actualDigits_[i];//全部本物のスコアに変える
 				}
 				isCanPress_ = true;
 			}
@@ -450,6 +474,7 @@ void ResultScene::Draw2D()
 	// 2Dオブジェクトの描画準備
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
+	//スコア
 	if (isScoreStartTime_)
 	{
 		for (int i = 0; i < 5; i++)
@@ -464,6 +489,28 @@ void ResultScene::Draw2D()
 			numberSprites_[number][i]->Draw();
 		}
 	}
+
+	//pngが1からなので＋1してたのを元に戻して配列に合うように0からとする
+	int stageIndex = stageNumber_ - 1;
+	//ステージ名
+	if (stageIndex >= 0 && stageIndex < 5)
+	{
+		Vector2 drawPosition = { 950.0f,250.0f };
+
+		stageSprites_[stageIndex]->SetPosition(drawPosition);
+		stageSprites_[stageIndex]->Update();
+		stageSprites_[stageIndex]->Draw();
+	}
+	//モデル名
+	if (modelIndex_ >= 0 && modelIndex_ < 4)
+	{
+		Vector2 drawPosition = { 975.0f,700.0f };
+
+		modelSprites_[modelIndex_]->SetPosition(drawPosition);
+		modelSprites_[modelIndex_]->Update();
+		modelSprites_[modelIndex_]->Draw();
+	}
+
 	space_->Draw();
 }
 
@@ -472,6 +519,7 @@ void ResultScene::Draw3D()
 
 	// アウトライン描画準備
 	ObjectCommon::GetInstance()->SetOutlinePipelineState();
+	object[0]->Draw();
 }
 
 void ResultScene::Finalize()

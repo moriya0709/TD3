@@ -58,6 +58,9 @@ public:
     const std::list<std::shared_ptr<grapesBoss>>& GetGBoss() const { return gboss_; }
     const std::list<std::shared_ptr<banana>>& GetBBoss() const { return bboss_; }
 
+    //死んだ敵のスコアを回収してGamePlaySceneに引き渡す(その後中身空)
+    int GiveScore();//空にする処理で中身を変えたり点数を返すのでint型とすること
+
 private:
     /// <summary>
     /// Json読み込み―
@@ -114,4 +117,6 @@ private:
 
     int currentLoadedStage_ = -1; // 現在読み込まれているステージ番号
     int targetEditStage_ = 0; // ImGuiで編集・読み込みたいステージ番号
+
+    int collectionScore_ = 0;//死んだ敵のスコアを一時的に集める
 };
