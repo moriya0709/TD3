@@ -86,6 +86,39 @@ void EnemyManager::Update()
         boss->Update();
     }
 
+    ///
+    ///score加算
+    ///
+
+    //敵が消滅する直前に死んだ敵のスコアをGetScoreで回収
+    for (auto& enemy : enemies_)
+    {
+        if (!enemy->GetIsAlive())
+        {
+            collectionScore_ += enemy->GetScore();
+        }
+    }
+
+    for (auto& boss : gboss_)
+    {
+        if (!boss->GetIsAlive())
+        {
+            collectionScore_ += boss->GetScore();
+        }
+    }
+
+    for (auto& boss : bboss_)
+    {
+        if (!boss->GetIsAlive())
+        {
+            collectionScore_ += boss->GetScore();
+        }
+    }
+
+    ///
+    ///
+    /// 
+  
     // --- 修正ポイント：引数を std::shared_ptr に変更 ---
     enemies_.remove_if([](const std::shared_ptr<Enemy>& enemy) { return !enemy->GetIsAlive(); });
     gboss_.remove_if([](const std::shared_ptr<grapesBoss>& enemy) { return !enemy->GetIsAlive(); });
@@ -123,6 +156,13 @@ void EnemyManager::SetcurrentTimer_(float timer)
 void EnemyManager::SetEnemyclear()
 {
     enemies_.clear();
+}
+
+int EnemyManager::GiveScore()
+{
+    int score = collectionScore_;
+    collectionScore_ = 0;//渡したため回収スコアリセット
+    return score;
 }
 
 void EnemyManager::LoadEnemyData(const std::string& filePath)

@@ -156,7 +156,9 @@ private:
 	// スプライト
 
 	//数字
-	std::unique_ptr<Sprite> numberSprites_[10][5];
+	std::unique_ptr<Sprite> numberSprites_[10][5];//スコア数
+	std::unique_ptr<Sprite> stageSprites_[6];//ステージ名
+	std::unique_ptr <Sprite> modelSprites_[4];//モデル名
 	std::unique_ptr<Sprite> space_ = nullptr;
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
@@ -167,7 +169,7 @@ private:
 	std::vector<ScoreData> history_;
 
 	float countTimer_ = 0.0f;//2秒計るためのタイマー
-	const float kMaxCount_ = 2.0f;//2秒経ったらスコア数字表示
+	const float kMaxCount_ = 1.0f;//1.0秒経ったらスコア数字表示
 
 	int currentDigitIndex_ = 0;//今何桁目か(0～4桁)
 	int targetScore_ = 0;//実際のスコア
@@ -177,5 +179,11 @@ private:
 	//フラグ
 	bool isScoreStartTime_ = false;//スコアカウントスタート
 	bool isCanPress_ = false;//ボタン押せるようにする
+
+	//ステージ数
+	int stageNumber_ = 0;
+	//モデル(数字にして描画)
+	int modelIndex_ = 0;
+
 };
 
