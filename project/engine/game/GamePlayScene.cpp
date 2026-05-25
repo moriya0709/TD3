@@ -163,7 +163,8 @@ void GamePlayScene::Update() {
 		SceneChangedEffect();
 
 		// カメラ更新
-		cameraController_->Update();
+		if (!isGameOver)
+			cameraController_->Update();
 
 		// アニメーションするモデル更新処理
 		for (auto& object : animationObjects) {
@@ -180,8 +181,7 @@ void GamePlayScene::Update() {
 		this->score_ += enemy_->GiveScore();
 
 		// 当たり判定
-		if(!isGameOver)
-			ChekeAllCollision();
+		ChekeAllCollision();
 
 		// ポーズ画面へ
 		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
