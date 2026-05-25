@@ -9,6 +9,8 @@ void HomingEnemyBullet::Initialize(Camera* camera, Vector3 Pos)
     transform_.rotate = { 0.0f, 0.0f, 0.0f };
     transform_.translate = Pos;
 
+    NotLockTimer = 0.0f;
+
     object_ = std::make_unique<Object>();
     object_->Initialize(camera_);
     object_->SetModel("pepaBullet.obj");
@@ -17,7 +19,9 @@ void HomingEnemyBullet::Initialize(Camera* camera, Vector3 Pos)
     object_->SetTranslate(transform_.translate);
 
     activeTimer = maxactiveTimer;
-    acceleration_.z = 0.1f;
+
+    velocity_ = { 0.0f, 0.0f, 0.0f };
+    acceleration_ = { 0.0f, 0.0f, 0.0f };
 }
 
 void HomingEnemyBullet::Update()
@@ -29,19 +33,24 @@ void HomingEnemyBullet::Update()
 
     CheckCameraCulling();
 
-    // ターゲットへのベクトル ＝ 目的地の座標 － 現在の座標
-    Vector3 direction;
-    direction.x = targetPos_.x - transform_.translate.x;
-    direction.y = targetPos_.y - transform_.translate.y;
-    direction.z = targetPos_.z - transform_.translate.z;
+    // ★タイマーによる条件分岐
+    if (NotLockTimer <= 0.0f) {
+        // 【タイマー終了後】プレイヤーへの誘導ベクトルを計算
+        Vector3 direction;
+        direction.x = targetPos_.x - transform_.translate.x;
+        direction.y = targetPos_.y - transform_.translate.y;
+        direction.z = targetPos_.z - transform_.translate.z;
 
-    // directionを「長さが1のベクトル（正規化ベクトル）」にする
-    direction = Normalize(direction);
+        // 正規化
+        direction = Normalize(direction);
 
-    // ホーミング性能
-
-    // 加速度をターゲット方向に向ける
-    acceleration_ = direction * homingPower * accelerationScalar;
+        // 加速度をターゲット方向に向ける（追尾開始）
+        acceleration_ = direction * homingPower * accelerationScalar;
+    } else {
+        // 【タイマー作動中】カウントダウンのみ行い、誘導加速度は 0 のまま（初速で直進）
+        NotLockTimer -= 1.0f / 60.0f;
+        acceleration_ = { 0.0f, 0.0f, 0.0f };
+    }
 
     velocity_ += acceleration_;
 
@@ -98,7 +107,7 @@ void HomingEnemyBullet::CheckCameraCulling()
     float dotProduct = cameraForward.x * toBullet.x + cameraForward.y * toBullet.y + cameraForward.z * toBullet.z;
 
     // カメラから離れているなら
-    if (dotProduct < -1.0f) {
+    if (dotProduct < -0.2f) {
         isAvile = false;
     }
 }
