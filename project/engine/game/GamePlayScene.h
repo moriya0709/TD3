@@ -40,6 +40,8 @@ public:
     void SetPlayerStyle(int style) override;
 	void SetCurrentStage(int currentStage) override;
 
+    int GetPlayerStyle() override { return static_cast<int>(style_); }
+	int GetCurrentStage() override { return currentStage_; }
 
     void ChekeAllCollision() ;
 
