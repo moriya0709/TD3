@@ -1,26 +1,26 @@
 {
     "Statas": [
         {
-            "attack": 25,
-            "chargeAttack": 130,
+            "attack": 30,
+            "chargeAttack": 200,
             "chargeSize": 20,
             "chargeTime": 40,
             "cost": 0,
             "haste": 10,
             "hommingAccuracy": 0.014999999664723873,
-            "hp": 100,
+            "hp": 110,
             "renge": 200.0,
             "speed": 0.25
         },
         {
-            "attack": 8,
-            "chargeAttack": 16,
+            "attack": 9,
+            "chargeAttack": 18,
             "chargeSize": 20,
             "chargeTime": 12,
             "cost": 0,
             "haste": 3,
             "hommingAccuracy": 0.019999999552965164,
-            "hp": 50,
+            "hp": 75,
             "renge": 150.0,
             "speed": 0.3499999940395355
         },

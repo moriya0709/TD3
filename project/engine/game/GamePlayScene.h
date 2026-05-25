@@ -253,7 +253,15 @@ private:
     // デス演出時間
 	float deathEffectTimer_ = 3.0f;
 
-    std::shared_ptr<TrailEffect> trailEffect;
+    // ゲームオーバー
+	std::unique_ptr<Sprite>  gameOver_ = nullptr;
+	std::unique_ptr<Sprite>  gameOverUi_[2] = {};
+	EasingSet gameOverEasing_[3];
+	const int kGameOverUi_ = 3;
+    Pause currentGameOverUI_ = Pause::kSelect;
+	bool isGameOver = false;
+    
+
 
     void SceneChangedEffect();
 
