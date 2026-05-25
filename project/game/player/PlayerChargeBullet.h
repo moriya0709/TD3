@@ -31,11 +31,13 @@ public:
 	float GetHitSize() const override { return 0.5f; } // 例: ヒットサイズ0.5
 	virtual int GetDamage() const override { return damage_; }
 	Vector3 GetVelocity() const override { return velocity_; }
+	Vector3 GetPreviousPosition() const override { return previousPosition_; }
 
 private:
 	// プレイヤーの弾のステータス
 	float size_ = 1.0f; // 弾のサイズ
 	Transform transform_;
+	Vector3 previousPosition_;
 	std::unique_ptr<Object> object_;
 	float hommingAccuracy_ = 0.0f;           // ホーミング精度
 	float renge_ = 0.0f;                     // 弾速

@@ -28,6 +28,7 @@ public:
 	virtual float GetHitSize() const { return 0.0f; };
 	virtual int GetDamage() const { return 0; };
 	virtual Vector3 GetVelocity() const { return Vector3(); };
+	virtual Vector3 GetPreviousPosition() const { return previousPosition_; };
 
 private:
 
@@ -35,7 +36,7 @@ protected: // 派生クラスからアクセスできるように protected に�
 
 	Transform transform_;
 	std::unique_ptr<Object> object_;
-
+	Vector3 previousPosition_;
 	// プレイヤーの弾のステータス
 	//Transform transform_;
 	//std::unique_ptr<Object> object_;
