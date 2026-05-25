@@ -437,6 +437,12 @@
             "score": 0,
             "stageName": "5",
             "time": 0.0
+        },
+        {
+            "ModelName": "speed.obj",
+            "score": 0,
+            "stageName": "5",
+            "time": 0.0
         }
     ]
 }
