@@ -571,43 +571,50 @@ void Player::StartDeathAnimation() {
 }
 
 void Player::UpdateDeathAnimation() {
+	// ★対策①：デス演出中もカメラの最新の位置・回転を毎フレーム更新する
+	camera_->Update();
+
 	// 1. カメラに向かって急接近（Z値を減らす）
-	// 初期値10.0fから、一気に手前（0.5f付近）まで近づける
+	// 初期値10.0fから、一気に手前（1.0f付近）まで近づける
 	float targetX = 0.0f;
 	float targetY = 0.0f;
 	float targetZ = 1.0f; // 画面にぶつかる距離（カメラのほぼ目の前）
 	if (relativePos_.z > targetZ) {
-		relativePos_.z -= 0.2f; // 迫ってくるスピード（好みに合わせて調整）
+		relativePos_.z -= 0.2f; // 迫ってくるスピード
 
 		float lerpFactor = 0.15f;
 		relativePos_.x += (targetX - relativePos_.x) * lerpFactor;
 		relativePos_.y += (targetY - relativePos_.y) * lerpFactor;
 
-		// 接近中は激しく回転させる（X, Y, Zすべての軸でぐるぐる回す）
-		transform_.rotate.x += 0.2f;
-		transform_.rotate.y += 0.3f;
-		transform_.rotate.z += 0.15f;
+		// --- ★対策②：接近中も、現在のカメラの回転を基準にグルグル回す ---
+		Vector3 camRot = camera_->GetRotate();
+		// relativePos_.z の減少量（進捗）を利用して、追加のメンバー変数なしで回転角を計算
+		float progress = 10.0f - relativePos_.z;
+		transform_.rotate.x = camRot.x + progress * 1.0f;
+		transform_.rotate.y = camRot.y + progress * 1.5f;
+		transform_.rotate.z = camRot.z + progress * 0.8f;
 	} else {
 		// 画面にぶつかった後は中央の至近距離に完全固定
 		relativePos_.x = targetX;
 		relativePos_.y = targetY;
 		relativePos_.z = targetZ;
 
-		// ぶつかった衝撃で機体をちょっと平べったく（あるいは横に広く）歪ませる
-		// 画面に張り付いたようなギャグ・演出効果
-		transform_.scale = {0.8f,0.6f,0.1f};
-		transform_.rotate = { 0.0f, 3.14f, 1.0f };
+		// ぶつかった衝撃で機体をちょっと平べったく歪ませる
+		transform_.scale = { 0.8f, 0.6f, 0.1f };
+
+		// --- ★対策②：ぶつかった後、現在のカメラの正面（画面）にピタッと張り付かせる ---
+		Vector3 camRot = camera_->GetRotate();
+		transform_.rotate.x = -camRot.x;         // 上下角(Pitch): カメラと逆向き
+		transform_.rotate.y = camRot.y + 3.14f;  // 左右角(Yaw): カメラの向き + 180度で振り向かせる
+		transform_.rotate.z = -camRot.z + 1.0f;  // 傾き(Roll): カメラの傾き反転 + 演出用の傾き(1.0f)
 
 		playerObject_->SetDirectionalLight(true);
-		playerObject_->SetDirectionalLightColor({0.1f,0.1f,0.1f,1.0f});
-		playerObject_->SetAmbientLightColor({0.3f,0.3f,0.3f,1.0f});
+		playerObject_->SetDirectionalLightColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+		playerObject_->SetAmbientLightColor({ 0.3f, 0.3f, 0.3f, 1.0f });
 		playerObject_->SetSunLight(false);
-
-		// 画面に張り付いているので回転をピタッと止める（あるいは微振動させる）
-		// transform_.rotate = 固定、もしくは小刻みに揺らす
 	}
 
-	// 3. カメラの向きに合わせてワールド座標を再計算（InputMoveのロジックを流用）
+	// 3. カメラの向きに合わせてワールド座標を再計算
 	Matrix4x4 camRotMat = MakeRotateMatrix(camera_->GetRotate());
 	Vector3 rotatedOffset = TransformNormal(relativePos_, camRotMat);
 
