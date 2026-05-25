@@ -11,6 +11,10 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
 
     health_ = health;
 
+    std::random_device seedGenerator;
+    std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+    randomEngine = std::mt19937(seedGenerator());
+
     Vector3 cameraPos = camera_->GetTranslate();
 
     baseTransform_.scale = { 14.0f, 14.0f, 14.0f };
@@ -171,7 +175,7 @@ void banana::Draw3D()
 {
 
     for (auto& part : parts_) {
-        if (part.PartsHp > 1 || isAlive_ || !isDead_) {
+        if (part.PartsHp > 1) {
             part.object->Draw();
         }
     }
@@ -392,7 +396,7 @@ void banana::BulletUpdate()
 
     if (interval <= 0.0f) {
         // 弾の生成
-        std::unique_ptr<TargetEnemyBullet> newBulletEnemy = std::make_unique<TargetEnemyBullet>();
+        std::unique_ptr<HomingEnemyBullet> newBulletEnemy = std::make_unique<HomingEnemyBullet>();
 
         for (auto& part : parts_) {
             if (!part.isWeakPoint)
@@ -403,16 +407,33 @@ void banana::BulletUpdate()
             break;
         }
 
+        std::uniform_real_distribution<float> distribution(0.1f, 0.8f);
+        std::uniform_real_distribution<float> Homing(0.1f, 0.3f);
+
         // 弱点が攻撃をする
-        newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.08f));
+        if (intervalCount == 0) {
+            newBulletEnemy->SetBulletAcceleration(Vector3(-0.10f, -0.10f, 0.0f));
+            newBulletEnemy->SetLockTimer(1.0f);
+        } else if (intervalCount == 1) {
+            newBulletEnemy->SetBulletAcceleration(Vector3(0.10f, -0.10f, 0.0f));
+            newBulletEnemy->SetLockTimer(1.0f);
+        } else if (intervalCount == 2) {
+            newBulletEnemy->SetBulletAcceleration(Vector3(-0.10f, 0.10f, 0.0f));
+            newBulletEnemy->SetLockTimer(1.0f);
+        } else if (intervalCount == 3) {
+            newBulletEnemy->SetBulletAcceleration(Vector3(0.10f, 0.10f, 0.0f));
+            newBulletEnemy->SetLockTimer(1.0f);
+        }
+
         newBulletEnemy->SetTargetPosition(player_->GetPosition());
-        newBulletEnemy->SetAcceleration(0.5f);
-        newBulletEnemy->SetUpgrade(0.0f);
+        newBulletEnemy->SetAcceleration(distribution(randomEngine));
+        newBulletEnemy->SetUpgrade(distribution(randomEngine));
+        newBulletEnemy->SethomingPower(Homing(randomEngine));
         newBulletEnemy->Update();
 
         intervalCount++;
-        if (intervalCount < 3) {
-            interval = 0.2f;
+        if (intervalCount < 4) {
+            interval = 0.1f;
         } else {
             interval = maxInterval;
             intervalCount = 0;

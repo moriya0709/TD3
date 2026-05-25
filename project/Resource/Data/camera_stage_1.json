@@ -27,11 +27,6 @@
         "y": 0.0,
         "z": 0.0
     },
-    "rotate": {
-        "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
-    },
     "rotationHistory": [
         {
             "speed": {
@@ -52,5 +47,5 @@
             "transition": 0.20000000298023224
         }
     ],
-    "totalDuration": 40.79999923706055
+    "totalDuration": 60.0
 }

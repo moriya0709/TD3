@@ -11,6 +11,7 @@ void PlayerChargeBullet::Initialize(const Vector3& position, Camera* camera, con
 	// --- 1. 基本設定（既存） ---
 	transform_.scale = {0.2f, 0.2f, 0.2f};
 	transform_.translate = position;
+	previousPosition_ = position;
 	object_ = std::make_unique<Object>();
 	object_->Initialize(camera);
 	switch (style) {
@@ -139,6 +140,7 @@ void PlayerChargeBullet::Update(float cmrvel) {
 		}
 	}
 
+	previousPosition_ = transform_.translate;
 	// 3. 座標更新（共通）
 	transform_.translate += velocity_ + Vector3{cmrvel, cmrvel, cmrvel};
 

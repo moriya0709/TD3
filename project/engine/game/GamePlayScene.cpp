@@ -176,6 +176,9 @@ void GamePlayScene::Update() {
 		enemy_->SetcurrentTimer_(cameraController_->GetElapsedTime());
 		enemy_->Update();
 
+		//敵から回収したスコアを自分のスコアに加算する
+		this->score_ += enemy_->GiveScore();
+
 		// 当たり判定
 		if(!isGameOver)
 			ChekeAllCollision();
@@ -636,12 +639,16 @@ void GamePlayScene::StageClear() {
 	isFinished_ = true;
 
 	// 現在のゲーム情報を取得
-	int finalScore = this->score_;
-	std::string currentStage = "Stage " + std::to_string(currentStage_);
-	std::string currentModel = "cloud";
+	this->score_+=enemy_->GiveScore();
+	std::string currentStage = std::to_string(currentStage_);
+	
+	std::string currentModel = "normal.obj";
+	if (style_ == Style::speed) currentModel = "speed.obj";
+	if (style_ == Style::power) currentModel = "power.obj";
+	if (style_ == Style::sniper) currentModel = "sniper.obj";
 
 	// 保存実行
-	scoreManager_.SaveScene(finalScore, currentStage, currentModel, playTimer_);
+	scoreManager_.SaveScene(score_, currentStage, currentModel, playTimer_);
 
 	SceneManager::GetInstance()->ChangeScene("RESULT");
 }

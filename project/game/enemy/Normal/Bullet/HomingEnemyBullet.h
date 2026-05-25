@@ -19,8 +19,9 @@ public:
 
     // Set
     void SetPosition(Vector3 Pos) override { transform_.translate = Pos; }
-    void SetBulletAcceleration(Vector3 num) override { acceleration_ = num; }
+    void SetBulletAcceleration(Vector3 num) override { velocity_ = num; }
     void SetactiveTimer(float num) override { activeTimer = num; }
+    void SetLockTimer(float num) { NotLockTimer = num; };
     void SetTargetPosition(Vector3 Pos) { targetPos_ = Pos; };
     void SetUpgrade(float num) { maxSpeedUpgrade = num; }
     void SetAcceleration(float num) { accelerationScalar = num; }
@@ -40,6 +41,9 @@ private:
     static inline const float maxactiveTimer = 3.0f; // 弾の最大持続時間
     Vector3 targetPos_; // 追跡対象、または狙う場所
     float homingPower = 0.10f;
+
+    float NotLockTimer; // 補足する時間
+    static inline const float kNotLockTimer = 0.0f; // 補足する時間
 
     // キャラクターの当たり判定サイズ
     static inline const float radius = 0.4f;

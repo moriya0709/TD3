@@ -421,39 +421,21 @@
             "time": 0.0
         },
         {
-            "ModelName": "cloud",
+            "ModelName": "normal.obj",
             "score": 0,
-            "stageName": "Stage 1",
+            "stageName": "5",
             "time": 0.0
         },
         {
-            "ModelName": "cloud",
+            "ModelName": "normal.obj",
             "score": 0,
-            "stageName": "Stage 2",
+            "stageName": "5",
             "time": 0.0
         },
         {
-            "ModelName": "cloud",
+            "ModelName": "normal.obj",
             "score": 0,
-            "stageName": "Stage 2",
-            "time": 0.0
-        },
-        {
-            "ModelName": "cloud",
-            "score": 0,
-            "stageName": "Stage 1",
-            "time": 0.0
-        },
-        {
-            "ModelName": "cloud",
-            "score": 0,
-            "stageName": "Stage 0",
-            "time": 0.0
-        },
-        {
-            "ModelName": "cloud",
-            "score": 0,
-            "stageName": "Stage 0",
+            "stageName": "5",
             "time": 0.0
         }
     ]

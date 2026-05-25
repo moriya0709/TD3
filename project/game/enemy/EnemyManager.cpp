@@ -86,6 +86,39 @@ void EnemyManager::Update()
         boss->Update();
     }
 
+    ///
+    ///score加算
+    ///
+
+    //敵が消滅する直前に死んだ敵のスコアをGetScoreで回収
+    for (auto& enemy : enemies_)
+    {
+        if (!enemy->GetIsAlive())
+        {
+            collectionScore_ += enemy->GetScore();
+        }
+    }
+
+    for (auto& boss : gboss_)
+    {
+        if (!boss->GetIsAlive())
+        {
+            collectionScore_ += boss->GetScore();
+        }
+    }
+
+    for (auto& boss : bboss_)
+    {
+        if (!boss->GetIsAlive())
+        {
+            collectionScore_ += boss->GetScore();
+        }
+    }
+
+    ///
+    ///
+    /// 
+  
     // --- 修正ポイント：引数を std::shared_ptr に変更 ---
     enemies_.remove_if([](const std::shared_ptr<Enemy>& enemy) { return !enemy->GetIsAlive(); });
     gboss_.remove_if([](const std::shared_ptr<grapesBoss>& enemy) { return !enemy->GetIsAlive(); });
@@ -123,6 +156,13 @@ void EnemyManager::SetcurrentTimer_(float timer)
 void EnemyManager::SetEnemyclear()
 {
     enemies_.clear();
+}
+
+int EnemyManager::GiveScore()
+{
+    int score = collectionScore_;
+    collectionScore_ = 0;//渡したため回収スコアリセット
+    return score;
 }
 
 void EnemyManager::LoadEnemyData(const std::string& filePath)
@@ -423,9 +463,9 @@ void EnemyManager::DrawImGui()
             isEditing_ = true;
         }
 
-        if (ImGui::InputInt("HP", &data.hp))
+        if (ImGui::DragInt("HP", &data.hp))
             isEditing_ = true;
-        if (ImGui::InputFloat3("Spawn Pos", &data.position.x))
+        if (ImGui::DragFloat3("Spawn Pos", &data.position.x))
             isEditing_ = true;
 
         // ★ 修正ポイント：ボス以外の時だけ移動・逃走の編集UIを表示する
@@ -438,13 +478,13 @@ void EnemyManager::DrawImGui()
                     ImGui::PushID(j); // WP用のID
                     auto& wp = data.movePattern[j];
                     std::string wpLabel = "WP [" + std::to_string(j) + "]";
-                    if (ImGui::InputFloat3(wpLabel.c_str(), &wp.target.x))
+                    if (ImGui::DragFloat3(wpLabel.c_str(), &wp.target.x))
                         isEditing_ = true;
                     ImGui::SameLine();
                     ImGui::SetNextItemWidth(100);
-                    if (ImGui::InputFloat("timeToReach", &wp.timeToReach))
+                    if (ImGui::DragFloat("timeToReach", &wp.timeToReach))
                         isEditing_ = true;
-                    if (ImGui::InputFloat("timeToStop", &wp.timeToStop))
+                    if (ImGui::DragFloat("timeToStop", &wp.timeToStop))
                         isEditing_ = true;
 
                     ImGui::SameLine();
@@ -470,9 +510,9 @@ void EnemyManager::DrawImGui()
             if (ImGui::Checkbox("Has Flee Data", &data.hasFleeData))
                 isEditing_ = true;
             if (data.hasFleeData) {
-                if (ImGui::InputFloat3("Flee Target", &data.fleeWaypoint.target.x))
+                if (ImGui::DragFloat3("Flee Target", &data.fleeWaypoint.target.x))
                     isEditing_ = true;
-                if (ImGui::InputFloat("Flee Time", &data.fleeWaypoint.timeToReach))
+                if (ImGui::DragFloat("Flee Time", &data.fleeWaypoint.timeToReach))
                     isEditing_ = true;
             }
         } // ★ ボス除外ここまで
