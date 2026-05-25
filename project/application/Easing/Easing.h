@@ -16,6 +16,7 @@ struct EasingSet {
 	Vector2 pos;
 	Vector2 size;
 	float num;
+	Vector4 color;
 	Vector2 startPosV2;
 	Vector3 startPos;
 	Vector2 endPosV2;
@@ -26,17 +27,20 @@ struct EasingSet {
 	Vector3 endSize;
 	Vector3 startRotation;
 	Vector3 endRotation;
+	Vector4 startColor;
+	Vector4 endColor;
 	float startNumber;
 	float endNumber;
 	float moveTime;
 	float sizeTime;
 	float rotationTime;
 	float numberTime;
+	float colorTime;
 	float moveEasedT;
 	float sizeEasedT;
 	float rotationEasedT;
 	float numberEasedT;
-	int color;
+	float colorEasedT;
 };
 
 class Easing {
@@ -60,6 +64,8 @@ public:
 	void Rotation(EasingSet& ui, float timeSpeed, int num);
 	// 数値
 	void Number(EasingSet& ui, float timeSpeed, int num);
+	// 色
+	void Color(EasingSet& ui, float timeSpeed, int num);
 
 private:
 	// 制御点の数
@@ -114,6 +120,7 @@ private:
 	float Lerp(const float& p0, const float& p1, float t);
 	Vector2 Lerp(const Vector2& p0, const Vector2& p1, float t);
 	Vector3 Lerp(const Vector3& p0, const Vector3& p1, float t);
+	Vector4 Lerp(const Vector4& p0, const Vector4& p1, float t);
 	// 3次ベジェ曲線
 	Vector2 Bezier(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t);
 	// イージング計算

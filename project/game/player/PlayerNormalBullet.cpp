@@ -11,6 +11,7 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 	// --- 1. 基本設定（既存） ---
 	transform_.scale = {1.0f, 1.0f, 1.0f};
 	transform_.translate = position;
+	previousPosition_ = position;
 	object_ = std::make_unique<Object>();
 	object_->Initialize(camera);
 
@@ -90,6 +91,7 @@ void PlayerNormalBullet::Initialize(const Vector3& position, Camera* camera, con
 		}
 	}
 
+
 	// トレイルエフェクト
 	trailEffect->Initialize("Resource/trail/trail.png", transform_, 1.0f, 1.5f);
 	trailEffect->SetColor(Vector4(1.0f,1.0f,1.0f,1.0f));
@@ -136,6 +138,8 @@ void PlayerNormalBullet::Update(float cmrvel) {
 	} else {
 		cvel = {cmrvel, cmrvel, cmrvel};
 	}
+
+	previousPosition_ = transform_.translate;
 
 	// 3. 座標更新（共通）
 	transform_.translate += velocity_ + cvel;
