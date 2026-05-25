@@ -122,6 +122,34 @@ void GamePlayScene::Initialize() {
 	hitEffect->SetActive("HitEffect");
 	hitEffect->LoadParticle("Resource/particle/hit_1.csv");
 
+	// ゲームオーバー
+
+	gameOver_ = std::make_unique<Sprite>();
+	gameOver_->Initialize("Resource/gameOverUi/gameOver.png");
+	gameOver_->SetPosition({ 960.0f, 560.0f });
+	gameOver_->SetSize({ 1000.0f, 1000.0f });
+	for (int i = 0; i < 2; i++)
+		gameOverUi_[i] = std::make_unique<Sprite>();
+	gameOverUi_[0]->Initialize("Resource/gameOverUi/restartUi.png");
+	gameOverUi_[1]->Initialize("Resource/gameOverUi/selectUi.png");
+	gameOverUi_[0]->SetPosition({ 700.0f, 800.0f });
+	gameOverUi_[1]->SetPosition({ 1220.0f, 800.0f });
+	gameOverUi_[0]->SetSize({300.0f, 300.0f});
+	gameOverUi_[1]->SetSize({300.0f, 300.0f});
+	gameOverUi_[0]->SetColor({ 1.0f, 1.0f, 1.0f, 0.0f });
+	gameOverUi_[1]->SetColor({ 0.1f, 0.1f, 0.1f, 0.0f });
+
+	for (int i = 0; i < kGameOverUi_; i++) {
+		gameOverEasing_[i].colorTime = 0.0f;
+		gameOverEasing_[i].colorEasedT = 0.0f;
+	}
+	gameOverEasing_[0].startColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+	gameOverEasing_[1].startColor = { 1.0f, 1.0f, 1.0f, 0.0f };
+	gameOverEasing_[2].startColor = { 0.1f, 0.1f, 0.1f, 0.0f };
+	gameOverEasing_[0].endColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	gameOverEasing_[1].endColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	gameOverEasing_[2].endColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+
 	// イージング
 	easing = std::make_unique<Easing>();
 	easing->Initialize();
@@ -152,7 +180,8 @@ void GamePlayScene::Update() {
 		this->score_ += enemy_->GiveScore();
 
 		// 当たり判定
-		ChekeAllCollision();
+		if(!isGameOver)
+			ChekeAllCollision();
 
 		// ポーズ画面へ
 		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
@@ -218,13 +247,60 @@ void GamePlayScene::Update() {
 			StageClear();
 		}
 	}
-	if (player_->GetHP() <= 0) { // playerのHPが0になったらリザルトへ
-		if (deathEffectTimer_ == 3.0f)
+	// デス演出
+	if (player_->GetHP() <= 0) {
+		if (deathEffectTimer_ == 3.0f) {
 			player_->StartDeathAnimation(); // デス演出開始
+			isGameOver = true;
+		}
 		deathEffectTimer_ = (std::max)(0.0f, deathEffectTimer_ - 1.0f / 60.0f);
 
-		if (deathEffectTimer_ <= 0.0f)
-			StageClear();
+		if (deathEffectTimer_ <= 2.0f) {
+			for (int i = 0; i < kGameOverUi_; i++) {
+				if (gameOverEasing_[i].colorTime < 1.0f) {
+					easing->Color(gameOverEasing_[i], 0.01f, 0);
+				} else {
+					if (Input::GetInstance()->TriggerKey(DIK_A)) {
+						gameOverUi_[0]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+						gameOverUi_[1]->SetColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+
+						currentGameOverUI_ = Pause::kRetry;
+
+					}
+					if (Input::GetInstance()->TriggerKey(DIK_D)) {
+						gameOverUi_[0]->SetColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+						gameOverUi_[1]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+
+						currentGameOverUI_ = Pause::kSelect;
+
+					}
+				}
+			}
+
+			if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+				if (currentGameOverUI_ == Pause::kSelect) {
+					// セレクトシーンを生成
+					SceneManager::GetInstance()->ChangeScene("GAMESELECT");
+
+				} else if (currentGameOverUI_ == Pause::kRetry) {
+					// ゲームプレイシーンを生成
+					SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+				}
+			}
+		}
+
+		// 色更新
+		if (gameOverEasing_[0].colorTime < 1.0f) {
+			gameOver_->SetColor(gameOverEasing_[0].color);
+			gameOverUi_[0]->SetColor(gameOverEasing_[1].color);
+			gameOverUi_[1]->SetColor(gameOverEasing_[2].color);
+		}
+
+		// 更新
+		gameOver_->Update();
+		gameOverUi_[0]->Update();
+		gameOverUi_[1]->Update();
+
 	}
 	// スプライト更新
 	pause_->Update();
@@ -263,6 +339,13 @@ void GamePlayScene::Draw2D() {
 	playerHpUI_->Draw();
 	playerHPEmpty_->Draw();
 	playerHPGauge_->Draw();
+
+	if (player_->GetHP() <= 0) {
+		gameOver_->Draw();
+		for (int i = 0; i < 2; i++) {
+			gameOverUi_[i]->Draw();
+		}
+	}
 
 	if (isPause_) {
 		pauseBg_->Draw(); // ポーズ背景
