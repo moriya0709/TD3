@@ -463,9 +463,9 @@ void EnemyManager::DrawImGui()
             isEditing_ = true;
         }
 
-        if (ImGui::InputInt("HP", &data.hp))
+        if (ImGui::DragInt("HP", &data.hp))
             isEditing_ = true;
-        if (ImGui::InputFloat3("Spawn Pos", &data.position.x))
+        if (ImGui::DragFloat3("Spawn Pos", &data.position.x))
             isEditing_ = true;
 
         // ★ 修正ポイント：ボス以外の時だけ移動・逃走の編集UIを表示する
@@ -478,13 +478,13 @@ void EnemyManager::DrawImGui()
                     ImGui::PushID(j); // WP用のID
                     auto& wp = data.movePattern[j];
                     std::string wpLabel = "WP [" + std::to_string(j) + "]";
-                    if (ImGui::InputFloat3(wpLabel.c_str(), &wp.target.x))
+                    if (ImGui::DragFloat3(wpLabel.c_str(), &wp.target.x))
                         isEditing_ = true;
                     ImGui::SameLine();
                     ImGui::SetNextItemWidth(100);
-                    if (ImGui::InputFloat("timeToReach", &wp.timeToReach))
+                    if (ImGui::DragFloat("timeToReach", &wp.timeToReach))
                         isEditing_ = true;
-                    if (ImGui::InputFloat("timeToStop", &wp.timeToStop))
+                    if (ImGui::DragFloat("timeToStop", &wp.timeToStop))
                         isEditing_ = true;
 
                     ImGui::SameLine();
@@ -510,9 +510,9 @@ void EnemyManager::DrawImGui()
             if (ImGui::Checkbox("Has Flee Data", &data.hasFleeData))
                 isEditing_ = true;
             if (data.hasFleeData) {
-                if (ImGui::InputFloat3("Flee Target", &data.fleeWaypoint.target.x))
+                if (ImGui::DragFloat3("Flee Target", &data.fleeWaypoint.target.x))
                     isEditing_ = true;
-                if (ImGui::InputFloat("Flee Time", &data.fleeWaypoint.timeToReach))
+                if (ImGui::DragFloat("Flee Time", &data.fleeWaypoint.timeToReach))
                     isEditing_ = true;
             }
         } // ★ ボス除外ここまで
