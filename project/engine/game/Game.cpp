@@ -42,7 +42,7 @@ void Game::Initialize() {
 #pragma region 最初のシーン
 	// テクスチャ読み込み
 	TextureManager::GetInstance()->LoadTexture("Resource/trail/trail.png");
-	TextureManager::GetInstance()->LoadTexture("Resource/titleF.png");//タイトル仮
+
 	TextureManager::GetInstance()->LoadTexture("Resource/UI/playerHp.png");//playerHPBar
 
 	// パーティクルマネージャ初期化
