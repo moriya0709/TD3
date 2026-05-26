@@ -108,7 +108,7 @@ void HomingEnemyBullet::CheckCameraCulling()
 
     // カメラから離れているなら
     // カメラ+オフセット(5.0f)の分を含めた距離
-    if (dotProduct < 4.0f) {
+    if (dotProduct < 4.5f) {
         isAvile = false;
     }
 }

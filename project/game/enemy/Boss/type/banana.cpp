@@ -144,7 +144,7 @@ void banana::Update()
 
         // 4. モデルの座標設定 (モデル自体は中心、または指定位置に固定)
         // ユーザー要望：モデルは回転させない = baseTransform_.translate の位置に固定
-        Vector3 modelPos = baseTransform_.translate;
+        Vector3 modelPos = baseTransform_.translate +Vector3(-1.5f,0.0f,0.0f);
         if (behavior_ == Behavior::kDefeated) {
             modelPos.x += distribution(randomEngine);
             modelPos.y += distribution(randomEngine);
