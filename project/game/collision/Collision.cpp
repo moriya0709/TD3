@@ -370,7 +370,7 @@ void CheckCollisionSpecialAtackEnemy(const std::list<std::shared_ptr<Enemy>>& en
             continue;
         // 敵に爆弾のダメージを与える
 
-        enemy->OnCollision(10, enemy->GetWorldPosition(), Vector3 { 0, 0, 0 }); // 例として100ダメージを与える
+        enemy->OnCollision(150, enemy->GetWorldPosition(), Vector3 { 0, 0, 0 }); // 例として100ダメージを与える
 
     }
 }
