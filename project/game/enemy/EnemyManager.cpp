@@ -371,7 +371,6 @@ void EnemyManager::DrawImGui()
     ImGui::Begin("EnemyPopManager");
 
     if (ImGui::CollapsingHeader("Stage & File Management", ImGuiTreeNodeFlags_DefaultOpen)) {
-
         // 現在の状況を表示
         ImGui::Text("Camera Current Stage: %d", cameraContrroller_->GetCurrentStage());
         ImGui::Text("Loaded JSON Stage : %d", currentLoadedStage_);
@@ -424,13 +423,62 @@ void EnemyManager::DrawImGui()
 
     ImGui::Separator();
 
-    if (ImGui::CollapsingHeader("Enemy Pop List")) {
-        for (int i = 0; i < (int)editingPopDatas_.size(); ++i) {
-            std::string label = "Enemy [" + std::to_string(i) + "] - " + editingPopDatas_[i].type;
-            if (ImGui::Selectable(label.c_str(), selectedEnemyIndex_ == i)) {
-                selectedEnemyIndex_ = i;
+    // =========================================================================
+    // Enemy Pop List （子ウィンドウのEndChild位置を修正）
+    // =========================================================================
+    if (ImGui::CollapsingHeader("Enemy Pop List", ImGuiTreeNodeFlags_DefaultOpen)) {
+
+        // 1. タイプ検索フィルター
+        static char typeFilter[32] = "";
+        ImGui::InputText("Filter Type", typeFilter, sizeof(typeFilter));
+        if (ImGui::Button("Clear Filter")) {
+            typeFilter[0] = '\0';
+        }
+
+        ImGui::Spacing();
+
+        // 2. スクロール可能な子ウィンドウを作成（高さを250に固定）
+        // ★修正点：BeginChildの結果に関わらず、後で必ずEndChild()を呼ぶ構成にします
+        if (ImGui::BeginChild("EnemyListChild", ImVec2(0, 250), true, ImGuiWindowFlags_HorizontalScrollbar)) {
+
+            // 3. 表形式（Table）で綺麗に並べる
+            if (ImGui::BeginTable("EnemyTable", 3, ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders | ImGuiTableFlags_ScrollY)) {
+                ImGui::TableSetupColumn("Index", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+                ImGui::TableSetupColumn("Type", ImGuiTableColumnFlags_WidthStretch);
+                ImGui::TableSetupColumn("PopTime", ImGuiTableColumnFlags_WidthFixed, 70.0f);
+                ImGui::TableHeadersRow();
+
+                for (int i = 0; i < (int)editingPopDatas_.size(); ++i) {
+                    const auto& enemy = editingPopDatas_[i];
+
+                    // フィルター文字列が入力されている場合、不一致ならスキップ
+                    if (strlen(typeFilter) > 0 && enemy.type.find(typeFilter) == std::string::npos) {
+                        continue;
+                    }
+
+                    ImGui::TableNextRow();
+
+                    // 1列目: インデックス（行全体を選択可能にするSelectableを配置）
+                    ImGui::TableSetColumnIndex(0);
+                    char label[32];
+                    sprintf_s(label, "[%d]", i);
+                    if (ImGui::Selectable(label, selectedEnemyIndex_ == i, ImGuiSelectableFlags_SpanAllColumns)) {
+                        selectedEnemyIndex_ = i;
+                    }
+
+                    // 2列目: 敵のタイプ
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::Text("%s", enemy.type.c_str());
+
+                    // 3列目: 出現時間
+                    ImGui::TableSetColumnIndex(2);
+                    ImGui::Text("%.2f s", enemy.popTime);
+                }
+                ImGui::EndTable();
             }
         }
+        ImGui::EndChild(); // ★【重要】if文の外側に移動しました。これでエラーが消えます。
+
         if (ImGui::Button("Add New Enemy")) {
             EnemyPopData newData;
             newData.type = "NormalEnemy";
@@ -449,7 +497,29 @@ void EnemyManager::DrawImGui()
 
         auto& data = editingPopDatas_[selectedEnemyIndex_];
 
-        ImGui::Text("Selected Enemy [%d]", selectedEnemyIndex_);
+        // 詳細編集エリアのナビゲーション（◀ ▶ ボタン と 直接数値入力）
+        ImGui::TextColored(ImVec4(0.3f, 0.8f, 1.0f, 1.0f), "Selected Enemy Details");
+
+        if (ImGui::Button("◀ Prev") && selectedEnemyIndex_ > 0) {
+            selectedEnemyIndex_--;
+        }
+        ImGui::SameLine();
+
+        ImGui::SetNextItemWidth(80);
+        if (ImGui::InputInt("Selected Index", &selectedEnemyIndex_)) {
+            // 範囲外にいかないようにクランプ
+            if (selectedEnemyIndex_ < 0)
+                selectedEnemyIndex_ = 0;
+            if (selectedEnemyIndex_ >= (int)editingPopDatas_.size())
+                selectedEnemyIndex_ = (int)editingPopDatas_.size() - 1;
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Next ▶") && selectedEnemyIndex_ < (int)editingPopDatas_.size() - 1) {
+            selectedEnemyIndex_++;
+        }
+
+        ImGui::Separator();
 
         // 基本データ編集
         if (ImGui::InputFloat("Pop Time", &data.popTime))
@@ -468,7 +538,7 @@ void EnemyManager::DrawImGui()
         if (ImGui::DragFloat3("Spawn Pos", &data.position.x))
             isEditing_ = true;
 
-        // ★ 修正ポイント：ボス以外の時だけ移動・逃走の編集UIを表示する
+        // ★ ボス以外の時だけ移動・逃走の編集UIを表示する
         if (data.type != "grapesBoss" || data.type != "bananaBoss") {
             ImGui::Separator();
 
