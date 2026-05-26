@@ -30,13 +30,13 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
 
     // 時計回りに設置
     int pats = 4;
-    float offsetRadius = 2.0f;
+    float offsetRadius = 2.5f;
 
     for (int i = 0; i < pats; ++i) {
         BossPart p;
         p.transform.rotate = { 0.0f, 0.0f, 0.0f };
         p.transform.scale = { 14.0f, 14.0f, 14.0f };
-        p.transform.translate = { 0.0f, 0.0f, 0.0f };
+        p.transform.translate = { 0.0f, 0.0f, 2.0f };
 
         // モデル生成
         p.object = std::make_unique<Object>();
@@ -67,7 +67,7 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
             p.collisionLocalPos = { 2.0f + (-offsetRadius * 0.866f), 0.0f, -offsetRadius * 0.5f };
         } else { // 本体（中央）
             p.baseAngle = 0.0f;
-            p.collisionLocalPos = { 2.0f, 0.0f, 0.0f };
+            p.collisionLocalPos = { 0.0f, 0.0f, 0.0f };
         }
 
         parts_.push_back(std::move(p));
@@ -144,7 +144,7 @@ void banana::Update()
 
         // 4. モデルの座標設定 (モデル自体は中心、または指定位置に固定)
         // ユーザー要望：モデルは回転させない = baseTransform_.translate の位置に固定
-        Vector3 modelPos = baseTransform_.translate;
+        Vector3 modelPos = baseTransform_.translate +Vector3(-1.5f,0.0f,0.0f);
         if (behavior_ == Behavior::kDefeated) {
             modelPos.x += distribution(randomEngine);
             modelPos.y += distribution(randomEngine);
@@ -265,7 +265,7 @@ banana::CollisionVolume banana::CreateVolumeFromPart(uint32_t i, Vector3 bossPos
     volume.axes[2] = { sinf(totalTheta), 0.0f, cosf(totalTheta) }; // Forward (法線)
 
     // 3. サイズ設定
-    volume.width = part.isWeakPoint ? Vector3 { 0.5f, part.radiusY, 1.0f } : Vector3 { part.radiusX, part.radiusY, 1.0f };
+    volume.width = part.isWeakPoint ? Vector3 { 0.5f, part.radiusY, 0.5f } : Vector3 { part.radiusX, part.radiusY, 1.0f };
     volume.shape = CollisionShape::kBox;
     volume.partId = i;
     volume.normal = volume.axes[2];

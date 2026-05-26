@@ -203,11 +203,11 @@ void grapesBoss::BulletMirror(const CollisionVolume& volume, PlayerBullet* bulle
     float dot = bulletVelocity.x * normal.x + bulletVelocity.y * normal.y + bulletVelocity.z * normal.z;
 
     Vector3 reflectVelocity;
-    reflectVelocity.x = bulletVelocity.x - 2.0f * dot * normal.x;
-    reflectVelocity.y = bulletVelocity.y - 2.0f * dot * normal.y;
-    reflectVelocity.z = bulletVelocity.z - 2.0f * dot * normal.z;
+    reflectVelocity.x = (bulletVelocity.x - 2.0f) * dot * normal.x;
+    reflectVelocity.y = (bulletVelocity.y - 2.0f) * dot * normal.y;
+    reflectVelocity.z = (bulletVelocity.z - 2.0f) * dot * normal.z;
 
-    reflectVelocity.z *= 1.3f;
+    reflectVelocity.z *= 1.1f;
 
     // 敵の弾（反射弾）を新しく追加
     std::unique_ptr<HomingEnemyBullet> newBulletEnemy = std::make_unique<HomingEnemyBullet>();
@@ -215,7 +215,9 @@ void grapesBoss::BulletMirror(const CollisionVolume& volume, PlayerBullet* bulle
     newBulletEnemy->Initialize(camera_, bulletPos);
     newBulletEnemy->SetBulletAcceleration(reflectVelocity);
     newBulletEnemy->SetTargetPosition(player_->GetPosition());
-    newBulletEnemy->SetUpgrade(1.0f);
+    newBulletEnemy->SetUpgrade(0.2f);
+    newBulletEnemy->SethomingPower(0.3f);
+    newBulletEnemy->SetLockTimer(0.0f);
     newBulletEnemy->Update();
 
     // GrapesBossクラスが持つ enemyBullet_ リストに追加
@@ -363,8 +365,8 @@ void grapesBoss::BulletUpdate()
         // 弱点が攻撃をする
         newBulletEnemy->SetBulletAcceleration(Vector3(0.0f, 0.0f, -0.08f));
         newBulletEnemy->SetTargetPosition(player_->GetPosition());
-        newBulletEnemy->SetAcceleration(0.5f);
-        newBulletEnemy->SetUpgrade(1.0f);
+        newBulletEnemy->SetAcceleration(0.2f);
+        newBulletEnemy->SetUpgrade(0.4f);
         newBulletEnemy->Update();
 
         intervalCount++;

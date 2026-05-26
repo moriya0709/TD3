@@ -104,6 +104,7 @@ void GamePlayScene::Initialize() {
 	playerHPEmpty_->Initialize("Resource/white.png");
 	playerHPEmpty_->SetAnchorPoint({0.0f, 0.0f}); // サイズ調整
 	playerHPEmpty_->SetPosition({39.0f, 22.0f});  // UIの透過部分に合うように
+	
 
 
 	for (int i = 0; i < 3; i++)
@@ -230,9 +231,23 @@ void GamePlayScene::Update() {
 	playerHPGauge_->SetSize({maxBarWidth * hpRate, 30.0f});
 	playerHPEmpty_->SetSize({maxBarWidth, 30.0f});
 
-	// ゲージの色を変える
-	playerHPGauge_->SetColor(Vector4(0.0f, 1.0f, 1.0f, 1.0f)); // 水色(ゲージ部分)
-	playerHPEmpty_->SetColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f)); // 暗いグレー(空部分)
+	// --- 追加：HPバーの透明度調整 ---
+	float hpAlpha = 1.0f; // 基本は不透明 (1.0)
+
+	// プレイヤーの3D座標を2Dの画面座標に変換
+	Vector2 playerScreenPos = camera->WorldToScreen(player_->GetPosition());
+
+	// プレイヤーがHPバーの近く(画面左上)にいるか判定
+	// (HPバーのサイズや位置に合わせて判定範囲は調整してください)
+	if (playerScreenPos.x < 300.0f && playerScreenPos.y < 150.0f) {
+		hpAlpha = 0.3f; // 近づいたら透明度を下げる (0.0=透明, 1.0=不透明)
+	}
+
+	// 外枠、ゲージ、空部分の色(RGB)と透明度(Alpha)を設定
+	playerHpUI_->SetColor(Vector4(1.0f, 1.0f, 1.0f, hpAlpha));    // 外枠
+	playerHPGauge_->SetColor(Vector4(0.0f, 1.0f, 1.0f, hpAlpha)); // 水色(ゲージ部分)
+	playerHPEmpty_->SetColor(Vector4(0.2f, 0.2f, 0.2f, hpAlpha)); // 暗いグレー(空部分)
+	// ---------------------------------
 
 	// クリア条件の分岐
 	if (isBossBattle_) {
