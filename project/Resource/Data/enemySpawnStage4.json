@@ -1104,8 +1104,8 @@
         },
         {
             "popTime": 34.0,
-            "type": "NormalEnemy",
-            "hp": 1000,
+            "type": "TargetEnemy",
+            "hp": 170,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1114,9 +1114,9 @@
             "movePattern": [
                 {
                     "target": {
-                        "x": 12.0,
-                        "y": 2.0,
-                        "z": 30.0
+                        "x": 0.0,
+                        "y": 10.0,
+                        "z": 60.0
                     },
                     "timeToReach": 1.0,
                     "timeToStop": 5.0
@@ -1143,8 +1143,8 @@
             "movePattern": [
                 {
                     "target": {
-                        "x": 9.0,
-                        "y": 2.0,
+                        "x": 1.0,
+                        "y": 1.0,
                         "z": 30.0
                     },
                     "timeToReach": 1.0,
@@ -1162,8 +1162,8 @@
         },
         {
             "popTime": 34.0,
-            "type": "NormalEnemy",
-            "hp": 1000,
+            "type": "TargetEnemy",
+            "hp": 180,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1172,9 +1172,9 @@
             "movePattern": [
                 {
                     "target": {
-                        "x": 3.0,
-                        "y": 2.0,
-                        "z": 30.0
+                        "x": 10.0,
+                        "y": -10.0,
+                        "z": 60.0
                     },
                     "timeToReach": 1.0,
                     "timeToStop": 5.0
@@ -1201,8 +1201,8 @@
             "movePattern": [
                 {
                     "target": {
-                        "x": 0.0,
-                        "y": 2.0,
+                        "x": -1.0,
+                        "y": -1.0,
                         "z": 30.0
                     },
                     "timeToReach": 1.0,
@@ -1220,8 +1220,8 @@
         },
         {
             "popTime": 34.0,
-            "type": "NormalEnemy",
-            "hp": 1000,
+            "type": "TargetEnemy",
+            "hp": 180,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1230,8 +1230,8 @@
             "movePattern": [
                 {
                     "target": {
-                        "x": -3.0,
-                        "y": 2.0,
+                        "x": -10.0,
+                        "y": -10.0,
                         "z": 30.0
                     },
                     "timeToReach": 1.0,
@@ -1242,6 +1242,122 @@
                 "target": {
                     "x": 20.0,
                     "y": 100.0,
+                    "z": 100.0
+                },
+                "timeToReach": 1.0
+            }
+        },
+        {
+            "popTime": 39.0,
+            "type": "HomingEnemy",
+            "hp": 100,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 400.0
+            },
+            "movePattern": [
+                {
+                    "target": {
+                        "x": 20.0,
+                        "y": 10.0,
+                        "z": 60.0
+                    },
+                    "timeToReach": 1.0,
+                    "timeToStop": 5.0
+                }
+            ],
+            "flee": {
+                "target": {
+                    "x": 10.0,
+                    "y": 100.0,
+                    "z": 100.0
+                },
+                "timeToReach": 1.0
+            }
+        },
+        {
+            "popTime": 39.0,
+            "type": "HomingEnemy",
+            "hp": 100,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 400.0
+            },
+            "movePattern": [
+                {
+                    "target": {
+                        "x": -20.0,
+                        "y": 10.0,
+                        "z": 60.0
+                    },
+                    "timeToReach": 1.0,
+                    "timeToStop": 5.0
+                }
+            ],
+            "flee": {
+                "target": {
+                    "x": -10.0,
+                    "y": 100.0,
+                    "z": 100.0
+                },
+                "timeToReach": 1.0
+            }
+        },
+        {
+            "popTime": 39.0,
+            "type": "HomingEnemy",
+            "hp": 100,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 400.0
+            },
+            "movePattern": [
+                {
+                    "target": {
+                        "x": -20.0,
+                        "y": -10.0,
+                        "z": 60.0
+                    },
+                    "timeToReach": 1.0,
+                    "timeToStop": 5.0
+                }
+            ],
+            "flee": {
+                "target": {
+                    "x": 10.0,
+                    "y": -100.0,
+                    "z": 100.0
+                },
+                "timeToReach": 1.0
+            }
+        },
+        {
+            "popTime": 39.0,
+            "type": "HomingEnemy",
+            "hp": 100,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 400.0
+            },
+            "movePattern": [
+                {
+                    "target": {
+                        "x": 20.0,
+                        "y": -10.0,
+                        "z": 60.0
+                    },
+                    "timeToReach": 1.0,
+                    "timeToStop": 5.0
+                }
+            ],
+            "flee": {
+                "target": {
+                    "x": -10.0,
+                    "y": -100.0,
                     "z": 100.0
                 },
                 "timeToReach": 1.0
