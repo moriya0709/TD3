@@ -132,8 +132,9 @@ void TitleScene::Initialize() {
 	object[1]->SetModel("skydome.obj");
 
 	// 音声再生
-	//SoundManager::GetInstance()->Play("bgm");
-
+	SoundManager::GetInstance()->Play("title.mp3");
+	//再生フラグ
+	isTitleBGMPlaying_ = false;
 }
 
 void TitleScene::Update() {
@@ -141,6 +142,11 @@ void TitleScene::Update() {
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
+	
+	if (!isTitleBGMPlaying_) {
+		SoundManager::GetInstance()->Play("title.mp3", true);
+		isTitleBGMPlaying_ = true;
+	}
 
 	// カメラ更新
 	//cameraTransform.translate.x += 0.05f;
@@ -153,6 +159,8 @@ void TitleScene::Update() {
 
 		if(intensity <= 0.0f){
 			// シーン切り替え処理
+			SoundManager::GetInstance()->Stop("title.mp3");
+			isTitleBGMPlaying_ = false;
 			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		}
 

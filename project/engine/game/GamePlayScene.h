@@ -192,6 +192,10 @@ private:
 	int maxHP_ = 0;                                    // HPの最大値
     float side = 0.0f;//HPの端
 
+    //必殺技回数
+    std::unique_ptr<Sprite> gaugeUI_ = nullptr;//まだ使える
+    std::unique_ptr<Sprite> gaugeEmptyUI_ = nullptr;//空ゲージ
+
     Style style_ = Style::normal;
     // リスト
     std::unique_ptr<EnemyManager> enemy_ = nullptr;
@@ -263,7 +267,9 @@ private:
     Pause currentGameOverUI_ = Pause::kSelect;
 	bool isGameOver = false;
     
-
+    //再生フラグ
+    bool isPlayBGMPlaying_ = false;
+    bool isBossBGMPlaying_ = false;
 
     void SceneChangedEffect();
 
