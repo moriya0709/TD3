@@ -16,7 +16,19 @@ void NormalEnemyBullet::Initialize(Camera* camera, Vector3 Pos)
     object_->SetTranslate(transform_.translate);
 
     activeTimer = maxactiveTimer;
-    acceleration.z = 0.1f;
+    Vector3 camRot = camera_->GetRotate(); // ※関数名は環境に合わせて変更してください
+    // 度数法（0〜360度）ならラジアンに変換。元からラジアンなら * 3.14... の行は不要です
+    float rotX = camRot.x * (3.141592f / 180.0f);
+    float rotY = camRot.y * (3.141592f / 180.0f);
+
+    // 回転角から正面を向くベクトルを計算
+    Vector3 forward;
+    forward.x = sinf(rotY) * cosf(rotX);
+    forward.y = -sinf(rotX);
+    forward.z = cosf(rotY) * cosf(rotX);
+    forward = Normalize(forward);
+
+    acceleration = forward * 0.1f; // 正面方向へ加速
 }
 
 void NormalEnemyBullet::Update()
