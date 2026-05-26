@@ -325,6 +325,9 @@ void StageSelect::LithingEffect() {
 	PostEffect::GetInstance()->SetInversion(isInversion);
 	// グレースケール
 	PostEffect::GetInstance()->SetGrayscale(isGrayscale);
+	PostEffect::GetInstance()->SetTwoColor(isTwoColor);
+	PostEffect::GetInstance()->SetThreshold(threshold);
+	PostEffect::GetInstance()->SetContrast(contrast);
 	// 放射線ブラー
 	PostEffect::GetInstance()->SetRadialBlur(isRadialBlur);
 	PostEffect::GetInstance()->SetBlurCenter(blurCenter);
@@ -364,6 +367,13 @@ void StageSelect::LithingEffect() {
 	// スピードディストーション
 	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
 	PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
+	// 集中線
+	PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
+	PostEffect::GetInstance()->SetConcentrationLineIntensity(concentrationLineIntensity);
+	PostEffect::GetInstance()->SetConcentrationLineCenter(concentrationLineCenter);
+	PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
+	PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
+	PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
 	// エフェクトの強さ
 	PostEffect::GetInstance()->SetIntensity(intensity);
 

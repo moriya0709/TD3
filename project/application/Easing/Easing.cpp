@@ -237,6 +237,20 @@ void Easing::Number(EasingSet& ui, float timeSpeed, int num) {
 	ui.num = Lerp(ui.startNumber, ui.endNumber, ui.numberEasedT);
 }
 
+void Easing::Color(EasingSet& ui, float timeSpeed, int num) {
+	// イージング処理
+
+	ui.colorTime += timeSpeed;
+
+	if (ui.colorTime > 1.0f) {
+		ui.colorTime = 1.0f;
+	}
+
+	ui.colorEasedT = BezierEasing(ui.colorTime, easeP[num][0], easeP[num][1], easeP[num][2], easeP[num][3]);
+
+	ui.color = Lerp(ui.startColor, ui.endColor, ui.colorEasedT);
+}
+
 float Easing::Lerp(const float& p0, const float& p1, float t) {
 	float result;
 	result = (1.0f - t) * p0 + t * p1;
@@ -256,6 +270,15 @@ Vector3 Easing::Lerp(const Vector3& p0, const Vector3& p1, float t) {
 	result.x = (1.0f - t) * p0.x + t * p1.x;
 	result.y = (1.0f - t) * p0.y + t * p1.y;
 	result.z = (1.0f - t) * p0.z + t * p1.z;
+	return result;
+}
+
+Vector4 Easing::Lerp(const Vector4& p0, const Vector4& p1, float t) {
+	Vector4 result;
+	result.x = (1.0f - t) * p0.x + t * p1.x;
+	result.y = (1.0f - t) * p0.y + t * p1.y;
+	result.z = (1.0f - t) * p0.z + t * p1.z;
+	result.w = (1.0f - t) * p0.w + t * p1.w;
 	return result;
 }
 
