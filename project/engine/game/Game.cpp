@@ -104,7 +104,11 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("./Resource","walk.gltf");
 	// サウンド
 	SoundManager::GetInstance()->Initialize();
-	SoundManager::GetInstance()->Load("bgm", "game.mp3");
+	SoundManager::GetInstance()->Load("title.mp3", "title.mp3");
+	SoundManager::GetInstance()->Load("select.mp3", "select.mp3");
+	SoundManager::GetInstance()->Load("stage.mp3", "stage.mp3");
+	SoundManager::GetInstance()->Load("boss.mp3", "boss.mp3");
+	SoundManager::GetInstance()->Load("result.mp3", "result.mp3");
 
 	// ポストエフェクト
 	PostEffect::GetInstance()->Initialize(dxCommon, windowAPI.get(), SrvManager::GetInstance());

@@ -443,6 +443,18 @@
             "score": 0,
             "stageName": "5",
             "time": 0.0
+        },
+        {
+            "ModelName": "sniper.obj",
+            "score": 1300,
+            "stageName": "1",
+            "time": 0.0
+        },
+        {
+            "ModelName": "normal.obj",
+            "score": 0,
+            "stageName": "3",
+            "time": 0.0
         }
     ]
 }
