@@ -221,9 +221,9 @@ void StageSelect::Update() {
 
 		if (intensity <= 0.0f) {
 			// シーン切り替え処理
-			SceneManager::GetInstance()->ChangeScene("TITLE");
 			SoundManager::GetInstance()->Stop("select.mp3");
 			isSelectBGMPlaying_ = false;
+			SceneManager::GetInstance()->ChangeScene("TITLE");
 		}
 	} else {
 		if (intensity <= 1.0f)
@@ -320,9 +320,9 @@ void StageSelect::TransitionUpdate() {
 
 		if(bookEasing.sizeEasedT >= 1.0f) {
 			// シーン切り替え
-			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 			SoundManager::GetInstance()->Stop("select.mp3");
 			isSelectBGMPlaying_ = false;
+			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 		}
 
 	}

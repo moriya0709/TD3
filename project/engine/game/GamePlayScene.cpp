@@ -120,7 +120,14 @@ void GamePlayScene::Initialize() {
 	playerHPEmpty_->SetAnchorPoint({0.0f, 0.0f}); // サイズ調整
 	playerHPEmpty_->SetPosition({39.0f, 22.0f});  // UIの透過部分に合うように
 	
+	BulletRuleUI_ = std::make_unique<Sprite>();
+	BulletRuleUI_->Initialize("Resource/UI/BulletRule.png"); // bulletルール
+	BulletRuleUI_->SetPosition({ 400.0f, 100.0f });
 
+	spacialRuleUI_ = std::make_unique<Sprite>();
+	spacialRuleUI_->Initialize("Resource/UI/specialRule.png"); // specialルール
+	spacialRuleUI_->SetPosition({ 1550.0f, 100.0f });
+	spacialRuleUI_->SetSize({ 250.0f,250.0f });
 
 	for (int i = 0; i < kMaxSpecialAttack; i++)
 	{
@@ -188,20 +195,14 @@ void GamePlayScene::Initialize() {
 
 	// 音声再生
 	SoundManager::GetInstance()->Play("stage.mp3");
-	SoundManager::GetInstance()->Play("boss.mp3");
 
 	//再生フラグ
-	isPlayBGMPlaying_ = false;
+	isPlayBGMPlaying_ = true;
 	isBossBGMPlaying_ = false;
 
 }
 
 void GamePlayScene::Update() {
-
-	if (!isPlayBGMPlaying_) {
-		SoundManager::GetInstance()->Play("stage.mp3", true);
-		isPlayBGMPlaying_ = true;
-	}
 
 	if (!isPause_) {
 		// セレクトからシーン切り替えした時のエフェクト
@@ -280,15 +281,30 @@ void GamePlayScene::Update() {
 
 	// クリア条件の分岐
 	if (isBossBattle_) {
-
 		if (cameraController_->GetElapsedTime() >= kMaxTime_) {
 			if (bossPopFlag == 2) {
+
+				if (!isBossBGMPlaying_) {
+					SoundManager::GetInstance()->Stop("stage.mp3");
+					isPlayBGMPlaying_ = false;
+					SoundManager::GetInstance()->Play("boss.mp3");
+					isBossBGMPlaying_ = true;
+				}
+
 				enemy_->SetEnemyclear();
 				cameraController_ = std::make_unique<GrapeCameraController>();
 				cameraController_->Initialize(camera.get());
 				enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
 				bossPopFlag = 4;
 			} else if (bossPopFlag == 3) {
+
+				if (!isBossBGMPlaying_) {
+					SoundManager::GetInstance()->Stop("stage.mp3");
+					isPlayBGMPlaying_ = false;
+					SoundManager::GetInstance()->Play("boss.mp3");
+					isBossBGMPlaying_ = true;
+				}
+
 				enemy_->SetEnemyclear();
 				cameraController_ = std::make_unique<BananaCameraController>();
 				cameraController_->Initialize(camera.get());
@@ -351,18 +367,18 @@ void GamePlayScene::Update() {
 			if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 				if (currentGameOverUI_ == Pause::kSelect) {
 					// セレクトシーンを生成
-					SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 					SoundManager::GetInstance()->Stop("stage.mp3");
 					SoundManager::GetInstance()->Stop("boss.mp3");
 					isPlayBGMPlaying_ = false;
 					isBossBGMPlaying_ = false;
+					SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 				} else if (currentGameOverUI_ == Pause::kRetry) {
 					// ゲームプレイシーンを生成
-					SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 					SoundManager::GetInstance()->Stop("stage.mp3");
 					SoundManager::GetInstance()->Stop("boss.mp3");
 					isPlayBGMPlaying_ = false;
 					isBossBGMPlaying_ = false;
+					SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 				}
 			}
 		}
@@ -444,6 +460,8 @@ void GamePlayScene::Draw2D() {
 		resume_->Draw();  // ポーズ//続ける
 		retry_->Draw();   // リトライ
 		select_->Draw();  // セレクトへ
+		BulletRuleUI_->Draw();
+		spacialRuleUI_->Draw();
 	}
 }
 
@@ -481,7 +499,6 @@ void GamePlayScene::Draw3D() {
 
 void GamePlayScene::Finalize() {
 	CameraManager::GetInstance()->RemoveCamera("main");
-	animationObjects.clear();
 }
 
 void GamePlayScene::SetPlayerStyle(int style) { style_ = static_cast<Style>(style); }
@@ -643,11 +660,11 @@ void GamePlayScene::PauseSelect() {
 	case Pause::kRetry:
 		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 			// ゲームプレイシーン(次シーン)を生成
-			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 			SoundManager::GetInstance()->Stop("stage.mp3");
 			SoundManager::GetInstance()->Stop("boss.mp3");
 			isPlayBGMPlaying_ = false;
 			isBossBGMPlaying_ = false;
+			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 		}
 		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
 			currentPause_ = Pause::kResume;
@@ -679,11 +696,11 @@ void GamePlayScene::PauseSelect() {
 	case Pause::kSelect:
 		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 			// ゲームプレイシーン(次シーン)を生成
-			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 			SoundManager::GetInstance()->Stop("stage.mp3");
 			SoundManager::GetInstance()->Stop("boss.mp3");
 			isPlayBGMPlaying_ = false;
 			isBossBGMPlaying_ = false;
+			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		}
 		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
 			currentPause_ = Pause::kRetry;
@@ -731,6 +748,8 @@ void GamePlayScene::PauseSelect() {
 	retry_->Update();
 	select_->Update();
 	pauseBg_->Update();
+	BulletRuleUI_->Update();
+	spacialRuleUI_->Update();
 }
 
 void GamePlayScene::StageClear() {
@@ -750,11 +769,11 @@ void GamePlayScene::StageClear() {
 	// 保存実行
 	scoreManager_.SaveScene(score_, currentStage, currentModel, playTimer_);
 
-	SceneManager::GetInstance()->ChangeScene("RESULT");
 	SoundManager::GetInstance()->Stop("stage.mp3");
 	SoundManager::GetInstance()->Stop("boss.mp3");
 	isPlayBGMPlaying_ = false;
 	isBossBGMPlaying_ = false;
+	SceneManager::GetInstance()->ChangeScene("RESULT");
 }
 
 void GamePlayScene::LithingEffect() {
