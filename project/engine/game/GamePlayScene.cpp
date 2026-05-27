@@ -127,11 +127,13 @@ void GamePlayScene::Initialize() {
 		//必殺技回数ゲージ
 		gaugeUI_[i] = std::make_unique<Sprite>();
 		gaugeUI_[i]->Initialize("Resource/UI/HissatuGage.png");
-		gaugeUI_[i]->SetPosition({ 120.0f, 10.0f });
+		gaugeUI_[i]->SetPosition({ 280.0f+i*60.0f, 40.0f });
+		gaugeUI_[i]->SetSize({50.0f, 50.0f});
 		//必殺技回数空
 		gaugeEmptyUI_[i] = std::make_unique<Sprite>();
 		gaugeEmptyUI_[i]->Initialize("Resource/UI/HissatuNoGage.png");
-		gaugeEmptyUI_[i]->SetPosition({ 140.0f, 10.0f });
+		gaugeEmptyUI_[i]->SetPosition({ 280.0f+i*60.0f, 40.0f });
+		gaugeEmptyUI_[i]->SetSize({50.0f, 50.0f});
 
 	}
 
@@ -235,6 +237,18 @@ void GamePlayScene::Update() {
 	} else { // ポーズ画面
 		PauseSelect();
 	}
+	int currentSpecialCount = player_->GetSpecialAttackCount();
+
+	for (int i = 0; i < kMaxSpecialAttack; i++) {
+		if (i < currentSpecialCount) {
+			// 残弾数より小さいインデックスなら、満タンのゲージを描画
+			gaugeUI_[i]->Update();
+		} else {
+			// それ以外（使ってしまった分）は空のゲージを描画
+			gaugeEmptyUI_[i]->Update();
+		}
+	}
+
 
 	if (isPause_ || isFinished_)
 		return;

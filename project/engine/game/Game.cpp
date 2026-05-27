@@ -44,6 +44,8 @@ void Game::Initialize() {
 	TextureManager::GetInstance()->LoadTexture("Resource/trail/trail.png");
 
 	TextureManager::GetInstance()->LoadTexture("Resource/UI/playerHp.png");//playerHPBar
+	TextureManager::GetInstance()->LoadTexture("Resource/UI/HissatuGage.png");
+	TextureManager::GetInstance()->LoadTexture("Resource/UI/HissatuNoGage.png");
 
 	// パーティクルマネージャ初期化
 	ParticleManager::GetInstance()->CreateParticleGroup("group1", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
