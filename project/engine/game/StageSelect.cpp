@@ -191,6 +191,18 @@ void StageSelect::Update() {
 					isTransition = true;
 					isSpeedDistortion = true;
 					isRadialBlur = true;
+
+					if(currentStage == 1)
+						rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
+					else if(currentStage == 2)
+						rayMarchingSunDir = { -0.34f, -0.15f, -1.0f };
+					else if(currentStage == 3)
+						rayMarchingSunDir = { 0.0f, 0.01f, -1.0f };
+					else if(currentStage == 4)
+						rayMarchingSunDir = { 0.12f, 0.05f, 1.0f };
+					else if(currentStage == 5)
+						rayMarchingSunDir = { -0.42f, -0.33f, -1.0f };
+
 				}
 
 			} else {
@@ -404,6 +416,7 @@ void StageSelect::LithingEffect() {
 	RayMarching::GetInstance()->SetAnimeLight(rayMarchingIsAnimeLight);
 	RayMarching::GetInstance()->SetMotionBlur(rayMarchingIsMotionBlur);
 	RayMarching::GetInstance()->SetCloudOpacity(rayMarchingCloudOpacity);
+
 
 #pragma endregion
 }

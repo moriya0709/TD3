@@ -6,14 +6,14 @@ void Easing::Initialize() {
 
 	// 一般的なイージング
 	LoadEasing("Easing/normal.csv", 0);
-	// 磁力エリア切り替え
+	// ワープ
 	LoadEasing("Easing/warp.csv", 1);
 	// セレクトUI
 	LoadEasing("Easing/select.csv", 2);
 	// タイトル
 	LoadEasing("Easing/title.csv", 3);
 	// トランジション
-	LoadEasing("Easing/transition.csv", 4);
+	LoadEasing("Easing/loop.csv", 4);
 }
 
 void Easing::Update() {

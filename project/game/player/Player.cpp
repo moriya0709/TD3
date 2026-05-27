@@ -610,10 +610,6 @@ void Player::UpdateDeathAnimation() {
 		transform_.rotate.y = camRot.y + 3.14f;  // 左右角(Yaw): カメラの向き + 180度で振り向かせる
 		transform_.rotate.z = -camRot.z + 1.0f;  // 傾き(Roll): カメラの傾き反転 + 演出用の傾き(1.0f)
 
-		playerObject_->SetDirectionalLight(true);
-		playerObject_->SetDirectionalLightColor({ 0.1f, 0.1f, 0.1f, 1.0f });
-		playerObject_->SetAmbientLightColor({ 0.3f, 0.3f, 0.3f, 1.0f });
-		playerObject_->SetSunLight(false);
 	}
 
 	// 3. カメラの向きに合わせてワールド座標を再計算

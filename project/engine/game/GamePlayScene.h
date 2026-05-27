@@ -23,6 +23,8 @@
 #include "Easing.h"
 #include "TrailEffect.h"
 
+#include <random>
+
 class SpriteCommon;
 class ObjectCommon;
 
@@ -149,25 +151,15 @@ private:
     float speedDistortionStrength = 1.0f; // 歪みの強さ
     // 集中線
     bool isConcentrationLines = false; // 集中線のON/OFF
-    float concentrationLineIntensity = 0.4f; // 線の濃さ
+    float concentrationLineIntensity = 0.02f; // 線の濃さ
     Vector2 concentrationLineCenter = { 0.5f, 0.5f };  // 中心座標 (通常 0.5, 0.5)
     float concentrationLineDensity = 1000.0f;   // 線の密度（本数）
-    float concentrationLineLength = 0.0f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
+    float concentrationLineLength = 0.35f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
     float concentrationLineSpeed = 20.0f;     // 線の動く速さ
 
-    // レイマーチング
-    //float rayMarchingTime = 0.0f; ;
-    Vector3 rayMarchingSunDir = { 0.07f, -0.17f, -0.75f };
-    float rayMarchingCloudCoverage = 0.22f;
-    float rayMarchingCloudBottom = 70.0f;
-    float rayMarchingCloudTop = -300.0f;
-    bool rayMarchingIsRialLight = false;
-    bool rayMarchingIsAnimeLight = true;
-    bool  rayMarchingIsMotionBlur = false;
-    float  rayMarchingCloudOpacity = 0.01f;
-    bool isStorm = false;
-    float thunderFrequency = 0.3f;
-    float thunderBrightness = 120.0f;
+    // エフェクトの強さ
+    float intensity = 1.0f;
+
 	int bossPopFlag = 0;
 
     // カメラ
@@ -269,6 +261,46 @@ private:
     Pause currentGameOverUI_ = Pause::kSelect;
 	bool isGameOver = false;
     
+    // *ボス登場演出* //
+
+	// 警告
+	const int kWarningLine_ = 2;
+	std::unique_ptr<Sprite> warning_ = nullptr;
+    std::unique_ptr<Sprite> warningLine_[2] = {};
+	Vector2 warningLinePos_[2] = {};
+	float warningLineSpeed_ = 5.0f;
+	float warningTimer_ = 3.0f;
+	float bossAppearsTimer_ = 7.0f;
+	EasingSet warningEasing_;
+
+	// ブドウ
+	const int kBossAppearsGrapes_ = 7;
+    std::unique_ptr<Object> bossAppearsGrapes_[7] = {};
+    EasingSet grapesEasing_[7];
+	int randGrapes_ = 0;
+
+	// バナナ
+    const int kBossAppearsBanana_ = 4;
+    std::unique_ptr<Object> bossAppearsBanana_[4] = {};
+    EasingSet bananaEasing_[4];
+
+    // 名前
+    std::unique_ptr<Sprite> bossAppearsName_[2] = {};
+	EasingSet nameEasing_;
+
+	// ボスの種類管理
+	enum BossAppearsState { Grapes, Banana, };
+	BossAppearsState bossAppearsState_ = Grapes;
+
+
+
+	bool isWarning_ = false;
+	bool isBossAppears_ = false;
+
+	void WarningEffect();
+	void BossAppearsUpdate();
+
+
     //再生フラグ
     bool isPlayBGMPlaying_ = false;
     bool isBossBGMPlaying_ = false;
