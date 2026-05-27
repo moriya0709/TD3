@@ -168,9 +168,9 @@ void ResultScene::Update()
 		//SPACEキーで
 		if (input->TriggerKey(DIK_SPACE)) {
 			// ゲームプレイシーン(次シーン)を生成
-			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 			SoundManager::GetInstance()->Stop("result.mp3");
 			isResultBGMPlaying_ = false;
+			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		}
 	}
 

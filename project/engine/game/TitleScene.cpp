@@ -28,22 +28,23 @@ void TitleScene::Initialize() {
 		std::string filePath;
 		Vector2 pos;
 		float rot;
+		//Vector2 anchor;//文字がある場所の比率
 	};
 
 	//初期化データ配列
 	std::vector<TitleData> initDatas = {
-	{ "Resource/title/titleF.png",           { 950.0f, 300.0f },0.0f },  // フ
-	{ "Resource/title/titleR.png",           { 950.0f, 300.0f },0.0f },  // ル
-	{ "Resource/title/title-.png",           { 950.0f, 300.0f },0.0f },  // ー
-	{ "Resource/title/titleT.png",           { 950.0f, 300.0f },0.0f },  // ツ
-	{ "Resource/title/titleKamiHikouki.png", { 950.0f, 300.0f },0.0f },  // 紙飛行機
-	{ "Resource/title/titleCloud.png",       { 950.0f, 300.0f },0.0f },  // タの雲
-	{ "Resource/title/titleB.png",           { 950.0f, 300.0f },0.0f },  // バスタズ
-	{ "Resource/title/titleEgg.png",         { 950.0f, 300.0f },0.0f },  // バの濁点
-	{ "Resource/title/titleHouki.png",       { 950.0f, 300.0f },0.0f },  // ー
-	{ "Resource/title/titleKusege.png",      { 950.0f, 300.0f },0.0f },  // ズの頭
-	{ "Resource/title/titleFoot.png",        { 950.0f, 300.0f },0.0f },  // ズの足
-	{ "Resource/title/titleNasu.png",        { 950.0f, 300.0f },0.0f }   // ズの濁点
+	{ "Resource/title/titleF.png",           { 950.0f, 300.0f },0.0f,},  // フ
+	{ "Resource/title/titleR.png",           { 950.0f, 300.0f },0.0f, },  // ル
+	{ "Resource/title/title-.png",           { 950.0f, 300.0f },0.0f, },  // ー
+	{ "Resource/title/titleT.png",           { 950.0f, 300.0f },0.0f, },  // ツ
+	{ "Resource/title/titleKamiHikouki.png", { 950.0f, 300.0f },0.0f, },  // 紙飛行機
+	{ "Resource/title/titleCloud.png",       { 950.0f, 300.0f },0.0f, },  // タの雲
+	{ "Resource/title/titleB.png",           { 950.0f, 300.0f },0.0f, },  // バスタズ
+	{ "Resource/title/titleEgg.png",         { 950.0f, 300.0f },0.0f, },  // バの濁点
+	{ "Resource/title/titleHouki.png",       { 950.0f, 300.0f },0.0f, },  // ー
+	{ "Resource/title/titleKusege.png",      { 950.0f, 300.0f },0.0f, },  // ズの頭
+	{ "Resource/title/titleFoot.png",        { 950.0f, 300.0f },0.0f, },  // ズの足
+	{ "Resource/title/titleNasu.png",        { 950.0f, 300.0f },0.0f, }   // ズの濁点
 	};
 
 	//リストのクリアと確保
@@ -59,6 +60,7 @@ void TitleScene::Initialize() {
 		part.sprite->Initialize(data.filePath);
 		part.sprite->SetPosition(data.pos);
 		part.sprite->SetRotation(data.rot);
+		//part.sprite->SetAnchorPoint(data.anchor);
 
 		//独自のモーション用変数
 		part.position = data.pos;
@@ -199,18 +201,19 @@ void TitleScene::Update() {
 
 		case titleI://フルーツのー
 			
-			//0秒から3秒で小回転する
-			if (part.timer >= 0.0f && part.timer < 3.0f) {
+			//0秒から6秒で小回転する
+			if (part.timer >= 0.0f && part.timer < 6.0f) {
 
-				float rate = part.timer / 3.0f;//0～3秒で回る
-				float ease = std::sin(rate * 3.141592f);//処理側が止まるとき察してくれる
-				part.rotation = ease * 0.3f;
-			}
-			else if (part.timer >= 6.0f && part.timer < 9.0f) {
+				float rate = part.timer / 6.0f; // 0.0 ～ 1.0 の進捗率
 
-				float rate = (part.timer - 6.0f) / 3.0f;//0～3秒で回る
-				float ease = std::sin(rate * 3.141592f);//処理側が止まるとき察してくれる
-				part.rotation = ease * 0.3f;
+				// 6秒かけて1往復半
+				float swing = std::sin(rate * 3.141592f * 3.0f);
+
+				// 4.0fという数字を処理側に固定しておくことで、ちょうど2往復して綺麗に正面に
+				float envelope = std::sin(rate * 3.141592f);
+
+				// スピードを落とし滑らかに着地
+				part.rotation = swing * envelope * 0.35f;
 			}
 			else {
 				part.rotation = 0.0f;
@@ -708,5 +711,4 @@ void TitleScene::Draw3D() {
 
 void TitleScene::Finalize() {
 	CameraManager::GetInstance()->RemoveCamera("main");
-	animationObjects.clear();
 }
