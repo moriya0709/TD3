@@ -107,12 +107,12 @@ void GamePlayScene::Initialize() {
 	
 	BulletRuleUI_ = std::make_unique<Sprite>();
 	BulletRuleUI_->Initialize("Resource/UI/BulletRule.png"); // bulletルール
-	BulletRuleUI_->SetPosition({ 1300.0f, 100.0f });
+	BulletRuleUI_->SetPosition({ 400.0f, 100.0f });
 
 	spacialRuleUI_ = std::make_unique<Sprite>();
 	spacialRuleUI_->Initialize("Resource/UI/specialRule.png"); // specialルール
-	spacialRuleUI_->SetPosition({ 1600.0f, 100.0f });
-	spacialRuleUI_->SetSize({ 200.0f,200.0f });
+	spacialRuleUI_->SetPosition({ 1550.0f, 100.0f });
+	spacialRuleUI_->SetSize({ 250.0f,250.0f });
 
 	for (int i = 0; i < 3; i++)
 	{

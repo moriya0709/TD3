@@ -50,15 +50,6 @@ void StageSelect::Initialize() {
 	space_->Initialize("Resource/space.png"); // space進める
 	space_->SetPosition({ 950.0f, 1000.0f });
 
-	BulletRuleUI_ = std::make_unique<Sprite>();
-	BulletRuleUI_->Initialize("Resource/UI/BulletRule.png"); // bulletルール
-	BulletRuleUI_->SetPosition({ 1750.0f, 700.0f });
-
-	spacialRuleUI_ = std::make_unique<Sprite>();
-	spacialRuleUI_->Initialize("Resource/UI/specialRule.png"); // specialルール
-	spacialRuleUI_->SetPosition({ 1720.0f, 850.0f });
-	spacialRuleUI_->SetSize({200.0f,200.0f });
-
 	// 本型UI
 	std::vector<std::string> textures = {
 	"Resource/bookUi/cover.png",
@@ -247,8 +238,6 @@ void StageSelect::Update() {
 
 	return_->Update();
 	space_->Update();
-	BulletRuleUI_->Update();
-	spacialRuleUI_->Update();
 
 	// レーダーチャート
 
@@ -281,8 +270,6 @@ void StageSelect::Draw2D() {
 
 	return_->Draw();
 	space_->Draw();
-	BulletRuleUI_->Draw();
-	spacialRuleUI_->Draw();
 
 	//if (switchCooltime <= 0.0f) {
 	//	for (int i = 0; i < kMaxParameter; i++) {

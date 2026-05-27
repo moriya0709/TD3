@@ -166,8 +166,7 @@ private:
 	//スプライト
 	std::unique_ptr<Sprite> return_ = nullptr;
 	std::unique_ptr<Sprite> space_ = nullptr;
-	std::unique_ptr<Sprite> BulletRuleUI_ = nullptr; // bulletルール
-	std::unique_ptr<Sprite> spacialRuleUI_ = nullptr; // spacialルール
+
 
 	// 本型UI
 	std::unique_ptr <Book> book = nullptr;
