@@ -7,8 +7,8 @@
             "chargeTime": 40,
             "cost": 0,
             "haste": 10,
-            "hommingAccuracy": 0.014999999664723873,
-            "hp": 110,
+            "hommingAccuracy": 0.05000000074505806,
+            "hp": 92,
             "renge": 200.0,
             "speed": 0.25
         },
@@ -19,7 +19,7 @@
             "chargeTime": 12,
             "cost": 0,
             "haste": 3,
-            "hommingAccuracy": 0.019999999552965164,
+            "hommingAccuracy": 0.10000000149011612,
             "hp": 75,
             "renge": 150.0,
             "speed": 0.3499999940395355
@@ -31,14 +31,14 @@
             "chargeTime": 90,
             "cost": 0,
             "haste": 60,
-            "hommingAccuracy": 0.00989999994635582,
+            "hommingAccuracy": 0.009999999776482582,
             "hp": 150,
             "renge": 175.0,
-            "speed": 0.30000001192092896
+            "speed": 0.20000000298023224
         },
         {
-            "attack": 20,
-            "chargeAttack": 400,
+            "attack": 25,
+            "chargeAttack": 500,
             "chargeSize": 20,
             "chargeTime": 100,
             "cost": 0,
@@ -46,7 +46,7 @@
             "hommingAccuracy": 0.0,
             "hp": 100,
             "renge": 250.0,
-            "speed": 0.20000000298023224
+            "speed": 0.30000001192092896
         }
     ]
 }

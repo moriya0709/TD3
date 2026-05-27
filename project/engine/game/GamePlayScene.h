@@ -181,9 +181,15 @@ private:
     std::unique_ptr<Sprite> playerHpUI_ = nullptr;//hpUI部分(縁)
     std::unique_ptr<Sprite> playerHPGauge_ = nullptr; // ゲージ部分
     std::unique_ptr<Sprite> playerHPEmpty_ = nullptr; // HPバー空部分
+    std::unique_ptr<Sprite> BulletRuleUI_ = nullptr; // bulletルール
+    std::unique_ptr<Sprite> spacialRuleUI_ = nullptr; // spacialルール
 	int maxHP_ = 0;                                    // HPの最大値
     float side = 0.0f;//HPの端
 
+    //必殺技回数
+	static const int kMaxSpecialAttack = 2;
+	std::unique_ptr<Sprite> gaugeUI_[kMaxSpecialAttack];
+	std::unique_ptr<Sprite> gaugeEmptyUI_[kMaxSpecialAttack];
     Style style_ = Style::normal;
     // リスト
     std::unique_ptr<EnemyManager> enemy_ = nullptr;
@@ -295,7 +301,9 @@ private:
 	void BossAppearsUpdate();
 
 
-
+    //再生フラグ
+    bool isPlayBGMPlaying_ = false;
+    bool isBossBGMPlaying_ = false;
 
     void SceneChangedEffect();
 

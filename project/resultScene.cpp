@@ -96,6 +96,13 @@ void ResultScene::Initialize()
 		object[i] = std::make_unique <Object>();
 		object[i]->Initialize(camera.get());
 	}
+
+	// 音声再生
+	SoundManager::GetInstance()->Play("result.mp3");
+
+	//再生フラグ
+	isResultBGMPlaying_ = false;
+
 }
 
 void ResultScene::Update()
@@ -104,6 +111,11 @@ void ResultScene::Update()
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
+
+	if (!isResultBGMPlaying_) {
+		SoundManager::GetInstance()->Play("result.mp3", true);
+		isResultBGMPlaying_ = true;
+	}
 
 	//スペースキーでお急ぎ用スコア表示
 	if (isScoreStartTime_ && !isCanPress_)
@@ -156,6 +168,8 @@ void ResultScene::Update()
 		//SPACEキーで
 		if (input->TriggerKey(DIK_SPACE)) {
 			// ゲームプレイシーン(次シーン)を生成
+			SoundManager::GetInstance()->Stop("result.mp3");
+			isResultBGMPlaying_ = false;
 			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		}
 	}

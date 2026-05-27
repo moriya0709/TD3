@@ -446,32 +446,14 @@
         },
         {
             "ModelName": "normal.obj",
-            "score": 0,
-            "stageName": "1",
+            "score": 12700,
+            "stageName": "2",
             "time": 0.0
         },
         {
-            "ModelName": "normal.obj",
-            "score": 0,
-            "stageName": "1",
-            "time": 0.0
-        },
-        {
-            "ModelName": "normal.obj",
-            "score": 0,
-            "stageName": "1",
-            "time": 0.0
-        },
-        {
-            "ModelName": "normal.obj",
-            "score": 0,
-            "stageName": "1",
-            "time": 0.0
-        },
-        {
-            "ModelName": "normal.obj",
-            "score": 0,
-            "stageName": "1",
+            "ModelName": "speed.obj",
+            "score": 3300,
+            "stageName": "5",
             "time": 0.0
         }
     ]

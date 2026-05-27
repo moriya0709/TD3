@@ -206,4 +206,8 @@ private:
 
 	// パラメータのイージングを設定
 	void ParameterEasingSet(Style currentStyle);
+
+	//再生フラグ
+	bool isSelectBGMPlaying_ = false;
+
 };

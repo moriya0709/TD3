@@ -81,6 +81,10 @@ void StageSelect::Initialize() {
 	book->SetPosition(bookEasing.transform.translate);
 	book->SetScale(bookEasing.transform.scale);
 
+	// 音声再生
+	SoundManager::GetInstance()->Play("select.mp3");
+	//再生フラグ
+	isSelectBGMPlaying_ = false;
 }
 
 void StageSelect::Update() {
@@ -88,6 +92,11 @@ void StageSelect::Update() {
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
+
+	if (!isSelectBGMPlaying_) {
+		SoundManager::GetInstance()->Play("select.mp3", true);
+		isSelectBGMPlaying_ = true;
+	}
 
 	// 切り換えクールタイム減少
 	switchCooltime = (std::max)(0.0f, switchCooltime - 1.0f / 60.0f);
@@ -224,6 +233,8 @@ void StageSelect::Update() {
 
 		if (intensity <= 0.0f) {
 			// シーン切り替え処理
+			SoundManager::GetInstance()->Stop("select.mp3");
+			isSelectBGMPlaying_ = false;
 			SceneManager::GetInstance()->ChangeScene("TITLE");
 		}
 	} else {
@@ -321,6 +332,8 @@ void StageSelect::TransitionUpdate() {
 
 		if(bookEasing.sizeEasedT >= 1.0f) {
 			// シーン切り替え
+			SoundManager::GetInstance()->Stop("select.mp3");
+			isSelectBGMPlaying_ = false;
 			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 		}
 

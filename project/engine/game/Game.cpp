@@ -42,8 +42,10 @@ void Game::Initialize() {
 #pragma region 最初のシーン
 	// テクスチャ読み込み
 	TextureManager::GetInstance()->LoadTexture("Resource/trail/trail.png");
-	TextureManager::GetInstance()->LoadTexture("Resource/titleF.png");//タイトル仮
+
 	TextureManager::GetInstance()->LoadTexture("Resource/UI/playerHp.png");//playerHPBar
+	TextureManager::GetInstance()->LoadTexture("Resource/UI/HissatuGage.png");
+	TextureManager::GetInstance()->LoadTexture("Resource/UI/HissatuNoGage.png");
 
 	// パーティクルマネージャ初期化
 	ParticleManager::GetInstance()->CreateParticleGroup("group1", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
@@ -104,7 +106,11 @@ void Game::Initialize() {
 	ModelManager::GetInstance()->LoadModel("./Resource","walk.gltf");
 	// サウンド
 	SoundManager::GetInstance()->Initialize();
-	SoundManager::GetInstance()->Load("bgm", "game.mp3");
+	SoundManager::GetInstance()->Load("title.mp3", "title.mp3");
+	SoundManager::GetInstance()->Load("select.mp3", "select.mp3");
+	SoundManager::GetInstance()->Load("stage.mp3", "stage.mp3");
+	SoundManager::GetInstance()->Load("boss.mp3", "boss.mp3");
+	SoundManager::GetInstance()->Load("result.mp3", "result.mp3");
 
 	// ポストエフェクト
 	PostEffect::GetInstance()->Initialize(dxCommon, windowAPI.get(), SrvManager::GetInstance());

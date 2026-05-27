@@ -18,9 +18,61 @@ void TitleScene::Initialize() {
 	CameraManager::GetInstance()->SetActiveCamera("main");
 
 	// スプライト
-	title_ = std::make_unique <Sprite>();
-	title_->Initialize("Resource/title/title.png");
-	title_->SetPosition({ 950.0f, 300.0f }); // 画面中央
+
+	///
+	///タイトル
+	/// 
+
+	struct TitleData
+	{
+		std::string filePath;
+		Vector2 pos;
+		float rot;
+		//Vector2 anchor;//文字がある場所の比率
+	};
+
+	//初期化データ配列
+	std::vector<TitleData> initDatas = {
+	{ "Resource/title/titleF.png",           { 950.0f, 300.0f },0.0f,},  // フ
+	{ "Resource/title/titleR.png",           { 950.0f, 300.0f },0.0f, },  // ル
+	{ "Resource/title/title-.png",           { 950.0f, 300.0f },0.0f, },  // ー
+	{ "Resource/title/titleT.png",           { 950.0f, 300.0f },0.0f, },  // ツ
+	{ "Resource/title/titleKamiHikouki.png", { 950.0f, 300.0f },0.0f, },  // 紙飛行機
+	{ "Resource/title/titleCloud.png",       { 950.0f, 300.0f },0.0f, },  // タの雲
+	{ "Resource/title/titleB.png",           { 950.0f, 300.0f },0.0f, },  // バスタズ
+	{ "Resource/title/titleEgg.png",         { 950.0f, 300.0f },0.0f, },  // バの濁点
+	{ "Resource/title/titleHouki.png",       { 950.0f, 300.0f },0.0f, },  // ー
+	{ "Resource/title/titleKusege.png",      { 950.0f, 300.0f },0.0f, },  // ズの頭
+	{ "Resource/title/titleFoot.png",        { 950.0f, 300.0f },0.0f, },  // ズの足
+	{ "Resource/title/titleNasu.png",        { 950.0f, 300.0f },0.0f, }   // ズの濁点
+	};
+
+	//リストのクリアと確保
+	titleParts_.clear();
+	titleParts_.reserve(initDatas.size());
+	int index = 0;//ループで一気に生成してリストに格納
+
+	//ループと一気に生成してリストに格納
+	for (const auto& data : initDatas)
+	{
+		TitlePart part;
+		part.sprite = std::make_unique<Sprite>();
+		part.sprite->Initialize(data.filePath);
+		part.sprite->SetPosition(data.pos);
+		part.sprite->SetRotation(data.rot);
+		//part.sprite->SetAnchorPoint(data.anchor);
+
+		//独自のモーション用変数
+		part.position = data.pos;
+		part.rotation = data.rot;
+		part.velocity = { 0.0f,0.0f };
+		part.timer = 0.0f;
+		part.id = static_cast<TitleMove>(index);//番号でtitleのパーツを記憶
+
+		//リストに追加
+		titleParts_.push_back(std::move(part));
+		index++;
+	}
 
 	space_ = std::make_unique<Sprite>();
 	space_->Initialize("Resource/space.png"); // 進める
@@ -82,8 +134,9 @@ void TitleScene::Initialize() {
 	object[1]->SetModel("skydome.obj");
 
 	// 音声再生
-	//SoundManager::GetInstance()->Play("bgm");
-
+	SoundManager::GetInstance()->Play("title.mp3");
+	//再生フラグ
+	isTitleBGMPlaying_ = false;
 }
 
 void TitleScene::Update() {
@@ -91,6 +144,11 @@ void TitleScene::Update() {
 	auto input = Input::GetInstance();
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
+	
+	if (!isTitleBGMPlaying_) {
+		SoundManager::GetInstance()->Play("title.mp3", true);
+		isTitleBGMPlaying_ = true;
+	}
 
 	// カメラ更新
 	//cameraTransform.translate.x += 0.05f;
@@ -103,12 +161,106 @@ void TitleScene::Update() {
 
 		if(intensity <= 0.0f){
 			// シーン切り替え処理
+			SoundManager::GetInstance()->Stop("title.mp3");
+			isTitleBGMPlaying_ = false;
 			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		}
 
 	} else {
 		if (intensity <= 1.0f)
 			intensity += 1.0f / 30.0f; // 1秒かけて明るくする
+	}
+
+	///
+	/// タイトル処理
+	///
+
+	//パーツごとにタイマーを進めて動かす
+	for (auto& part : titleParts_)
+	{
+		//各パーツタイマーの毎フレーム加算
+		part.timer += 1.0f / 60.0f;
+
+		//10秒経ったら0秒にループ
+		if (part.timer >= 10.0f)
+		{
+			part.timer = 0.0f;
+		}
+
+		///
+		///パーツを動かす
+		/// 
+		
+		switch (part.id)
+		{
+		case titleF://フ
+			break;
+		case titleR://ル
+
+			break;
+
+		case titleI://フルーツのー
+			
+			//0秒から6秒で小回転する
+			if (part.timer >= 0.0f && part.timer < 6.0f) {
+
+				float rate = part.timer / 6.0f; // 0.0 ～ 1.0 の進捗率
+
+				// 6秒かけて1往復半
+				float swing = std::sin(rate * 3.141592f * 3.0f);
+
+				// 4.0fという数字を処理側に固定しておくことで、ちょうど2往復して綺麗に正面に
+				float envelope = std::sin(rate * 3.141592f);
+
+				// スピードを落とし滑らかに着地
+				part.rotation = swing * envelope * 0.35f;
+			}
+			else {
+				part.rotation = 0.0f;
+			}
+
+			break;
+
+		case titleT://ツ
+			break;
+
+		case titleKami://紙飛行機
+			
+			break;
+		case titleCloud://タの雲部分
+
+			break;
+
+		case titleB://バスタズ
+
+			break;
+
+		case titleEgg://バの濁点
+
+			break;
+
+		case titleHouki://バスターズのー
+
+			break;
+
+		case titleKusege://ズの頭
+
+			break;
+
+		case titleFoot://ズの足
+
+			break;
+
+		case titleNasu://ズの濁点
+
+			break;
+		}
+
+
+		//計算した座標を全てのスプライトに反映
+		part.sprite->SetPosition(part.position);
+		part.sprite->SetRotation(part.rotation);
+		part.sprite->Update();
 	}
 
 
@@ -159,7 +311,6 @@ void TitleScene::Update() {
 
 	// *スプライト* //
 	// sprite更新
-	title_->Update();
 	space_->Update();
 
 
@@ -514,7 +665,12 @@ void TitleScene::Draw2D() {
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
 	// スプライト描画
-	title_->Draw();
+	for (auto& part : titleParts_)
+	{
+		//各スプライトが持つ
+		part.sprite->Draw();
+	}
+
 	space_->Draw();
 
 }
@@ -555,5 +711,4 @@ void TitleScene::Draw3D() {
 
 void TitleScene::Finalize() {
 	CameraManager::GetInstance()->RemoveCamera("main");
-	animationObjects.clear();
 }

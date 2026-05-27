@@ -45,6 +45,37 @@ private:
 		{10.0f,0.0f,0.0f}
 	};
 
+	//タイトルパーツの一つ一つ
+	enum TitleMove
+	{
+		titleF,
+		titleR,
+		titleI,
+		titleT,
+		titleKami,
+		titleCloud,
+		titleB,
+		titleEgg,
+		titleHouki,
+		titleKusege,
+		titleFoot,
+		titleNasu,
+	};
+
+
+	//パーツごとの個別の動きを管理
+	struct TitlePart {
+		std::unique_ptr<Sprite> sprite;
+		Vector2 position;//現在の座標
+		float rotation;//回転
+		Vector2 velocity;//移動速度
+		float timer;//動き始めの時間
+		TitleMove id;//ロゴパーツ
+	};
+
+
+	//クラスのメンバ変数としてリスト定義
+	std::vector<TitlePart> titleParts_;
 
 	// *ライティング* //
 
@@ -168,10 +199,7 @@ private:
 	// カメラ
 	std::unique_ptr<Camera> camera = nullptr;
 	// スプライト
-	std::unique_ptr <Sprite> sprite = nullptr;
 	std::unique_ptr<Sprite> space_ = nullptr;
-	// タイトル
-	std::unique_ptr <Sprite> title_ = nullptr;
 
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
@@ -193,5 +221,8 @@ private:
 	bool isTransition = false;
 
 	float spaceTimer_ = 0.0f;//space点滅タイマー
+
+	//再生フラグ
+	bool isTitleBGMPlaying_ = false;
 
 };

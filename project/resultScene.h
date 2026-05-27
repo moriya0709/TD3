@@ -185,5 +185,8 @@ private:
 	//モデル(数字にして描画)
 	int modelIndex_ = 0;
 
+	//再生フラグ
+	bool isResultBGMPlaying_ = false;
+
 };
 

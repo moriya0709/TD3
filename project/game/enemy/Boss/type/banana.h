@@ -42,7 +42,7 @@ public:
         bool isAnimating = false;
 
         // 当たり判定のサイズ
-        static inline const float radiusX = 1.0f;
+        static inline const float radiusX = 1.2f;
         static inline const float radiusY = 3.0f;
 
         // 体力
@@ -162,7 +162,7 @@ private:
     static inline const float KAliveTimer = 60.0f;
     float AliveTimer = 0.0f;
     float deadTimer_;
-    static inline const float kdeadTimer_ = 10.0f;
+    static inline const float kdeadTimer_ = 3.0f;
 
     std::vector<std::unique_ptr<EnemyBullet>> enemyBullet_;
 };

@@ -50,7 +50,22 @@ void GamePlayScene::Initialize() {
 	// アニメーションデータの読み込み(モデル自体はGame.cppに入れること)
 	simpleAnimation_ = Model::LoadAnimationFile("./Resource", "simpleSkin.gltf"); // スケルトン
 	walkAnimation_ = Model::LoadAnimationFile("./Resource", "walk.gltf");
+	for (int i = 0; i < kMaxSpecialAttack; i++) {
+		// HPバーの右隣からスタートし、アイコンの幅ごとに右にズラす
+		// ※ 260.0f はHPバーの幅(240)＋少しの余白です。アイコンの幅(例:40.0f)を掛けて並べます
+		float gaugePosX = 260.0f + (i * 40.0f);
+		float gaugePosY = 15.0f; // HPバーのY座標(10.0f)に合わせて調整
 
+		// 必殺技回数ゲージ（溜まっている時）
+		gaugeUI_[i] = std::make_unique<Sprite>();
+		gaugeUI_[i]->Initialize("Resource/UI/HissatuGage.png");
+		gaugeUI_[i]->SetPosition({gaugePosX, gaugePosY});
+
+		// 必殺技回数空（使った後）
+		gaugeEmptyUI_[i] = std::make_unique<Sprite>();
+		gaugeEmptyUI_[i]->Initialize("Resource/UI/HissatuNoGage.png");
+		gaugeEmptyUI_[i]->SetPosition({gaugePosX, gaugePosY});
+	}
 	///
 	///
 	///
@@ -102,8 +117,33 @@ void GamePlayScene::Initialize() {
 	// playerHPのゲージが減った時の空部分
 	playerHPEmpty_ = std::make_unique<Sprite>();
 	playerHPEmpty_->Initialize("Resource/white.png");
-	playerHPEmpty_->SetAnchorPoint({ 0.0f, 0.0f }); // サイズ調整
-	playerHPEmpty_->SetPosition({ 39.0f, 22.0f });  // UIの透過部分に合うように
+
+	playerHPEmpty_->SetAnchorPoint({0.0f, 0.0f}); // サイズ調整
+	playerHPEmpty_->SetPosition({39.0f, 22.0f});  // UIの透過部分に合うように
+	
+	BulletRuleUI_ = std::make_unique<Sprite>();
+	BulletRuleUI_->Initialize("Resource/UI/BulletRule.png"); // bulletルール
+	BulletRuleUI_->SetPosition({ 400.0f, 100.0f });
+
+	spacialRuleUI_ = std::make_unique<Sprite>();
+	spacialRuleUI_->Initialize("Resource/UI/specialRule.png"); // specialルール
+	spacialRuleUI_->SetPosition({ 1550.0f, 100.0f });
+	spacialRuleUI_->SetSize({ 250.0f,250.0f });
+
+	for (int i = 0; i < kMaxSpecialAttack; i++)
+	{
+		//必殺技回数ゲージ
+		gaugeUI_[i] = std::make_unique<Sprite>();
+		gaugeUI_[i]->Initialize("Resource/UI/HissatuGage.png");
+		gaugeUI_[i]->SetPosition({ 280.0f+i*60.0f, 40.0f });
+		gaugeUI_[i]->SetSize({50.0f, 50.0f});
+		//必殺技回数空
+		gaugeEmptyUI_[i] = std::make_unique<Sprite>();
+		gaugeEmptyUI_[i]->Initialize("Resource/UI/HissatuNoGage.png");
+		gaugeEmptyUI_[i]->SetPosition({ 280.0f+i*60.0f, 40.0f });
+		gaugeEmptyUI_[i]->SetSize({50.0f, 50.0f});
+
+	}
 
 	pauseBg_ = std::make_unique<Sprite>();
 	pauseBg_->Initialize("Resource/pauseBg.png"); // ポーズ背景
@@ -256,6 +296,13 @@ void GamePlayScene::Initialize() {
 	easing = std::make_unique<Easing>();
 	easing->Initialize();
 
+	// 音声再生
+	SoundManager::GetInstance()->Play("stage.mp3");
+
+	//再生フラグ
+	isPlayBGMPlaying_ = true;
+	isBossBGMPlaying_ = false;
+
 }
 
 void GamePlayScene::Update() {
@@ -307,6 +354,18 @@ void GamePlayScene::Update() {
 	} else { // ポーズ画面
 		PauseSelect();
 	}
+	int currentSpecialCount = player_->GetSpecialAttackCount();
+
+	for (int i = 0; i < kMaxSpecialAttack; i++) {
+		if (i < currentSpecialCount) {
+			// 残弾数より小さいインデックスなら、満タンのゲージを描画
+			gaugeUI_[i]->Update();
+		} else {
+			// それ以外（使ってしまった分）は空のゲージを描画
+			gaugeEmptyUI_[i]->Update();
+		}
+	}
+
 
 	if (isPause_ || isFinished_)
 		return;
@@ -318,13 +377,26 @@ void GamePlayScene::Update() {
 	playerHPGauge_->SetSize({ maxBarWidth * hpRate, 30.0f });
 	playerHPEmpty_->SetSize({ maxBarWidth, 30.0f });
 
-	// ゲージの色を変える
-	playerHPGauge_->SetColor(Vector4(0.0f, 1.0f, 1.0f, 1.0f)); // 水色(ゲージ部分)
-	playerHPEmpty_->SetColor(Vector4(0.2f, 0.2f, 0.2f, 1.0f)); // 暗いグレー(空部分)
+	// --- 追加：HPバーの透明度調整 ---
+	float hpAlpha = 1.0f; // 基本は不透明 (1.0)
+
+	// プレイヤーの3D座標を2Dの画面座標に変換
+	Vector2 playerScreenPos = camera->WorldToScreen(player_->GetPosition());
+
+	// プレイヤーがHPバーの近く(画面左上)にいるか判定
+	// (HPバーのサイズや位置に合わせて判定範囲は調整してください)
+	if (playerScreenPos.x < 300.0f && playerScreenPos.y < 150.0f) {
+		hpAlpha = 0.3f; // 近づいたら透明度を下げる (0.0=透明, 1.0=不透明)
+	}
+
+	// 外枠、ゲージ、空部分の色(RGB)と透明度(Alpha)を設定
+	playerHpUI_->SetColor(Vector4(1.0f, 1.0f, 1.0f, hpAlpha));    // 外枠
+	playerHPGauge_->SetColor(Vector4(0.0f, 1.0f, 1.0f, hpAlpha)); // 水色(ゲージ部分)
+	playerHPEmpty_->SetColor(Vector4(0.2f, 0.2f, 0.2f, hpAlpha)); // 暗いグレー(空部分)
+	// ---------------------------------
 
 	// クリア条件の分岐
 	if (isBossBattle_) {
-
 		if (cameraController_->GetElapsedTime() >= kMaxTime_) {
 			if (bossPopFlag == 2) {
 				isWarning_ = true;
@@ -355,6 +427,28 @@ void GamePlayScene::Update() {
 					enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
 					bossPopFlag = 6;
 				}
+
+				if (!isBossBGMPlaying_) {
+					SoundManager::GetInstance()->Stop("stage.mp3");
+					isPlayBGMPlaying_ = false;
+					SoundManager::GetInstance()->Play("boss.mp3");
+					isBossBGMPlaying_ = true;
+				}
+
+				enemy_->SetEnemyclear();
+				cameraController_ = std::make_unique<GrapeCameraController>();
+				cameraController_->Initialize(camera.get());
+				enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
+				bossPopFlag = 4;
+			} else if (bossPopFlag == 3) {
+
+				if (!isBossBGMPlaying_) {
+					SoundManager::GetInstance()->Stop("stage.mp3");
+					isPlayBGMPlaying_ = false;
+					SoundManager::GetInstance()->Play("boss.mp3");
+					isBossBGMPlaying_ = true;
+				}
+
 			}
 		}
 		// ボスがいる場合はフラグを5にする
@@ -411,10 +505,17 @@ void GamePlayScene::Update() {
 			if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
 				if (currentGameOverUI_ == Pause::kSelect) {
 					// セレクトシーンを生成
+					SoundManager::GetInstance()->Stop("stage.mp3");
+					SoundManager::GetInstance()->Stop("boss.mp3");
+					isPlayBGMPlaying_ = false;
+					isBossBGMPlaying_ = false;
 					SceneManager::GetInstance()->ChangeScene("GAMESELECT");
-
 				} else if (currentGameOverUI_ == Pause::kRetry) {
 					// ゲームプレイシーンを生成
+					SoundManager::GetInstance()->Stop("stage.mp3");
+					SoundManager::GetInstance()->Stop("boss.mp3");
+					isPlayBGMPlaying_ = false;
+					isBossBGMPlaying_ = false;
 					SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 				}
 			}
@@ -487,6 +588,22 @@ void GamePlayScene::Draw2D() {
 		warning_->Draw();
 	}
 
+	// --- 修正後（GamePlayScene::Draw2D 内） ---
+
+	// ※プレイヤーの残弾数を取得する関数（GetSpecialAttackCountなど）がある前提です
+	// もし別の変数名で管理している場合は、それに置き換えてください
+	int currentSpecialCount = player_->GetSpecialAttackCount();
+
+	for (int i = 0; i < kMaxSpecialAttack; i++) {
+		if (i < currentSpecialCount) {
+			// 残弾数より小さいインデックスなら、満タンのゲージを描画
+			gaugeUI_[i]->Draw();
+		} else {
+			// それ以外（使ってしまった分）は空のゲージを描画
+			gaugeEmptyUI_[i]->Draw();
+		}
+	}
+
 	if (player_->GetHP() <= 0) {
 		gameOver_->Draw();
 		for (int i = 0; i < 2; i++) {
@@ -499,6 +616,8 @@ void GamePlayScene::Draw2D() {
 		resume_->Draw();  // ポーズ//続ける
 		retry_->Draw();   // リトライ
 		select_->Draw();  // セレクトへ
+		BulletRuleUI_->Draw();
+		spacialRuleUI_->Draw();
 	}
 }
 
@@ -548,7 +667,6 @@ void GamePlayScene::Draw3D() {
 
 void GamePlayScene::Finalize() {
 	CameraManager::GetInstance()->RemoveCamera("main");
-	animationObjects.clear();
 }
 
 void GamePlayScene::SetPlayerStyle(int style) { style_ = static_cast<Style>(style); }
@@ -660,7 +778,21 @@ void GamePlayScene::PauseSelect() {
 	case Pause::kResume:
 	if (resumeEasing.sizeTime >= 1.0f) {
 		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-			isPauseEasing_ = true;
+			// ゲームプレイシーン(次シーン)を生成
+			SoundManager::GetInstance()->Stop("stage.mp3");
+			SoundManager::GetInstance()->Stop("boss.mp3");
+			isPlayBGMPlaying_ = false;
+			isBossBGMPlaying_ = false;
+			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
+			currentPause_ = Pause::kResume;
+
+			retryEasing.startSizeV2 = retryEasing.size;
+			retryEasing.endSizeV2 = {300.0f, 300.0f};
+			retryEasing.sizeTime = 0.0f;
+			retryEasing.sizeEasedT = 0.0f;
+
 			resumeEasing.startSizeV2 = resumeEasing.size;
 			resumeEasing.endSizeV2 = { 0.0f, 0.0f };
 			resumeEasing.sizeTime = 0.0f;
@@ -675,6 +807,16 @@ void GamePlayScene::PauseSelect() {
 			selectEasing.endSizeV2 = { 0.0f, 0.0f };
 			selectEasing.sizeTime = 0.0f;
 			selectEasing.sizeEasedT = 0.0f;
+		}
+		break;
+	case Pause::kSelect:
+		if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+			// ゲームプレイシーン(次シーン)を生成
+			SoundManager::GetInstance()->Stop("stage.mp3");
+			SoundManager::GetInstance()->Stop("boss.mp3");
+			isPlayBGMPlaying_ = false;
+			isBossBGMPlaying_ = false;
+			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		}
 		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
 			currentPause_ = Pause::kSelect;
@@ -792,6 +934,8 @@ void GamePlayScene::PauseSelect() {
 	retry_->Update();
 	select_->Update();
 	pauseBg_->Update();
+	BulletRuleUI_->Update();
+	spacialRuleUI_->Update();
 }
 
 void GamePlayScene::StageClear() {
@@ -811,6 +955,10 @@ void GamePlayScene::StageClear() {
 	// 保存実行
 	scoreManager_.SaveScene(score_, currentStage, currentModel, playTimer_);
 
+	SoundManager::GetInstance()->Stop("stage.mp3");
+	SoundManager::GetInstance()->Stop("boss.mp3");
+	isPlayBGMPlaying_ = false;
+	isBossBGMPlaying_ = false;
 	SceneManager::GetInstance()->ChangeScene("RESULT");
 }
 
