@@ -1,44 +1,6 @@
 {
     "enemies": [
         {
-            "popTime": 1.0,
-            "type": "NormalEnemy",
-            "hp": 100,
-            "position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 60.0
-            },
-            "movePattern": [],
-            "flee": {
-                "target": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": -100.0
-                },
-                "timeToReach": 1.5
-            }
-        },
-        {
-            "popTime": 1.0,
-            "type": "NormalEnemy",
-            "hp": 100,
-            "position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 60.0
-            },
-            "movePattern": [],
-            "flee": {
-                "target": {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": -100.0
-                },
-                "timeToReach": 1.5
-            }
-        },
-        {
             "popTime": 0.0,
             "type": "RushEnemy",
             "hp": 80,
@@ -51,11 +13,11 @@
                 {
                     "target": {
                         "x": 15.0,
-                        "y": -2.0,
+                        "y": 0.0,
                         "z": 60.0
                     },
                     "timeToReach": 1.0,
-                    "timeToStop": 5.0
+                    "timeToStop": 0.0
                 },
                 {
                     "target": {
@@ -64,7 +26,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 1.0,
-                    "timeToStop": 5.0
+                    "timeToStop": 1.0
                 },
                 {
                     "target": {
@@ -73,7 +35,7 @@
                         "z": 60.0
                     },
                     "timeToReach": 3.0,
-                    "timeToStop": 5.0
+                    "timeToStop": 0.0
                 }
             ],
             "flee": {
@@ -83,6 +45,44 @@
                     "z": -100.0
                 },
                 "timeToReach": 3.0
+            }
+        },
+        {
+            "popTime": 1.0,
+            "type": "NormalEnemy",
+            "hp": 100,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 60.0
+            },
+            "movePattern": [],
+            "flee": {
+                "target": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -100.0
+                },
+                "timeToReach": 1.5
+            }
+        },
+        {
+            "popTime": 1.0,
+            "type": "NormalEnemy",
+            "hp": 100,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 60.0
+            },
+            "movePattern": [],
+            "flee": {
+                "target": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": -100.0
+                },
+                "timeToReach": 1.5
             }
         },
         {

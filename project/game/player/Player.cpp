@@ -299,6 +299,8 @@ void Player::Update(const std::list<std::shared_ptr<Enemy>>& enemies, float cmrv
 		inbincileTimer--;
 	}
 	UpdateImGui();
+
+
 }
 
 void Player::Draw2D() {
