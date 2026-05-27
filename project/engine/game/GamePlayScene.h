@@ -193,9 +193,9 @@ private:
     float side = 0.0f;//HPの端
 
     //必殺技回数
-    std::unique_ptr<Sprite> gaugeUI_ = nullptr;//まだ使える
-    std::unique_ptr<Sprite> gaugeEmptyUI_ = nullptr;//空ゲージ
-
+	static const int kMaxSpecialAttack = 2;
+	std::unique_ptr<Sprite> gaugeUI_[kMaxSpecialAttack];
+	std::unique_ptr<Sprite> gaugeEmptyUI_[kMaxSpecialAttack];
     Style style_ = Style::normal;
     // リスト
     std::unique_ptr<EnemyManager> enemy_ = nullptr;
