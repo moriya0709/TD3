@@ -1134,7 +1134,7 @@
         {
             "popTime": 34.0,
             "type": "NormalEnemy",
-            "hp": 1000,
+            "hp": 400,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1192,7 +1192,7 @@
         {
             "popTime": 34.0,
             "type": "NormalEnemy",
-            "hp": 1000,
+            "hp": 400,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1482,7 +1482,7 @@
         {
             "popTime": 43.0,
             "type": "rushEnemy",
-            "hp": 300,
+            "hp": 100,
             "position": {
                 "x": 200.0,
                 "y": 0.0,
@@ -1503,7 +1503,7 @@
         {
             "popTime": 44.0,
             "type": "rushEnemy",
-            "hp": 300,
+            "hp": 100,
             "position": {
                 "x": -200.0,
                 "y": 0.0,
@@ -1524,7 +1524,7 @@
         {
             "popTime": 45.0,
             "type": "rushEnemy",
-            "hp": 300,
+            "hp": 100,
             "position": {
                 "x": 0.0,
                 "y": 200.0,
@@ -1545,7 +1545,7 @@
         {
             "popTime": 46.0,
             "type": "rushEnemy",
-            "hp": 300,
+            "hp": 100,
             "position": {
                 "x": 0.0,
                 "y": -200.0,
@@ -1566,7 +1566,7 @@
         {
             "popTime": 47.0,
             "type": "ShieldEnemy",
-            "hp": 400,
+            "hp": 250,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1624,7 +1624,7 @@
         {
             "popTime": 48.0,
             "type": "ShieldEnemy",
-            "hp": 400,
+            "hp": 250,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1682,7 +1682,7 @@
         {
             "popTime": 49.0,
             "type": "ShieldEnemy",
-            "hp": 400,
+            "hp": 250,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1740,7 +1740,7 @@
         {
             "popTime": 50.0,
             "type": "ShieldEnemy",
-            "hp": 400,
+            "hp": 250,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1798,7 +1798,7 @@
         {
             "popTime": 51.0,
             "type": "ShieldEnemy",
-            "hp": 400,
+            "hp": 250,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1856,7 +1856,7 @@
         {
             "popTime": 55.0,
             "type": "ShieldEnemy",
-            "hp": 400,
+            "hp": 250,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1914,7 +1914,7 @@
         {
             "popTime": 56.0,
             "type": "ShieldEnemy",
-            "hp": 400,
+            "hp": 250,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -1972,7 +1972,7 @@
         {
             "popTime": 57.0,
             "type": "ShieldEnemy",
-            "hp": 400,
+            "hp": 250,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -2030,7 +2030,7 @@
         {
             "popTime": 58.0,
             "type": "ShieldEnemy",
-            "hp": 400,
+            "hp": 250,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
@@ -2088,7 +2088,7 @@
         {
             "popTime": 59.0,
             "type": "ShieldEnemy",
-            "hp": 400,
+            "hp": 250,
             "position": {
                 "x": 0.0,
                 "y": 0.0,
