@@ -169,12 +169,12 @@ void Game::Draw() {
 
 	// シーンマネージャー描画(2D)
 	SceneManager::GetInstance()->Draw2D();
-
+	
 	// ポストエフェクト描画
 	PostEffect::GetInstance()->PostDraw();
 	// ② 深度バッファをPSR状態へ
 	PostEffect::GetInstance()->Draw();
-	
+
 
 	// ImGui描画
 	imGuiManager->Draw();
