@@ -784,14 +784,6 @@ void GamePlayScene::PauseSelect() {
 			isPlayBGMPlaying_ = false;
 			isBossBGMPlaying_ = false;
 			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-		}
-		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
-			currentPause_ = Pause::kResume;
-
-			retryEasing.startSizeV2 = retryEasing.size;
-			retryEasing.endSizeV2 = {300.0f, 300.0f};
-			retryEasing.sizeTime = 0.0f;
-			retryEasing.sizeEasedT = 0.0f;
 
 			resumeEasing.startSizeV2 = resumeEasing.size;
 			resumeEasing.endSizeV2 = { 0.0f, 0.0f };
@@ -807,6 +799,35 @@ void GamePlayScene::PauseSelect() {
 			selectEasing.endSizeV2 = { 0.0f, 0.0f };
 			selectEasing.sizeTime = 0.0f;
 			selectEasing.sizeEasedT = 0.0f;
+
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
+			currentPause_ = Pause::kRetry;
+
+			resumeEasing.startSizeV2 = selectEasing.size;
+			resumeEasing.endSizeV2 = { 300.0f, 300.0f };
+			resumeEasing.sizeTime = 0.0f;
+			resumeEasing.sizeEasedT = 0.0f;
+
+			retryEasing.startSizeV2 = retryEasing.size;
+			retryEasing.endSizeV2 = {400.0f, 400.0f};
+			retryEasing.sizeTime = 0.0f;
+			retryEasing.sizeEasedT = 0.0f;
+
+		}
+		if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN)) {
+			currentPause_ = Pause::kSelect;
+
+			resumeEasing.startSizeV2 = selectEasing.size;
+			resumeEasing.endSizeV2 = { 300.0f, 300.0f };
+			resumeEasing.sizeTime = 0.0f;
+			resumeEasing.sizeEasedT = 0.0f;
+
+			selectEasing.startSizeV2 = selectEasing.size;
+			selectEasing.endSizeV2 = { 400.0f, 400.0f };
+			selectEasing.sizeTime = 0.0f;
+			selectEasing.sizeEasedT = 0.0f;
+
 		}
 		break;
 	case Pause::kSelect:
@@ -881,38 +902,6 @@ void GamePlayScene::PauseSelect() {
 		selectEasing.endSizeV2 = { 400.0f, 400.0f };
 		selectEasing.sizeTime = 0.0f;
 		selectEasing.sizeEasedT = 0.0f;
-	}
-	break;
-	case Pause::kSelect:
-	if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-		// ゲームプレイシーン(次シーン)を生成
-		SceneManager::GetInstance()->ChangeScene("GAMESELECT");
-	}
-	if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP)) {
-		currentPause_ = Pause::kRetry;
-
-		selectEasing.startSizeV2 = selectEasing.size;
-		selectEasing.endSizeV2 = { 300.0f, 300.0f };
-		selectEasing.sizeTime = 0.0f;
-		selectEasing.sizeEasedT = 0.0f;
-
-		retryEasing.startSizeV2 = retryEasing.size;
-		retryEasing.endSizeV2 = { 400.0f, 400.0f };
-		retryEasing.sizeTime = 0.0f;
-		retryEasing.sizeEasedT = 0.0f;
-	}
-	if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN)) {
-		currentPause_ = Pause::kResume;
-
-		selectEasing.startSizeV2 = selectEasing.size;
-		selectEasing.endSizeV2 = { 300.0f, 300.0f };
-		selectEasing.sizeTime = 0.0f;
-		selectEasing.sizeEasedT = 0.0f;
-
-		resumeEasing.startSizeV2 = resumeEasing.size;
-		resumeEasing.endSizeV2 = { 400.0f, 400.0f };
-		resumeEasing.sizeTime = 0.0f;
-		resumeEasing.sizeEasedT = 0.0f;
 	}
 	break;
 	}
