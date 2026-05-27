@@ -105,7 +105,14 @@ void GamePlayScene::Initialize() {
 	playerHPEmpty_->SetAnchorPoint({0.0f, 0.0f}); // サイズ調整
 	playerHPEmpty_->SetPosition({39.0f, 22.0f});  // UIの透過部分に合うように
 	
+	BulletRuleUI_ = std::make_unique<Sprite>();
+	BulletRuleUI_->Initialize("Resource/UI/BulletRule.png"); // bulletルール
+	BulletRuleUI_->SetPosition({ 1300.0f, 100.0f });
 
+	spacialRuleUI_ = std::make_unique<Sprite>();
+	spacialRuleUI_->Initialize("Resource/UI/specialRule.png"); // specialルール
+	spacialRuleUI_->SetPosition({ 1600.0f, 100.0f });
+	spacialRuleUI_->SetSize({ 200.0f,200.0f });
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -410,6 +417,8 @@ void GamePlayScene::Draw2D() {
 		resume_->Draw();  // ポーズ//続ける
 		retry_->Draw();   // リトライ
 		select_->Draw();  // セレクトへ
+		BulletRuleUI_->Draw();
+		spacialRuleUI_->Draw();
 	}
 }
 
@@ -696,6 +705,8 @@ void GamePlayScene::PauseSelect() {
 	retry_->Update();
 	select_->Update();
 	pauseBg_->Update();
+	BulletRuleUI_->Update();
+	spacialRuleUI_->Update();
 }
 
 void GamePlayScene::StageClear() {
