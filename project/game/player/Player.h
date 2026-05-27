@@ -50,6 +50,7 @@ public:
 	}
 	bool GetIsHit() const { return ishit; }
 	// void SetStatas(const Statas& newStatas) { statas_ = newStatas; }
+	int GetSpecialAttackCount() const { return specialAttackCounter; }
 
 	const std::list<std::unique_ptr<PlayerBullet>>& GetBullets() const { return bullets; }
 	int GetAttack() const { return statas_[currentStyle].attack; }
@@ -140,6 +141,7 @@ private:
 	void UpdateImGui();
 	int specialAttackCounter = 2;
 	const int specialAttackMaxCounter = 2;
+
 
 	static int cureentStyleStatasLevels[4][2];
 	void StyleLevelUp(Style style, int statas);

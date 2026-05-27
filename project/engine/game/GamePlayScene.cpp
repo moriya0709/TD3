@@ -50,7 +50,22 @@ void GamePlayScene::Initialize() {
 	// アニメーションデータの読み込み(モデル自体はGame.cppに入れること)
 	simpleAnimation_ = Model::LoadAnimationFile("./Resource", "simpleSkin.gltf"); // スケルトン
 	walkAnimation_ = Model::LoadAnimationFile("./Resource", "walk.gltf");
+	for (int i = 0; i < kMaxSpecialAttack; i++) {
+		// HPバーの右隣からスタートし、アイコンの幅ごとに右にズラす
+		// ※ 260.0f はHPバーの幅(240)＋少しの余白です。アイコンの幅(例:40.0f)を掛けて並べます
+		float gaugePosX = 260.0f + (i * 40.0f);
+		float gaugePosY = 15.0f; // HPバーのY座標(10.0f)に合わせて調整
 
+		// 必殺技回数ゲージ（溜まっている時）
+		gaugeUI_[i] = std::make_unique<Sprite>();
+		gaugeUI_[i]->Initialize("Resource/UI/HissatuGage.png");
+		gaugeUI_[i]->SetPosition({gaugePosX, gaugePosY});
+
+		// 必殺技回数空（使った後）
+		gaugeEmptyUI_[i] = std::make_unique<Sprite>();
+		gaugeEmptyUI_[i]->Initialize("Resource/UI/HissatuNoGage.png");
+		gaugeEmptyUI_[i]->SetPosition({gaugePosX, gaugePosY});
+	}
 	///
 	///
 	///
@@ -107,16 +122,16 @@ void GamePlayScene::Initialize() {
 	
 
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < kMaxSpecialAttack; i++)
 	{
 		//必殺技回数ゲージ
-		gaugeUI_ = std::make_unique<Sprite>();
-		gaugeUI_->Initialize("Resource/UI/HissatuGage.png");
-		gaugeUI_->SetPosition({ 20.0f, 10.0f });
+		gaugeUI_[i] = std::make_unique<Sprite>();
+		gaugeUI_[i]->Initialize("Resource/UI/HissatuGage.png");
+		gaugeUI_[i]->SetPosition({ 120.0f, 10.0f });
 		//必殺技回数空
-		gaugeEmptyUI_ = std::make_unique<Sprite>();
-		gaugeEmptyUI_->Initialize("Resource/UI/HissatuNoGage.png");
-		gaugeEmptyUI_->SetPosition({ 20.0f, 10.0f });
+		gaugeEmptyUI_[i] = std::make_unique<Sprite>();
+		gaugeEmptyUI_[i]->Initialize("Resource/UI/HissatuNoGage.png");
+		gaugeEmptyUI_[i]->SetPosition({ 140.0f, 10.0f });
 
 	}
 
@@ -388,7 +403,21 @@ void GamePlayScene::Draw2D() {
 	playerHpUI_->Draw();
 	playerHPEmpty_->Draw();
 	playerHPGauge_->Draw();
+	// --- 修正後（GamePlayScene::Draw2D 内） ---
 
+	// ※プレイヤーの残弾数を取得する関数（GetSpecialAttackCountなど）がある前提です
+	// もし別の変数名で管理している場合は、それに置き換えてください
+	int currentSpecialCount = player_->GetSpecialAttackCount();
+
+	for (int i = 0; i < kMaxSpecialAttack; i++) {
+		if (i < currentSpecialCount) {
+			// 残弾数より小さいインデックスなら、満タンのゲージを描画
+			gaugeUI_[i]->Draw();
+		} else {
+			// それ以外（使ってしまった分）は空のゲージを描画
+			gaugeEmptyUI_[i]->Draw();
+		}
+	}
 	if (player_->GetHP() <= 0) {
 		gameOver_->Draw();
 		for (int i = 0; i < 2; i++) {
