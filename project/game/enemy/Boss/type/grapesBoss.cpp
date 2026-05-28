@@ -69,6 +69,8 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
             p.object->SetRotate(p.transform.rotate);
             p.object->Update();
 
+            p.targetTranslate = p.transform.translate;
+
             parts_.push_back(std::move(p)); // unique_ptrを含むので std::move
         }
     }
@@ -85,6 +87,12 @@ void grapesBoss::Update()
         behavior_ = behaviorRequest_;
 
         switch (behavior_) {
+        case grapesBoss::Behavior::kShield:
+            isShield = true;
+            shieldTimer_ = kMaxShieldTime; // 5秒間シールド
+            shieldShotInterval_ = 0.0f; // 始まった瞬間に1発目を撃つため0リセット
+            shieldAngle_ = 0.0f;
+            break;
         case grapesBoss::Behavior::kDefeated:
         default:
 
@@ -419,13 +427,16 @@ void grapesBoss::StartRush()
 void grapesBoss::MoveUpdate()
 {
 
-    baseTransform_.translate += baseMove / 60.0f;
-    if (baseTransform_.translate.x <= -5.0f || baseTransform_.translate.x >= 5.0f) {
-        baseMove.x *= -1.0f;
-    }
-    if (baseTransform_.translate.y <= -5.0f || baseTransform_.translate.y >= 5.0f) {
-        baseMove.y *= -1.0f;
-    }
+    moveTimer_ += 1.0f / 60.0f;
+
+    // X軸とY軸で、周期（掛ける数値）と振幅（後ろの数値）が異なるサイン波・コサイン波を合成する
+    // これにより、単なる往復ではなく、無限の「8の字」や複雑な軌道を描くようになります
+    baseTransform_.translate.x = sinf(moveTimer_ * 1.5f) * 2.5f + cosf(moveTimer_ * 0.7f) * 2.0f;
+    baseTransform_.translate.y = cosf(moveTimer_ * 1.2f) * 2.5f + sinf(moveTimer_ * 0.4f) * 2.0f;
+
+    // もし -5.0f 〜 5.0f を超えるのが心配なら、安全のためにクランプ（制限）を入れる
+    baseTransform_.translate.x = std::clamp(baseTransform_.translate.x, -5.0f, 5.0f);
+    baseTransform_.translate.y = std::clamp(baseTransform_.translate.y, -5.0f, 5.0f);
 
     RoatetUpdate();
 }
@@ -581,8 +592,19 @@ void grapesBoss::BehaviorStillness()
 
     BehaviorchangeTimer -= 1.0f / 60.0f;
     if (BehaviorchangeTimer <= 0.0f && intervalCount == 0) {
-        behaviorRequest_ = Behavior::kAttack;
-        StartRush();
+
+        // 【変更例】50%の確率で突進かシールドかを決定する
+        std::random_device seed_gen;
+        std::mt19937 engine(seed_gen());
+        std::uniform_int_distribution<int> dist(0, 1);
+
+        if (dist(engine) == 0) {
+            behaviorRequest_ = Behavior::kAttack;
+            StartRush();
+        } else {
+            behaviorRequest_ = Behavior::kShield; // シールド状態へリクエスト
+        }
+
         BehaviorchangeTimer = kBehaviorchangeTimer;
     }
 }
@@ -609,6 +631,83 @@ void grapesBoss::BehaviorAttack()
 
 void grapesBoss::BehaviorShield()
 {
+    const float deltaTime = 1.0f / 60.0f;
+
+    shieldTimer_ -= deltaTime;
+    if (shieldTimer_ <= 0.0f) {
+        // 時間切れになったら通常状態(Stillness)へ戻る
+        behaviorRequest_ = Behavior::kStillness;
+        BehaviorchangeTimer = kBehaviorchangeTimer;
+
+        // パーツの位置と向きを本来の定位置に綺麗に戻す
+        for (auto& part : parts_) {
+            part.transform.translate = part.targetTranslate;
+            part.transform.rotate.y = part.isWeakPoint ? 0.0f : (float)std::numbers::pi;
+        }
+        return;
+    }
+
+    // 1秒間に約1回転（2π）するスピード
+    const float rotationSpeed = (float)std::numbers::pi * 2.0f;
+    shieldAngle_ += rotationSpeed * deltaTime;
+
+    float cosA = cosf(shieldAngle_);
+    float sinA = sinf(shieldAngle_);
+
+    for (auto& part : parts_) {
+        float baseRotY = part.isWeakPoint ? 0.0f : (float)std::numbers::pi;
+        part.transform.rotate.y = baseRotY + shieldAngle_;
+    }
+
+    shieldShotInterval_ -= deltaTime;
+    if (shieldShotInterval_ <= 0.0f) {
+        shieldShotInterval_ = kShieldShotMaxInterval; // インターバル再設定
+
+        const Matrix4x4& camMat = camera_->GetWorldMatrix();
+
+        int count = 0;
+
+        // 複数発射として「現在生きている（回っている）全パーツ」から一斉に放つ
+        for (auto& part : parts_) {
+            // 回転している各パーツの現在のワールド座標を計算
+            Vector3 spawnWorldPos = TransformCoord(baseTransform_.translate + part.transform.translate, camMat);
+
+            // ホーミング弾の生成
+            if (count % 2 == 0) {
+                std::unique_ptr<TargetEnemyBullet> newBullet = std::make_unique<TargetEnemyBullet>();
+                newBullet->Initialize(camera_, spawnWorldPos);
+
+                // プレイヤーへの方向ベクトルを計算して初速にする
+                Vector3 toPlayer = player_->GetPosition() - spawnWorldPos;
+                Vector3 dir = Normalize(toPlayer);
+                float bulletSpeed = 0.25f; // 弾の初速
+
+                newBullet->SetBulletAcceleration(dir * bulletSpeed);
+                newBullet->SetTargetPosition(player_->GetPosition());
+                newBullet->SetUpgrade(0.5f); // 加速制限など
+                enemyBullet_.push_back(std::move(newBullet));
+            } else {
+                // ホーミング弾の生成
+                std::unique_ptr<HomingEnemyBullet> newBullet = std::make_unique<HomingEnemyBullet>();
+                newBullet->Initialize(camera_, spawnWorldPos);
+
+                // プレイヤーへの方向ベクトルを計算して初速にする
+                Vector3 toPlayer = player_->GetPosition() - spawnWorldPos;
+                Vector3 dir = Normalize(toPlayer);
+                float bulletSpeed = 0.25f; // 弾の初速
+
+                newBullet->SetBulletAcceleration(dir * bulletSpeed);
+                newBullet->SetTargetPosition(player_->GetPosition());
+                newBullet->SetUpgrade(0.2f); // 加速制限など
+                newBullet->SethomingPower(0.04f); // ホーミングの強さ（好みに合わせて調整）
+                newBullet->SetLockTimer(0.0f);
+                enemyBullet_.push_back(std::move(newBullet));
+            }
+
+            // 管理リストに追加
+            count++;
+        }
+    }
 }
 
 void grapesBoss::BehaviorDefeated()

@@ -80,7 +80,7 @@ public:
     std::vector<CollisionVolume> GetCollisionVolumes();
     const std::vector<std::unique_ptr<EnemyBullet>>& GetBullets() const { return enemyBullet_; }
     int GetScore() const { return score_; }
-    int GetDameg() const  { return Dameg_; }
+    int GetDameg() const { return Dameg_; }
     int GetDamegBullet() const { return DamegBullet_; }
 
     // Set
@@ -148,6 +148,17 @@ private:
     Vector3 startRotate;
     static inline const float maxInterval = 2.0f; // 間隔
     int intervalCount = 0;
+    float moveTimer_ = 0.0f; // 浮遊運動用のタイマー
+
+    // 回転シールドフラグ
+    bool isShield = false;
+    float shieldTimer_ = 0.0f; // シールド状態の残り時間タイマー
+    static inline const float kMaxShieldTime = 5.0f; // シールドの継続時間（5秒間）
+
+    float shieldShotInterval_ = 0.0f; // シールド中の弾発射間隔タイマー
+    static inline const float kShieldShotMaxInterval = 0.6f; // 何秒ごとに弾を撃つか（0.6秒ごと）
+
+    float shieldAngle_ = 0.0f;
 
     // 脂肪フラグ
     bool isDead_ = false;
