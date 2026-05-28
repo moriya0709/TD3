@@ -23,8 +23,9 @@ void CheckCollisionSpecialAtackEnemy(const std::list<std::shared_ptr<Enemy>>& en
 void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::shared_ptr<grapesBoss>>& enemies, std::unique_ptr <ParticleEmitter>& hitEffect);
 void CheckCollisionPlayerBossEnemy(Player* player, const std::list<std::shared_ptr<grapesBoss>>& enemies);
 void CheckCollisionPlayerBossEnemyBullet(Player* player, const std::list<std::shared_ptr<grapesBoss>>& enemies);
-
+void CheckCollisionSpecialAtacgrapesEnemy(const std::list<std::shared_ptr<grapesBoss>>& enemies, std::unique_ptr<ParticleEmitter>& hitEffect);
 
 void CheckCollisionPlayerBulletBananaBoss(Player* player, const std::list<std::shared_ptr<banana>>& enemies, std::unique_ptr <ParticleEmitter>& hitEffect);
 void CheckCollisionPlayerBananaBoss(Player* player, const std::list<std::shared_ptr<banana>>& enemies);
 void CheckCollisionPlayerBananaBossBullet(Player* player, const std::list<std::shared_ptr<banana>>& enemies);
+void CheckCollisionSpecialAtackbananaEnemy(const std::list<std::shared_ptr<banana>>& enemies, std::unique_ptr<ParticleEmitter>& hitEffect);
