@@ -1,33 +1,3 @@
 {
-    "enemies": [
-        {
-            "popTime": 5.0,
-            "type": "NormalEnemy",
-            "hp": 100,
-            "position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 60.0
-            },
-            "movePattern": [
-                {
-                    "target": {
-                        "x": 11.0,
-                        "y": 14.0,
-                        "z": 60.0
-                    },
-                    "timeToReach": 1.0,
-                    "timeToStop": 7.0
-                }
-            ],
-            "flee": {
-                "target": {
-                    "x": -107374176.0,
-                    "y": 0.0,
-                    "z": 0.0
-                },
-                "timeToReach": 2.0
-            }
-        }
-    ]
+    "enemies": []
 }
