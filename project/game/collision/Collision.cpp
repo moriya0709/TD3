@@ -168,7 +168,7 @@ void CheckCollisionPlayerBulletBossEnemy(Player* player, const std::list<std::sh
 
             for (const auto& volume : volumes) {
 
-                 // 距離の計算
+                // 距離の計算
                 Vector3 vecAB = { bulletPos.x - volume.position.x, bulletPos.y - volume.position.y, bulletPos.z - volume.position.z };
                 float lenSqAB = vecAB.x * vecAB.x + vecAB.y * vecAB.y + vecAB.z * vecAB.z;
 
@@ -279,6 +279,18 @@ void CheckCollisionPlayerBossEnemyBullet(Player* player, const std::list<std::sh
                 PostEffect::GetInstance()->SetDamageEffectRatio(1.0f);
             }
         }
+    }
+}
+
+void CheckCollisionSpecialAtacgrapesEnemy(const std::list<std::shared_ptr<grapesBoss>>& enemies, std::unique_ptr<ParticleEmitter>& hitEffect)
+{
+    // 強制ダメージ
+    for (const auto& enemy : enemies) {
+        enemy->OnCollision(150);
+
+        // ヒットエフェクトの発生（ジャストな衝突位置に表示される）
+        hitEffect->SetTranslate(enemy->GetWorldPosition());
+        hitEffect->Update();
     }
 }
 
@@ -453,6 +465,26 @@ void CheckCollisionPlayerBananaBossBullet(Player* player, const std::list<std::s
     }
 }
 
+void CheckCollisionSpecialAtackbananaEnemy(const std::list<std::shared_ptr<banana>>& enemies, std::unique_ptr<ParticleEmitter>& hitEffect)
+{
+    for (auto& boss : enemies) {
+        if (boss->GetIsDead())
+            continue;
+        std::vector<banana::CollisionVolume> volumes = boss->GetCollisionVolumes();
+
+        for (const auto& volume : volumes) {
+
+            // ヒット！
+            if (boss->OnCollision(volume)) {
+
+                hitEffect->SetTranslate(volume.position);
+                hitEffect->Update();
+            }
+            break; // この弾は消滅したため、他のボリュームとの判定をスキップ
+        }
+    }
+}
+
 void CheckCollisionPlayerBulletEnemyBullet(std::list<PlayerBullet*> playerBullet, std::vector<EnemyBullet*> enemyBullet) { }
 
 void CheckCollisionSpecialAtackEnemy(const std::list<std::shared_ptr<Enemy>>& enemies)
@@ -464,7 +496,5 @@ void CheckCollisionSpecialAtackEnemy(const std::list<std::shared_ptr<Enemy>>& en
             continue;
         // 敵に爆弾のダメージを与える
         enemy->OnCollision(150, enemy->GetWorldPosition(), Vector3 { 0, 0, 0 }); // 例として100ダメージを与える
-
-
     }
 }
