@@ -166,7 +166,7 @@ void ResultScene::Update()
 	else if (isCanPress_)
 	{
 		//SPACEキーで
-		if (input->TriggerKey(DIK_SPACE||input->IsPadButtonPressed(0, 1))) {
+		if (input->TriggerKey(DIK_SPACE)||input->IsPadButtonPressed(0, 1)) {
 			// ゲームプレイシーン(次シーン)を生成
 			SoundManager::GetInstance()->Stop("result.mp3");
 			isResultBGMPlaying_ = false;
