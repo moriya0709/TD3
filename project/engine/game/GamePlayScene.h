@@ -136,7 +136,7 @@ private:
     float bloomBlurRadius = 1.0f;
 
     // レンズフレア
-    bool isLensFlare = true;           // レンズフレアのON/OFF
+    bool isLensFlare = false;           // レンズフレアのON/OFF
     int lensFlareGhostCount = 6;   // ゴーストの数（例: 4～8）
     float lensFlareHaloWidth = 0.57f;      // ヘイロー（輪っか）の大きさ
     bool isACES = true;                 // ACESトーンマッピングをONにする
@@ -149,6 +149,11 @@ private:
 	// スピードディストーション
 	bool isSpeedDistortion = true; // スピードディストーションのON/OFF
     float speedDistortionStrength = 1.0f; // 歪みの強さ
+    // 色収差
+	bool isFullScreenCA = false; // 画面全体の色収差ON/OFF
+    // ビネット
+	bool isVignette = false; // ビネットON/OFF
+
     // 集中線
     bool isConcentrationLines = false; // 集中線のON/OFF
     float concentrationLineIntensity = 0.02f; // 線の濃さ
@@ -210,8 +215,6 @@ private:
     //ポーズかどうか
     bool isPause_ = false;
 	bool isPauseEasing_ = false;
-    enum EasingType { Start, Select };
-	EasingType easingType_ = Start;
 
     Pause currentPause_ = kResume;
 
