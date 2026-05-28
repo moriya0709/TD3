@@ -42,8 +42,8 @@ public:
         bool isAnimating = false;
 
         // 当たり判定のサイズ
-        static inline const float radiusX = 1.2f;
-        static inline const float radiusY = 3.0f;
+        static inline const float radiusX = 2.0f;
+        static inline const float radiusY = 6.0f;
 
         // 体力
         int PartsHp = 100;
@@ -94,7 +94,7 @@ public:
     // Set
     void SetTargetPlayer(Player* target);
     bool OnCollision(const CollisionVolume& volume, PlayerBullet* bullet);
-    bool OnCollision(const CollisionVolume& volume);
+    bool OnCollision(int dameg);
 
 public:
     void BulletUpdate();
