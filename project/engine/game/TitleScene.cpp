@@ -265,7 +265,7 @@ void TitleScene::Update() {
 
 
 	// SPACEキーを押したら
-	if (input->TriggerKey(DIK_SPACE)) {
+	if (input->TriggerKey(DIK_SPACE) || input->IsPadButtonPressed(0, 1)) {
 		// ゲームプレイシーン(次シーン)を生成
 		//SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		isTransition = true;
