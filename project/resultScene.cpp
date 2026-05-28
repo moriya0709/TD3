@@ -112,6 +112,10 @@ void ResultScene::Update()
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
 
+	// フェードイン
+	if(intensity < 1.0f)
+		intensity += 1.0f / 30.0f;
+
 	if (!isResultBGMPlaying_) {
 		SoundManager::GetInstance()->Play("result.mp3", true);
 		isResultBGMPlaying_ = true;
@@ -267,6 +271,9 @@ void ResultScene::Update()
 	PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
 	PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
 	PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
+	
+	// エフェクトの強さ
+	PostEffect::GetInstance()->SetIntensity(intensity);
 
 #pragma endregion
 

@@ -133,6 +133,7 @@ private:
 	float concentrationLineLength = 0.0f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
 	float concentrationLineSpeed = 20.0f;     // 線の動く速さ
 
+	float intensity = 0.0f; // エフェクトの強さ
 
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;

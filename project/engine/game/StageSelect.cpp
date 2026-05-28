@@ -127,7 +127,7 @@ void StageSelect::Update() {
 
 
 	if (!isTransition) {
-		if (input->TriggerKey(DIK_D) || input->TriggerKey(DIK_RIGHT)) {
+		if (input->PushKey(DIK_D) || input->PushKey(DIK_RIGHT)) {
 			if (switchCooltime <= 0.0f) {
 				if (!isStageSelect) {
 					// 本のページをめくる
@@ -152,7 +152,7 @@ void StageSelect::Update() {
 				}
 				switchCooltime = 0.8f; // クールタイムリセット
 			}
-		} else if (input->TriggerKey(DIK_A) || input->TriggerKey(DIK_LEFT)) {
+		} else if (input->PushKey(DIK_A) || input->PushKey(DIK_LEFT)) {
 			if (switchCooltime <= 0.0f) {
 				if (!isStageSelect) {
 					if (book->GetCurrentPageIndex() > 2) {

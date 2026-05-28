@@ -167,7 +167,13 @@ private:
     static inline const float KAliveTimer = 60.0f;
     float AliveTimer = 0.0f;
     float deadTimer_;
-    static inline const float kdeadTimer_ = 3.0f;
+    static inline const float kdeadTimer_ = 6.0f;
 
     std::vector<std::unique_ptr<EnemyBullet>> enemyBullet_;
+
+    // デスエフェクト
+    std::unique_ptr <ParticleEmitter> deathEffect[5] = {};
+    const int deathEffectCount = 5; // デスエフェクトの数
+	float frequency = 0.5f; // デスエフェクトの発生頻度
+
 };

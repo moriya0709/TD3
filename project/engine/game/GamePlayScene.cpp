@@ -337,10 +337,19 @@ void GamePlayScene::Update() {
 		ChekeAllCollision();
 
 		// フェード
-		if (!isBossAppears_ && !isWarning_) {
-			if (intensity < 1.0f)
-				intensity += 1.0f / 30.0f;
-		}
+        if (!isFinished_) {
+            if (!isBossAppears_ && !isWarning_) {
+                if (intensity < 1.0f)
+                    intensity += 1.0f / 30.0f;
+            }
+        } else {
+            // フェードアウト
+            if (intensity > 0.0f) {
+                intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
+            } else {
+                SceneManager::GetInstance()->ChangeScene("RESULT");
+            }
+        }
 
 		// ポーズ画面へ
 		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
@@ -426,6 +435,7 @@ void GamePlayScene::Update() {
 				if (!isWarning_) {
 					cameraController_ = std::make_unique<GrapeCameraController>();
 					cameraController_->Initialize(camera.get());
+                    cameraController_->SetTargetPosition({ 0, 0, 60 });
 					enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
 					bossPopFlag = 4;
 				}
@@ -943,6 +953,7 @@ void GamePlayScene::PauseSelect()
 
 void GamePlayScene::StageClear()
 {
+
     if (isFinished_)
         return;
     isFinished_ = true;
@@ -966,7 +977,7 @@ void GamePlayScene::StageClear()
     SoundManager::GetInstance()->Stop("boss.mp3");
     isPlayBGMPlaying_ = false;
     isBossBGMPlaying_ = false;
-    SceneManager::GetInstance()->ChangeScene("RESULT");
+
 }
 
 void GamePlayScene::LithingEffect()

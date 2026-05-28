@@ -75,6 +75,30 @@ void grapesBoss::Initialize(Camera* camera, Vector3 pos, int health)
         }
     }
     currentWeakPointIndex_ = 1; // 初期状態の本体インデックス
+
+    // デスエフェクト
+    for (int i = 0; i < deathEffectCount; i++) {
+        deathEffect[i] = std::make_unique<ParticleEmitter>();
+    } 
+    deathEffect[0]->Initialize("DeathBoss1", baseTransform_, 5, 0.2f);
+    deathEffect[1]->Initialize("DeathBoss2", baseTransform_, 5, 0.2f);
+    deathEffect[2]->Initialize("DeathBoss3", baseTransform_, 5, 0.2f);
+    deathEffect[3]->Initialize("DeathBoss4", baseTransform_, 5, 0.2f);
+    deathEffect[4]->Initialize("DeathBoss5", baseTransform_, 5, 0.2f);
+   
+
+    deathEffect[0]->SetActive("DeathBoss1");
+    deathEffect[0]->LoadParticle("Resource/particle/deathBoss_1.csv");
+    deathEffect[1]->SetActive("DeathBoss2");
+    deathEffect[1]->LoadParticle("Resource/particle/deathBoss_2.csv");
+    deathEffect[2]->SetActive("DeathBoss3");
+    deathEffect[2]->LoadParticle("Resource/particle/deathBoss_3.csv");
+    deathEffect[3]->SetActive("DeathBoss4");
+    deathEffect[3]->LoadParticle("Resource/particle/deathBoss_4.csv");
+    deathEffect[4]->SetActive("DeathBoss5");
+    deathEffect[4]->LoadParticle("Resource/particle/deathBoss_5.csv");
+
+
 }
 
 void grapesBoss::Update()
@@ -735,6 +759,20 @@ void grapesBoss::BehaviorDefeated()
 {
     if (isDead_) {
         deadTimer_ -= 1.0f / 60.0f;
+
+        // デスエフェクト更新
+        if (deadTimer_ <= 3.0f) {
+            for (int i = 1; i < deathEffectCount; i++) {
+                deathEffect[i]->SetTranslate(baseTransform_.translate);
+                deathEffect[i]->Update();
+            }
+        } else {
+            deathEffect[0]->SetTranslate(baseTransform_.translate);
+			frequency -= 0.002f; // 徐々に頻度を減らす
+            deathEffect[0]->SetFrequency(frequency);
+            deathEffect[0]->Update();
+        }
+
         if (deadTimer_ <= 0.0f) {
             isAlive_ = false;
         }
