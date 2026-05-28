@@ -109,26 +109,7 @@ void TitleScene::Initialize() {
 
 	animationObjects.push_back(std::move(walkAnim));//アニメーションモデル専用のリストに入れる*/
 
-	// ヒットエフェクト
-	for (int i = 0; i < hitEffectCount; i++) {
-		hitEffect[i] = std::make_unique<ParticleEmitter>();
-		hitEffect[i]->Initialize("Death1", Transform{}, 5, 0.2f);
-	}
-	hitEffect[0]->SetActive("Death1");
-	hitEffect[0]->LoadParticle("Resource/particle/death_1.csv");
-	hitEffect[1]->SetActive("Death2");
-	hitEffect[1]->LoadParticle("Resource/particle/death_2.csv");
-	hitEffect[2]->SetActive("Death3");
-	hitEffect[2]->LoadParticle("Resource/particle/death_3.csv");
-	hitEffect[3]->SetActive("Death4");
-	hitEffect[3]->LoadParticle("Resource/particle/death_4.csv");
-
-	// パーティクル
-	particleEmitter = std::make_unique<ParticleEmitter>();
-	particleEmitter->Initialize("ChargeShot", transformParticle, 5, 0.1f);
-	particleEmitter->SetActive("ChargeShot");
-	particleEmitter->LoadParticle("Resource/particle/shot_1.csv");
-
+	
 	// 初期化済みの3Dオブジェクトにモデルを紐づける
 	object[0]->SetModel("emission.obj");
 	object[1]->SetModel("skydome.obj");
@@ -151,9 +132,9 @@ void TitleScene::Update() {
 	}
 
 	// カメラ更新
-	//cameraTransform.translate.x += 0.05f;
-	//cameraTransform.translate.z += 0.05f;
-	//camera->SetTranslate(cameraTransform.translate);
+	cameraTransform.translate.x += 0.05f;
+	cameraTransform.translate.z += 0.05f;
+	camera->SetTranslate(cameraTransform.translate);
 
 	// エフェクトの強さ減少
 	if (isTransition) {
@@ -298,16 +279,6 @@ void TitleScene::Update() {
 	spaceTimer_ += 0.05f;
 	float sinTimer = std::sin(spaceTimer_);//-1.0f～1.0fの範囲
 	space_->SetColor(Vector4(1.0f, 1.0f, 1.0f, ((sinTimer + 1.0f) / 2.0f)));//透明演出
-
-	// ヒットエフェクト更新
-	//for (int i = 0; i < hitEffectCount; i++) {
-	//	hitEffect[i]->Update();
-	//}
-
-	// パーティクル更新
-	particleEmitter->Update();
-	particleEmitter->Editor();
-
 
 	// *スプライト* //
 	// sprite更新

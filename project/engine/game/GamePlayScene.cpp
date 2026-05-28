@@ -337,9 +337,19 @@ void GamePlayScene::Update()
         ChekeAllCollision();
 
         // フェード
-        if (!isBossAppears_ && !isWarning_) {
-            if (intensity < 1.0f)
-                intensity += 1.0f / 30.0f;
+        if (isFinished_) {
+            // フェードアウト
+            intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
+            PostEffect::GetInstance()->SetIntensity(intensity);
+
+            if (intensity <= 0.0f)
+                SceneManager::GetInstance()->ChangeScene("RESULT");
+        } else {
+			// フェードイン
+            if (!isBossAppears_ && !isWarning_) {
+                if (intensity < 1.0f)
+                    intensity += 1.0f / 30.0f;
+            }
         }
 
         // ポーズ画面へ
@@ -944,6 +954,7 @@ void GamePlayScene::PauseSelect()
 
 void GamePlayScene::StageClear()
 {
+
     if (isFinished_)
         return;
     isFinished_ = true;
@@ -967,7 +978,7 @@ void GamePlayScene::StageClear()
     SoundManager::GetInstance()->Stop("boss.mp3");
     isPlayBGMPlaying_ = false;
     isBossBGMPlaying_ = false;
-    SceneManager::GetInstance()->ChangeScene("RESULT");
+   
 }
 
 void GamePlayScene::LithingEffect()
