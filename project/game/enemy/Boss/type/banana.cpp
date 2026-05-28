@@ -526,6 +526,11 @@ void banana::BehaviorDefeated()
 {
 
     if (isDead_) {
+        if (deadTimer_ >= 6.0f) {
+            // se
+            SoundManager::GetInstance()->Play("death_se", true);
+        }
+
         deadTimer_ -= 1.0f / 60.0f;
 
         // デスエフェクト更新
@@ -534,6 +539,7 @@ void banana::BehaviorDefeated()
                 deathEffect[i]->SetTranslate(baseTransform_.translate);
                 deathEffect[i]->Update();
             }
+
         } else {
             deathEffect[0]->SetTranslate(baseTransform_.translate);
             frequency -= 0.002f; // 徐々に頻度を減らす
@@ -543,6 +549,9 @@ void banana::BehaviorDefeated()
 
         if (deadTimer_ <= 0.0f) {
             isAlive_ = false;
+
+            // SE
+            SoundManager::GetInstance()->Stop("death_se");
         }
     }
 }

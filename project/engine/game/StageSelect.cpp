@@ -52,12 +52,15 @@ void StageSelect::Initialize() {
 
 	// 本型UI
 	std::vector<std::string> textures = {
-	    "Resource/bookUi/cover.png",    "Resource/bookUi/cover2.png",
+	    "Resource/bookUi/cover.png",    
+		"Resource/bookUi/cover2.png",
 	    "Resource/bookUi/normal.png", // normal
 	    "Resource/bookUi/speed.png",  // speed
 	    "Resource/bookUi/power.png",  // power
 	    "Resource/bookUi/sniper.png", // sniper
-	    "Resource/bookUi/bookUi_1.png", "Resource/bookUi/bookUi_1.png", "Resource/bookUi/bookUi_1.png",
+	    "Resource/bookUi/bookUi_1.png", 
+		"Resource/bookUi/bookUi_1.png", 
+		"Resource/bookUi/bookUi_1.png",
 	    "Resource/bookUi/stage1.png", // stage1
 	    "Resource/bookUi/stage2.png", // stage2
 	    "Resource/bookUi/stage3.png", // stage3
@@ -78,10 +81,16 @@ void StageSelect::Initialize() {
 	book->SetPosition(bookEasing.transform.translate);
 	book->SetScale(bookEasing.transform.scale);
 
+	// 背景
+	background = std::make_unique<Object>();
+	background->Initialize(camera_.get());
+	background->SetModel("bg.obj");
+	background->SetTranslate({ 0.0f, 0.0f, 10.0f });
+	background->SetScale({ 10.0f, 10.0f, 1.0f });
+	background->SetSunLight(false);
+	
 	// 音声再生
-	SoundManager::GetInstance()->Play("select.mp3");
-	// 再生フラグ
-	isSelectBGMPlaying_ = false;
+	SoundManager::GetInstance()->Play("select.mp3", true, bgmVolume_);
 }
 
 void StageSelect::Update() {
@@ -90,10 +99,9 @@ void StageSelect::Update() {
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
 
-	if (!isSelectBGMPlaying_) {
-		SoundManager::GetInstance()->Play("select.mp3", true);
-		isSelectBGMPlaying_ = true;
-	}
+	// 背景
+	background->Update();
+	background->SetDirectionalLightDirection(DirectionalLightDirection);
 
 	// 切り換えクールタイム減少
 	switchCooltime = (std::max)(0.0f, switchCooltime - 1.0f / 60.0f);
@@ -109,6 +117,9 @@ void StageSelect::Update() {
 			if (book->GetCurrentPageIndex() > 5) {
 				book->PrevPage();
 				switchCooltime = 0.3f;
+
+				// SE
+				SoundManager::GetInstance()->Play("book_se", false, seVolume_);
 			}
 		}
 		if (switchCooltime <= 0.0f) {
@@ -133,6 +144,9 @@ void StageSelect::Update() {
 						currentStyle = static_cast<Style>((static_cast<int>(currentStyle) + 1) % 4);
 						isParameterEasing = true; // イージングリセット
 						ParameterEasingSet(currentStyle);
+
+						// SE
+						SoundManager::GetInstance()->Play("book_se", false, seVolume_);
 					}
 
 				} else {
@@ -143,6 +157,9 @@ void StageSelect::Update() {
 					// 本のページをめくる
 					if (book->GetCurrentPageIndex() < 13)
 						book->NextPage();
+
+					// SE
+					SoundManager::GetInstance()->Play("book_se", false, seVolume_);
 				}
 				switchCooltime = 0.8f; // クールタイムリセット
 			}
@@ -161,6 +178,9 @@ void StageSelect::Update() {
 
 						isParameterEasing = true; // イージングリセット
 						ParameterEasingSet(currentStyle);
+
+						// SE
+						SoundManager::GetInstance()->Play("book_se", false, seVolume_);
 					}
 
 				} else {
@@ -171,6 +191,9 @@ void StageSelect::Update() {
 					if (book->GetCurrentPageIndex() > 9) {
 						// 本のページを戻す
 						book->PrevPage();
+
+						// SE
+						SoundManager::GetInstance()->Play("book_se", false, seVolume_);
 					}
 				}
 				switchCooltime = 0.8f; // クールタイムリセット
@@ -225,11 +248,12 @@ void StageSelect::Update() {
 
 	if (isBackTransition) {
 		intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
+		bgmVolume_ = (std::max)(0.0f, bgmVolume_ - 1.0f / 30.0f);
+		SoundManager::GetInstance()->SetVolume("select.mp3", bgmVolume_);
 
 		if (intensity <= 0.0f) {
 			// シーン切り替え処理
 			SoundManager::GetInstance()->Stop("select.mp3");
-			isSelectBGMPlaying_ = false;
 			SceneManager::GetInstance()->ChangeScene("TITLE");
 		}
 	} else {
@@ -293,6 +317,9 @@ void StageSelect::Draw3D() {
 	// 3Dオブジェクトの描画準備
 	ObjectCommon::GetInstance()->SetCommonDrawSetting();
 
+	// 背景
+	background->Draw();
+
 	// 本型UIの描画準備
 	BookUiCommon::GetInstance()->SetCommonPipelineState();
 
@@ -319,10 +346,13 @@ void StageSelect::TransitionUpdate() {
 		// 本のサイズを更新
 		book->SetScale(bookEasing.transform.scale);
 
+		// BGMのフェードアウト
+		bgmVolume_ = (std::max)(0.0f, bgmVolume_ - 1.0f / 30.0f);
+		SoundManager::GetInstance()->SetVolume("select.mp3", bgmVolume_);
+
 		if (bookEasing.sizeEasedT >= 1.0f) {
 			// シーン切り替え
 			SoundManager::GetInstance()->Stop("select.mp3");
-			isSelectBGMPlaying_ = false;
 			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 		}
 	}
@@ -404,6 +434,7 @@ void StageSelect::LithingEffect() {
 	RayMarching::GetInstance()->SetAnimeLight(rayMarchingIsAnimeLight);
 	RayMarching::GetInstance()->SetMotionBlur(rayMarchingIsMotionBlur);
 	RayMarching::GetInstance()->SetCloudOpacity(rayMarchingCloudOpacity);
+
 
 #pragma endregion
 }

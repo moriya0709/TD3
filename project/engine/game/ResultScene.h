@@ -187,8 +187,8 @@ private:
 	//モデル(数字にして描画)
 	int modelIndex_ = 0;
 
-	//再生フラグ
-	bool isResultBGMPlaying_ = false;
+	// bgm音量
+	float bgmVolume_ = 1.0f; // BGMの音量 (0.0f〜1.0f)
 
 };
 

@@ -216,7 +216,7 @@ private:
 
 	float spaceTimer_ = 0.0f;//space点滅タイマー
 
-	//再生フラグ
-	bool isTitleBGMPlaying_ = false;
+	// BGM音量
+	float bgmVolume_ = 1.0f;
 
 };

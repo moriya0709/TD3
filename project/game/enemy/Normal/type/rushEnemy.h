@@ -103,4 +103,5 @@ private:
     // デスエフェクト
     std::unique_ptr <ParticleEmitter> deathEffect[4] = {};
     const int deathEffectCount = 4; // 数
+
 };

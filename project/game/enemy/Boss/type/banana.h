@@ -99,9 +99,9 @@ public:
 public:
     void BulletUpdate();
 
-    void MoveUpdate();
-    void RoatetUpdate();
-    void MoveRush();
+    //void MoveUpdate();
+    //void RoatetUpdate();
+    //void MoveRush();
 
     void BehaviorStillness();
     void BehaviorAttack();

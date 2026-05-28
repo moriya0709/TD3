@@ -98,10 +98,7 @@ void ResultScene::Initialize()
 	}
 
 	// 音声再生
-	SoundManager::GetInstance()->Play("result.mp3");
-
-	//再生フラグ
-	isResultBGMPlaying_ = false;
+	SoundManager::GetInstance()->Play("result.mp3", true, bgmVolume_);
 
 }
 
@@ -116,11 +113,6 @@ void ResultScene::Update()
 	if (intensity < 1.0f)
 	{
 		intensity += 1.0f / 30.0f;
-	}
-
-	if (!isResultBGMPlaying_) {
-		SoundManager::GetInstance()->Play("result.mp3", true);
-		isResultBGMPlaying_ = true;
 	}
 
 	//スペースキーでお急ぎ用スコア表示
@@ -175,7 +167,6 @@ void ResultScene::Update()
 		if (input->TriggerKey(DIK_SPACE)||input->IsPadButtonPressed(0, 1)) {
 			// ゲームプレイシーン(次シーン)を生成
 			SoundManager::GetInstance()->Stop("result.mp3");
-			isResultBGMPlaying_ = false;
 			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		}
 	}
