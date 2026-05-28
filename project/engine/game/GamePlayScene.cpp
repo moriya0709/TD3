@@ -590,7 +590,8 @@ void GamePlayScene::Draw2D() {
 			bossAppearsName_[1]->Draw();
 	}
 	else {
-		player_->Draw2D();
+		if (!isPause_) // ポーズ中はレティクルを描画しない
+			player_->Draw2D();
 	}
 
 	pause_->Draw(); // ポーズ
