@@ -9,6 +9,7 @@
 #include <externals/nlohmann/json.hpp>
 #include <fstream>
 #include <imgui.h>
+#include <random> // ✨この行を追加します！
 
 using json = nlohmann::json;
 
@@ -66,7 +67,9 @@ void StageCameraController::Initialize(Camera* targetCamera) {
 
 void StageCameraController::Update() {
 	float deltaTime = 1.0f / 60.0f;
-
+	for (auto& obj : pathObjects) {
+		obj->Update();
+	}
 	if (isPlaying) {
 		// --- 1. タイマー更新 ---
 		timer += deltaTime;
@@ -280,6 +283,9 @@ void StageCameraController::EditorUpdate() {
 }
 
 void StageCameraController::EditorDraw() {
+	for (auto& obj : pathObjects) {
+		obj->Draw();
+	}
 #ifdef USE_IMGUI
 	if (!isPlaying) {
 		// マウスによる制御点の選択
@@ -404,6 +410,88 @@ void StageCameraController::SelectPointByMouse() {
 }
 
 // =========================================================
+// パス沿いのランダムオブジェクト生成
+// =========================================================
+void StageCameraController::GeneratePathObjects() {
+	// 既存のオブジェクトをクリア
+	pathObjects.clear();
+
+	// スプライン曲線（Evaluate）を描画するためには制御点が4つ以上必要
+	if (points.size() < 4)
+		return;
+
+	// 配置する設定パラメータ
+	const int numObjects = 30;     // 配置するトータルの数
+	const float minOffset = 30.0f; // 経路から離す最小距離
+	const float maxOffset = 55.0f; // 経路から離す最大距離
+	const float minScale = 0.5f;   // ランダムスケールの最小値
+	const float maxScale = 1.5f;   // ランダムスケールの最大値
+
+	// ✨ Evaluate(スプライン曲線)が受け取れる最大の進行度(maxT)を計算
+	float maxT = static_cast<float>(points.size() - 3);
+
+	// 乱数生成器の初期化
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<float> disOffset(minOffset, maxOffset);
+	std::uniform_real_distribution<float> disScale(minScale, maxScale);
+	std::uniform_real_distribution<float> disRot(0.0f, 360.0f);
+	std::uniform_int_distribution<int> disModel(0, 1);
+	std::uniform_int_distribution<int> disSign(0, 1);
+
+	// ✨ 0.0 から maxT の間で「完全にランダムな位置」を決めるための乱数
+	std::uniform_real_distribution<float> disT(0.0f, maxT);
+
+	for (int i = 0; i < numObjects; ++i) {
+		// ✨ 等分ではなく、ランダムな t を取得して経路全体にバラけさせる
+		float t = disT(gen);
+
+		// 1. ✨ EvaluateBezier ではなく、均等に分散しやすい Evaluate を使用
+		Vector3 basePath = Evaluate(t);
+
+		// 2. 各軸に対して独立して離れるオフセットを計算
+		// X軸（左右）のオフセット
+		float offsetX = disOffset(gen);
+		if (disSign(gen) == 1)
+			offsetX *= -1.0f;
+
+		// Y軸（上下）のオフセット
+		float offsetY = disOffset(gen);
+		if (disSign(gen) == 1)
+			offsetY *= -1.0f;
+
+		// Z軸（前後）のオフセット
+		float offsetZ = disOffset(gen);
+		if (disSign(gen) == 1)
+			offsetZ *= -1.0f;
+
+		// オフセットを適用した最終座標
+		Vector3 finalPosition = {basePath.x + offsetX, basePath.y + offsetY, basePath.z + offsetZ};
+
+		// 3. Objectの生成と初期化
+		auto obj = std::make_unique<Object>();
+		obj->Initialize(camera);
+
+		// 4. ランダムにモデルを選択
+		if (disModel(gen) == 0) {
+			obj->SetModel("skyBulding.obj");
+		} else {
+			obj->SetModel("rocket.obj");
+		}
+
+		// 5. トランスフォームの設定
+		obj->SetTranslate(finalPosition);
+
+		float scaleVal = disScale(gen);
+		obj->SetScale({scaleVal, scaleVal, scaleVal});
+
+		// 回転もランダムにして個性を出す
+		obj->SetRotate({disRot(gen), disRot(gen), disRot(gen)});
+
+		// 配列に保存
+		pathObjects.push_back(std::move(obj));
+	}
+} // =========================================================
 // データ保存・読み込み (JSON)
 // =========================================================
 void StageCameraController::ChangeStage(int newStage) {
@@ -416,6 +504,9 @@ void StageCameraController::ChangeStage(int newStage) {
 	selectedPoint = -1;
 	if (!points.empty())
 		lastPosition = EvaluateBezier(0.0f);
+
+	// 【追加】ステージ読み込み完了後、またはデフォルトリセット後にオブジェクトを自動生成
+	GeneratePathObjects();
 }
 
 std::string StageCameraController::GetFilePath(int slot) const { return "Resource/Data/camera_stage_" + std::to_string(slot) + ".json"; }

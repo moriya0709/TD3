@@ -46,6 +46,11 @@ private:
 	void DrawRailModels();
 	void UpdateGizmo();
 	void SelectPointByMouse();
+	// パス沿いに配置するオブジェクトの配列
+	std::vector<std::unique_ptr<Object>> pathObjects;
+
+	// オブジェクトをランダムに生成する関数
+	void GeneratePathObjects();
 
 private:
 	Camera* camera = nullptr;
