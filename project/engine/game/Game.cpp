@@ -54,6 +54,11 @@ void Game::Initialize() {
 	ParticleManager::GetInstance()->CreateParticleGroup("Death2", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("Death3", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("Death4", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("DeathBoss1", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("DeathBoss2", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("DeathBoss3", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("DeathBoss4", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("DeathBoss5", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("SpecialAttack", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("Special", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("ChargeShot", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");

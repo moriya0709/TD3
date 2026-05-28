@@ -121,7 +121,7 @@ void StageSelect::Update() {
 	}
 
 	if (!isTransition) {
-		if (input->TriggerKey(DIK_D) || input->TriggerKey(DIK_RIGHT) || input->IsPadButtonPressed(0, input->IsPadButtonPressed(0, 13)) || input->GetPadLeftAxisX(0) > 0.5f) {
+		if (input->PushKey(DIK_D) || input->PushKey(DIK_RIGHT) || input->IsPadButtonPressed(0, input->IsPadButtonPressed(0, 13)) || input->GetPadLeftAxisX(0) > 0.5f) {
 
 			if (switchCooltime <= 0.0f) {
 				if (!isStageSelect) {
@@ -148,7 +148,7 @@ void StageSelect::Update() {
 			}
 		}
 		// 【左への入力】Aキー、左矢印、十字キー左、左スティック左
-		else if (input->TriggerKey(DIK_A) || input->TriggerKey(DIK_LEFT) || input->IsPadButtonPressed(0, input->IsPadButtonPressed(0, 12)) || input->GetPadLeftAxisX(0) < -0.5f) {
+		else if (input->PushKey(DIK_A) || input->PushKey(DIK_LEFT) || input->IsPadButtonPressed(0, input->IsPadButtonPressed(0, 12)) || input->GetPadLeftAxisX(0) < -0.5f) {
 
 			if (switchCooltime <= 0.0f) {
 				if (!isStageSelect) {
