@@ -302,273 +302,275 @@ void GamePlayScene::Initialize()
     isBossBGMPlaying_ = false;
 }
 
-void GamePlayScene::Update()
-{
+void GamePlayScene::Update() {
 
-    if (!isPause_) {
-        // セレクトからシーン切り替えした時のエフェクト
-        SceneChangedEffect();
+	if (!isPause_) {
+		// セレクトからシーン切り替えした時のエフェクト
+		SceneChangedEffect();
 
-        // カメラ更新
-        if (!isGameOver)
-            cameraController_->Update();
+		// カメラ更新
+		if (!isGameOver)
+			cameraController_->Update();
 
-        // アニメーションするモデル更新処理
-        for (auto& object : animationObjects) {
-            object->Update();
-        }
+		// アニメーションするモデル更新処理
+		for (auto& object : animationObjects) {
+			object->Update();
+		}
 
-        if (isBossAppears_) {
-            // ボス登場演出
-            BossAppearsUpdate();
-        } else {
-            // プレイヤー更新
-            player_->Update(enemy_->GetEnemies(), cameraController_->GetSpeed());
+		if (isBossAppears_) {
+			// ボス登場演出
+			BossAppearsUpdate();
+		} else {
+			// プレイヤー更新
+			player_->Update(enemy_->GetEnemies(), cameraController_->GetSpeed());
 
-            // 敵更新
-            enemy_->SetcurrentTimer_(cameraController_->GetElapsedTime());
-            enemy_->Update();
-        }
+			// 敵更新
+			enemy_->SetcurrentTimer_(cameraController_->GetElapsedTime());
+			enemy_->Update();
 
-        // 敵から回収したスコアを自分のスコアに加算する
-        this->score_ += enemy_->GiveScore();
+		}
 
-        // 当たり判定
-        ChekeAllCollision();
+		//敵から回収したスコアを自分のスコアに加算する
+		this->score_ += enemy_->GiveScore();
 
-        // フェード
-        if (!isBossAppears_ && !isWarning_) {
-            if (intensity < 1.0f)
-                intensity += 1.0f / 30.0f;
-        }
+		// 当たり判定
+		ChekeAllCollision();
 
-        // ポーズ画面へ
-        if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
-            isPause_ = true;
-            currentPause_ = Pause::kResume;
-        }
+		// フェード
+		if (!isBossAppears_ && !isWarning_) {
+			if (intensity < 1.0f)
+				intensity += 1.0f / 30.0f;
+		}
 
-    } else { // ポーズ画面
-        PauseSelect();
+		// ポーズ画面へ
+		if (Input::GetInstance()->TriggerKey(DIK_ESCAPE)) {
+			isPause_ = true;
+			currentPause_ = Pause::kResume;
+		}
 
-        // エフェクトをリセット
-        isInversion = false; // 反転
-        isGrayscale = false; // グレースケール
-        isTwoColor = false;
-        isRadialBlur = false; // 放射線ブラー
-        isSpeedDistortion = false; // スピードディストーション
-        isConcentrationLines = false; // 集中線
-        isFullScreenCA = false; // 色収差
-        isVignette = false; // ビネット
+	} else { // ポーズ画面
+		PauseSelect();
 
-        PostEffect::GetInstance()->SetInversion(isInversion);
-        PostEffect::GetInstance()->SetGrayscale(isGrayscale);
-        PostEffect::GetInstance()->SetTwoColor(isTwoColor);
-        PostEffect::GetInstance()->SetRadialBlur(isRadialBlur);
-        PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
-        PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
-        PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
-        PostEffect::GetInstance()->SetVignette(isVignette);
-    }
-    int currentSpecialCount = player_->GetSpecialAttackCount();
+		// エフェクトをリセット
+		isInversion = false; // 反転
+		isGrayscale = false; // グレースケール
+		isTwoColor = false;
+		isRadialBlur = false;// 放射線ブラー
+		isSpeedDistortion = false; // スピードディストーション
+		isConcentrationLines = false;// 集中線
+		isFullScreenCA = false; // 色収差
+		isVignette = false; // ビネット
 
-    for (int i = 0; i < kMaxSpecialAttack; i++) {
-        if (i < currentSpecialCount) {
-            // 残弾数より小さいインデックスなら、満タンのゲージを描画
-            gaugeUI_[i]->Update();
-        } else {
-            // それ以外（使ってしまった分）は空のゲージを描画
-            gaugeEmptyUI_[i]->Update();
-        }
-    }
+		PostEffect::GetInstance()->SetInversion(isInversion);
+		PostEffect::GetInstance()->SetGrayscale(isGrayscale);
+		PostEffect::GetInstance()->SetTwoColor(isTwoColor);
+		PostEffect::GetInstance()->SetRadialBlur(isRadialBlur);
+		PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
+		PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
+		PostEffect::GetInstance()->SetFullScreenCA(isFullScreenCA);
+		PostEffect::GetInstance()->SetVignette(isVignette);
+	}
+	int currentSpecialCount = player_->GetSpecialAttackCount();
 
-    if (isPause_ || isFinished_)
-        return;
+	for (int i = 0; i < kMaxSpecialAttack; i++) {
+		if (i < currentSpecialCount) {
+			// 残弾数より小さいインデックスなら、満タンのゲージを描画
+			gaugeUI_[i]->Update();
+		} else {
+			// それ以外（使ってしまった分）は空のゲージを描画
+			gaugeEmptyUI_[i]->Update();
+		}
+	}
 
-    // hpが0以下にならないようにclamp
-    float hpRate = std::clamp((float)player_->GetHP() / (float)maxHP_, 0.0f, 1.0f);
-    float maxBarWidth = 194.0f; // 枠に収まる最大幅
-    // ゲージサイズを設定{横幅, 縦幅}
-    playerHPGauge_->SetSize({ maxBarWidth * hpRate, 30.0f });
-    playerHPEmpty_->SetSize({ maxBarWidth, 30.0f });
 
-    // --- 追加：HPバーの透明度調整 ---
-    float hpAlpha = 1.0f; // 基本は不透明 (1.0)
+	if (isPause_ || isFinished_)
+		return;
 
-    // プレイヤーの3D座標を2Dの画面座標に変換
-    Vector2 playerScreenPos = camera->WorldToScreen(player_->GetPosition());
+	// hpが0以下にならないようにclamp
+	float hpRate = std::clamp((float)player_->GetHP() / (float)maxHP_, 0.0f, 1.0f);
+	float maxBarWidth = 194.0f; // 枠に収まる最大幅
+	// ゲージサイズを設定{横幅, 縦幅}
+	playerHPGauge_->SetSize({ maxBarWidth * hpRate, 30.0f });
+	playerHPEmpty_->SetSize({ maxBarWidth, 30.0f });
 
-    // プレイヤーがHPバーの近く(画面左上)にいるか判定
-    // (HPバーのサイズや位置に合わせて判定範囲は調整してください)
-    if (playerScreenPos.x < 300.0f && playerScreenPos.y < 150.0f) {
-        hpAlpha = 0.3f; // 近づいたら透明度を下げる (0.0=透明, 1.0=不透明)
-    }
+	// --- 追加：HPバーの透明度調整 ---
+	float hpAlpha = 1.0f; // 基本は不透明 (1.0)
 
-    // 外枠、ゲージ、空部分の色(RGB)と透明度(Alpha)を設定
-    playerHpUI_->SetColor(Vector4(1.0f, 1.0f, 1.0f, hpAlpha)); // 外枠
-    playerHPGauge_->SetColor(Vector4(0.0f, 1.0f, 1.0f, hpAlpha)); // 水色(ゲージ部分)
-    playerHPEmpty_->SetColor(Vector4(0.2f, 0.2f, 0.2f, hpAlpha)); // 暗いグレー(空部分)
-    // ---------------------------------
+	// プレイヤーの3D座標を2Dの画面座標に変換
+	Vector2 playerScreenPos = camera->WorldToScreen(player_->GetPosition());
 
-    // クリア条件の分岐
-    if (isBossBattle_) {
-        if (cameraController_->GetElapsedTime() >= kMaxTime_) {
-            if (bossPopFlag == 2) {
-                isWarning_ = true;
-                if (isWarning_) {
-                    WarningEffect();
-                    bossAppearsState_ = Grapes;
-                }
+	// プレイヤーがHPバーの近く(画面左上)にいるか判定
+	// (HPバーのサイズや位置に合わせて判定範囲は調整してください)
+	if (playerScreenPos.x < 300.0f && playerScreenPos.y < 150.0f) {
+		hpAlpha = 0.3f; // 近づいたら透明度を下げる (0.0=透明, 1.0=不透明)
+	}
 
-                if (!isWarning_) {
-                    enemy_->SetEnemyclear();
-                    cameraController_ = std::make_unique<GrapeCameraController>();
-                    cameraController_->Initialize(camera.get());
-                    enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
-                    bossPopFlag = 4;
-                }
-            } else if (bossPopFlag == 3) {
-                isWarning_ = true;
-                if (isWarning_) {
-                    WarningEffect();
-                    bossAppearsState_ = Banana;
-                }
+	// 外枠、ゲージ、空部分の色(RGB)と透明度(Alpha)を設定
+	playerHpUI_->SetColor(Vector4(1.0f, 1.0f, 1.0f, hpAlpha));    // 外枠
+	playerHPGauge_->SetColor(Vector4(0.0f, 1.0f, 1.0f, hpAlpha)); // 水色(ゲージ部分)
+	playerHPEmpty_->SetColor(Vector4(0.2f, 0.2f, 0.2f, hpAlpha)); // 暗いグレー(空部分)
+	// ---------------------------------
 
-                if (!isWarning_) {
-                    enemy_->SetEnemyclear();
-                    cameraController_ = std::make_unique<BananaCameraController>();
-                    cameraController_->Initialize(camera.get());
-                    cameraController_->SetTargetPosition({ 0, 0, 60 });
-                    enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
-                    bossPopFlag = 6;
-                }
+	// クリア条件の分岐
+	if (isBossBattle_) {
+		if (cameraController_->GetElapsedTime() >= kMaxTime_) {
+			if (bossPopFlag == 2) {
+				isWarning_ = true;
+				if (isWarning_) {
+					WarningEffect();
+					bossAppearsState_ = Grapes;
+				}
 
-                if (!isBossBGMPlaying_) {
-                    SoundManager::GetInstance()->Stop("stage.mp3");
-                    isPlayBGMPlaying_ = false;
-                    SoundManager::GetInstance()->Play("boss.mp3");
-                    isBossBGMPlaying_ = true;
-                }
+				enemy_->SetEnemyclear();
 
-                enemy_->SetEnemyclear();
-                cameraController_ = std::make_unique<GrapeCameraController>();
-                cameraController_->Initialize(camera.get());
-                enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
-                bossPopFlag = 4;
-            } else if (bossPopFlag == 3) {
+				if (!isWarning_) {
+					cameraController_ = std::make_unique<GrapeCameraController>();
+					cameraController_->Initialize(camera.get());
+					enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
+					bossPopFlag = 4;
+				}
 
-                if (!isBossBGMPlaying_) {
-                    SoundManager::GetInstance()->Stop("stage.mp3");
-                    isPlayBGMPlaying_ = false;
-                    SoundManager::GetInstance()->Play("boss.mp3");
-                    isBossBGMPlaying_ = true;
-                }
-            }
-        }
-        // ボスがいる場合はフラグを5にする
-        if (enemy_->GetGBoss().size() > 0 && bossPopFlag == 4) {
-            bossPopFlag = 5;
-        }
+				if (!isBossBGMPlaying_) {
+					SoundManager::GetInstance()->Stop("stage.mp3");
+					isPlayBGMPlaying_ = false;
+					SoundManager::GetInstance()->Play("boss.mp3");
+					isBossBGMPlaying_ = true;
+				}
 
-        if (enemy_->GetGBoss().empty() && bossPopFlag == 5) { // 葡萄のボスがいなくなったら
-            StageClear();
-        }
-        if (enemy_->GetBBoss().size() > 0 && bossPopFlag == 6) { // バナナのボスがいなくなったら
-            bossPopFlag = 7;
-        }
-        if (enemy_->GetBBoss().empty() && bossPopFlag == 7) {
-            StageClear();
-        }
+			} else if (bossPopFlag == 3) {
+				isWarning_ = true;
+				if (isWarning_) {
+					WarningEffect();
+					bossAppearsState_ = Banana;
+				}
 
-        // ボス倒したらクリア
-    } else { // 制限時間来たらリザルトへ
-        if (cameraController_->GetElapsedTime() >= kMaxTime_) {
-            StageClear();
-        }
-    }
-    // デス演出
-    if (player_->GetHP() <= 0) {
-        if (deathEffectTimer_ == 3.0f) {
-            player_->StartDeathAnimation(); // デス演出開始
-            isGameOver = true;
-        }
-        deathEffectTimer_ = (std::max)(0.0f, deathEffectTimer_ - 1.0f / 60.0f);
+				enemy_->SetEnemyclear();
 
-        if (deathEffectTimer_ <= 2.0f) {
-            for (int i = 0; i < kGameOverUi_; i++) {
-                if (gameOverEasing_[i].colorTime < 1.0f) {
-                    easing->Color(gameOverEasing_[i], 0.01f, 0);
-                } else {
-                    if (Input::GetInstance()->TriggerKey(DIK_A)) {
-                        gameOverUi_[0]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
-                        gameOverUi_[1]->SetColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+				if (!isWarning_) {
+					cameraController_ = std::make_unique<BananaCameraController>();
+					cameraController_->Initialize(camera.get());
+					cameraController_->SetTargetPosition({ 0, 0, 60 });
+					enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
+					bossPopFlag = 6;
+				}
 
-                        currentGameOverUI_ = Pause::kRetry;
-                    }
-                    if (Input::GetInstance()->TriggerKey(DIK_D)) {
-                        gameOverUi_[0]->SetColor({ 0.1f, 0.1f, 0.1f, 1.0f });
-                        gameOverUi_[1]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+				if (!isBossBGMPlaying_) {
+					SoundManager::GetInstance()->Stop("stage.mp3");
+					isPlayBGMPlaying_ = false;
+					SoundManager::GetInstance()->Play("boss.mp3");
+					isBossBGMPlaying_ = true;
+				}
 
-                        currentGameOverUI_ = Pause::kSelect;
-                    }
-                }
-            }
+			}
+		}
+		// ボスがいる場合はフラグを5にする
+		if (enemy_->GetGBoss().size() > 0 && bossPopFlag == 4) {
+			bossPopFlag = 5;
+		}
 
-            if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
-                if (currentGameOverUI_ == Pause::kSelect) {
-                    // セレクトシーンを生成
-                    SoundManager::GetInstance()->Stop("stage.mp3");
-                    SoundManager::GetInstance()->Stop("boss.mp3");
-                    isPlayBGMPlaying_ = false;
-                    isBossBGMPlaying_ = false;
-                    SceneManager::GetInstance()->ChangeScene("GAMESELECT");
-                } else if (currentGameOverUI_ == Pause::kRetry) {
-                    // ゲームプレイシーンを生成
-                    SoundManager::GetInstance()->Stop("stage.mp3");
-                    SoundManager::GetInstance()->Stop("boss.mp3");
-                    isPlayBGMPlaying_ = false;
-                    isBossBGMPlaying_ = false;
-                    SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
-                }
-            }
-        }
+		if (enemy_->GetGBoss().empty() && bossPopFlag == 5) { // 葡萄のボスがいなくなったら
+			StageClear();
+		}
+		if (enemy_->GetBBoss().size() > 0 && bossPopFlag == 6) { // バナナのボスがいなくなったら
+			bossPopFlag = 7;
+		}
+		if (enemy_->GetBBoss().empty() && bossPopFlag == 7) {
+			StageClear();
+		}
 
-        // 色更新
-        if (gameOverEasing_[0].colorTime < 1.0f) {
-            gameOver_->SetColor(gameOverEasing_[0].color);
-            gameOverUi_[0]->SetColor(gameOverEasing_[1].color);
-            gameOverUi_[1]->SetColor(gameOverEasing_[2].color);
-        }
+		// ボス倒したらクリア
+	} else { // 制限時間来たらリザルトへ
+		if (cameraController_->GetElapsedTime() >= kMaxTime_) {
+			StageClear();
+		}
+	}
+	// デス演出
+	if (player_->GetHP() <= 0) {
+		if (deathEffectTimer_ == 3.0f) {
+			player_->StartDeathAnimation(); // デス演出開始
+			isGameOver = true;
+		}
+		deathEffectTimer_ = (std::max)(0.0f, deathEffectTimer_ - 1.0f / 60.0f);
 
-        // 更新
-        gameOver_->Update();
-        gameOverUi_[0]->Update();
-        gameOverUi_[1]->Update();
-    }
-    // スプライト更新
-    pause_->Update();
-    playerHpUI_->Update();
-    playerHPEmpty_->Update();
-    playerHPGauge_->Update();
-    LithingEffect();
-    UpdateImGui();
+		if (deathEffectTimer_ <= 2.0f) {
+			for (int i = 0; i < kGameOverUi_; i++) {
+				if (gameOverEasing_[i].colorTime < 1.0f) {
+					easing->Color(gameOverEasing_[i], 0.01f, 0);
+				} else {
+					if (Input::GetInstance()->TriggerKey(DIK_A)) {
+						gameOverUi_[0]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
+						gameOverUi_[1]->SetColor({ 0.1f, 0.1f, 0.1f, 1.0f });
 
-    if (!animationObjects.empty()) {
-        Object* animationObject = animationObjects[0].get(); // アニメーションモデルを取得
+						currentGameOverUI_ = Pause::kRetry;
 
-        // アニメーションするモデル更新処理
-        if (animationObject->IsSkeletal()) {
-            Vector3 scale = animationObject->GetScale();
-            Vector3 rotate = animationObject->GetRotate();
-            Vector3 translate = animationObject->GetTranslate();
+					}
+					if (Input::GetInstance()->TriggerKey(DIK_D)) {
+						gameOverUi_[0]->SetColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+						gameOverUi_[1]->SetColor({ 1.0f, 1.0f, 1.0f, 1.0f });
 
-            // アニメーションモデルのワールド行列を作る
-            Matrix4x4 animationWorldMatrix = MakeAffineMatrix(scale, rotate, translate);
-        }
-    }
-    // イージング更新
-    easing->Update();
-    easing->Draw();
+						currentGameOverUI_ = Pause::kSelect;
+
+					}
+				}
+			}
+
+			if (Input::GetInstance()->TriggerKey(DIK_SPACE)) {
+				if (currentGameOverUI_ == Pause::kSelect) {
+					// セレクトシーンを生成
+					SoundManager::GetInstance()->Stop("stage.mp3");
+					SoundManager::GetInstance()->Stop("boss.mp3");
+					isPlayBGMPlaying_ = false;
+					isBossBGMPlaying_ = false;
+					SceneManager::GetInstance()->ChangeScene("GAMESELECT");
+				} else if (currentGameOverUI_ == Pause::kRetry) {
+					// ゲームプレイシーンを生成
+					SoundManager::GetInstance()->Stop("stage.mp3");
+					SoundManager::GetInstance()->Stop("boss.mp3");
+					isPlayBGMPlaying_ = false;
+					isBossBGMPlaying_ = false;
+					SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+				}
+			}
+		}
+
+		// 色更新
+		if (gameOverEasing_[0].colorTime < 1.0f) {
+			gameOver_->SetColor(gameOverEasing_[0].color);
+			gameOverUi_[0]->SetColor(gameOverEasing_[1].color);
+			gameOverUi_[1]->SetColor(gameOverEasing_[2].color);
+		}
+
+		// 更新
+		gameOver_->Update();
+		gameOverUi_[0]->Update();
+		gameOverUi_[1]->Update();
+
+	}
+	// スプライト更新
+	pause_->Update();
+	playerHpUI_->Update();
+	playerHPEmpty_->Update();
+	playerHPGauge_->Update();
+	LithingEffect();
+	UpdateImGui();
+
+	if (!animationObjects.empty()) {
+		Object* animationObject = animationObjects[0].get(); // アニメーションモデルを取得
+
+		// アニメーションするモデル更新処理
+		if (animationObject->IsSkeletal()) {
+			Vector3 scale = animationObject->GetScale();
+			Vector3 rotate = animationObject->GetRotate();
+			Vector3 translate = animationObject->GetTranslate();
+
+			// アニメーションモデルのワールド行列を作る
+			Matrix4x4 animationWorldMatrix = MakeAffineMatrix(scale, rotate, translate);
+		}
+	}
+	// イージング更新
+	easing->Update();
+	easing->Draw();
+
 }
 
 void GamePlayScene::Draw2D()
@@ -687,63 +689,65 @@ void GamePlayScene::SetPlayerStyle(int style) { style_ = static_cast<Style>(styl
 
 void GamePlayScene::SetCurrentStage(int currentStage) { currentStage_ = currentStage; }
 
-void GamePlayScene::ChekeAllCollision()
-{
-    const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
-    const std::list<std::shared_ptr<grapesBoss>>& Boss = enemy_->GetGBoss();
-    const std::list<std::shared_ptr<banana>>& BBoss = enemy_->GetBBoss();
-    CheckCollisionPlayerEnemy(player_.get(), enemies);
-    CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
-    CheckCollisionPlayerBulletEnemy(player_.get(), enemies, hitEffect);
-    CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss, hitEffect);
-    CheckCollisionPlayerBossEnemy(player_.get(), Boss);
-    CheckCollisionPlayerBossEnemyBullet(player_.get(), Boss);
-    CheckCollisionPlayerBulletBananaBoss(player_.get(), BBoss, hitEffect);
-    CheckCollisionPlayerBananaBoss(player_.get(), BBoss);
-    CheckCollisionPlayerBananaBossBullet(player_.get(), BBoss);
+void GamePlayScene::ChekeAllCollision() {
+	const std::list<std::shared_ptr<Enemy>>& enemies = enemy_->GetEnemies();
+	const std::list<std::shared_ptr<grapesBoss>>& Boss = enemy_->GetGBoss();
+	const std::list<std::shared_ptr<banana>>& BBoss = enemy_->GetBBoss();
+	CheckCollisionPlayerEnemy(player_.get(), enemies);
+	CheckCollisionPlayerEnemyBullet(player_.get(), enemies);
+	CheckCollisionPlayerBulletEnemy(player_.get(), enemies, hitEffect);
+	CheckCollisionPlayerBulletBossEnemy(player_.get(), Boss, hitEffect);
+	CheckCollisionPlayerBossEnemy(player_.get(), Boss);
+	CheckCollisionPlayerBossEnemyBullet(player_.get(), Boss);
+	CheckCollisionPlayerBulletBananaBoss(player_.get(), BBoss, hitEffect);
+	CheckCollisionPlayerBananaBoss(player_.get(), BBoss);
+	CheckCollisionPlayerBananaBossBullet(player_.get(), BBoss);
 
-    if (player_->GetIsSpecialAttack() && specialAttackTimer <= 0) {
-        CheckCollisionSpecialAtackEnemy(enemies);
-        CheckCollisionSpecialAtacgrapesEnemy(Boss, hitEffect);
-        CheckCollisionSpecialAtackbananaEnemy(BBoss, hitEffect);
-        specialAttackTimer = 60; // 特殊攻撃のエフェクト時間（例: 60フレーム）
+	if (player_->GetIsSpecialAttack() && specialAttackTimer <= 0) {
+		CheckCollisionSpecialAtackEnemy(enemies);
+		specialAttackTimer = 60; // 特殊攻撃のエフェクト時間（例: 60フレーム）
 
-        // エフェクト初期化
-        isInversion = true; // 反転エフェクトa
-        isGrayscale = true; // グレースケールエフェクト
-        isTwoColor = true; // 2色エフェクト
-        isConcentrationLines = true; // 集中線エフェクト
-        isInversion = true;
-    }
-    if (specialAttackTimer > 0) {
-        specialAttackTimer--;
+		// エフェクト初期化
+		isInversion = true;          // 反転エフェクトa
+		isGrayscale = true;          // グレースケールエフェクト
+		isTwoColor = true;           // 2色エフェクト
+		isConcentrationLines = true; // 集中線エフェクト
+		concentrationLineIntensity = 0.5f; // 線の濃さ
+		concentrationLineDensity = 1000.0f;   // 線の密度（本数）
+		concentrationLineLength = 0.0f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
+		isInversion = true;
+	}
+	if (specialAttackTimer > 0) {
+		specialAttackTimer--;
 
-        // 毎フレーム色反転
-        if (specialAttackTimer > 50) {
-            if (specialAttackTimer % 5 == 1) {
-                isInversion = true;
-            } else {
-                isInversion = false;
-            }
-        }
-        // 最初の10フレームのみエフェクトをかける
-        if (specialAttackTimer == 50) {
-            isInversion = false; // 反転エフェクト
-            isGrayscale = false; // グレースケールエフェクト
-            isTwoColor = false; // 2色エフェクト
-            isConcentrationLines = false; // 集中線エフェクト
-        }
+		// 毎フレーム色反転
+		if (specialAttackTimer > 50) {
+			if (specialAttackTimer % 5 == 1) {
+				isInversion = true;
+			} else {
+				isInversion = false;
+			}
+		}
+		// 最初の10フレームのみエフェクトをかける
+		if (specialAttackTimer == 50) {
+			isInversion = false;          // 反転エフェクト
+			isGrayscale = false;          // グレースケールエフェクト
+			isTwoColor = false;           // 2色エフェクト
+			isConcentrationLines = false; // 集中線エフェクト
 
-        // パーティクルの更新
-        specialAttackEffect->SetTranslate(player_->GetPosition()); // プレイヤーの位置にエフェクトを移動
-        specialAttackEffect->Update();
+		}
 
-        if (specialAttackTimer <= 0) {
-            player_->SetIsSpecialAttack(false); // 特殊攻撃の当たり判定は1フレームだけ
+		// パーティクルの更新
+		specialAttackEffect->SetTranslate(player_->GetPosition()); // プレイヤーの位置にエフェクトを移動
+		specialAttackEffect->Update();
 
-            specialAttackTimer = 0; // タイマーリセット
-        }
-    }
+		if (specialAttackTimer <= 0) {
+			player_->SetIsSpecialAttack(false); // 特殊攻撃の当たり判定は1フレームだけ
+
+			specialAttackTimer = 0; // タイマーリセット
+		}
+	}
+
 }
 
 // ポーズ選択
@@ -969,57 +973,64 @@ void GamePlayScene::LithingEffect()
 {
 #pragma region ポストエフェクト
 
-    // *ポストエフェクト* //
-    PostEffect::GetInstance()->Update(camera.get());
+	// *ポストエフェクト* //
+	PostEffect::GetInstance()->Update(camera.get());
 
-    // 反転
-    PostEffect::GetInstance()->SetInversion(isInversion);
-    // グレースケール
-    PostEffect::GetInstance()->SetGrayscale(isGrayscale);
-    PostEffect::GetInstance()->SetTwoColor(isTwoColor);
-    PostEffect::GetInstance()->SetThreshold(threshold);
-    PostEffect::GetInstance()->SetContrast(contrast);
-    // 放射線ブラー
-    PostEffect::GetInstance()->SetRadialBlur(isRadialBlur);
-    PostEffect::GetInstance()->SetBlurCenter(blurCenter);
-    PostEffect::GetInstance()->SetBlurWidth(blurWidth);
-    PostEffect::GetInstance()->SetBlurSamples(blurSamples);
-    // ディスタンスフォグ
-    PostEffect::GetInstance()->SetDistanceFog(isDistanceFog);
-    PostEffect::GetInstance()->SetDistanceFogColor(distanceFogColor);
-    PostEffect::GetInstance()->SetDistanceFogStart(distanceStart);
-    PostEffect::GetInstance()->SetDistanceFogEnd(distanceEnd);
-    // ハイトフォグ
-    PostEffect::GetInstance()->SetHeightFog(isHeightFog);
-    PostEffect::GetInstance()->SetHeightFogColor(heightFogColor);
-    PostEffect::GetInstance()->SetHeightFogTop(heightFogTop);
-    PostEffect::GetInstance()->SetHeightFogBottom(heightFogBottom);
-    PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
-    PostEffect::GetInstance()->HightFogUpdate(camera.get());
-    // DOF
-    PostEffect::GetInstance()->SetDOF(isDOF);
-    PostEffect::GetInstance()->SetFocusDistance(focusDistance);
-    PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
-    PostEffect::GetInstance()->SetFocusRange(focusRange);
-    // ブルーム
-    PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
-    PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
-    PostEffect::GetInstance()->SetBloomBlurRadius(bloomBlurRadius);
-    // レンズフレア
-    PostEffect::GetInstance()->SetLensFlare(isLensFlare);
-    PostEffect::GetInstance()->SetLensFlareGhostCount(lensFlareGhostCount);
-    PostEffect::GetInstance()->SetLensFlareHaloWidth(lensFlareHaloWidth);
-    PostEffect::GetInstance()->SetIsACES(isACES);
-    PostEffect::GetInstance()->SetCAIntensity(caIntensity);
-    // モーションブラー
-    PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
-    PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
-    PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
-    // スピードディストーション
-    PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
-    PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
-    // エフェクトの強さ
-    PostEffect::GetInstance()->SetIntensity(intensity);
+	// 反転
+	PostEffect::GetInstance()->SetInversion(isInversion);
+	// グレースケール
+	PostEffect::GetInstance()->SetGrayscale(isGrayscale);
+	PostEffect::GetInstance()->SetTwoColor(isTwoColor);
+	PostEffect::GetInstance()->SetThreshold(threshold);
+	PostEffect::GetInstance()->SetContrast(contrast);
+	// 放射線ブラー
+	PostEffect::GetInstance()->SetRadialBlur(isRadialBlur);
+	PostEffect::GetInstance()->SetBlurCenter(blurCenter);
+	PostEffect::GetInstance()->SetBlurWidth(blurWidth);
+	PostEffect::GetInstance()->SetBlurSamples(blurSamples);
+	// ディスタンスフォグ
+	PostEffect::GetInstance()->SetDistanceFog(isDistanceFog);
+	PostEffect::GetInstance()->SetDistanceFogColor(distanceFogColor);
+	PostEffect::GetInstance()->SetDistanceFogStart(distanceStart);
+	PostEffect::GetInstance()->SetDistanceFogEnd(distanceEnd);
+	// ハイトフォグ
+	PostEffect::GetInstance()->SetHeightFog(isHeightFog);
+	PostEffect::GetInstance()->SetHeightFogColor(heightFogColor);
+	PostEffect::GetInstance()->SetHeightFogTop(heightFogTop);
+	PostEffect::GetInstance()->SetHeightFogBottom(heightFogBottom);
+	PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
+	PostEffect::GetInstance()->HightFogUpdate(camera.get());
+	// DOF
+	PostEffect::GetInstance()->SetDOF(isDOF);
+	PostEffect::GetInstance()->SetFocusDistance(focusDistance);
+	PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
+	PostEffect::GetInstance()->SetFocusRange(focusRange);
+	// ブルーム
+	PostEffect::GetInstance()->SetBloomIntensity(bloomIntensity);
+	PostEffect::GetInstance()->SetBloomThreshold(bloomThreshold);
+	PostEffect::GetInstance()->SetBloomBlurRadius(bloomBlurRadius);
+	// レンズフレア
+	PostEffect::GetInstance()->SetLensFlare(isLensFlare);
+	PostEffect::GetInstance()->SetLensFlareGhostCount(lensFlareGhostCount);
+	PostEffect::GetInstance()->SetLensFlareHaloWidth(lensFlareHaloWidth);
+	PostEffect::GetInstance()->SetIsACES(isACES);
+	PostEffect::GetInstance()->SetCAIntensity(caIntensity);
+	// モーションブラー
+	PostEffect::GetInstance()->SetMotionBlur(isMotionBlur);
+	PostEffect::GetInstance()->SetMotionBlurSamples(motionBlurSamples);
+	PostEffect::GetInstance()->SetMotionBlurScale(motionBlurScale);
+	// スピードディストーション
+	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
+	PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
+	// 集中線
+	PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
+	PostEffect::GetInstance()->SetConcentrationLineIntensity(concentrationLineIntensity);
+	PostEffect::GetInstance()->SetConcentrationLineCenter(concentrationLineCenter);
+	PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
+	PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
+	PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
+	// エフェクトの強さ
+	PostEffect::GetInstance()->SetIntensity(intensity);
 
 #pragma endregion
 
@@ -1278,179 +1289,188 @@ void GamePlayScene::WarningEffect()
     }
 }
 
-void GamePlayScene::BossAppearsUpdate()
-{
+void GamePlayScene::BossAppearsUpdate() {
 
-    bossAppearsTimer_ = (std::max)(0.0f, bossAppearsTimer_ - 1.0f / 60.0f);
+	bossAppearsTimer_ = (std::max)(0.0f, bossAppearsTimer_ - 1.0f / 60.0f);
 
-    if (bossAppearsState_ == Grapes) {
-        if (bossAppearsTimer_ > 0.0f) {
-            if (bossAppearsTimer_ > 0.5f) {
-                if (intensity >= 1.0f) {
-                    for (int i = 0; i < kBossAppearsGrapes_; i++) {
-                        if (grapesEasing_[i - 1].moveTime >= 0.5f || i == 0) {
-                            easing->Move(grapesEasing_[i], 0.03f, 0);
+	if (bossAppearsState_ == Grapes) {
+		if (bossAppearsTimer_ > 0.0f) {
+			if (bossAppearsTimer_ > 0.5f) {
+				if (intensity >= 1.0f) {
+					for (int i = 0; i < kBossAppearsGrapes_; i++) {
+						if (grapesEasing_[i - 1].moveTime >= 0.5f || i == 0) {
+							easing->Move(grapesEasing_[i], 0.03f, 0);
 
-                            bossAppearsGrapes_[i]->SetTranslate(grapesEasing_[i].transform.translate);
-                            bossAppearsGrapes_[i]->Update();
-                        }
-                    }
+							bossAppearsGrapes_[i]->SetTranslate(grapesEasing_[i].transform.translate);
+							bossAppearsGrapes_[i]->Update();
+						}
+					}
 
-                    if (grapesEasing_[0].moveTime >= 1.0f) {
-                        // ボス登場の文字
-                        easing->SizeV2(nameEasing_, 0.05f, 0);
-                        bossAppearsName_[0]->SetSize(nameEasing_.size);
-                        bossAppearsName_[0]->Update();
-                    }
+					if (grapesEasing_[0].moveTime >= 1.0f) {
+						// ボス登場の文字
+						easing->SizeV2(nameEasing_, 0.05f, 0);
+						bossAppearsName_[0]->SetSize(nameEasing_.size);
+						bossAppearsName_[0]->Update();
+					}
 
-                    if (grapesEasing_[6].moveTime >= 1.0f) {
-                        // 回転アニメーション
-                        if (grapesEasing_[6].rotationTime >= 1.0f) {
+					if (grapesEasing_[6].moveTime >= 1.0f) {
+						// 回転アニメーション
+						if (grapesEasing_[6].rotationTime >= 1.0f) {
 
-                            // 【解決策2の組み込み】
-                            // static を付けることで、ゲーム起動時に1回だけ初期化され、ランダムな状態が保持されます
-                            static std::random_device seed_gen;
-                            static std::mt19937 engine(seed_gen());
+							// 【解決策2の組み込み】
+							// static を付けることで、ゲーム起動時に1回だけ初期化され、ランダムな状態が保持されます
+							static std::random_device seed_gen;
+							static std::mt19937 engine(seed_gen());
 
-                            // 1. ループの前に、今回「逆回転」させるぶどうを1つだけランダムに選ぶ
-                            if (kBossAppearsGrapes_ > 1) {
-                                // 1 から (kBossAppearsGrapes_ - 1) の範囲で均等に割り振る設定
-                                std::uniform_int_distribution<int> dist(1, kBossAppearsGrapes_ - 1);
+							// 1. ループの前に、今回「逆回転」させるぶどうを1つだけランダムに選ぶ
+							if (kBossAppearsGrapes_ > 1) {
+								// 1 から (kBossAppearsGrapes_ - 1) の範囲で均等に割り振る設定
+								std::uniform_int_distribution<int> dist(1, kBossAppearsGrapes_ - 1);
 
-                                int nextRandGrapes = randGrapes_;
-                                while (nextRandGrapes == randGrapes_) { // 前回と同じぶどうが選ばれないようにする
-                                    nextRandGrapes = dist(engine); // メルセンヌ・ツイスタで乱数を生成
-                                }
-                                randGrapes_ = nextRandGrapes;
-                            }
+								int nextRandGrapes = randGrapes_;
+								while (nextRandGrapes == randGrapes_) { // 前回と同じぶどうが選ばれないようにする
+									nextRandGrapes = dist(engine);     // メルセンヌ・ツイスタで乱数を生成
+								}
+								randGrapes_ = nextRandGrapes;
+							}
 
-                            // 2. 全体の回転方向を決定・リセットするループ
-                            for (int i = 1; i < kBossAppearsGrapes_; i++) {
-                                if (i == randGrapes_) {
-                                    // ランダムに選ばれたぶどうは逆回転（3.14 -> 0.0）
-                                    grapesEasing_[i].startRotation.y = 3.14f;
-                                    grapesEasing_[i].endRotation.y = 0.0f;
-                                } else {
-                                    // それ以外のぶどう
-                                    if (grapesEasing_[i].transform.rotate.y == 0.0f) {
-                                        grapesEasing_[i].startRotation.y = 0.0f;
-                                        grapesEasing_[i].endRotation.y = 3.14f;
-                                    } else {
-                                        grapesEasing_[i].startRotation.y = 3.14f;
-                                        grapesEasing_[i].endRotation.y = 3.14f;
-                                    }
-                                }
+							// 2. 全体の回転方向を決定・リセットするループ
+							for (int i = 1; i < kBossAppearsGrapes_; i++) {
+								if (i == randGrapes_) {
+									// ランダムに選ばれたぶどうは逆回転（3.14 -> 0.0）
+									grapesEasing_[i].startRotation.y = 3.14f;
+									grapesEasing_[i].endRotation.y = 0.0f;
+								} else {
+									// それ以外のぶどう
+									if (grapesEasing_[i].transform.rotate.y == 0.0f) {
+										grapesEasing_[i].startRotation.y = 0.0f;
+										grapesEasing_[i].endRotation.y = 3.14f;
+									} else {
+										grapesEasing_[i].startRotation.y = 3.14f;
+										grapesEasing_[i].endRotation.y = 3.14f;
+									}
+								}
 
-                                // イージング時間のリセット
-                                grapesEasing_[i].rotationTime = 0.0f;
-                                grapesEasing_[i].rotationEasedT = 0.0f;
-                            }
-                        }
+								// イージング時間のリセット
+								grapesEasing_[i].rotationTime = 0.0f;
+								grapesEasing_[i].rotationEasedT = 0.0f;
+							}
+						}
 
-                        // --- 毎フレームの更新処理 ---
-                        for (int i = 1; i < kBossAppearsGrapes_; i++) {
-                            easing->Rotation(grapesEasing_[i], 0.03f, 0);
-                            bossAppearsGrapes_[i]->SetRotate(grapesEasing_[i].transform.rotate);
-                            bossAppearsGrapes_[i]->Update();
-                        }
+						// --- 毎フレームの更新処理 ---
+						for (int i = 1; i < kBossAppearsGrapes_; i++) {
+							easing->Rotation(grapesEasing_[i], 0.03f, 0);
+							bossAppearsGrapes_[i]->SetRotate(grapesEasing_[i].transform.rotate);
+							bossAppearsGrapes_[i]->Update();
+						}
 
-                        // 放射線ブラー
-                        isRadialBlur = true;
-                        if (blurWidth < 0.01f)
-                            blurWidth += 0.001f;
-                        // 集中線
-                        isConcentrationLines = true;
-                    }
+						// 放射線ブラー
+						isRadialBlur = true;
+						if (blurWidth < 0.01f)
+							blurWidth += 0.001f;
+						// 集中線
+						isConcentrationLines = true;
+						concentrationLineIntensity = 0.02f; // 線の濃さ
+						concentrationLineLength = 0.35f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
+					}
 
-                } else {
-                    // フェードイン
-                    intensity += 1.0f / 30.0f;
-                }
-            } else {
-                // フェードアウト
-                intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
+				} else {
+					// フェードイン
+					intensity += 1.0f / 30.0f;
+				}
+			} else {
+				// フェードアウト
+				intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
 
-                if (intensity <= 0.0f) {
-                    // 放射線ブラー
-                    isRadialBlur = false;
-                    // 集中線
-                    isConcentrationLines = false;
-                }
-            }
+				if (intensity <= 0.0f) {
+					// 放射線ブラー
+					isRadialBlur = false;
+					// 集中線
+					isConcentrationLines = false;
+				}
 
-            // 集中線
-            PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
-            PostEffect::GetInstance()->SetConcentrationLineIntensity(concentrationLineIntensity);
-            PostEffect::GetInstance()->SetConcentrationLineCenter(concentrationLineCenter);
-            PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
-            PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
-            PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
+			}
 
-        } else {
-            isBossAppears_ = false;
-        }
-    } else if (bossAppearsState_ == Banana) {
-        if (bossAppearsTimer_ > 0.0f) {
-            if (bossAppearsTimer_ > 0.5f) {
-                if (intensity >= 1.0f) {
+			// 集中線
+			PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
+			PostEffect::GetInstance()->SetConcentrationLineIntensity(concentrationLineIntensity);
+			PostEffect::GetInstance()->SetConcentrationLineCenter(concentrationLineCenter);
+			PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
+			PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
+			PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
 
-                    easing->Move(bananaEasing_[0], 0.01f, 0);
-                    bossAppearsBanana_[0]->SetTranslate(bananaEasing_[0].transform.translate);
-                    bossAppearsBanana_[0]->Update();
 
-                    if (bananaEasing_[0].moveTime >= 1.0f) {
-                        for (int i = 1; i < kBossAppearsBanana_; i++) {
-                            if (bananaEasing_[i - 1].moveTime >= 0.5f || i == 1) {
-                                easing->Move(bananaEasing_[i], 0.03f, 0);
+		} else {
+			isBossAppears_ = false;
+		}
+	} else if (bossAppearsState_ == Banana) {
+		if (bossAppearsTimer_ > 0.0f) {
+			if (bossAppearsTimer_ > 0.5f) {
+				if (intensity >= 1.0f) {
 
-                                bossAppearsBanana_[i]->SetTranslate(bananaEasing_[i].transform.translate);
-                                bossAppearsBanana_[i]->Update();
-                            }
-                        }
+					easing->Move(bananaEasing_[0], 0.01f, 0);
+					bossAppearsBanana_[0]->SetTranslate(bananaEasing_[0].transform.translate);
+					bossAppearsBanana_[0]->Update();
 
-                        // ボス登場の文字
-                        easing->SizeV2(nameEasing_, 0.05f, 0);
-                        bossAppearsName_[1]->SetSize(nameEasing_.size);
-                        bossAppearsName_[1]->Update();
-                    }
+					if (bananaEasing_[0].moveTime >= 1.0f) {
+						for (int i = 1; i < kBossAppearsBanana_; i++) {
+							if (bananaEasing_[i - 1].moveTime >= 0.5f || i == 1) {
+								easing->Move(bananaEasing_[i], 0.03f, 0);
 
-                    if (bossAppearsTimer_ <= 2.0f) {
-                        // 放射線ブラー
-                        isRadialBlur = true;
-                        if (blurWidth < 0.01f)
-                            blurWidth += 0.001f;
-                        // 集中線
-                        isConcentrationLines = true;
-                    }
+								bossAppearsBanana_[i]->SetTranslate(bananaEasing_[i].transform.translate);
+								bossAppearsBanana_[i]->Update();
+							}
+						}
 
-                } else {
-                    // フェードイン
-                    intensity += 1.0f / 30.0f;
-                }
-            } else {
-                // フェードアウト
-                intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
+						// ボス登場の文字
+						easing->SizeV2(nameEasing_, 0.05f, 0);
+						bossAppearsName_[1]->SetSize(nameEasing_.size);
+						bossAppearsName_[1]->Update();
+					}
 
-                if (intensity <= 0.0f) {
-                    // 放射線ブラー
-                    isRadialBlur = false;
-                    // 集中線
-                    isConcentrationLines = false;
-                }
-            }
+					if (bossAppearsTimer_ <= 2.0f) {
+						// 放射線ブラー
+						isRadialBlur = true;
+						if (blurWidth < 0.01f)
+							blurWidth += 0.001f;
+						// 集中線
+						isConcentrationLines = true;
+						concentrationLineIntensity = 0.02f; // 線の濃さ
+						concentrationLineLength = 0.35f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
+					}
 
-            // 集中線
-            PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
-            PostEffect::GetInstance()->SetConcentrationLineIntensity(concentrationLineIntensity);
-            PostEffect::GetInstance()->SetConcentrationLineCenter(concentrationLineCenter);
-            PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
-            PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
-            PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
+				} else {
+					// フェードイン
+					intensity += 1.0f / 30.0f;
+				}
+			} else {
+				// フェードアウト
+				intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
 
-        } else {
-            isBossAppears_ = false;
-        }
-    }
+				if (intensity <= 0.0f) {
+					// 放射線ブラー
+					isRadialBlur = false;
+					// 集中線
+					isConcentrationLines = false;
+				}
+
+			}
+
+			// 集中線
+			PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
+			PostEffect::GetInstance()->SetConcentrationLineIntensity(concentrationLineIntensity);
+			PostEffect::GetInstance()->SetConcentrationLineCenter(concentrationLineCenter);
+			PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
+			PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
+			PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
+
+
+		} else {
+			isBossAppears_ = false;
+		}
+
+	}
+
 }
 
 void GamePlayScene::SceneChangedEffect()
