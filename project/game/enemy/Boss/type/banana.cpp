@@ -30,13 +30,13 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
 
     // 時計回りに設置
     int pats = 4;
-    float offsetRadius = 2.5f;
+    float offsetRadius = 2.0f;
 
     for (int i = 0; i < pats; ++i) {
         BossPart p;
         p.transform.rotate = { 0.0f, 0.0f, 0.0f };
         p.transform.scale = { 14.0f, 14.0f, 14.0f };
-        p.transform.translate = { 0.0f, 0.0f, 2.0f };
+        p.transform.translate = { 0.0f, 0.0f, 0.0f };
 
         // モデル生成
         p.object = std::make_unique<Object>();
@@ -56,15 +56,22 @@ void banana::Initialize(Camera* camera, Vector3 pos, int health)
         p.isWeakPoint = (i == 3); // i=3 を本体（弱点）とする
 
         // --- 逆三角形（Apex Forward）の配置ロジック ---
-        if (i == 0) { // 正面頂点 (0度方向)
+        if (i == 0) { // 正面頂点 (0度方向: 真前)
             p.baseAngle = 0.0f;
-            p.collisionLocalPos = { (2.0f), 0.0f, offsetRadius };
+            p.collisionLocalPos = { 0.0f, 0.0f, offsetRadius };
+            // Xは0、Zはプラス方向にoffsetRadius分
+
         } else if (i == 1) { // 右後ろ (120度方向)
             p.baseAngle = 2.094f; // (2 * PI / 3)
-            p.collisionLocalPos = { 2.0f + (offsetRadius * 0.866f), 0.0f, -offsetRadius * 0.5f };
+            // cos(120度) = -0.5, sin(120度) = 約0.866
+            // X軸(右)が sin、Z軸(前)が cos になる点に注意
+            p.collisionLocalPos = { offsetRadius * 0.866f, 0.0f, -offsetRadius * 0.5f };
+
         } else if (i == 2) { // 左後ろ (240度方向)
             p.baseAngle = 4.188f; // (4 * PI / 3)
-            p.collisionLocalPos = { 2.0f + (-offsetRadius * 0.866f), 0.0f, -offsetRadius * 0.5f };
+            // cos(240度) = -0.5, sin(240度) = 約-0.866
+            p.collisionLocalPos = { -offsetRadius * 0.866f, 0.0f, -offsetRadius * 0.5f };
+
         } else { // 本体（中央）
             p.baseAngle = 0.0f;
             p.collisionLocalPos = { 0.0f, 0.0f, 0.0f };
@@ -125,14 +132,6 @@ void banana::Update()
     BulletUpdate();
 
     for (auto& part : parts_) {
-        float theta = part.collisionRotationY;
-
-        // 2. 当たり判定の公転座標計算
-        Vector3 rotatedPos;
-        rotatedPos.x = part.collisionLocalPos.x * cosf(theta) + part.collisionLocalPos.z * sinf(theta);
-        rotatedPos.y = part.collisionLocalPos.y;
-        rotatedPos.z = -part.collisionLocalPos.x * sinf(theta) + part.collisionLocalPos.z * cosf(theta);
-
         // 3. 修理タイマー処理 (維持)
         if (!part.isWeakPoint && part.PartsHp <= 0) {
             part.repairTimer -= 1.0f / 60.0f;
@@ -144,13 +143,16 @@ void banana::Update()
 
         // 4. モデルの座標設定 (モデル自体は中心、または指定位置に固定)
         // ユーザー要望：モデルは回転させない = baseTransform_.translate の位置に固定
-        Vector3 modelPos = baseTransform_.translate + Vector3(-1.5f, 0.0f, 0.0f);
+        Vector3 modelPos = baseTransform_.translate +Vector3(-1.5f,0.0f,0.5f);
         if (behavior_ == Behavior::kDefeated) {
             modelPos.x += distribution(randomEngine);
             modelPos.y += distribution(randomEngine);
             modelPos.z += distribution(randomEngine);
+        } else {
+            modelPos += Vector3();
         }
         part.object->SetTranslate(modelPos);
+
         // 回転も初期状態(0,0,0)を維持
         part.object->SetRotate({ 0.0f, 0.0f, 0.0f });
         part.object->Update();
@@ -265,7 +267,7 @@ banana::CollisionVolume banana::CreateVolumeFromPart(uint32_t i, Vector3 bossPos
     volume.axes[2] = { sinf(totalTheta), 0.0f, cosf(totalTheta) }; // Forward (法線)
 
     // 3. サイズ設定
-    volume.width = part.isWeakPoint ? Vector3 { 0.5f, part.radiusY, 0.5f } : Vector3 { part.radiusX, part.radiusY, 1.0f };
+    volume.width = part.isWeakPoint ? Vector3 { 1.0f, part.radiusY, 1.0f } : Vector3 { part.radiusX, part.radiusY, 1.0f };
     volume.shape = CollisionShape::kBox;
     volume.partId = i;
     volume.normal = volume.axes[2];
@@ -387,10 +389,19 @@ bool banana::OnCollision(const CollisionVolume& volume, PlayerBullet* bullet)
     }
 }
 
-bool banana::OnCollision(const CollisionVolume& volume)
+bool banana::OnCollision(int dameg)
 {
     // 必殺技は本体に強制ダメージ
-    health_ -= 150;
+    health_ -= dameg;
+
+    for (auto& part : parts_) {
+        if (!part.isWeakPoint) {
+            part.PartsHp -= dameg;
+            if (part.PartsHp <= 0 && part.repairTimer <= 0.0f) {
+                part.repairTimer = BossPart::kRepairTime;
+            }
+        }
+    }
 
     if (health_ <= 0) {
         health_ = 0;
@@ -519,8 +530,8 @@ void banana::DrawDebugCollision()
         debugCollisionObjects_[id]->SetRotate({ 0.0f, totalTheta, 0.0f });
 
         // スケール同期
-        Vector3 fullScale = { vol.width.x * 2.0f, vol.width.y * 2.0f, vol.width.z * 2.0f };
-        debugCollisionObjects_[id]->SetScale(fullScale);
+        Vector3 finalScale = { vol.width.x, vol.width.y, vol.width.z };
+        debugCollisionObjects_[id]->SetScale(finalScale);
 
         debugCollisionObjects_[id]->Update();
         debugCollisionObjects_[id]->Draw();

@@ -470,16 +470,15 @@ void CheckCollisionSpecialAtackbananaEnemy(const std::list<std::shared_ptr<banan
     for (auto& boss : enemies) {
         if (boss->GetIsDead())
             continue;
+
+        boss->OnCollision(150);
         std::vector<banana::CollisionVolume> volumes = boss->GetCollisionVolumes();
 
         for (const auto& volume : volumes) {
 
-            // ヒット！
-            if (boss->OnCollision(volume)) {
+            hitEffect->SetTranslate(volume.position);
+            hitEffect->Update();
 
-                hitEffect->SetTranslate(volume.position);
-                hitEffect->Update();
-            }
             break; // この弾は消滅したため、他のボリュームとの判定をスキップ
         }
     }
