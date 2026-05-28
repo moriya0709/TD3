@@ -94,6 +94,7 @@ public:
     // Set
     void SetTargetPlayer(Player* target);
     bool OnCollision(const CollisionVolume& volume, PlayerBullet* bullet);
+    bool OnCollision(const CollisionVolume& volume);
 
 public:
     void BulletUpdate();

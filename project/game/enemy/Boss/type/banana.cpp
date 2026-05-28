@@ -144,7 +144,7 @@ void banana::Update()
 
         // 4. モデルの座標設定 (モデル自体は中心、または指定位置に固定)
         // ユーザー要望：モデルは回転させない = baseTransform_.translate の位置に固定
-        Vector3 modelPos = baseTransform_.translate +Vector3(-1.5f,0.0f,0.0f);
+        Vector3 modelPos = baseTransform_.translate + Vector3(-1.5f, 0.0f, 0.0f);
         if (behavior_ == Behavior::kDefeated) {
             modelPos.x += distribution(randomEngine);
             modelPos.y += distribution(randomEngine);
@@ -385,6 +385,21 @@ bool banana::OnCollision(const CollisionVolume& volume, PlayerBullet* bullet)
         // ★ プレイヤーの弾自体はここで「消滅」させるため true を返す
         return true;
     }
+}
+
+bool banana::OnCollision(const CollisionVolume& volume)
+{
+    // 必殺技は本体に強制ダメージ
+    health_ -= 150;
+
+    if (health_ <= 0) {
+        health_ = 0;
+        isDead_ = true;
+        behaviorRequest_ = Behavior::kDefeated;
+        deadTimer_ = kdeadTimer_;
+    }
+
+    return false;
 }
 
 void banana::BulletUpdate()
