@@ -166,6 +166,13 @@ void grapesBoss::Update()
 
         part.object->Update();
     }
+
+#ifdef USE_IMGUI
+    // ImGuiでのステータス表示
+    ImGui::Begin("grapes Boss Debug");
+    ImGui::Text("Health: %d", health_);
+    ImGui::End();
+#endif
 }
 
 void grapesBoss::Draw3D()
@@ -318,6 +325,20 @@ bool grapesBoss::OnCollision(const grapesBoss::CollisionVolume& volume, PlayerBu
         // ★ プレイヤーの弾自体はここで「消滅」させるため true を返す
         return true;
     }
+}
+
+bool grapesBoss::OnCollision(int dameg)
+{
+    this->health_ -= dameg;
+
+    if (this->health_ <= 0 || isDead_) {
+        this->health_ = 0; // マイナスにならないよう補正
+        behaviorRequest_ = Behavior::kDefeated;
+        deadTimer_ = kdeadTimer_;
+        isDead_ = true;
+    }
+
+    return false;
 }
 
 std::vector<grapesBoss::CollisionVolume> grapesBoss::GetCollisionVolumes()

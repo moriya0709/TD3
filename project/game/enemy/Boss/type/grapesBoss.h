@@ -86,6 +86,7 @@ public:
     // Set
     void SetTargetPlayer(Player* target);
     bool OnCollision(const CollisionVolume& volume, PlayerBullet* bullet);
+    bool OnCollision(int dameg);
 
 public:
     void BulletUpdate();
