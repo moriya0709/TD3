@@ -109,7 +109,7 @@
     <ClCompile Include="engine\game\StageSelect.cpp" />
     <ClCompile Include="RadarChart.cpp" />
     <ClCompile Include="RadarChartCommon.cpp" />
-    <ClCompile Include="ResultScene.cpp" />
+    <ClCompile Include="engine\game\ResultScene.cpp" />
     <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="application\trailEffect\TrailEffect.cpp" />
     <ClCompile Include="application\trailEffect\TrailEffectManager.cpp" />
@@ -357,7 +357,7 @@
     <ClInclude Include="game\camera\GrapeCameraController.h" />
     <ClInclude Include="RadarChart.h" />
     <ClInclude Include="RadarChartCommon.h" />
-    <ClInclude Include="ResultScene.h" />
+    <ClInclude Include="engine\game\ResultScene.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="application\trailEffect\TrailEffect.h" />
     <ClInclude Include="application\trailEffect\TrailEffectManager.h" />
