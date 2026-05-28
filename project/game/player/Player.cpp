@@ -339,13 +339,14 @@ void Player::Attack(const std::list<std::shared_ptr<Enemy>>& enemies) {
 		chargeTimer++;
 	}
 	if (specialAttackCounter > 0) {
-		if (input->TriggerKey(DIK_SPACE) || input->IsPadButtonPressed(0, 6)) {
+		// 6 から 5 (Rボタン) に変更
+		if (input->TriggerKey(DIK_SPACE) || input->IsPadButtonPressed(0, 9)) {
 			isSpecialAttack = true;
 			coolTime = 60;
 			specialAttackCounter--;
 		}
 	}
-
+	// 5 から 7 (ZRボタン) に変更
 	if (input->IsMouseButtonPressed(0) || input->IsPadButtonPressed(0, 5)) {
 		if (isCharging) {
 			// チャージ攻撃

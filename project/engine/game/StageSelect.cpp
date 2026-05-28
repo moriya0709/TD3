@@ -1,13 +1,13 @@
 ﻿
-#include <algorithm>
 #include <Windows.h>
+#include <algorithm>
 
-#include "StageSelect.h"
+#include "BookUiCommon.h"
 #include "ObjectCommon.h"
+#include "RadarChartCommon.h"
 #include "SceneManager.h"
 #include "SpriteCommon.h"
-#include "BookUiCommon.h"
-#include "RadarChartCommon.h"
+#include "StageSelect.h"
 
 #pragma comment(lib, "Dbghelp.lib")
 #pragma comment(lib, "dxcompiler.lib")
@@ -15,8 +15,8 @@
 void StageSelect::Initialize() {
 	// カメラ初期化
 	camera_ = std::make_unique<Camera>();
-	camera_->SetRotate({ cameraTransform.rotate });
-	camera_->SetTranslate({ cameraTransform.translate });
+	camera_->SetRotate({cameraTransform.rotate});
+	camera_->SetTranslate({cameraTransform.translate});
 
 	// カメラマネージャ登録
 	CameraManager::GetInstance()->AddCamera("main", camera_.get());
@@ -31,7 +31,7 @@ void StageSelect::Initialize() {
 	radarChart->Initialize();
 	radarChart->SetkVertices(kMaxRadarChart);
 	radarChart->SetValues(values);
-	radarChart->SetPosition({ radarPosition });
+	radarChart->SetPosition({radarPosition});
 	radarChart->SetMaxRadius(radarChartRadius);
 	radarChart->SetColor(radarChartColor);
 	for (int i = 0; i < kMaxRadarChart; i++) {
@@ -44,37 +44,34 @@ void StageSelect::Initialize() {
 
 	return_ = std::make_unique<Sprite>();
 	return_->Initialize("Resource/return.png"); // Wで戻る
-	return_->SetPosition({ 950.0f, 100.0f });
+	return_->SetPosition({950.0f, 100.0f});
 
 	space_ = std::make_unique<Sprite>();
 	space_->Initialize("Resource/space.png"); // space進める
-	space_->SetPosition({ 950.0f, 1000.0f });
+	space_->SetPosition({950.0f, 1000.0f});
 
 	// 本型UI
 	std::vector<std::string> textures = {
-	"Resource/bookUi/cover.png",
-	"Resource/bookUi/cover2.png",
-	"Resource/bookUi/normal.png",// normal
-	"Resource/bookUi/speed.png",// speed
-	"Resource/bookUi/power.png",// power
-	"Resource/bookUi/sniper.png",// sniper
-	"Resource/bookUi/bookUi_1.png",
-	"Resource/bookUi/bookUi_1.png",
-	"Resource/bookUi/bookUi_1.png",
-	"Resource/bookUi/stage1.png",// stage1
-	"Resource/bookUi/stage2.png",// stage2
-	"Resource/bookUi/stage3.png",// stage3
-	"Resource/bookUi/stage4.png",// stage4
-	"Resource/bookUi/stage5.png",// stage5
+	    "Resource/bookUi/cover.png",    "Resource/bookUi/cover2.png",
+	    "Resource/bookUi/normal.png", // normal
+	    "Resource/bookUi/speed.png",  // speed
+	    "Resource/bookUi/power.png",  // power
+	    "Resource/bookUi/sniper.png", // sniper
+	    "Resource/bookUi/bookUi_1.png", "Resource/bookUi/bookUi_1.png", "Resource/bookUi/bookUi_1.png",
+	    "Resource/bookUi/stage1.png", // stage1
+	    "Resource/bookUi/stage2.png", // stage2
+	    "Resource/bookUi/stage3.png", // stage3
+	    "Resource/bookUi/stage4.png", // stage4
+	    "Resource/bookUi/stage5.png", // stage5
 	};
 	book = std::make_unique<Book>();
 	book->Initialize(textures);
 
 	// 本のイージング
-	bookEasing.transform.translate = { 960.0f, 540.0f, 0.0f };
-	bookEasing.transform.scale = { 1200.0f, 700.0f, 1.0f };
+	bookEasing.transform.translate = {960.0f, 540.0f, 0.0f};
+	bookEasing.transform.scale = {1200.0f, 700.0f, 1.0f};
 	bookEasing.startSize = bookEasing.transform.scale;
-	bookEasing.endSize = { 3600.0f, 2100.0f, 1.0f };
+	bookEasing.endSize = {3600.0f, 2100.0f, 1.0f};
 	bookEasing.sizeTime = 0.0f;
 	bookEasing.sizeEasedT = 0.0f;
 
@@ -83,7 +80,7 @@ void StageSelect::Initialize() {
 
 	// 音声再生
 	SoundManager::GetInstance()->Play("select.mp3");
-	//再生フラグ
+	// 再生フラグ
 	isSelectBGMPlaying_ = false;
 }
 
@@ -108,10 +105,8 @@ void StageSelect::Update() {
 			}
 		}
 	} else {
-		if (switchCooltime <= 0.0f)
-		{//マシーンセレクトからステージセレクトへ戻す
-			if (book->GetCurrentPageIndex() > 5)
-			{
+		if (switchCooltime <= 0.0f) { // マシーンセレクトからステージセレクトへ戻す
+			if (book->GetCurrentPageIndex() > 5) {
 				book->PrevPage();
 				switchCooltime = 0.3f;
 			}
@@ -125,9 +120,9 @@ void StageSelect::Update() {
 		}
 	}
 
-
 	if (!isTransition) {
-		if (input->TriggerKey(DIK_D) || input->TriggerKey(DIK_RIGHT)) {
+		if (input->TriggerKey(DIK_D) || input->TriggerKey(DIK_RIGHT) || input->IsPadButtonPressed(0, input->IsPadButtonPressed(0, 13)) || input->GetPadLeftAxisX(0) > 0.5f) {
+
 			if (switchCooltime <= 0.0f) {
 				if (!isStageSelect) {
 					// 本のページをめくる
@@ -148,11 +143,13 @@ void StageSelect::Update() {
 					// 本のページをめくる
 					if (book->GetCurrentPageIndex() < 13)
 						book->NextPage();
-
 				}
 				switchCooltime = 0.8f; // クールタイムリセット
 			}
-		} else if (input->TriggerKey(DIK_A) || input->TriggerKey(DIK_LEFT)) {
+		}
+		// 【左への入力】Aキー、左矢印、十字キー左、左スティック左
+		else if (input->TriggerKey(DIK_A) || input->TriggerKey(DIK_LEFT) || input->IsPadButtonPressed(0, input->IsPadButtonPressed(0, 12)) || input->GetPadLeftAxisX(0) < -0.5f) {
+
 			if (switchCooltime <= 0.0f) {
 				if (!isStageSelect) {
 					if (book->GetCurrentPageIndex() > 2) {
@@ -161,7 +158,6 @@ void StageSelect::Update() {
 
 						// 本のページを戻す
 						book->PrevPage();
-
 
 						isParameterEasing = true; // イージングリセット
 						ParameterEasingSet(currentStyle);
@@ -176,15 +172,13 @@ void StageSelect::Update() {
 						// 本のページを戻す
 						book->PrevPage();
 					}
-
 				}
 				switchCooltime = 0.8f; // クールタイムリセット
 			}
 		}
 
 		// ENTERキーを押したら
-		if (input->TriggerKey(DIK_SPACE)) {
-			// ゲームプレイシーン(次シーン)を生成
+		if (input->TriggerKey(DIK_SPACE) || input->IsPadButtonPressed(0, 1)) { // ゲームプレイシーン(次シーン)を生成
 			if (isStageSelect) {
 				if (book->GetCurrentPageIndex() > 8) {
 					// シーン切り替え演出
@@ -192,17 +186,16 @@ void StageSelect::Update() {
 					isSpeedDistortion = true;
 					isRadialBlur = true;
 
-					if(currentStage == 1)
-						rayMarchingSunDir = { 0.3f, -0.5f, 0.2f };
-					else if(currentStage == 2)
-						rayMarchingSunDir = { -0.34f, -0.15f, -1.0f };
-					else if(currentStage == 3)
-						rayMarchingSunDir = { 0.0f, 0.01f, -1.0f };
-					else if(currentStage == 4)
-						rayMarchingSunDir = { 0.12f, 0.05f, 1.0f };
-					else if(currentStage == 5)
-						rayMarchingSunDir = { -0.42f, -0.33f, -1.0f };
-
+					if (currentStage == 1)
+						rayMarchingSunDir = {0.3f, -0.5f, 0.2f};
+					else if (currentStage == 2)
+						rayMarchingSunDir = {-0.34f, -0.15f, -1.0f};
+					else if (currentStage == 3)
+						rayMarchingSunDir = {0.0f, 0.01f, -1.0f};
+					else if (currentStage == 4)
+						rayMarchingSunDir = {0.12f, 0.05f, 1.0f};
+					else if (currentStage == 5)
+						rayMarchingSunDir = {-0.42f, -0.33f, -1.0f};
 				}
 
 			} else {
@@ -212,10 +205,12 @@ void StageSelect::Update() {
 			}
 		}
 
-		//タイトルに戻す
-		if (input->TriggerKey(DIK_W)) {
+		// タイトルに戻す
+		// 【上への入力】Wキー、Yボタン（3番）、左スティック上
+		if (input->TriggerKey(DIK_W) || input->IsPadButtonPressed(0, 3) || input->GetPadLeftAxisY(0) < -0.5f) {
+
 			if (switchCooltime <= 0.0f) {
-				if (isStageSelect) {//ステージセレクトならマシーンセレクトに(演出)
+				if (isStageSelect) { // ステージセレクトならマシーンセレクトに(演出)
 					isStageSelect = false;
 					isParameterEasing = true;
 					ParameterEasingSet(currentStyle);
@@ -269,8 +264,7 @@ void StageSelect::Update() {
 	// 3. 全ての値が決まった後に、ループの外で 1回だけ呼び出す
 	radarChart->SetValues(radarValues);
 
-
-	//イージング
+	// イージング
 	easing->Update();
 	easing->Draw();
 
@@ -283,30 +277,26 @@ void StageSelect::Draw2D() {
 	return_->Draw();
 	space_->Draw();
 
-	//if (switchCooltime <= 0.0f) {
+	// if (switchCooltime <= 0.0f) {
 	//	for (int i = 0; i < kMaxParameter; i++) {
 	//		parameterGauge[i]->Draw();
 	//		parameter[i]->Draw();
 	//	}
-	//}
+	// }
 
 	RadarChartCommon::GetInstance()->SetCommonPipelineState();
 
 	radarChart->Draw();
-
-
 }
 
 void StageSelect::Draw3D() {
 	// 3Dオブジェクトの描画準備
 	ObjectCommon::GetInstance()->SetCommonDrawSetting();
 
-
 	// 本型UIの描画準備
 	BookUiCommon::GetInstance()->SetCommonPipelineState();
 
 	book->Draw();
-
 }
 
 void StageSelect::Finalize() { CameraManager::GetInstance()->RemoveCamera("main"); }
@@ -316,27 +306,25 @@ void StageSelect::TransitionUpdate() {
 		easing->Size(bookEasing, 0.01f, 1);
 
 		if (bookEasing.sizeEasedT >= 0.1f) {
-			if(speedDistortionStrength < 1.0f)
+			if (speedDistortionStrength < 1.0f)
 				speedDistortionStrength += 0.1f;
-			if(blurWidth <= 0.01f)
+			if (blurWidth <= 0.01f)
 				blurWidth += 0.0001f;
-			if(bloomThreshold > 0.0f)
+			if (bloomThreshold > 0.0f)
 				bloomThreshold -= 0.01f;
 			if (bloomIntensity < 10.0f)
 				bloomIntensity += 0.01f;
-
 		}
 
 		// 本のサイズを更新
 		book->SetScale(bookEasing.transform.scale);
 
-		if(bookEasing.sizeEasedT >= 1.0f) {
+		if (bookEasing.sizeEasedT >= 1.0f) {
 			// シーン切り替え
 			SoundManager::GetInstance()->Stop("select.mp3");
 			isSelectBGMPlaying_ = false;
 			SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 		}
-
 	}
 }
 
@@ -417,7 +405,6 @@ void StageSelect::LithingEffect() {
 	RayMarching::GetInstance()->SetMotionBlur(rayMarchingIsMotionBlur);
 	RayMarching::GetInstance()->SetCloudOpacity(rayMarchingCloudOpacity);
 
-
 #pragma endregion
 }
 
@@ -435,6 +422,5 @@ void StageSelect::ParameterEasingSet(Style currentStyle) {
 			radarChartEasing[i].numberTime = 0.0f;
 			radarChartEasing[i].numberEasedT = 0.0f;
 		}
-
 	}
 }
