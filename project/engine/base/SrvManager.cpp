@@ -1,7 +1,7 @@
 ﻿#include "SrvManager.h"
 #include "DirectXCommon.h"
 
-const uint32_t SrvManager::kMaxSRVConst = 512;
+const uint32_t SrvManager::kMaxSRVConst = 2048;
 
 SrvManager* SrvManager::GetInstance()
 {
