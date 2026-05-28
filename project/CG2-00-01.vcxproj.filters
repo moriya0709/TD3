@@ -99,8 +99,8 @@
     <ClCompile Include="game\camera\BananaCameraController.cpp" />
     <ClCompile Include="game\camera\StageCameraController.cpp" />
     <ClCompile Include="game\camera\GrapeCameraController.cpp" />
-    <ClCompile Include="RadarChart.cpp" />
-    <ClCompile Include="RadarChartCommon.cpp" />
+    <ClCompile Include="application\radarChart\RadarChart.cpp" />
+    <ClCompile Include="application\radarChart\RadarChartCommon.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game\collision\Collision.h" />
@@ -181,8 +181,8 @@
     <ClInclude Include="game\camera\BananaCameraController.h" />
     <ClInclude Include="game\camera\StageCameraController.h" />
     <ClInclude Include="game\camera\GrapeCameraController.h" />
-    <ClInclude Include="RadarChart.h" />
-    <ClInclude Include="RadarChartCommon.h" />
+    <ClInclude Include="application\radarChart\RadarChart.h" />
+    <ClInclude Include="application\radarChart\RadarChartCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resource\shaders\RayMarching.hlsli" />
