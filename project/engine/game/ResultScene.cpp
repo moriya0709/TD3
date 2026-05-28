@@ -120,7 +120,7 @@ void ResultScene::Update()
 	//スペースキーでお急ぎ用スコア表示
 	if (isScoreStartTime_ && !isCanPress_)
 	{
-		if (input->TriggerKey(DIK_SPACE))
+		if (input->TriggerKey(DIK_SPACE)||input->IsPadButtonPressed(0, 1))
 		{
 			currentDigitIndex_ = 5;//スコア全部強制確定
 			for (int i = 0; i < 5; ++i)
