@@ -1030,6 +1030,9 @@ void GamePlayScene::LithingEffect() {
 
 #pragma region レイマーチング
 
+	// レイマーチング
+	RayMarching::GetInstance()->Update(camera.get());
+
 #pragma endregion
 }
 
