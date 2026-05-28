@@ -424,27 +424,13 @@ void GamePlayScene::Update() {
 					bossAppearsState_ = Grapes;
 				}
 
+				enemy_->SetEnemyclear();
+
 				if (!isWarning_) {
-					enemy_->SetEnemyclear();
 					cameraController_ = std::make_unique<GrapeCameraController>();
 					cameraController_->Initialize(camera.get());
 					enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
 					bossPopFlag = 4;
-				}
-			} else if (bossPopFlag == 3) {
-				isWarning_ = true;
-				if (isWarning_) {
-					WarningEffect();
-					bossAppearsState_ = Banana;
-				}
-
-				if (!isWarning_) {
-					enemy_->SetEnemyclear();
-					cameraController_ = std::make_unique<BananaCameraController>();
-					cameraController_->Initialize(camera.get());
-					cameraController_->SetTargetPosition({ 0, 0, 60 });
-					enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
-					bossPopFlag = 6;
 				}
 
 				if (!isBossBGMPlaying_) {
@@ -454,12 +440,22 @@ void GamePlayScene::Update() {
 					isBossBGMPlaying_ = true;
 				}
 
-				enemy_->SetEnemyclear();
-				cameraController_ = std::make_unique<GrapeCameraController>();
-				cameraController_->Initialize(camera.get());
-				enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
-				bossPopFlag = 4;
 			} else if (bossPopFlag == 3) {
+				isWarning_ = true;
+				if (isWarning_) {
+					WarningEffect();
+					bossAppearsState_ = Banana;
+				}
+
+				enemy_->SetEnemyclear();
+
+				if (!isWarning_) {
+					cameraController_ = std::make_unique<BananaCameraController>();
+					cameraController_->Initialize(camera.get());
+					cameraController_->SetTargetPosition({ 0, 0, 60 });
+					enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
+					bossPopFlag = 6;
+				}
 
 				if (!isBossBGMPlaying_) {
 					SoundManager::GetInstance()->Stop("stage.mp3");
@@ -716,6 +712,9 @@ void GamePlayScene::ChekeAllCollision() {
 		isGrayscale = true;          // グレースケールエフェクト
 		isTwoColor = true;           // 2色エフェクト
 		isConcentrationLines = true; // 集中線エフェクト
+		concentrationLineIntensity = 0.5f; // 線の濃さ
+		concentrationLineDensity = 1000.0f;   // 線の密度（本数）
+		concentrationLineLength = 0.0f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
 		isInversion = true;
 	}
 	if (specialAttackTimer > 0) {
@@ -735,6 +734,7 @@ void GamePlayScene::ChekeAllCollision() {
 			isGrayscale = false;          // グレースケールエフェクト
 			isTwoColor = false;           // 2色エフェクト
 			isConcentrationLines = false; // 集中線エフェクト
+
 		}
 
 		// パーティクルの更新
@@ -1023,6 +1023,13 @@ void GamePlayScene::LithingEffect() {
 	// スピードディストーション
 	PostEffect::GetInstance()->SetSpeedDistortion(isSpeedDistortion);
 	PostEffect::GetInstance()->SetSpeedDistortionStrength(speedDistortionStrength);
+	// 集中線
+	PostEffect::GetInstance()->SetConcentrationLines(isConcentrationLines);
+	PostEffect::GetInstance()->SetConcentrationLineIntensity(concentrationLineIntensity);
+	PostEffect::GetInstance()->SetConcentrationLineCenter(concentrationLineCenter);
+	PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
+	PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
+	PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
 	// エフェクトの強さ
 	PostEffect::GetInstance()->SetIntensity(intensity);
 
@@ -1363,6 +1370,8 @@ void GamePlayScene::BossAppearsUpdate() {
 							blurWidth += 0.001f;
 						// 集中線
 						isConcentrationLines = true;
+						concentrationLineIntensity = 0.02f; // 線の濃さ
+						concentrationLineLength = 0.35f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
 					}
 
 				} else {
@@ -1426,6 +1435,8 @@ void GamePlayScene::BossAppearsUpdate() {
 							blurWidth += 0.001f;
 						// 集中線
 						isConcentrationLines = true;
+						concentrationLineIntensity = 0.02f; // 線の濃さ
+						concentrationLineLength = 0.35f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
 					}
 
 				} else {
