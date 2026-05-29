@@ -524,44 +524,20 @@
         },
         {
             "ModelName": "normal.obj",
-            "score": 3500,
+            "score": 5000,
             "stageName": "1",
             "time": 0.0
         },
         {
-            "ModelName": "power.obj",
-            "score": 13600,
-            "stageName": "2",
-            "time": 0.0
-        },
-        {
-            "ModelName": "sniper.obj",
-            "score": 700,
+            "ModelName": "normal.obj",
+            "score": 9300,
             "stageName": "3",
             "time": 0.0
         },
         {
             "ModelName": "normal.obj",
-            "score": 27500,
-            "stageName": "4",
-            "time": 0.0
-        },
-        {
-            "ModelName": "speed.obj",
-            "score": 10900,
+            "score": 12700,
             "stageName": "5",
-            "time": 0.0
-        },
-        {
-            "ModelName": "normal.obj",
-            "score": 6000,
-            "stageName": "1",
-            "time": 0.0
-        },
-        {
-            "ModelName": "normal.obj",
-            "score": 0,
-            "stageName": "1",
             "time": 0.0
         }
     ]
