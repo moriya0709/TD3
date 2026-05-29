@@ -59,7 +59,7 @@ void GamePlayScene::Initialize()
 
         // 必殺技回数ゲージ（溜まっている時）
         gaugeUI_[i] = std::make_unique<Sprite>();
-        gaugeUI_[i]->Initialize("Resource/UI/HissatuGage.png");
+        gaugeUI_[i]->Initialize("Resource/UI/HissatuGageEgg.png");
         gaugeUI_[i]->SetPosition({ gaugePosX, gaugePosY });
 
         // 必殺技回数空（使った後）
@@ -123,18 +123,17 @@ void GamePlayScene::Initialize()
     playerHPEmpty_->SetPosition({ 39.0f, 22.0f }); // UIの透過部分に合うように
 
     BulletRuleUI_ = std::make_unique<Sprite>();
-    BulletRuleUI_->Initialize("Resource/UI/BulletRule.png"); // bulletルール
-    BulletRuleUI_->SetPosition({ 400.0f, 100.0f });
+    BulletRuleUI_->Initialize("Resource/UI/BulletRuleM.png"); // bulletルール
+    BulletRuleUI_->SetPosition({ 400.0f, 300.0f });
 
     spacialRuleUI_ = std::make_unique<Sprite>();
-    spacialRuleUI_->Initialize("Resource/UI/specialRule.png"); // specialルール
-    spacialRuleUI_->SetPosition({ 1550.0f, 100.0f });
-    spacialRuleUI_->SetSize({ 250.0f, 250.0f });
+    spacialRuleUI_->Initialize("Resource/UI/specialRuleM.png"); // specialルール
+    spacialRuleUI_->SetPosition({ 1550.0f, 300.0f });
 
     for (int i = 0; i < kMaxSpecialAttack; i++) {
         // 必殺技回数ゲージ
         gaugeUI_[i] = std::make_unique<Sprite>();
-        gaugeUI_[i]->Initialize("Resource/UI/HissatuGage.png");
+        gaugeUI_[i]->Initialize("Resource/UI/HissatuGageEgg.png");
         gaugeUI_[i]->SetPosition({ 280.0f + i * 60.0f, 40.0f });
         gaugeUI_[i]->SetSize({ 50.0f, 50.0f });
         // 必殺技回数空
