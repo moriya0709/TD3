@@ -191,10 +191,6 @@ private:
 
 	int padX;
 	int padY;
-
-	// ヒットエフェクト
-	std::unique_ptr <ParticleEmitter> hitEffect[4] = {};
-	const int hitEffectCount = 4; // ヒットエフェクトの数
 	
 	// カメラ
 	std::unique_ptr<Camera> camera = nullptr;
@@ -203,8 +199,6 @@ private:
 
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
-
-	std::unique_ptr <ParticleEmitter> particleEmitter = nullptr;
 
 	// Updateで直接操作したい特定のオブジェクトへのポインタ(アニメーションモデル)
 	Object* walkAnimation = nullptr;
@@ -222,7 +216,7 @@ private:
 
 	float spaceTimer_ = 0.0f;//space点滅タイマー
 
-	//再生フラグ
-	bool isTitleBGMPlaying_ = false;
+	// BGM音量
+	float bgmVolume_ = 1.0f;
 
 };

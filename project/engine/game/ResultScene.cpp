@@ -98,10 +98,7 @@ void ResultScene::Initialize()
 	}
 
 	// 音声再生
-	SoundManager::GetInstance()->Play("result.mp3");
-
-	//再生フラグ
-	isResultBGMPlaying_ = false;
+	SoundManager::GetInstance()->Play("result.mp3", true, bgmVolume_);
 
 }
 
@@ -112,9 +109,10 @@ void ResultScene::Update()
 	// カメラ更新
 	CameraManager::GetInstance()->Update();
 
-	if (!isResultBGMPlaying_) {
-		SoundManager::GetInstance()->Play("result.mp3", true);
-		isResultBGMPlaying_ = true;
+	// フェードイン
+	if (intensity < 1.0f)
+	{
+		intensity += 1.0f / 30.0f;
 	}
 
 	//スペースキーでお急ぎ用スコア表示
@@ -166,10 +164,9 @@ void ResultScene::Update()
 	else if (isCanPress_)
 	{
 		//SPACEキーで
-		if (input->TriggerKey(DIK_SPACE)) {
+		if (input->TriggerKey(DIK_SPACE)||input->IsPadButtonPressed(0, 1)) {
 			// ゲームプレイシーン(次シーン)を生成
 			SoundManager::GetInstance()->Stop("result.mp3");
-			isResultBGMPlaying_ = false;
 			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
 		}
 	}
@@ -267,6 +264,9 @@ void ResultScene::Update()
 	PostEffect::GetInstance()->SetConcentrationLineDensity(concentrationLineDensity);
 	PostEffect::GetInstance()->SetConcentrationLineLength(concentrationLineLength);
 	PostEffect::GetInstance()->SetConcentrationLineSpeed(concentrationLineSpeed);
+	
+	// エフェクトの強さ
+	PostEffect::GetInstance()->SetIntensity(intensity);
 
 #pragma endregion
 

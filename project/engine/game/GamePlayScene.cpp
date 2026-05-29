@@ -294,11 +294,8 @@ void GamePlayScene::Initialize()
     easing->Initialize();
 
     // 音声再生
-    SoundManager::GetInstance()->Play("stage.mp3");
+    SoundManager::GetInstance()->Play("stage.mp3",true,bgmVolume_);
 
-    // 再生フラグ
-    isPlayBGMPlaying_ = true;
-    isBossBGMPlaying_ = false;
 }
 
 void GamePlayScene::Update()
@@ -336,9 +333,32 @@ void GamePlayScene::Update()
         ChekeAllCollision();
 
         // フェード
-        if (!isBossAppears_ && !isWarning_) {
-            if (intensity < 1.0f)
-                intensity += 1.0f / 30.0f;
+        if (isFinished_) {
+            // フェードアウト
+            intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
+            PostEffect::GetInstance()->SetIntensity(intensity);
+
+			// BGMのフェードアウト
+            if (bgmVolume_ > 0.0f) {
+                bgmVolume_ -= 1.0f / 30.0f;
+                // BGMのフェードアウト処理
+                bgmVolume_ = (std::max)(0.0f, bgmVolume_ - 1.0f / 30.0f); // 音量も同じ速度で減少
+                SoundManager::GetInstance()->SetVolume("stage.mp3", bgmVolume_);
+                SoundManager::GetInstance()->SetVolume("boss.mp3", bgmVolume_);
+            }
+            else {
+                SoundManager::GetInstance()->Stop("stage.mp3");
+                SoundManager::GetInstance()->Stop("boss.mp3");
+            }
+
+            if (intensity <= 0.0f)
+                SceneManager::GetInstance()->ChangeScene("RESULT");
+        } else {
+			// フェードイン
+            if (!isBossAppears_ && !isWarning_) {
+                if (intensity < 1.0f)
+                    intensity += 1.0f / 30.0f;
+            }
         }
 
         // ポーズ画面へ
@@ -426,13 +446,10 @@ void GamePlayScene::Update()
                     cameraController_->Initialize(camera.get());
                     enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
                     bossPopFlag = 4;
-                }
 
-                if (!isBossBGMPlaying_) {
-                    SoundManager::GetInstance()->Stop("stage.mp3");
-                    isPlayBGMPlaying_ = false;
-                    SoundManager::GetInstance()->Play("boss.mp3");
-                    isBossBGMPlaying_ = true;
+                    // bgm
+                    bgmVolume_ = 1.0f;
+                    SoundManager::GetInstance()->Play("boss.mp3", true, bgmVolume_);
                 }
 
             } else if (bossPopFlag == 3) {
@@ -450,14 +467,12 @@ void GamePlayScene::Update()
                     cameraController_->SetTargetPosition({ 0, 0, 60 });
                     enemy_->Initialize(player_.get(), camera.get(), cameraController_.get());
                     bossPopFlag = 6;
+
+					// bgm
+                    bgmVolume_ = 1.0f;
+                    SoundManager::GetInstance()->Play("boss.mp3", true, bgmVolume_);
                 }
 
-                if (!isBossBGMPlaying_) {
-                    SoundManager::GetInstance()->Stop("stage.mp3");
-                    isPlayBGMPlaying_ = false;
-                    SoundManager::GetInstance()->Play("boss.mp3");
-                    isBossBGMPlaying_ = true;
-                }
             }
         }
         // ボスがいる場合はフラグを5にする
@@ -515,22 +530,39 @@ void GamePlayScene::Update()
 
             // 【決定】スペースキー、またはBボタン（1番）
             if (Input::GetInstance()->TriggerKey(DIK_SPACE) || Input::GetInstance()->IsPadButtonPressed(0, 1)) {
+				isPauseSceneChange_ = true;
+            }
+
+            if (isPauseSceneChange_) {
                 if (currentGameOverUI_ == Pause::kSelect) {
-                    // セレクトシーンを生成
-                    SoundManager::GetInstance()->Stop("stage.mp3");
-                    SoundManager::GetInstance()->Stop("boss.mp3");
-                    isPlayBGMPlaying_ = false;
-                    isBossBGMPlaying_ = false;
-                    SceneManager::GetInstance()->ChangeScene("GAMESELECT");
+                    // BGMのフェードアウト
+					if (bgmVolume_ > 0.0f) {
+                        bgmVolume_ -= 1.0f / 30.0f;
+                        SoundManager::GetInstance()->SetVolume("stage.mp3", bgmVolume_);
+                        SoundManager::GetInstance()->SetVolume("boss.mp3", bgmVolume_);
+                    } else {
+                        // セレクトシーンを生成
+                        SoundManager::GetInstance()->Stop("stage.mp3");
+                        SoundManager::GetInstance()->Stop("boss.mp3");
+
+                        SceneManager::GetInstance()->ChangeScene("GAMESELECT");
+                    }
                 } else if (currentGameOverUI_ == Pause::kRetry) {
-                    // ゲームプレイシーンを生成
-                    SoundManager::GetInstance()->Stop("stage.mp3");
-                    SoundManager::GetInstance()->Stop("boss.mp3");
-                    isPlayBGMPlaying_ = false;
-                    isBossBGMPlaying_ = false;
-                    SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+                    // BGMのフェードアウト
+                    if (bgmVolume_ > 0.0f) {
+                        bgmVolume_ -= 1.0f / 30.0f;
+                        SoundManager::GetInstance()->SetVolume("stage.mp3", bgmVolume_);
+                        SoundManager::GetInstance()->SetVolume("boss.mp3", bgmVolume_);
+                    } else {
+                        // ゲームプレイシーンを生成
+                        SoundManager::GetInstance()->Stop("stage.mp3");
+                        SoundManager::GetInstance()->Stop("boss.mp3");
+
+                        SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
+                    }
                 }
             }
+
         }
 
         // 色更新
@@ -717,6 +749,9 @@ void GamePlayScene::ChekeAllCollision()
         concentrationLineDensity = 1000.0f; // 線の密度（本数）
         concentrationLineLength = 0.0f; // 線の長さ（中心からの開始距離 0.0〜1.0）
         isInversion = true;
+
+        // SE
+        SoundManager::GetInstance()->Play("specialAtack_se", false, seVolume_);
     }
     if (specialAttackTimer > 0) {
         specialAttackTimer--;
@@ -802,8 +837,6 @@ void GamePlayScene::PauseSelect()
                 // ゲームプレイシーン(次シーン)を生成
                 SoundManager::GetInstance()->Stop("stage.mp3");
                 SoundManager::GetInstance()->Stop("boss.mp3");
-                isPlayBGMPlaying_ = false;
-                isBossBGMPlaying_ = false;
                 SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
 
                 resumeEasing.startSizeV2 = resumeEasing.size;
@@ -853,8 +886,6 @@ void GamePlayScene::PauseSelect()
                 // ゲームプレイシーン(次シーン)を生成
                 SoundManager::GetInstance()->Stop("stage.mp3");
                 SoundManager::GetInstance()->Stop("boss.mp3");
-                isPlayBGMPlaying_ = false;
-                isBossBGMPlaying_ = false;
                 SceneManager::GetInstance()->ChangeScene("GAMESELECT");
             }
             if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP) || Input::GetInstance()->GetPadLeftAxisY(0) < -0.5f) {
@@ -943,6 +974,7 @@ void GamePlayScene::PauseSelect()
 
 void GamePlayScene::StageClear()
 {
+
     if (isFinished_)
         return;
     isFinished_ = true;
@@ -961,12 +993,7 @@ void GamePlayScene::StageClear()
 
     // 保存実行
     scoreManager_.SaveScene(score_, currentStage, currentModel, playTimer_);
-
-    SoundManager::GetInstance()->Stop("stage.mp3");
-    SoundManager::GetInstance()->Stop("boss.mp3");
-    isPlayBGMPlaying_ = false;
-    isBossBGMPlaying_ = false;
-    SceneManager::GetInstance()->ChangeScene("RESULT");
+   
 }
 
 void GamePlayScene::LithingEffect()
@@ -1278,10 +1305,27 @@ void GamePlayScene::WarningEffect()
         // フェード
         if (warningTimer_ <= 0.5f) {
             intensity = (std::max)(0.0f, intensity - 1.0f / 30.0f);
+
+            // SEフェードアウト
+            seVolume_ = (std::max)(0.0f, seVolume_ - 1.0f / 30.0f); // 音量も同じ速度で減少
+            SoundManager::GetInstance()->SetVolume("warning_se", seVolume_);
+
         }
 
         warning_->SetColor(warningEasing_.color);
         warning_->Update();
+
+        // SE
+        if (isSePlayed_) {
+            SoundManager::GetInstance()->Play("warning_se", true, seVolume_);
+			isSePlayed_ = false;
+        }
+
+        // BGMのフェードアウト処理
+        bgmVolume_ = (std::max)(0.0f, bgmVolume_ - 1.0f / 30.0f); // 音量も同じ速度で減少
+        SoundManager::GetInstance()->SetVolume("stage.mp3", bgmVolume_);
+        if (bgmVolume_ <= 0.0f)
+            SoundManager::GetInstance()->Stop("stage.mp3");
 
     } else {
         isWarning_ = false;

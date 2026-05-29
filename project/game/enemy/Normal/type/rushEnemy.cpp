@@ -82,6 +82,9 @@ void rushEnemy::Update()
             deathEffect[i]->SetTranslate(transform_.translate);
             deathEffect[i]->Emit();
         }
+
+        // SE
+        SoundManager::GetInstance()->Play("death_se", false);
     }
 
     // カメラの位置に応じて変換

@@ -67,7 +67,7 @@ private:
 	// 平行光
 	bool isDirectionalLight = false;
 	Vector4 DirectionalLightColor = {1.0f, 1.0f, 1.0f, 1.0f};
-	Vector3 DirectionalLightDirection = {0.0f, -1.0f, 0.0f};
+	Vector3 DirectionalLightDirection = {1.1f, -1.9f, -0.1f};
 	float DirectionalLightIntensity = 1.0f;
 	// 環境光
 	bool isAmbientLight = true;
@@ -207,7 +207,12 @@ private:
 	// パラメータのイージングを設定
 	void ParameterEasingSet(Style currentStyle);
 
-	//再生フラグ
-	bool isSelectBGMPlaying_ = false;
+	// bgm音量
+	float bgmVolume_ = 1.0f;
+	// se音量
+	float seVolume_ = 1.0f;
+
+	// 背景
+	std::unique_ptr <Object> background = nullptr;
 
 };

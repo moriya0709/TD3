@@ -133,6 +133,8 @@ private:
 	float concentrationLineLength = 0.0f;    // 線の長さ（中心からの開始距離 0.0〜1.0）
 	float concentrationLineSpeed = 20.0f;     // 線の動く速さ
 
+	// エフェクトの強さ
+	float intensity = 1.0f;
 
 	// レイマーチング
 	//float rayMarchingTime = 0.0f; ;
@@ -185,8 +187,8 @@ private:
 	//モデル(数字にして描画)
 	int modelIndex_ = 0;
 
-	//再生フラグ
-	bool isResultBGMPlaying_ = false;
+	// bgm音量
+	float bgmVolume_ = 1.0f; // BGMの音量 (0.0f〜1.0f)
 
 };
 

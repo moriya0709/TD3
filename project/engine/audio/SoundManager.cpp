@@ -96,10 +96,15 @@ void SoundManager::Load(const std::string& name, const std::string& filename) {
 	sounds_.emplace(name, std::move(data));
 }
 
-void SoundManager::Play(const std::string& name, bool loop) {
+void SoundManager::Play(const std::string& name, bool loop, float volume) {
 	assert(sounds_.count(name));
 
 	SoundData& data = sounds_.at(name);
+
+	// 音量
+	if (volume >= 0.0f) {
+		data.volume = volume;
+	}
 
 	// すでに再生中なら止める（BGM向け）
 	if (data.voice) {
@@ -112,6 +117,9 @@ void SoundManager::Play(const std::string& name, bool loop) {
 		&data.wfex
 	);
 	assert(SUCCEEDED(result));
+
+	// 音量をセット
+	data.voice->SetVolume(data.volume);
 
 	XAUDIO2_BUFFER buffer{};
 	buffer.pAudioData = data.pBuffer.data();
@@ -130,6 +138,18 @@ void SoundManager::Stop(const std::string& name) {
 	if (data.voice) {
 		data.voice->Stop();
 		data.voice->FlushSourceBuffers();
+	}
+}
+
+void SoundManager::SetVolume(const std::string& name, float volume) {
+	if (!sounds_.count(name)) return;
+
+	SoundData& data = sounds_.at(name);
+	data.volume = volume;
+
+	// すでにボイスが生成されて再生中の場合、リアルタイムに音量を反映する
+	if (data.voice) {
+		data.voice->SetVolume(data.volume);
 	}
 }
 

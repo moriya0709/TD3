@@ -75,6 +75,9 @@ void NormalEnemy::Update()
             deathEffect[i]->SetTranslate(transform_.translate);
             deathEffect[i]->Emit();
         }
+
+        // SE
+        SoundManager::GetInstance()->Play("death_se", false);
     }
 
     const Matrix4x4& camMat = camera_->GetWorldMatrix();

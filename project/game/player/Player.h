@@ -157,6 +157,9 @@ private:
 	// デス演出
 	bool isDeathAnimation_ = false; // デス演出中フラグ
 
+	// se音量
+	float seVolume_ = 1.0f; // SEの音量 (0.0f～1.0f)
+
 	void UpdateDeathAnimation();    // デス演出更新関数
 
 };

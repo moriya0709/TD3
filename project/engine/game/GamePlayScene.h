@@ -215,6 +215,7 @@ private:
     //ポーズかどうか
     bool isPause_ = false;
 	bool isPauseEasing_ = false;
+	bool isPauseSceneChange_ = false;
 
     Pause currentPause_ = kResume;
 
@@ -275,6 +276,7 @@ private:
 	float warningTimer_ = 3.0f;
 	float bossAppearsTimer_ = 7.0f;
 	EasingSet warningEasing_;
+	bool isSePlayed_ = true;
 
 	// ブドウ
 	const int kBossAppearsGrapes_ = 7;
@@ -304,9 +306,8 @@ private:
 	void BossAppearsUpdate();
 
 
-    //再生フラグ
-    bool isPlayBGMPlaying_ = false;
-    bool isBossBGMPlaying_ = false;
+	float bgmVolume_ = 1.0f; // BGMの音量 (0.0f〜1.0f)
+	float seVolume_ = 1.0f; // SEの音量 (0.0f〜1.0f)
 
     void SceneChangedEffect();
 

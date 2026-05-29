@@ -54,6 +54,11 @@ void Game::Initialize() {
 	ParticleManager::GetInstance()->CreateParticleGroup("Death2", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("Death3", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("Death4", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("DeathBoss1", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("DeathBoss2", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("DeathBoss3", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("DeathBoss4", "Resource/plane", "plane.obj", "Resource/particle/particle.png");
+	ParticleManager::GetInstance()->CreateParticleGroup("DeathBoss5", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("SpecialAttack", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("Special", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");
 	ParticleManager::GetInstance()->CreateParticleGroup("ChargeShot", "Resource/plane", "plane.obj", "Resource/particle/particle2.png");
@@ -101,16 +106,25 @@ void Game::Initialize() {
     ModelManager::GetInstance()->LoadModel("Resource/test", "test.obj");
 	ModelManager::GetInstance()->LoadModel("Resource/cube", "cube.obj"); // レールエディター
 	ModelManager::GetInstance()->LoadModel("Resource/rail", "rail.obj"); // レールエディター
+	ModelManager::GetInstance()->LoadModel("Resource/bg", "bg.obj");
 	//ModelManager::GetInstance()->LoadModel("skydome.obj"); 
 	ModelManager::GetInstance()->LoadModel("./Resource","simpleSkin.gltf");//スケルトン(細かいアニメーション)
 	ModelManager::GetInstance()->LoadModel("./Resource","walk.gltf");
 	// サウンド
 	SoundManager::GetInstance()->Initialize();
+	// bgm
 	SoundManager::GetInstance()->Load("title.mp3", "title.mp3");
 	SoundManager::GetInstance()->Load("select.mp3", "select.mp3");
 	SoundManager::GetInstance()->Load("stage.mp3", "stage.mp3");
 	SoundManager::GetInstance()->Load("boss.mp3", "boss.mp3");
 	SoundManager::GetInstance()->Load("result.mp3", "result.mp3");
+	// se
+	SoundManager::GetInstance()->Load("chargeShot_se", "chargeShot.mp3");
+	SoundManager::GetInstance()->Load("death_se", "death.mp3");
+	SoundManager::GetInstance()->Load("specialAtack_se", "specialAtack.mp3");
+	SoundManager::GetInstance()->Load("book_se", "book.mp3");
+	SoundManager::GetInstance()->Load("shot_se", "shot.mp3");
+	SoundManager::GetInstance()->Load("warning_se", "warning.mp3");
 
 	// ポストエフェクト
 	PostEffect::GetInstance()->Initialize(dxCommon, windowAPI.get(), SrvManager::GetInstance());

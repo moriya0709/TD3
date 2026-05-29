@@ -19,6 +19,7 @@ struct SoundData {
 	// バッファの先頭アドレス
 	std::vector<BYTE> pBuffer;
 	IXAudio2SourceVoice* voice;
+	float volume;
 };
 // チャンクヘッダ
 struct ChunkHeader {
@@ -48,8 +49,11 @@ public:
 	void Load(const std::string& name, const std::string& filename);
 
 	// Scene から使う
-	void Play(const std::string& name, bool loop = false);
+	void Play(const std::string& name, bool loop = false, float volume = 1.0f);
 	void Stop(const std::string& name);
+
+	// 音量の設定
+	void SetVolume(const std::string& name, float volume);
 
 
 	// シングルトンインスタンスの取得

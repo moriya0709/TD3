@@ -422,12 +422,12 @@ void StageCameraController::GeneratePathObjects() {
 
 	// 配置する設定パラメータ
 	const int numObjects = 30;     // 配置するトータルの数
-	const float minOffset = 30.0f; // 経路から離す最小距離
-	const float maxOffset = 55.0f; // 経路から離す最大距離
+	const float minOffset = 40.0f; // 経路から離す最小距離
+	const float maxOffset = 50.0f; // 経路から離す最大距離
 	const float minScale = 0.5f;   // ランダムスケールの最小値
 	const float maxScale = 1.5f;   // ランダムスケールの最大値
 
-	// ✨ Evaluate(スプライン曲線)が受け取れる最大の進行度(maxT)を計算
+	// Evaluate(スプライン曲線)が受け取れる最大の進行度(maxT)を計算
 	float maxT = static_cast<float>(points.size() - 3);
 
 	// 乱数生成器の初期化
@@ -439,14 +439,14 @@ void StageCameraController::GeneratePathObjects() {
 	std::uniform_int_distribution<int> disModel(0, 1);
 	std::uniform_int_distribution<int> disSign(0, 1);
 
-	// ✨ 0.0 から maxT の間で「完全にランダムな位置」を決めるための乱数
+	// 0.0 から maxT の間で「完全にランダムな位置」を決めるための乱数
 	std::uniform_real_distribution<float> disT(0.0f, maxT);
 
 	for (int i = 0; i < numObjects; ++i) {
-		// ✨ 等分ではなく、ランダムな t を取得して経路全体にバラけさせる
+		// 等分ではなく、ランダムな t を取得して経路全体にバラけさせる
 		float t = disT(gen);
 
-		// 1. ✨ EvaluateBezier ではなく、均等に分散しやすい Evaluate を使用
+		// 1. Evaluate を使用して経路上のベース位置を取得
 		Vector3 basePath = Evaluate(t);
 
 		// 2. 各軸に対して独立して離れるオフセットを計算
@@ -468,18 +468,25 @@ void StageCameraController::GeneratePathObjects() {
 		// オフセットを適用した最終座標
 		Vector3 finalPosition = {basePath.x + offsetX, basePath.y + offsetY, basePath.z + offsetZ};
 
-		// 3. Objectの生成と初期化
+		// ✨ 3. Y座標が0より高くならないように（常に0以下に）調整
+		if (finalPosition.y > 0.0f) {
+			// 0.0f から -maxOffset までのランダムな負の値を設定して、0以下の空間に綺麗に散らす
+			std::uniform_real_distribution<float> disLowY(-maxOffset, 0.0f);
+			finalPosition.y = disLowY(gen);
+		}
+
+		// 4. Objectの生成と初期化
 		auto obj = std::make_unique<Object>();
 		obj->Initialize(camera);
 
-		// 4. ランダムにモデルを選択
+		// 5. ランダムにモデルを選択
 		if (disModel(gen) == 0) {
 			obj->SetModel("skyBulding2.obj");
 		} else {
 			obj->SetModel("rocket.obj");
 		}
 
-		// 5. トランスフォームの設定
+		// 6. トランスフォームの設定
 		obj->SetTranslate(finalPosition);
 
 		float scaleVal = disScale(gen);
@@ -491,7 +498,8 @@ void StageCameraController::GeneratePathObjects() {
 		// 配列に保存
 		pathObjects.push_back(std::move(obj));
 	}
-} // =========================================================
+}
+// =========================================================
 // データ保存・読み込み (JSON)
 // =========================================================
 void StageCameraController::ChangeStage(int newStage) {

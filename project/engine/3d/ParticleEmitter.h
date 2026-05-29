@@ -37,6 +37,7 @@ public:
 
 	// setter
 	void SetTranslate(Vector3 translate) { emitter.transform.translate = translate; }
+	void SetFrequency(float frequency) { emitter.frequency = frequency; }
 
 private:
 	// パーティクルエミッタの設定
