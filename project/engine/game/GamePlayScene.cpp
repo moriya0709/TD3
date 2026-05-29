@@ -585,6 +585,10 @@ void GamePlayScene::Update()
     LithingEffect();
     UpdateImGui();
 
+    // これを消すとボス登場演出がバグる
+    camera->SetTranslate({ cameraTransform.translate });
+    camera->SetRotate({ cameraTransform.rotate });
+
     if (!animationObjects.empty()) {
         Object* animationObject = animationObjects[0].get(); // アニメーションモデルを取得
 
@@ -920,6 +924,8 @@ void GamePlayScene::PauseSelect()
     case Pause::kRetry:
         if (Input::GetInstance()->TriggerKey(DIK_SPACE) || Input::GetInstance()->IsPadButtonPressed(0, 1)) {
             // ゲームプレイシーン(次シーン)を生成
+            SoundManager::GetInstance()->Stop("stage.mp3");
+            SoundManager::GetInstance()->Stop("boss.mp3");
             SceneManager::GetInstance()->ChangeScene("GAMEPLAY");
         }
         if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP) || Input::GetInstance()->GetPadLeftAxisY(0) < -0.5f) {
@@ -1081,8 +1087,6 @@ void GamePlayScene::UpdateImGui()
     // カメラ
     ImGui::DragFloat3("cameraTranslate", &cameraTransform.translate.x, 0.01f, -100.0f, 100.0f);
     ImGui::DragFloat3("cameraRotate", &cameraTransform.rotate.x, 0.01f, -180.0f, 180.0f);
-    camera->SetTranslate({ cameraTransform.translate });
-    camera->SetRotate({ cameraTransform.rotate });
 
 #pragma region ライティング
     // *ライティング* //
