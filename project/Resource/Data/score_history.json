@@ -455,6 +455,24 @@
             "score": 3300,
             "stageName": "5",
             "time": 0.0
+        },
+        {
+            "ModelName": "normal.obj",
+            "score": 6000,
+            "stageName": "1",
+            "time": 0.0
+        },
+        {
+            "ModelName": "speed.obj",
+            "score": 0,
+            "stageName": "3",
+            "time": 0.0
+        },
+        {
+            "ModelName": "power.obj",
+            "score": 10900,
+            "stageName": "5",
+            "time": 0.0
         }
     ]
 }

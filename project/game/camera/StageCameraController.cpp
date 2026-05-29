@@ -474,7 +474,7 @@ void StageCameraController::GeneratePathObjects() {
 
 		// 4. ランダムにモデルを選択
 		if (disModel(gen) == 0) {
-			obj->SetModel("skyBulding.obj");
+			obj->SetModel("skyBulding2.obj");
 		} else {
 			obj->SetModel("rocket.obj");
 		}
