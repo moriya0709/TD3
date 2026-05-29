@@ -164,8 +164,10 @@ private:
 	float rayMarchingCloudOpacity = 0.01f;
 
 	//スプライト
-	std::unique_ptr<Sprite> return_ = nullptr;
-	std::unique_ptr<Sprite> space_ = nullptr;
+	std::unique_ptr<Sprite> returnM_ = nullptr;
+	std::unique_ptr<Sprite> nextM_ = nullptr;
+	std::unique_ptr<Sprite> returnC_ = nullptr;
+	std::unique_ptr<Sprite> nextC_ = nullptr;
 
 
 	// 本型UI

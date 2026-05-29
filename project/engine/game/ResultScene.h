@@ -161,7 +161,8 @@ private:
 	std::unique_ptr<Sprite> numberSprites_[10][5];//スコア数
 	std::unique_ptr<Sprite> stageSprites_[6];//ステージ名
 	std::unique_ptr <Sprite> modelSprites_[4];//モデル名
-	std::unique_ptr<Sprite> space_ = nullptr;
+	std::unique_ptr<Sprite> nextM_ = nullptr;
+	std::unique_ptr<Sprite> nextC_ = nullptr;
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};
 	

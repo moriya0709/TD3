@@ -87,9 +87,13 @@ void ResultScene::Initialize()
 		modelSprites_[i]->Initialize(filePath);
 	}
 
-	space_ = std::make_unique<Sprite>();
-	space_->Initialize("Resource/space.png"); // 進める
-	space_->SetPosition({ 950.0f, 900.0f });
+	nextM_ = std::make_unique<Sprite>();
+	nextM_->Initialize("Resource/nextM.png"); // 進める
+	nextM_->SetPosition({ 950.0f, 900.0f });
+
+	nextC_ = std::make_unique<Sprite>();
+	nextC_->Initialize("Resource/nextC.png"); // 進める
+	nextC_->SetPosition({ 950.0f, 900.0f });
 
 	// 3Dオブジェクト
 	for (int i = 0; i < 2; i++) {
@@ -178,7 +182,14 @@ void ResultScene::Update()
 
 	// *スプライト* //
 	// sprite更新
-	space_->Update();
+	if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
+	{
+		nextC_->Update();
+	}
+	else
+	{
+		nextM_->Update();
+	}
 
 #pragma region ライティング
 	// *ライティング* //
@@ -524,8 +535,13 @@ void ResultScene::Draw2D()
 		modelSprites_[modelIndex_]->Update();
 		modelSprites_[modelIndex_]->Draw();
 	}
-
-	space_->Draw();
+	if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
+	{
+		nextC_->Draw();
+	} else
+	{
+		nextM_->Draw();
+	}
 }
 
 void ResultScene::Draw3D()

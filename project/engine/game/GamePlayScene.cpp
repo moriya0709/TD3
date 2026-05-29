@@ -43,7 +43,6 @@ void GamePlayScene::Initialize()
     ///
     /// アニメーションモデル
     ///
-
     // スケルトン
     Model* model = ModelManager::GetInstance()->FindModel("simpleSkin.gltf"); // スケルトンアクセス権
     skeleton_ = model->CreateSkeleton(model->GetModelData().rootNode); // 動く仕組み
@@ -51,6 +50,11 @@ void GamePlayScene::Initialize()
     // アニメーションデータの読み込み(モデル自体はGame.cppに入れること)
     simpleAnimation_ = Model::LoadAnimationFile("./Resource", "simpleSkin.gltf"); // スケルトン
     walkAnimation_ = Model::LoadAnimationFile("./Resource", "walk.gltf");
+    ///
+    ///
+    ///
+
+
     for (int i = 0; i < kMaxSpecialAttack; i++) {
         // HPバーの右隣からスタートし、アイコンの幅ごとに右にズラす
         // ※ 260.0f はHPバーの幅(240)＋少しの余白です。アイコンの幅(例:40.0f)を掛けて並べます
@@ -67,18 +71,23 @@ void GamePlayScene::Initialize()
         gaugeEmptyUI_[i]->Initialize("Resource/UI/HissatuNoGage.png");
         gaugeEmptyUI_[i]->SetPosition({ gaugePosX, gaugePosY });
     }
-    ///
-    ///
-    ///
 
     // スプライト
-    pause_ = std::make_unique<Sprite>();
-    pause_->Initialize("Resource/pause.png"); // ポーズ
-    pause_->SetPosition({ 1850.0f, 50.0f });
+    pauseM_ = std::make_unique<Sprite>();
+    pauseM_->Initialize("Resource/pauseM.png"); // ポーズ
+    pauseM_->SetPosition({ 1850.0f, 50.0f });
 
-    resume_ = std::make_unique<Sprite>();
-    resume_->Initialize("Resource/resume.png"); // 続ける
-    resume_->SetPosition({ 960.0f, 216.0f });
+    pauseC_ = std::make_unique<Sprite>();
+    pauseC_->Initialize("Resource/pauseC.png"); // ポーズ
+    pauseC_->SetPosition({ 1850.0f, 50.0f });
+
+    resumeM_ = std::make_unique<Sprite>();
+    resumeM_->Initialize("Resource/resumeM.png"); // 続ける
+    resumeM_->SetPosition({ 960.0f, 216.0f });
+
+    resumeC_ = std::make_unique<Sprite>();
+    resumeC_->Initialize("Resource/resumeC.png"); // 続ける
+    resumeC_->SetPosition({ 960.0f, 216.0f });
 
     resumeEasing.size = { 0.0f, 0.0f };
     resumeEasing.startSizeV2 = { 0.0f, 0.0f };
@@ -86,18 +95,36 @@ void GamePlayScene::Initialize()
     resumeEasing.sizeTime = 0.0f;
     resumeEasing.sizeEasedT = 0.0f;
 
-    retry_ = std::make_unique<Sprite>();
-    retry_->Initialize("Resource/retry.png"); // リトライ
-    retry_->SetPosition({ 860.0f, 432.0f });
+    retryM_ = std::make_unique<Sprite>();
+    retryM_->Initialize("Resource/retryM.png"); // リトライ
+    retryM_->SetPosition({ 860.0f, 432.0f });
     retryEasing.size = { 0.0f, 0.0f };
     retryEasing.startSizeV2 = { 0.0f, 0.0f };
     retryEasing.endSizeV2 = { 300.0f, 300.0f };
     retryEasing.sizeTime = 0.0f;
     retryEasing.sizeEasedT = 0.0f;
 
-    select_ = std::make_unique<Sprite>();
-    select_->Initialize("Resource/select.png"); // セレクトへ
-    select_->SetPosition({ 1060.0f, 648.0f });
+    retryC_ = std::make_unique<Sprite>();
+    retryC_->Initialize("Resource/retryC.png"); // リトライ
+    retryC_->SetPosition({ 860.0f, 432.0f });
+    retryEasing.size = { 0.0f, 0.0f };
+    retryEasing.startSizeV2 = { 0.0f, 0.0f };
+    retryEasing.endSizeV2 = { 300.0f, 300.0f };
+    retryEasing.sizeTime = 0.0f;
+    retryEasing.sizeEasedT = 0.0f;
+
+    selectM_ = std::make_unique<Sprite>();
+    selectM_->Initialize("Resource/selectM.png"); // セレクトへ
+    selectM_->SetPosition({ 1060.0f, 648.0f });
+    selectEasing.size = { 0.0f, 0.0f };
+    selectEasing.startSizeV2 = { 0.0f, 0.0f };
+    selectEasing.endSizeV2 = { 300.0f, 300.0f };
+    selectEasing.sizeTime = 0.0f;
+    selectEasing.sizeEasedT = 0.0f;
+
+    selectC_ = std::make_unique<Sprite>();
+    selectC_->Initialize("Resource/selectC.png"); // セレクトへ
+    selectC_->SetPosition({ 1060.0f, 648.0f });
     selectEasing.size = { 0.0f, 0.0f };
     selectEasing.startSizeV2 = { 0.0f, 0.0f };
     selectEasing.endSizeV2 = { 300.0f, 300.0f };
@@ -122,13 +149,21 @@ void GamePlayScene::Initialize()
     playerHPEmpty_->SetAnchorPoint({ 0.0f, 0.0f }); // サイズ調整
     playerHPEmpty_->SetPosition({ 39.0f, 22.0f }); // UIの透過部分に合うように
 
-    BulletRuleUI_ = std::make_unique<Sprite>();
-    BulletRuleUI_->Initialize("Resource/UI/BulletRuleM.png"); // bulletルール
-    BulletRuleUI_->SetPosition({ 400.0f, 300.0f });
+    BulletRuleM_ = std::make_unique<Sprite>();
+    BulletRuleM_->Initialize("Resource/UI/BulletRuleM.png"); // bulletルールマウス
+    BulletRuleM_->SetPosition({ 400.0f, 300.0f });
 
-    spacialRuleUI_ = std::make_unique<Sprite>();
-    spacialRuleUI_->Initialize("Resource/UI/specialRuleM.png"); // specialルール
-    spacialRuleUI_->SetPosition({ 1550.0f, 300.0f });
+    BulletRuleC_ = std::make_unique<Sprite>();
+    BulletRuleC_->Initialize("Resource/UI/BulletRuleC.png"); // bulletルールコントローラー
+    BulletRuleC_->SetPosition({ 400.0f, 300.0f });
+
+    spacialRuleM_ = std::make_unique<Sprite>();
+    spacialRuleM_->Initialize("Resource/UI/specialRuleM.png"); // specialルールマウス
+    spacialRuleM_->SetPosition({ 1550.0f, 300.0f });
+
+    spacialRuleC_ = std::make_unique<Sprite>();
+    spacialRuleC_->Initialize("Resource/UI/specialRuleC.png"); // specialルールコントローラー
+    spacialRuleC_->SetPosition({ 1550.0f, 300.0f });
 
     for (int i = 0; i < kMaxSpecialAttack; i++) {
         // 必殺技回数ゲージ
@@ -577,8 +612,16 @@ void GamePlayScene::Update()
         gameOverUi_[0]->Update();
         gameOverUi_[1]->Update();
     }
+
     // スプライト更新
-    pause_->Update();
+    if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
+    {
+    pauseC_->Update();
+    } else
+    {
+        pauseM_->Update();
+    }
+
     playerHpUI_->Update();
     playerHPEmpty_->Update();
     playerHPGauge_->Update();
@@ -622,8 +665,6 @@ void GamePlayScene::Draw2D()
             player_->Draw2D();
     }
 
-    pause_->Draw(); // ポーズ
-
     playerHpUI_->Draw();
     playerHPEmpty_->Draw();
     playerHPGauge_->Draw();
@@ -659,13 +700,34 @@ void GamePlayScene::Draw2D()
         }
     }
 
+    if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
+    {
+        pauseC_->Draw();
+    }
+    else {
+        pauseM_->Draw();
+    }
+
     if (isPause_) {
         pauseBg_->Draw(); // ポーズ背景
-        resume_->Draw(); // ポーズ//続ける
-        retry_->Draw(); // リトライ
-        select_->Draw(); // セレクトへ
-        BulletRuleUI_->Draw();
-        spacialRuleUI_->Draw();
+
+        //操作UI
+        if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
+        {
+            resumeC_->Draw(); // ポーズ//続ける
+            retryC_->Draw(); // リトライ
+            selectC_->Draw(); // セレクトへ
+            BulletRuleC_->Draw();
+            spacialRuleC_->Draw();
+        } else
+        {
+            resumeM_->Draw(); // ポーズ//続ける
+            retryM_->Draw(); // リトライ
+            selectM_->Draw(); // セレクトへ
+            //操作説明
+            BulletRuleM_->Draw();
+            spacialRuleM_->Draw();
+        }
     }
 }
 
@@ -885,39 +947,39 @@ void GamePlayScene::PauseSelect()
                 retryEasing.sizeEasedT = 0.0f;
             }
             break;
-        case Pause::kSelect:
-            if (Input::GetInstance()->TriggerKey(DIK_SPACE) || Input::GetInstance()->IsPadButtonPressed(0, 1)) {
-                // ゲームプレイシーン(次シーン)を生成
-                SoundManager::GetInstance()->Stop("stage.mp3");
-                SoundManager::GetInstance()->Stop("boss.mp3");
-                SceneManager::GetInstance()->ChangeScene("GAMESELECT");
-            }
-            if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP) || Input::GetInstance()->GetPadLeftAxisY(0) < -0.5f) {
-                currentPause_ = Pause::kRetry;
+    case Pause::kSelect:
+        if (Input::GetInstance()->TriggerKey(DIK_SPACE) || Input::GetInstance()->IsPadButtonPressed(0, 1)) {
+            // ゲームプレイシーン(次シーン)を生成
+            SoundManager::GetInstance()->Stop("stage.mp3");
+            SoundManager::GetInstance()->Stop("boss.mp3");
+            SceneManager::GetInstance()->ChangeScene("GAMESELECT");
+        }
+        if (Input::GetInstance()->TriggerKey(DIK_W) || Input::GetInstance()->TriggerKey(DIK_UP) || Input::GetInstance()->GetPadLeftAxisY(0) < -0.5f) {
+            currentPause_ = Pause::kRetry;
 
-                selectEasing.startSizeV2 = selectEasing.size;
-                selectEasing.endSizeV2 = { 300.0f, 300.0f };
-                selectEasing.sizeTime = 0.0f;
-                selectEasing.sizeEasedT = 0.0f;
+            selectEasing.startSizeV2 = selectEasing.size;
+            selectEasing.endSizeV2 = { 300.0f, 300.0f };
+            selectEasing.sizeTime = 0.0f;
+            selectEasing.sizeEasedT = 0.0f;
 
-                retryEasing.startSizeV2 = retryEasing.size;
-                retryEasing.endSizeV2 = { 400.0f, 400.0f };
-                retryEasing.sizeTime = 0.0f;
-                retryEasing.sizeEasedT = 0.0f;
-            }
-            if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN) || Input::GetInstance()->GetPadLeftAxisY(0) > 0.5f) {
-                currentPause_ = Pause::kResume;
+            retryEasing.startSizeV2 = retryEasing.size;
+            retryEasing.endSizeV2 = { 400.0f, 400.0f };
+            retryEasing.sizeTime = 0.0f;
+            retryEasing.sizeEasedT = 0.0f;
+        }
+        if (Input::GetInstance()->TriggerKey(DIK_S) || Input::GetInstance()->TriggerKey(DIK_DOWN) || Input::GetInstance()->GetPadLeftAxisY(0) > 0.5f) {
+            currentPause_ = Pause::kResume;
 
-                selectEasing.startSizeV2 = selectEasing.size;
-                selectEasing.endSizeV2 = { 300.0f, 300.0f };
-                selectEasing.sizeTime = 0.0f;
-                selectEasing.sizeEasedT = 0.0f;
+            selectEasing.startSizeV2 = selectEasing.size;
+            selectEasing.endSizeV2 = { 300.0f, 300.0f };
+            selectEasing.sizeTime = 0.0f;
+            selectEasing.sizeEasedT = 0.0f;
 
-                resumeEasing.startSizeV2 = resumeEasing.size;
-                resumeEasing.endSizeV2 = { 400.0f, 400.0f };
-                resumeEasing.sizeTime = 0.0f;
-                resumeEasing.sizeEasedT = 0.0f;
-            }
+            resumeEasing.startSizeV2 = resumeEasing.size;
+            resumeEasing.endSizeV2 = { 400.0f, 400.0f };
+            resumeEasing.sizeTime = 0.0f;
+            resumeEasing.sizeEasedT = 0.0f;
+        }
         }
 
         break;
@@ -965,17 +1027,33 @@ void GamePlayScene::PauseSelect()
         easing->SizeV2(selectEasing, 0.05f, 1);
 
     // トランスフォーム更新
-    resume_->SetSize(resumeEasing.size);
-    retry_->SetSize(retryEasing.size);
-    select_->SetSize(selectEasing.size);
+    if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
+    {
+        resumeC_->SetSize(resumeEasing.size);
+        retryC_->SetSize(retryEasing.size);
+        selectC_->SetSize(selectEasing.size);
 
-    // スプライト更新
-    resume_->Update();
-    retry_->Update();
-    select_->Update();
+        resumeC_->Update();
+        retryC_->Update();
+        selectC_->Update();
+
+        BulletRuleC_->Update();
+        spacialRuleC_->Update();
+    } else
+    {
+        resumeM_->SetSize(resumeEasing.size);
+        retryM_->SetSize(retryEasing.size);
+        selectM_->SetSize(selectEasing.size);
+
+        resumeM_->Update();
+        retryM_->Update();
+        selectM_->Update();
+
+        BulletRuleM_->Update();
+        spacialRuleM_->Update();
+    }
     pauseBg_->Update();
-    BulletRuleUI_->Update();
-    spacialRuleUI_->Update();
+
 }
 
 void GamePlayScene::StageClear()

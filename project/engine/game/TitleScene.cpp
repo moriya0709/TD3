@@ -74,9 +74,13 @@ void TitleScene::Initialize() {
 		index++;
 	}
 
-	space_ = std::make_unique<Sprite>();
-	space_->Initialize("Resource/space.png"); // 進める
-	space_->SetPosition({ 950.0f, 900.0f });
+	nextM_ = std::make_unique<Sprite>();
+	nextM_->Initialize("Resource/nextM.png"); // 進める
+	nextM_->SetPosition({ 950.0f, 900.0f });
+
+	nextC_ = std::make_unique<Sprite>();
+	nextC_->Initialize("Resource/nextC.png"); // 進める
+	nextC_->SetPosition({ 950.0f, 900.0f });
 
 	// 3Dオブジェクト
 	for (int i = 0; i < 2; i++) {
@@ -274,12 +278,15 @@ void TitleScene::Update() {
 
 	spaceTimer_ += 0.05f;
 	float sinTimer = std::sin(spaceTimer_);//-1.0f～1.0fの範囲
-	space_->SetColor(Vector4(1.0f, 1.0f, 1.0f, ((sinTimer + 1.0f) / 2.0f)));//透明演出
-
-	// *スプライト* //
-	// sprite更新
-	space_->Update();
-
+	if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
+	{
+		nextC_->SetColor(Vector4(1.0f, 1.0f, 1.0f, ((sinTimer + 1.0f) / 2.0f)));//透明演出
+		nextC_->Update();
+	}
+	else {
+		nextM_->SetColor(Vector4(1.0f, 1.0f, 1.0f, ((sinTimer + 1.0f) / 2.0f)));//透明演出
+		nextM_->Update();
+	}
 
 #pragma region ライティング
 	// *ライティング* //
@@ -637,9 +644,13 @@ void TitleScene::Draw2D() {
 		//各スプライトが持つ
 		part.sprite->Draw();
 	}
-
-	space_->Draw();
-
+	if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
+	{
+		nextC_->Draw();
+	}
+	else {
+		nextM_->Draw();
+	}
 }
 void TitleScene::Draw3D() {
 	// 3Dオブジェクトの描画準備

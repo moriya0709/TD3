@@ -77,6 +77,16 @@ void Input::Initialize(WindowAPI* windowAPI) {
 			return DIENUM_CONTINUE;
 		},
 		this, DIEDFL_ATTACHEDONLY);
+
+	//gamepadsの中に要素があればコントローラー接続と判断
+	if (!gamepads.empty())
+	{
+		currentDevice_ = InputDevice::Gamepad;
+	} else
+	{
+		currentDevice_ = InputDevice::Keyboard;
+	}
+
 }
 
 // 更新
@@ -120,6 +130,38 @@ void Input::Update() {
 			gamepads[i]->Acquire();
 		}
 	}
+
+	//キーボードの何かしら押されたかチェック
+	for (int i = 0; i < 256; i++)
+	{
+		if (key[i])//どこかのキーが押されていたら
+		{
+			currentDevice_ = InputDevice::Keyboard;
+			break;//キーボードに確定したのでループを抜ける
+		}
+	}
+
+	//コントローラーの何かしらのボタンまたはスティックが反応したらチェック
+	for(size_t i = 0; i < gamepads.size(); i++)
+	{//ボタンチェック
+		for (int b = 0; b < 32; b++)
+		{
+			if (padStates[i].rgbButtons[b])
+			{
+				currentDevice_ = InputDevice::Gamepad;
+				break;
+			}
+		}
+		//スティックチェック
+		if (GetPadLeftAxisX(static_cast<int>(i)) != 0.0f ||
+			GetPadLeftAxisY(static_cast<int>(i)) != 0.0f ||
+			GetPadRightAxisX(static_cast<int>(i)) != 0.0f ||
+			GetPadRightAxisY(static_cast<int>(i)) != 0.0f)
+		{
+			currentDevice_ = InputDevice::Gamepad;
+		}
+	}
+
 }
 
 Input* Input::GetInstance() {
