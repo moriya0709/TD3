@@ -9,6 +9,12 @@
 #include "WindowAPI.h"
 #include "Calc.h"
 
+//操作する機種の種類を表す
+enum class InputDevice
+{
+	Keyboard,
+	Gamepad
+};
 
 class Input {
 public:
@@ -45,6 +51,9 @@ static_cast<float>(mouseScreenY)
 	float GetPadRightAxisX(int padIndex);
 	float GetPadRightAxisY(int padIndex);
 
+	//現在の操作機種を取得する関数
+	InputDevice GetCurrentDevice() const { return currentDevice_; }
+
 private:
 	// DirectInputのインスタンス
 	ComPtr<IDirectInput8> directInput = nullptr;
@@ -70,6 +79,9 @@ private:
 
 	// WindowAPI
 	WindowAPI* windowAPI_ = nullptr;
+
+	//現在の操作機種を記憶する変数を追加(初期値はキーボード)
+	InputDevice currentDevice_ = InputDevice::Keyboard;
 
 };
 

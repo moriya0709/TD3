@@ -195,7 +195,8 @@ private:
 	// カメラ
 	std::unique_ptr<Camera> camera = nullptr;
 	// スプライト
-	std::unique_ptr<Sprite> space_ = nullptr;
+	std::unique_ptr<Sprite> nextM_ = nullptr;
+	std::unique_ptr<Sprite> nextC_ = nullptr;
 
 	// 3Dオブジェクト
 	std::unique_ptr <Object> object[2]{};

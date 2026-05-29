@@ -177,17 +177,23 @@ private:
     std::unique_ptr<Player> player_ = nullptr;
     
     //スプライト
-    std::unique_ptr<Sprite> pause_ = nullptr;
+    std::unique_ptr<Sprite> pauseM_ = nullptr;
     std::unique_ptr<Sprite> pauseBg_ = nullptr;
-    std::unique_ptr<Sprite> resume_ = nullptr;
-    std::unique_ptr<Sprite> retry_ = nullptr;
-    std::unique_ptr<Sprite> select_ = nullptr;
+    std::unique_ptr<Sprite> resumeM_ = nullptr;
+    std::unique_ptr<Sprite> retryM_ = nullptr;
+    std::unique_ptr<Sprite> selectM_ = nullptr;
+    std::unique_ptr<Sprite> pauseC_ = nullptr;
+    std::unique_ptr<Sprite> resumeC_ = nullptr;
+    std::unique_ptr<Sprite> retryC_ = nullptr;
+    std::unique_ptr<Sprite> selectC_ = nullptr;
     //playerHPバー
     std::unique_ptr<Sprite> playerHpUI_ = nullptr;//hpUI部分(縁)
     std::unique_ptr<Sprite> playerHPGauge_ = nullptr; // ゲージ部分
     std::unique_ptr<Sprite> playerHPEmpty_ = nullptr; // HPバー空部分
-    std::unique_ptr<Sprite> BulletRuleUI_ = nullptr; // bulletルール
-    std::unique_ptr<Sprite> spacialRuleUI_ = nullptr; // spacialルール
+    std::unique_ptr<Sprite> BulletRuleM_ = nullptr; // マウスbulletルール
+    std::unique_ptr<Sprite> BulletRuleC_ = nullptr; // コントローラーbulletルール
+    std::unique_ptr<Sprite> spacialRuleM_ = nullptr; // マウスspacialルール
+    std::unique_ptr<Sprite> spacialRuleC_ = nullptr; // コントローラーspacialルール
 	int maxHP_ = 0;                                    // HPの最大値
     float side = 0.0f;//HPの端
 

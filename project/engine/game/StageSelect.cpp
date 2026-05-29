@@ -42,13 +42,21 @@ void StageSelect::Initialize() {
 		radarChartEasing[i].numberEasedT = 0.0f;
 	}
 
-	return_ = std::make_unique<Sprite>();
-	return_->Initialize("Resource/return.png"); // Wで戻る
-	return_->SetPosition({950.0f, 100.0f});
+	returnM_ = std::make_unique<Sprite>();
+	returnM_->Initialize("Resource/returnM.png"); // Wで戻る
+	returnM_->SetPosition({950.0f, 100.0f});
 
-	space_ = std::make_unique<Sprite>();
-	space_->Initialize("Resource/space.png"); // space進める
-	space_->SetPosition({950.0f, 1000.0f});
+	returnC_ = std::make_unique<Sprite>();
+	returnC_->Initialize("Resource/returnC.png"); // Wで戻る
+	returnC_->SetPosition({ 950.0f, 100.0f });
+
+	nextM_ = std::make_unique<Sprite>();
+	nextM_->Initialize("Resource/nextM.png"); // space進める
+	nextM_->SetPosition({950.0f, 1000.0f});
+
+	nextC_ = std::make_unique<Sprite>();
+	nextC_->Initialize("Resource/nextC.png"); // space進める
+	nextC_->SetPosition({ 950.0f, 1000.0f });
 
 	// 本型UI
 	std::vector<std::string> textures = {
@@ -267,8 +275,16 @@ void StageSelect::Update() {
 	TransitionUpdate();
 	radarChart->Update();
 
-	return_->Update();
-	space_->Update();
+	if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
+	{
+		returnC_->Update();
+		nextC_->Update();
+	}
+	else
+	{
+		returnM_->Update();
+		nextM_->Update();
+	}
 
 	// レーダーチャート
 
@@ -298,8 +314,15 @@ void StageSelect::Draw2D() {
 	// 2Dオブジェクトの描画準備
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
-	return_->Draw();
-	space_->Draw();
+	if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
+	{
+		returnC_->Draw();
+		nextC_->Draw();
+	} else
+	{
+		returnM_->Draw();
+		nextM_->Draw();
+	}
 
 	// if (switchCooltime <= 0.0f) {
 	//	for (int i = 0; i < kMaxParameter; i++) {
