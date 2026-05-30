@@ -122,7 +122,10 @@ void StageSelect::Update() {
 		}
 	} else {
 		if (switchCooltime <= 0.0f) { // マシーンセレクトからステージセレクトへ戻す
-			if (book->GetCurrentPageIndex() > 5) {
+
+			//現在のスタイルから、本来戻るべきページ番号を逆算する（0なら2ページ、1なら3ページ
+			int targetPage = static_cast<int>(currentStyle) + 2;
+			if (book->GetCurrentPageIndex() > targetPage) {
 				book->PrevPage();
 				switchCooltime = 0.3f;
 
@@ -208,8 +211,8 @@ void StageSelect::Update() {
 			}
 		}
 
-		// ENTERキーを押したら
-		if (input->TriggerKey(DIK_SPACE) || input->IsPadButtonPressed(0, 1)) { // ゲームプレイシーン(次シーン)を生成
+		// SPACEキーを押したら
+		if (input->TriggerKey(DIK_SPACE) || input->TriggerPadButton(0, 1)) { // ゲームプレイシーン(次シーン)を生成
 			if (isStageSelect) {
 				if (book->GetCurrentPageIndex() > 8) {
 					// シーン切り替え演出

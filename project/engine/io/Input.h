@@ -45,7 +45,8 @@ static_cast<float>(mouseScreenY)
 	bool IsMouseButtonPressed(int button);
 
 	// ゲームパッド
-	bool IsPadButtonPressed(int padIndex, int button);
+	bool IsPadButtonPressed(int padIndex, int button);//プッシュ
+	bool TriggerPadButton(int padIndex, int button);//押された瞬間
 	float GetPadLeftAxisX(int padIndex);
 	float GetPadLeftAxisY(int padIndex);
 	float GetPadRightAxisX(int padIndex);
@@ -73,6 +74,7 @@ private:
 	std::vector<ComPtr<IDirectInputDevice8>> gamepads;
 	ComPtr<IDirectInputDevice8> newGamepad;
 	std::vector<DIJOYSTATE> padStates;
+	std::vector<DIJOYSTATE> padStatesPre;
 
 	// シングルトンインスタンス
 	static std::unique_ptr <Input> instance;
@@ -83,5 +85,7 @@ private:
 	//現在の操作機種を記憶する変数を追加(初期値はキーボード)
 	InputDevice currentDevice_ = InputDevice::Keyboard;
 
+	void SearchGamepads();   // コントローラーを検索する関数を独立させる
+	int reSearchTimer_ = 0;  // 再検索までのフレームを数えるタイマー
 };
 
