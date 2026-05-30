@@ -93,7 +93,7 @@ void ResultScene::Initialize()
 
 	nextC_ = std::make_unique<Sprite>();
 	nextC_->Initialize("Resource/nextC.png"); // 進める
-	nextC_->SetPosition({ 950.0f, 900.0f });
+	nextC_->SetPosition({ 975.0f, 900.0f });
 
 	// 3Dオブジェクト
 	for (int i = 0; i < 2; i++) {

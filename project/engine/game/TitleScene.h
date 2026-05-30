@@ -68,6 +68,7 @@ private:
 		std::unique_ptr<Sprite> sprite;
 		Vector2 position;//現在の座標
 		float rotation;//回転
+		Vector2 size;//サイズ
 		Vector2 velocity;//移動速度
 		float timer;//動き始めの時間
 		TitleMove id;//ロゴパーツ
