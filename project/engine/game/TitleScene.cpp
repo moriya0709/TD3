@@ -28,23 +28,23 @@ void TitleScene::Initialize() {
 		std::string filePath;
 		Vector2 pos;
 		float rot;
-		//Vector2 anchor;//文字がある場所の比率
+		Vector2 size;//文字がある場所の比率
 	};
 
 	//初期化データ配列
 	std::vector<TitleData> initDatas = {
-	{ "Resource/title/titleF.png",           { 950.0f, 300.0f },0.0f,},  // フ
-	{ "Resource/title/titleR.png",           { 950.0f, 300.0f },0.0f, },  // ル
-	{ "Resource/title/title-.png",           { 950.0f, 300.0f },0.0f, },  // ー
-	{ "Resource/title/titleT.png",           { 950.0f, 300.0f },0.0f, },  // ツ
-	{ "Resource/title/titleKamiHikouki.png", { 950.0f, 300.0f },0.0f, },  // 紙飛行機
-	{ "Resource/title/titleCloud.png",       { 950.0f, 300.0f },0.0f, },  // タの雲
-	{ "Resource/title/titleB.png",           { 950.0f, 300.0f },0.0f, },  // バスタズ
-	{ "Resource/title/titleEgg.png",         { 950.0f, 300.0f },0.0f, },  // バの濁点
-	{ "Resource/title/titleHouki.png",       { 950.0f, 300.0f },0.0f, },  // ー
-	{ "Resource/title/titleKusege.png",      { 950.0f, 300.0f },0.0f, },  // ズの頭
-	{ "Resource/title/titleFoot.png",        { 950.0f, 300.0f },0.0f, },  // ズの足
-	{ "Resource/title/titleNasu.png",        { 950.0f, 300.0f },0.0f, }   // ズの濁点
+	{ "Resource/title/titleF.png",           { 950.0f, 300.0f },0.0f,{1720.0f,966.0f} },  // フ
+	{ "Resource/title/titleR.png",           { 950.0f, 300.0f },0.0f,{1720.0f,966.0f} },  // ル
+	{ "Resource/title/title-.png",           { 950.0f, 300.0f },0.0f,{1720.0f,966.0f} },  // ー
+	{ "Resource/title/titleT.png",           { 950.0f, 300.0f },0.0f,{1720.0f,966.0f} },  // ツ
+	{ "Resource/title/titleKamiHikouki.png", { 950.0f, 300.0f },0.0f,{1720.0f,966.0f} },  // 紙飛行機
+	{ "Resource/title/titleCloud.png",       { 950.0f, 300.0f },0.0f,{1720.0f,966.0f} },  // タの雲
+	{ "Resource/title/titleB.png",           { 950.0f, 300.0f },0.0f,{1720.0f,966.0f} },  // バスタズ
+	{ "Resource/title/titleEgg.png",         { 950.0f, 300.0f },0.0f,{1720.0f,966.0f} },  // バの濁点
+	{ "Resource/title/titleHouki.png",       { 950.0f, 300.0f },0.0f,{1720.0f,966.0f} },  // ー
+	{ "Resource/title/titleKusege.png",      { 950.0f, 300.0f },0.0f,{1720.0f,966.0f} },  // ズの頭
+	{ "Resource/title/titleFoot.png",        { 950.0f, 300.0f },0.0f,{1720.0f,966.0f} },  // ズの足
+	{ "Resource/title/titleNasu.png",        { 950.0f, 300.0f },0.0f,{1720.0f,966.0f} }   // ズの濁点
 	};
 
 	//リストのクリアと確保
@@ -60,11 +60,12 @@ void TitleScene::Initialize() {
 		part.sprite->Initialize(data.filePath);
 		part.sprite->SetPosition(data.pos);
 		part.sprite->SetRotation(data.rot);
-		//part.sprite->SetAnchorPoint(data.anchor);
+		part.sprite->SetSize(data.size);
 
 		//独自のモーション用変数
 		part.position = data.pos;
 		part.rotation = data.rot;
+		part.size = data.size;
 		part.velocity = { 0.0f,0.0f };
 		part.timer = 0.0f;
 		part.id = static_cast<TitleMove>(index);//番号でtitleのパーツを記憶
@@ -175,26 +176,55 @@ void TitleScene::Update() {
 		switch (part.id)
 		{
 		case titleF://フ
+			if (part.timer >= 0.0f && part.timer < 4.0f)
+			{
+
+				float rate = part.timer / 4.0f;
+				//小さくなる値
+				float shrink = std::sin(rate * 3.141592f);
+
+				//縮んで元の大きさに戻る
+				part.size.x = 1720.0f * (1.0f - (shrink * 0.2f));
+				part.size.y = 966.0f * (1.0f - (shrink * 0.2f));
+			} else
+			{
+				part.size = { 1720.0f,966.0f };
+			}
 			break;
 		case titleR://ル
+			if (part.timer >= 1.0f && part.timer < 3.0f)
+			{
 
+				float rate = (part.timer - 1.0f) / 2.0f;
+				//小さくなる値
+				float shrink = std::sin(rate * 3.141592f);
+
+				//縮んで元の大きさに戻る
+				part.size.x = 1720.0f * (1.0f + (shrink * 0.2f));
+				part.size.y = 966.0f;
+			} else
+			{
+				part.size = { 1720.0f,966.0f };
+			}
 			break;
 
 		case titleI://フルーツのー
 			
-			//0秒から6秒で小回転する
-			if (part.timer >= 0.0f && part.timer < 6.0f) {
+			//4秒から8秒で小回転する
+			if (part.timer >= 3.0f && part.timer < 6.0f) {
 
-				float rate = part.timer / 6.0f; // 0.0 ～ 1.0 の進捗率
+				float maxLimit = 0.25f;
 
-				// 6秒かけて1往復半
-				float swing = std::sin(rate * 3.141592f * 3.0f);
+				float rate = (part.timer - 3.0f) / 3.0f; // 4.0 の進捗率
 
 				// 4.0fという数字を処理側に固定しておくことで、ちょうど2往復して綺麗に正面に
 				float envelope = std::sin(rate * 3.141592f);
 
+				// 6秒かけて1往復半
+				float swing = std::sin(part.timer * 3.0f);
+
 				// スピードを落とし滑らかに着地
-				part.rotation = swing * envelope * 0.35f;
+				part.rotation = swing * envelope * maxLimit;
 			}
 			else {
 				part.rotation = 0.0f;
@@ -203,36 +233,221 @@ void TitleScene::Update() {
 			break;
 
 		case titleT://ツ
+
+			if (part.timer >= 5.0f && part.timer < 8.0f)
+			{
+
+				float rate = (part.timer - 5.0f) / 3.0f;
+				//小さくなる値
+				float shrink = std::sin(rate * 3.141592f);
+
+				part.size.x = 1720.0f;
+				//縮んで元の大きさに戻る
+				part.size.y = 966.0f * (1.0f - (shrink * 0.2f));
+			}
+			else
+			{
+				part.size = { 1720.0f,966.0f };
+			}
+
 			break;
 
 		case titleKami://紙飛行機
 			
+			if (part.timer >= 7.0f && part.timer < 9.0f)
+			{
+				part.position.x -= 75.0f;
+				part.position.y -= 50.0f;
+			}
+			else if (part.timer >= 9.0f && part.timer < 10.0f)
+			{
+				float rate = (part.timer - 9.0f) / 1.0f;
+
+				part.position.x = 2100.0f + (950.0f - 2100.0f) * rate;
+				part.position.y = 500.0f + (300.0f - 500.0f) * rate;
+			}
+			else
+			{
+				part.position = { 950.0f,300.0f };
+			}
+
+
 			break;
 		case titleCloud://タの雲部分
+
+			if (part.timer >= 0.0f && part.timer < 3.0f)
+			{
+				float rate = part.timer / 3.0f;
+				//小さくなる値
+				float shrink = std::sin(rate * 3.141592f);
+
+				//縮んで元の大きさに戻る
+				part.size.x = 1720.0f * (1.0f - (shrink * 0.03f));
+				part.size.y = 966.0f * (1.0f - (shrink * 0.03f));
+			}
+			else if (part.timer >= 6.0f && part.timer < 9.0f)
+			{
+				float rate = (part.timer - 6.0f) / 3.0f;
+				//小さくなる値
+				float shrink = std::sin(rate * 3.141592f);
+
+				//縮んで元の大きさに戻る
+				part.size.x = 1720.0f * (1.0f - (shrink * 0.02f));
+				part.size.y = 966.0f * (1.0f - (shrink * 0.02f));
+			}
+			else
+			{
+				part.size = { 1720.0f,966.0f };
+			}
 
 			break;
 
 		case titleB://バスタズ
-
 			break;
-
 		case titleEgg://バの濁点
+
+			//0秒から2秒で小回転する
+			if (part.timer >= 0.0f && part.timer < 2.0f) {
+
+				float maxLimit = 0.25f;
+
+				float rate = part.timer / 2.0f; 
+
+				float envelope = std::sin(rate * 3.141592f);
+
+				float swing = std::sin(part.timer * 2.0f);
+
+				// スピードを落とし滑らかに着地
+				part.rotation = swing * envelope * maxLimit;
+			}
+			else if (part.timer >= 5.0f && part.timer < 7.0f) {
+
+				float maxLimit = 0.25f;
+
+				float rate = (part.timer-5.0f) / 2.0f;
+
+				float envelope = std::sin(rate * 3.141592f);
+
+				float swing = std::sin(part.timer * 2.0f);
+
+				// スピードを落とし滑らかに着地
+				part.rotation = swing * envelope * maxLimit;
+			}
+			else {
+				part.rotation = 0.0f;
+			}
 
 			break;
 
 		case titleHouki://バスターズのー
 
+			if (part.timer >= 6.0f && part.timer < 9.0f)
+			{
+				float rate = (part.timer - 6.0f) / 3.0f;
+				//小さくなる値
+				float shrink = std::sin(rate * 3.141592f);
+
+				//縮んで元の大きさに戻る
+				part.size.x = 1720.0f * (1.0f + (shrink * 0.2f));
+				part.size.y = 966.0f * (1.0f + (shrink * 0.2f));
+			} else
+			{
+				part.size = { 1720.0f,966.0f };
+			}
+
 			break;
 
 		case titleKusege://ズの頭
+
+			//1秒から4秒で小回転する
+			if (part.timer >= 1.0f && part.timer < 3.0f) {
+
+				float maxLimit = 0.01f;
+
+				float rate = (part.timer - 1.0f) / 0.3f;
+
+				float envelope = std::sin(rate * 3.141592f);
+
+				float swing = std::sin(part.timer * 2.0f);
+
+				// スピードを落とし滑らかに着地
+				part.rotation = swing * envelope * maxLimit;
+			} else if (part.timer >= 8.0f && part.timer < 10.0f) {
+
+				float maxLimit = 0.01f;
+
+				float rate = (part.timer - 8.0f) / 0.2f;
+
+				float envelope = std::sin(rate * 3.141592f);
+
+				float swing = std::sin(part.timer * 2.0f);
+
+				// スピードを落とし滑らかに着地
+				part.rotation = swing * envelope * maxLimit;
+			}
+			else {
+				part.rotation = 0.0f;
+			}
 
 			break;
 
 		case titleFoot://ズの足
 
+			if (part.timer >= 1.0f && part.timer < 4.0f)
+			{
+				float rate = (part.timer-1.0f) / 3.0f;
+
+				float swing = std::sin(rate * 3.141592f * 10.0f) * 10.0f;
+
+				part.position.y = 300.0f - swing * 1.5;
+			}
+			else if (part.timer >= 7.0f && part.timer < 10.0f)
+			{
+				float rate = (part.timer - 7.0f) / 3.0f;
+
+				float swing = std::sin(rate * 3.141592f * 10.0f) * 10.0f;
+
+				part.position.y = 300.0f - swing * 1.5f;
+			}
+			else
+			{
+				part.position = { 950.0f,300.0f };
+			}
+
 			break;
 
 		case titleNasu://ズの濁点
+
+			//5秒から7秒で小回転する
+			if (part.timer >= 2.0f && part.timer < 4.0f) {
+
+				float maxLimit = 0.03f;
+
+				float rate = (part.timer - 2.0f) / 2.0f;
+
+				float envelope = std::sin(rate * 3.141592f);
+
+				float swing = std::sin(part.timer * 2.0f);
+
+				// スピードを落とし滑らかに着地
+				part.rotation = swing * envelope * maxLimit;
+			} 
+			else if (part.timer >= 8.0f && part.timer < 10.0f) {
+
+					float maxLimit = 0.03f;
+
+					float rate = (part.timer - 8.0f) / 2.0f;
+
+					float envelope = std::sin(rate * 3.141592f);
+
+					float swing = std::sin(part.timer * 2.0f);
+
+					// スピードを落とし滑らかに着地
+					part.rotation = swing * envelope * maxLimit;
+				}
+			else {
+				part.rotation = 0.0f;
+			}
 
 			break;
 		}
@@ -241,6 +456,7 @@ void TitleScene::Update() {
 		//計算した座標を全てのスプライトに反映
 		part.sprite->SetPosition(part.position);
 		part.sprite->SetRotation(part.rotation);
+		part.sprite->SetSize(part.size);
 		part.sprite->Update();
 	}
 
