@@ -45,38 +45,7 @@ void Input::Initialize(WindowAPI* windowAPI) {
 	// 取得開始
 	mouse->Acquire();
 
-	// --- ゲームパッドの列挙 ---
-// 接続されているジョイスティック（パッド）を探して、見つかるたびに EnumJoysticksCallback を呼ぶ
-	result = directInput->EnumDevices(
-		DI8DEVCLASS_GAMECTRL,
-		// --- Initialize関数内のEnumDevicesの中 ---
-		[](const DIDEVICEINSTANCE* pdidInstance, VOID* pContext) -> BOOL {
-			auto self = static_cast<Input*>(pContext);
-			ComPtr<IDirectInputDevice8> newPad;
-
-			if (FAILED(self->directInput->CreateDevice(pdidInstance->guidInstance, &newPad, nullptr))) {
-				return DIENUM_CONTINUE;
-			}
-
-			newPad->SetDataFormat(&c_dfDIJoystick);
-			newPad->SetCooperativeLevel(self->windowAPI_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
-
-			// ★追加：軸の範囲を設定する
-			DIPROPRANGE diprg;
-			diprg.diph.dwSize = sizeof(DIPROPRANGE);
-			diprg.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-			diprg.diph.dwHow = DIPH_DEVICE;
-			diprg.diph.dwObj = 0;
-			diprg.lMin = -32768; // 最小値
-			diprg.lMax = 32768;  // 最大値
-			newPad->SetProperty(DIPROP_RANGE, &diprg.diph);
-
-			self->gamepads.push_back(newPad);
-			self->padStates.emplace_back();
-
-			return DIENUM_CONTINUE;
-		},
-		this, DIEDFL_ATTACHEDONLY);
+	SearchGamepads();
 
 	//gamepadsの中に要素があればコントローラー接続と判断
 	if (!gamepads.empty())
@@ -118,6 +87,19 @@ void Input::Update() {
 		mouse->GetDeviceState(sizeof(DIMOUSESTATE), &mouseState);
 	}
 
+	if (gamepads.empty()) {
+		reSearchTimer_++;
+		if (reSearchTimer_ >= 60) { // 60フレーム（約1秒）に1回実行
+			reSearchTimer_ = 0;
+			SearchGamepads(); // 再検索！
+
+			// もしこのタイミングで見つかったら、デバイス状態をゲームパッドにする
+			if (!gamepads.empty()) {
+				currentDevice_ = InputDevice::Gamepad;
+			}
+		}
+	}
+	padStatesPre = padStates;
 	// Update関数内のパッドループを以下に丸ごと入れ替え
 	for (size_t i = 0; i < gamepads.size(); i++) {
 		gamepads[i]->Poll();
@@ -139,6 +121,14 @@ void Input::Update() {
 			currentDevice_ = InputDevice::Keyboard;
 			break;//キーボードに確定したのでループを抜ける
 		}
+	}
+
+	//マウスの何かしら押されたかチェック
+	if (mouseState.lX != 0 || mouseState.lY != 0 || mouseState.lZ != 0 ||
+		mouseState.rgbButtons[0] || mouseState.rgbButtons[1] ||
+		mouseState.rgbButtons[2] || mouseState.rgbButtons[3])
+	{
+		currentDevice_ = InputDevice::Keyboard; // マウスを触った場合もキーボードUIにする
 	}
 
 	//コントローラーの何かしらのボタンまたはスティックが反応したらチェック
@@ -164,6 +154,44 @@ void Input::Update() {
 
 }
 
+void Input::SearchGamepads() {
+	// 念のためリストを一度クリアする
+	gamepads.clear();
+	padStates.clear();
+
+	// 接続されているパッドを探す（Initialize内にあった処理の引っ越し）
+	HRESULT result = directInput->EnumDevices(
+		DI8DEVCLASS_GAMECTRL,
+		[](const DIDEVICEINSTANCE* pdidInstance, VOID* pContext) -> BOOL {
+			auto self = static_cast<Input*>(pContext);
+			ComPtr<IDirectInputDevice8> newPad;
+
+			if (FAILED(self->directInput->CreateDevice(pdidInstance->guidInstance, &newPad, nullptr))) {
+				return DIENUM_CONTINUE;
+			}
+
+			newPad->SetDataFormat(&c_dfDIJoystick);
+			newPad->SetCooperativeLevel(self->windowAPI_->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
+
+			DIPROPRANGE diprg;
+			diprg.diph.dwSize = sizeof(DIPROPRANGE);
+			diprg.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+			diprg.diph.dwHow = DIPH_DEVICE;
+			diprg.diph.dwObj = 0;
+			diprg.lMin = -32768; // 最小値
+			diprg.lMax = 32768;  // 最大値
+			newPad->SetProperty(DIPROP_RANGE, &diprg.diph);
+
+			self->gamepads.push_back(newPad);
+			self->padStates.emplace_back();
+			self->padStatesPre.emplace_back();
+
+			return DIENUM_CONTINUE;
+		},
+		this, DIEDFL_ATTACHEDONLY);
+}
+
+
 Input* Input::GetInstance() {
 	if (instance == nullptr) {
 		instance = std::make_unique <Input>();
@@ -185,6 +213,18 @@ bool Input::PushKey(BYTE keyNumBer) {
 bool Input::TriggerKey(BYTE keyNumber) {
 	// 指定キーが押されていて、前回は押されていなければtrueを返す
 	if (key[keyNumber] && !keyPre[keyNumber]) {
+		return true;
+	}
+
+	return false;
+}
+// ゲームパッドのボタンが押された瞬間かどうか
+bool Input::TriggerPadButton(int padIndex, int button) {
+	// 指定されたインデックスが範囲外なら拒否
+	if (padIndex >= padStates.size()) return false;
+
+	// 「現在のフレームで押されていて」かつ「前のフレームでは押されていなかった」なら true
+	if (padStates[padIndex].rgbButtons[button] && !padStatesPre[padIndex].rgbButtons[button]) {
 		return true;
 	}
 

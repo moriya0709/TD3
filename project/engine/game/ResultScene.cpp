@@ -89,7 +89,7 @@ void ResultScene::Initialize()
 
 	nextM_ = std::make_unique<Sprite>();
 	nextM_->Initialize("Resource/nextM.png"); // 進める
-	nextM_->SetPosition({ 950.0f, 900.0f });
+	nextM_->SetPosition({ 975.0f, 900.0f });
 
 	nextC_ = std::make_unique<Sprite>();
 	nextC_->Initialize("Resource/nextC.png"); // 進める
@@ -122,7 +122,7 @@ void ResultScene::Update()
 	//スペースキーでお急ぎ用スコア表示
 	if (isScoreStartTime_ && !isCanPress_)
 	{
-		if (input->TriggerKey(DIK_SPACE)||input->IsPadButtonPressed(0, 1))
+		if (input->TriggerKey(DIK_SPACE)||input->TriggerPadButton(0, 1))
 		{
 			currentDigitIndex_ = 5;//スコア全部強制確定
 			for (int i = 0; i < 5; ++i)
@@ -168,7 +168,7 @@ void ResultScene::Update()
 	else if (isCanPress_)
 	{
 		//SPACEキーで
-		if (input->TriggerKey(DIK_SPACE)||input->IsPadButtonPressed(0, 1)) {
+		if (input->TriggerKey(DIK_SPACE)||input->TriggerPadButton(0, 1)) {
 			// ゲームプレイシーン(次シーン)を生成
 			SoundManager::GetInstance()->Stop("result.mp3");
 			SceneManager::GetInstance()->ChangeScene("GAMESELECT");
