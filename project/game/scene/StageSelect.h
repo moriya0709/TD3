@@ -217,4 +217,7 @@ private:
 	// 背景
 	std::unique_ptr <Object> background = nullptr;
 
+	// 操作Ui
+	std::unique_ptr <Sprite> operation[2] = {};
+
 };

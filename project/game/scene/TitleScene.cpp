@@ -399,7 +399,7 @@ void TitleScene::Update() {
 
 				float swing = std::sin(rate * 3.141592f * 10.0f) * 10.0f;
 
-				part.position.y = 300.0f - swing * 1.5;
+				part.position.y = 300.0f - swing * 1.5f;
 			}
 			else if (part.timer >= 7.0f && part.timer < 10.0f)
 			{

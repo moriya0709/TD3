@@ -324,6 +324,11 @@ void GamePlayScene::Initialize()
     nameEasing_.sizeTime = 0.0f;
     nameEasing_.sizeEasedT = 0.0f;
 
+    // 操作説明Ui
+	description = std::make_unique<Sprite>();
+	description->Initialize("Resource/UI/description.png");
+	description->SetPosition({ 960.0f, 540.0f });
+
     // イージング
     easing = std::make_unique<Easing>();
     easing->Initialize();
@@ -625,6 +630,7 @@ void GamePlayScene::Update()
     playerHpUI_->Update();
     playerHPEmpty_->Update();
     playerHPGauge_->Update();
+	description->Update();
     LithingEffect();
     UpdateImGui();
 
@@ -668,6 +674,7 @@ void GamePlayScene::Draw2D()
     playerHpUI_->Draw();
     playerHPEmpty_->Draw();
     playerHPGauge_->Draw();
+	description->Draw();
 
     // ボス登場演出
     if (isWarning_) {
@@ -752,7 +759,7 @@ void GamePlayScene::Draw3D()
         }
     }
 
-    cameraController_->EditorDraw();
+    //cameraController_->EditorDraw();
 
     // アニメーションモデル描画
     ObjectCommon::GetInstance()->SetSkinningCommonDrawSetting();
