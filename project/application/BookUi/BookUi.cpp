@@ -12,15 +12,12 @@ void BookUi::Initialize(std::string textureFilePath) {
 
 	// *頂点データ* //
 
-	// 頂点データは4つでOK
 	vertexResource = dxCommon_->CreateBufferResource(sizeof(VertexData) * 4);
-
-	// ★ ここに追加：GPUアドレスとストライド（1頂点分のサイズ）の設定が抜けていました！
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	vertexBufferView.SizeInBytes = sizeof(VertexData) * 4;
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
-	// データを書き込む (左上→右上→右下→左下の順)
+	// データを書き込む
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
 	// 0: 左上
@@ -38,10 +35,10 @@ void BookUi::Initialize(std::string textureFilePath) {
 
 	vertexResource->Unmap(0, nullptr);
 
-	// BookUi::Initialize 内に追加するコードの例
+	// deviceの取得
 	auto device = dxCommon_->GetDevice();
 
-	// 256バイトアライメント（定数バッファのルール）に切り上げ
+	// 256バイトアライメントに切り上げ
 	UINT sizeCB_Curl = (sizeof(PageCurlData) + 0xff) & ~0xff;
 	UINT sizeCB_Trans = (sizeof(TransformMatrix) + 0xff) & ~0xff;
 
@@ -81,7 +78,7 @@ void BookUi::Initialize(std::string textureFilePath) {
 
 	// 影スプライトの初期化
 	shadowSprite = std::make_unique<Sprite>();
-	shadowSprite->Initialize("Resource/bookUi/shadowL.png"); // 左に落ちる影のテクスチャ
+	shadowSprite->Initialize("Resource/bookUi/shadow.png"); // 影のテクスチャ
 	shadowSprite->SetSize(shadowSize); // 本のサイズに合わせる
 	shadowSprite->SetAnchorPoint(Vector2(0.0f, 0.0f));
 }
@@ -96,7 +93,7 @@ void BookUi::Update() {
 		isOpenPage = false;
 	}
 
-	// === 1. めくりパラメータの更新 ===
+	// めくりパラメータの更新
 	PageCurlData* curlMap = nullptr;
 	curlDataBuffer->Map(0, nullptr, reinterpret_cast<void**>(&curlMap));
 	curlMap->curlX = currentCurlX_;
@@ -105,14 +102,14 @@ void BookUi::Update() {
 	curlMap->baseZ = baseZ_;
 	curlDataBuffer->Unmap(0, nullptr);
 
-	// === 2. 行列の更新 ===
+	// 行列の更新
 	TransformMatrix* transMap = nullptr;
 	transformMatrixBuffer->Map(0, nullptr, reinterpret_cast<void**>(&transMap));
 
 	// 座標位置
 	Matrix4x4 matPivot = MakeTranslateMatrix({ anchorPoint.x,anchorPoint.y, 0.0f });
 
-	// --- World行列の計算 ---
+	// World行列の計算
 	Matrix4x4 matScale = MakeScaleMatrix(scale_);
 	Matrix4x4 matRot = MakeRotateMatrix(rotation_);
 	Matrix4x4 matTrans = MakeTranslateMatrix(position_);
@@ -123,16 +120,12 @@ void BookUi::Update() {
 	float kClientWidth = windowAPI_->kClientWidth;
 	float kClientHeight = windowAPI_->kClientHeight;
 
-	// 正射影行列の作成（左, 上, 右, 下, 近, 遠）
+	// 正射影行列の作成
 	Matrix4x4 matProjection = MakeOrthographicMatrix(0.0f, 0.0f, kClientWidth, kClientHeight, 0.0f, 1.0f);
-
-	// World行列 と Projection行列 を掛け合わせる
-	// これで「ピクセル座標」が「DirectXの画面座標(-1~1)」に正しく変換されます
 	transMap->WorldViewProjectionMatrix = Multiply(matWorld, matProjection);
-
 	transformMatrixBuffer->Unmap(0, nullptr);
 
-	// 進行度を 0.0(待機) ～ 1.0(めくり中) ～ 0.0(めくり終わり) の山なりにする
+	// 進行度
 	float progress = std::clamp(std::abs(currentCurlX_) / PI, 0.0f, 1.0f);
 
 	// sin関数を使って、めくりの中間(progress=0.5)で影が一番濃くなるようにする
@@ -141,8 +134,7 @@ void BookUi::Update() {
 	float centerX = position_.x;
 	float centerY = position_.y;
 
-	if (flipDir == RightOpen) {
-		// --- 右ページから左ページへ進める時 ---
+	if (flipDir == RightOpen) { // ページを戻す時
 		// 影オブジェクト(左に落ちるグラデーション)を有効化
 		isShadowActive = true;
 
@@ -156,8 +148,7 @@ void BookUi::Update() {
 
 		// 影の位置を、本の中央（折り目）に合わせる
 		shadowSprite->SetPosition(Vector2(centerX - 30.0f, centerY - (scale_.y / 2.0f)));
-	} else if (flipDir == RightClose) {
-		// --- 右ページから左ページへ進める時 ---
+	} else if (flipDir == RightClose) { // ページを進める時
 		// 影オブジェクト(左に落ちるグラデーション)を有効化
 		isShadowActive = true;
 
@@ -173,7 +164,7 @@ void BookUi::Update() {
 		shadowSprite->SetPosition(Vector2(centerX - 30.0f, centerY - (scale_.y / 2.0f)));
 	}
 	else {
-		// --- めくっていない待機時は影を非表示にする ---
+		// 待機時は影を非表示
 		isShadowActive = false;
 	}
 
@@ -182,30 +173,28 @@ void BookUi::Update() {
 
 void BookUi::Draw() {
 	if (isShadowActive) {
-		// スプライト描画用のステート（PSOやRootSignature）に切り替え
+		// スプライト描画前準備
 		SpriteCommon::GetInstance()->SetCommonPipelineState();
 
 		if (shadowSprite) {
 			shadowSprite->Draw();
 		}
 
-		// ★ ここが最重要！ ★
-		// 影を描画し終わったので、GPUを「ページ描画モード（テッセレーション用）」に戻す
-		// おそらく BookUiCommon 等に PSO をセットする関数があるはずです
+		// 本型Ui描画前準備
 		BookUiCommon::GetInstance()->SetCommonPipelineState();
 	}
 
-	// 1. 定数バッファ(CBV)のセット：めくりパラメータ (b0) と 行列 (b1)
+	// 定数バッファ
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, curlDataBuffer->GetGPUVirtualAddress()); // b0
 	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformMatrixBuffer->GetGPUVirtualAddress()); // b1
 
-	// 2. 頂点データ (VBV)
+	// 頂点データ
 	dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
 
-	// 3. テクスチャ (SRV) のセット
+	// テクスチャ
 	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSrvHandleGPU(textureFilePath_));
 
-	// 4. 描画
+	// 描画
 	dxCommon_->GetCommandList()->DrawInstanced(4, 1, 0, 0);
 }
 
@@ -233,7 +222,7 @@ void BookUi::UpdatePageTurn() {
 void BookUi::StartOpenPageR() {
 	if (flipDir == None) {
 		flipDir = RightOpen;
-		isPageTurnR = true; // ★右めくり開始
+		isPageTurnR = true;
 		isPageTurnL = false;
 		shadowSize = Vector2(0.0f, scale_.y); // 影のサイズをリセット
 	}
@@ -242,7 +231,7 @@ void BookUi::StartOpenPageR() {
 void BookUi::StartClosePageR() {
 	if (flipDir == None) {
 		flipDir = RightClose;
-		isPageTurnR = true; // ★右めくり開始
+		isPageTurnR = true;
 		isPageTurnL = false;
 		shadowSize = Vector2(scale_.x / 2.0f, scale_.y); // 影のサイズをリセット
 	}
@@ -251,7 +240,7 @@ void BookUi::StartClosePageR() {
 void BookUi::StartOpenPageL() {
 	if (flipDir == None) {
 		flipDir = LeftOpen;
-		isPageTurnR = false; // ★右めくり開始
+		isPageTurnR = false;
 		isPageTurnL = true;
 	}
 }
@@ -259,7 +248,7 @@ void BookUi::StartOpenPageL() {
 void BookUi::StartClosePageL() {
 	if (flipDir == None) {
 		flipDir = LeftClose;
-		isPageTurnL = true; // ★左めくり開始
+		isPageTurnL = true;
 		isPageTurnR = false;
 	}
 }

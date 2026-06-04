@@ -1,8 +1,3 @@
-// ===================================================
-// TrailEffect.VS.hlsl
-// ===================================================
-
-// ▼▼ hlsli に書いていたものを直接ここに書く ▼▼
 struct VSInput
 {
     float3 Position : POSITION;
@@ -23,7 +18,6 @@ cbuffer cbuff0 : register(b0)
 {
     matrix viewProjection;
 };
-// ▲▲ ここまで ▲▲
 
 PSInput main(VSInput input)
 {

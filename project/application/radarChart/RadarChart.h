@@ -17,7 +17,7 @@ public:
     void Update();
     void Draw();
 
-    // 修正：実装は .cpp に任せるので宣言のみにする
+    // 実装は .cpp に任せるので宣言のみにする
     void SetValues(const std::vector<float>& newValues);
     void SetkVertices(int newKVertices);
 
@@ -36,7 +36,7 @@ private:
     std::vector<RadarVertex> vertices;
     std::vector<uint16_t> indices;
 
-    // 修正：最初は 0 にしておくことで、初期化漏れによるクラッシュを防ぐ
+    // 最初は 0 にしておくことで、初期化漏れによるクラッシュを防ぐ
     int kVertices = 0;
     std::vector<float> values;
 

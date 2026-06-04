@@ -16,7 +16,7 @@ struct HS_CONSTANT_DATA_OUTPUT
     float InsideTessFactor[2] : SV_InsideTessFactor; // Quadは内部が2つ
 };
 
-#define NUM_CONTROL_POINTS 4 // 3から4に変更
+#define NUM_CONTROL_POINTS 4
 
 HS_CONSTANT_DATA_OUTPUT CalcHSPatchConstants(
     InputPatch<VS_OUTPUT, NUM_CONTROL_POINTS> ip,

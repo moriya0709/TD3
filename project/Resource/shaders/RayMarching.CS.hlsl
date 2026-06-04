@@ -1,8 +1,6 @@
 RWTexture3D<float4> cloudTexture : register(u0);
 
-// ====================================================
-// 1. 最強のハッシュ関数（完璧にバラバラの3Dベクトルを作る）
-// ====================================================
+// ハッシュ関数
 float3 hash(float3 p)
 {
     p = float3(dot(p, float3(127.1, 311.7, 74.7)),
@@ -11,9 +9,7 @@ float3 hash(float3 p)
     return frac(sin(p) * 43758.5453123);
 }
 
-// ====================================================
-// 2. タイル対応 Perlin ノイズ（自然なモコモコ）
-// ====================================================
+// タイル対応 Perlin ノイズ（自然なモコモコ）
 float perlinTiling(float3 p, float period)
 {
     float3 i = floor(p);
@@ -22,7 +18,7 @@ float perlinTiling(float3 p, float period)
     // より滑らかな補間 (Quintic curve)
     float3 u = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
 
-    // 勾配(Gradient)を計算して内積をとるマクロ
+// 勾配(Gradient)を計算して内積をとるマクロ
 #define grad(x, y, z) \
         dot(hash(fmod(i + float3(x, y, z) + period * 100.0, period)) * 2.0 - 1.0, f - float3(x, y, z))
 
@@ -37,9 +33,7 @@ float perlinTiling(float3 p, float period)
     return noiseVal * 0.5 + 0.5;
 }
 
-// ====================================================
-// 3. タイル対応 FBM (Perlinを複数回重ねる)
-// ====================================================
+// タイル対応 FBM (Perlinを複数回重ねる)
 float fbmTiling(float3 p, float basePeriod)
 {
     float f = 0.0, amp = 0.5, period = basePeriod;
@@ -53,9 +47,7 @@ float fbmTiling(float3 p, float basePeriod)
     return f;
 }
 
-// ====================================================
-// 4. タイル対応 Worley ノイズ（細胞のような泡感）
-// ====================================================
+// タイル対応 Worley ノイズ（細胞のような泡感）
 float worleyTiling(float3 p, float period)
 {
     float3 ip = floor(p);
@@ -84,9 +76,8 @@ float worleyTiling(float3 p, float period)
     return minDist;
 }
 
-// ====================================================
-// 5. メイン関数（テクスチャへの焼き付け）
-// ====================================================
+
+// メイン関数（テクスチャへの焼き付け）
 [numthreads(8, 8, 8)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {

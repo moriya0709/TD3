@@ -11,7 +11,7 @@ cbuffer PageCurlData : register(b0)
     float3 padding;
 };
 
-// 座標変換用の定数バッファ (C++側でのRootSignatureに合わせてレジスタを変更してください)
+// 座標変換用の定数バッファ
 cbuffer TransformMatrix : register(b1)
 {
     matrix WorldViewProjectionMatrix;
@@ -42,7 +42,7 @@ DS_OUTPUT main(HS_CONSTANT_DATA_OUTPUT input, float2 UV : SV_DomainLocation, con
 {
     DS_OUTPUT output;
 
-    // 1. バイリニア補間（既存のまま）
+    // バイリニア補間
     float3 topPos = lerp(patch[0].pos, patch[1].pos, UV.x);
     float3 bottomPos = lerp(patch[3].pos, patch[2].pos, UV.x);
     float3 localPos = lerp(topPos, bottomPos, UV.y);
@@ -51,13 +51,10 @@ DS_OUTPUT main(HS_CONSTANT_DATA_OUTPUT input, float2 UV : SV_DomainLocation, con
     float2 bottomTexUV = lerp(patch[3].uv, patch[2].uv, UV.x);
     output.uv = lerp(topTexUV, bottomTexUV, UV.y);
 
-    // ========================================================
-    // ★追加・修正：上下の角に「遅延（ディレイ）」を作る計算
-    // ========================================================
-   // --- 1. 準備：めくる方向と「進行度」の計算 ---
+    // めくる方向と進行度の計算
     float PI = 3.141592f;
     
-    // ★重要：計算には絶対値(abs)を使うことで、マイナス方向の時も手前に曲げる
+    // 計算には絶対値(abs)を使うことで、マイナス方向の時も手前に曲げる
     float absCurlX = abs(curlX);
     float side = 0.0f;
     bool isMovingSide = false;
@@ -86,9 +83,7 @@ DS_OUTPUT main(HS_CONSTANT_DATA_OUTPUT input, float2 UV : SV_DomainLocation, con
     float localSafeAngle = localProgress * PI;
     
 
-   // ========================================================
-    // 2. 影の計算 (★ safeAngle を localSafeAngle に変更)
-    // ========================================================
+    // *影の計算* //
     float distToFold = abs(UV.x - foldX);
 
     // 折り目の影
@@ -109,9 +104,8 @@ DS_OUTPUT main(HS_CONSTANT_DATA_OUTPUT input, float2 UV : SV_DomainLocation, con
 
     output.shadow = 1.0f - saturate(max(creaseShadow, overlapShadow));
     
- // ========================================================
-    // 3. ページを曲げる計算
-    // ========================================================
+
+    // *ページを曲げる計算* //
     localPos.z = baseZ;
 
     if (isMovingSide)
@@ -122,32 +116,27 @@ DS_OUTPUT main(HS_CONSTANT_DATA_OUTPUT input, float2 UV : SV_DomainLocation, con
         float currentBend = sin(localSafeAngle) * curlRadius;
         float localAngle = localSafeAngle - (currentBend * d);
         
-        // 1. 基本となる「曲がり」の変位（折り目からの移動量）を計算
+        // 1基本となる「曲がり」の変位（折り目からの移動量）を計算
         float offsetX = side * d * cos(localAngle);
         float offsetZ = -(d * sin(localAngle)); // マイナスなので手前に行く
         
-        // ========================================================
-        // ★ポップアウト・エフェクト：角を大きく飛び出させる
-        // ========================================================
+        // *ポップアウト・エフェクト* //
         // 手前に来るほど offsetZ はマイナスに大きくなるため、絶対値を取るか -offsetZ で深度を測る
         float depth_from_base = saturate(-offsetZ);
         
         // 2倍に強調し、拡大率(scaleFactor)を決定
         float scaleFactor = 1.0f + 0.5f * saturate(depth_from_base * 2.0f);
 
-        // 2. 変位(X, Z)の両方にスケールを掛けて、カーブを歪ませずに拡大する
+        // 変位(X, Z)の両方にスケールを掛けて、カーブを歪ませずに拡大する
         localPos.x = foldX + offsetX * scaleFactor;
         localPos.z = baseZ + offsetZ * scaleFactor - 0.005f;
 
-        // 3. Y座標のスケーリング（ページ中央を基準に）
+        // Y座標のスケーリング（ページ中央を基準に）
         float y_center = 0.5f;
         localPos.y = y_center + (localPos.y - y_center) * scaleFactor;
     }
     
-    // 左めくりの時だけ影をZ座標で奥に配置（影が付く側だけ）
-    
-
-    // 4. World -> View -> Projection 変換
+    // World -> View -> Projection 変換
     output.position = mul(float4(localPos, 1.0f), WorldViewProjectionMatrix);
 
     return output;

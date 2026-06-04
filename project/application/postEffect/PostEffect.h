@@ -22,77 +22,76 @@ struct RenderTarget {
 	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle{};
 };
 
-// C++側の構造体 (PostEffect.h など)
 struct EffectData {
-	int32_t isInversion; // B0
-	int32_t isGrayscale;
-	int32_t isRadialBlur;
-	int32_t isDistanceFog;
+	int32_t isInversion; // 色反転
+	int32_t isGrayscale; // グレースケール
+	int32_t isRadialBlur; // 放射線ブラー
+	int32_t isDistanceFog; // ディスタンスフォグ
 
-	int32_t isDOF; // B1
-	int32_t isHeightFog;
-	float intensity;
+	int32_t isDOF; // 被写界深度
+	int32_t isHeightFog; // ハイトフォグ
+	float intensity; // 効果の強さ（0.0~1.0）
 	float pad0;
 
-	Vector2 blurCenter; // B2 (※プロジェクトの型に合わせてください XMFLOAT2など)
-	float blurWidth;
-	int32_t blurSamples;
+	Vector2 blurCenter; // ブラーの中心（0.0~1.0の範囲で、通常は画面中央の0.5,0.5）
+	float blurWidth; // ブラーの幅（中心からどれくらいの範囲をブラーするか、0.0~1.0の範囲で指定）
+	int32_t blurSamples; // ブラーのサンプル数（多いほど滑らかだが重くなる）
 
-	Vector3 distanceFogColor; // B3
-	float distanceFogStart;
+	Vector3 distanceFogColor; // フォグの色
+	float distanceFogStart; // フォグが始まる距離
 
-	float distanceFogEnd; // B4
-	float zNear;
-	float zFar;
+	float distanceFogEnd; // 完全にフォグに覆われる距離
+	float zNear; // カメラのニアクリップ面
+	float zFar; // カメラのファークリップ面
 	float pad1;
 
-	Vector3 heightFogColor; // B5
-	float heightFogTop;
+	Vector3 heightFogColor; // ハイトフォグの色
+	float heightFogTop; // ハイトフォグが始まる高さ
 
-	float heightFogBottom; // B6
-	float heightFogDensity;
+	float heightFogBottom; // ハイトフォグが終わる高さ
+	float heightFogDensity; // ハイトフォグの密度
 	Vector2 pad2;
 
-	Matrix4x4 matInverseViewProjection; // B7-10
+	Matrix4x4 matInverseViewProjection; // ハイトフォグ用の逆行列
 
-	float focusDistance; // B11
-	float focusRange;
-	float bokehRadius;
+	float focusDistance; // DOFのピントが合う距離
+	float focusRange; // DOFのピントが合う範囲（遊び）
+	float bokehRadius; // DOFのボケの最大半径
 	float pad3;
 
 	// *ブルーム* //
-	float bloomThreshold;
-	float bloomIntensity;
-	float bloomBlurRadius; // ★ ここがC++側に無かったり、順番が違うと以降が全てズレます！
+	float bloomThreshold; // 輝度の閾値
+	float bloomIntensity; // ブルームの強さ
+	float bloomBlurRadius; // ブルームのぼかし半径
 	float pad4;
 
 	// *レンズフレア* //
-	int32_t isLensFlare;
-	int32_t lensFlareGhostCount;
-	float lensFlareGhostDispersal;
-	float lensFlareHaloWidth;
+	int32_t isLensFlare; // レンズフレアのON/OFF
+	int32_t lensFlareGhostCount; // ゴーストの数
+	float lensFlareGhostDispersal; // ゴーストの分散
+	float lensFlareHaloWidth; // ハローの幅
 
-	int32_t isACES;
-	float caIntensity;
+	int32_t isACES; // ACESトーンマッピングのON/OFF
+	float caIntensity; // 色収差の強さ
 	Vector2 pad5;
 
 	// *モーションブラー* //
-	int32_t isMotionBlur; // ★ ズレていると、ここに別のデータ(0)が入り込んでしまいます
-	int32_t motionBlurSamples;
-	float motionBlurScale;
+	int32_t isMotionBlur; // モーションブラーのON/OFF
+	int32_t motionBlurSamples; // モーションブラーのサンプル数（例：8〜16）
+	float motionBlurScale; // モーションブラーの強さ
 	float pad6;
 
 	// 色収差
 	int isFullScreenCA; // 画面全体の色収差ON/OFF
 	float fullScreenCAIntensity; // 画面全体の色収差の強さ
 	// ビネット
-	int isVignette;
-	float vignetteIntensity;
+	int isVignette; // ビネットON/OFF
+	float vignetteIntensity; // ビネットの強さ
 
 	// スピードディストーション
 	int isSpeedDistortion; // スピードディストーションのON/OFF
 	float speedDistortionStrength; // 歪みの強さ
-	Vector2 pad7; // アライメント調整用
+	Vector2 pad7;
 
 	// 集中線
 	int isConcentrationLines;       // ON/OFF
@@ -105,18 +104,18 @@ struct EffectData {
 	float time; // アニメーション用の時間
 
 	// ピンチエフェクト
-	int32_t isPinch;             
-	float pinchStrength;         // 歪みの強さ（正の値で吸い込み、負の値で膨張）
-	Vector2 pinchCenter;         // 歪みの中心 (通常 0.5, 0.5)
+	int32_t isPinch; // ピンチエフェクトのON/OFF
+	float pinchStrength; // 歪みの強さ（正の値で吸い込み、負の値で膨張）
+	Vector2 pinchCenter; // 歪みの中心 (通常 0.5, 0.5)
 
-	float pinchRadius;           // 歪みが影響する半径
-	Vector3 pad8;               // 16byteアライメント調整
+	float pinchRadius; // 歪みが影響する半径
+	Vector3 pad8;
 
 	// モノクロ
 	int32_t isTwoColor;
 	float threshold; // 白と黒の境界値 (0.0~1.0)
 	float contrast; // コントラストの強さ
-	float pad9; // パディング
+	float pad9;
 
 };
 
@@ -306,7 +305,7 @@ private:
 	// バックバッファを指定の状態に遷移
 	void TransitionBackBuffer(D3D12_RESOURCE_STATES newState);
 
-	// --- リソースの状態を切り替える便利関数 ---
+	// リソースの状態を切り替える関数
 	void TransitionResource(ID3D12Resource* resource, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
 
 	// ルートシグネイチャ生成

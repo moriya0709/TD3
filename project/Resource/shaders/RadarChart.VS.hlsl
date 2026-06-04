@@ -1,7 +1,7 @@
 struct VSInput
 {
     float4 pos : POSITION;
-    float4 color : COLOR; // 追加
+    float4 color : COLOR
 };
 
 struct VSOutput

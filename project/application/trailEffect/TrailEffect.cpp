@@ -38,12 +38,12 @@ void TrailEffect::GenerateVertices(const Vector3& cameraPos, std::vector<TrailVe
     for (size_t i = 0; i < m_Points.size(); ++i) {
         const auto& pt = m_Points[i];
 
-        // 1. 進行方向ベクトルの計算
+        // 進行方向ベクトルの計算
         Vector3 dir;
         if (i < m_Points.size() - 1) {
             dir = Normalize(m_Points[i].Position - m_Points[i + 1].Position);
         } else {
-            // 修正：終端も一つ前と同じ方向を向くように反転させる（ねじれ防止）
+            // 終端も一つ前と同じ方向を向くように反転させる（ねじれ防止）
             dir = Normalize(m_Points[i - 1].Position - m_Points[i].Position);
             dir = { -dir.x, -dir.y, -dir.z }; // Vector3の演算子に合わせて反転
         }
@@ -51,12 +51,11 @@ void TrailEffect::GenerateVertices(const Vector3& cameraPos, std::vector<TrailVe
         // カメラへのベクトル
         Vector3 toCamera = Normalize(cameraPos - pt.Position);
 
-        // 2. 外積とゼロベクトル（NaN）対策
+        // 外積とゼロベクトル（NaN）対策
         Vector3 crossVec = Cross(dir, toCamera);
         Vector3 right;
 
         // 外積のベクトルの長さの2乗が非常に小さい（ほぼ平行）場合の回避処理
-        // ※独自MathライブラリのLengthSq等があればそれを使用してください
         float lengthSq = (crossVec.x * crossVec.x) + (crossVec.y * crossVec.y) + (crossVec.z * crossVec.z);
         if (lengthSq < 0.00001f) {
             // カメラと平行な場合は、仮のベクトル（例：ワールドの上方向）を使って右ベクトルを算出
