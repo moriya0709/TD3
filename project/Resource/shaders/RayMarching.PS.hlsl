@@ -12,7 +12,7 @@ struct PSInput
 struct PSOutput
 {
     float4 Color : SV_TARGET0;
-    float2 Velocity : SV_TARGET1; // ← ★追加 (Velocityバッファへの出力)
+    float2 Velocity : SV_TARGET1;
 };
 
 cbuffer CloudParam : register(b0)
@@ -99,9 +99,7 @@ float CloudDensity(float3 p)
     if (height < 0.0 || height > 1.0)
         return 0.0;
 
-    // ---------------------------------------------------
-    // 【軽量化1】カバレッジ計算を先にやり、完全に雲が無い場合は計算ストップ
-    // ---------------------------------------------------
+    // カバレッジ計算を先にやり、完全に雲が無い場合は計算ストップ
     float coverage = smoothstep(0.0, 0.5, cloudCoverage);
     if (coverage <= 0.0)
         return 0.0;
@@ -109,25 +107,17 @@ float CloudDensity(float3 p)
     float3 uv = p * 0.001;
     uv += cloudOffset * 3.0;
 
-    // まず、1つ目のノイズ（ベース形状）だけを取得
+    // ベース形状だけを取得
     float base = fbm(uv);
 
-    // ディテールを足す前の「仮の密度」を計算する
+    // ディテールを足す前の仮の密度を計算する
     float baseDensity = base - (height * 0.8) - 0.1 + (cloudCoverage * 0.5);
-
-    // ---------------------------------------------------
-    // ★【軽量化2】アーリーエグジット（超重要）
-    // detailノイズ(最大値1.0)に0.3を掛けたものが最大の影響力です。
-    // つまり、「仮の密度 + 0.3」が 0 以下になる場所は、
-    // この後どんなにディテールを足しても絶対に雲になりません。
-    // だったら、ここで計算を打ち切って空(0.0)を返します！
-    // ---------------------------------------------------
     if (baseDensity + 0.15 <= 0.0)
     {
         return 0.0;
     }
 
-    // ここまで生き残った場所（雲の内部や輪郭）だけ、重い2回目のノイズを計算！
+    // ここまで生き残った場所（雲の内部や輪郭）だけ、2回目のノイズを計算
     float detail = noise(uv * 4.0) * 0.5 + noise(uv * 8.0) * 0.25;
 
     // 仮の密度にディテールを合成
@@ -157,17 +147,17 @@ float3 RialLightCloud(float3 p)
         shadow += CloudDensity(pos) * lightStepLen * 0.04;
     }
 
-    // ① 多重散乱の近似 (光の減衰を複数のオクターブで計算)
+    // 多重散乱の近似 (光の減衰を複数のオクターブで計算)
     float3 transmission = 0.0;
     transmission += exp(-shadow);
     transmission += exp(-shadow * 0.25) * 0.7;
     transmission += exp(-shadow * 0.05) * 0.15;
 
-    // ② パウダーエフェクト（Beer-Powder）
+    // パウダーエフェクト（Beer-Powder）
     float powder = 1.0 - exp(-shadow * 2.0);
     transmission *= powder;
 
-    // ③ Henyey-Greenstein 近似
+    // Henyey-Greenstein 近似
     float3 viewDir = normalize(p - cameraPos);
     float cosTheta = dot(-viewDir, lightDir);
     
@@ -205,14 +195,12 @@ float3 AnimeLightCloud(float3 p)
     return lerp(shadowColor, litColor, toonShadow);
 }
 
-// =====================================================================
 // ヘルパー関数: レイと地球（球体）の交差判定
-// =====================================================================
 float2 IntersectSphere(float3 ro, float3 rd, float radius)
 {
     float b = dot(ro, rd);
     
-    // ★【修正】巨大な数同士の引き算による桁落ち（精度エラー）を防ぐ数学的トリック
+    // 巨大な数同士の引き算による桁落ち（精度エラー）を防ぐ数学的トリック
     float len = length(ro);
     float c = (len - radius) * (len + radius);
     
@@ -226,9 +214,7 @@ float2 IntersectSphere(float3 ro, float3 rd, float radius)
     return float2(-b - h, -b + h); // 交差する2点までの距離
 }
 
-// =====================================================================
 // 大気散乱関数 (Nishita Single Scattering 近似)
-// =====================================================================
 float3 CalculateAtmosphere(float3 cameraPos, float3 rayDir, float3 sunDir)
 {
     // 地球と大気のスケール設定（1単位 = 1メートル想定）
@@ -327,9 +313,7 @@ float3 CalculateAtmosphere(float3 cameraPos, float3 rayDir, float3 sunDir)
     return skyColor;
 }
 
-// =====================================================================
 // 雷の発光を計算する関数
-// =====================================================================
 float3 CalculateLightning(float3 pos, float time, float3 cameraPos, float cloudBottom)
 {
     float3 totalLightning = float3(0, 0, 0);
@@ -379,9 +363,7 @@ PSOutput main(VSOutput input)
     world.xyz /= world.w;
     float3 rayDir = normalize(world.xyz - cameraPos);
 
-    // ==========================================
-    // 1. 大気散乱
-    // ==========================================
+    // *大気散乱* //
     float3 normalizedSunDir = normalize(-sunDir);
 
     float3 skyRayDir = normalize(rayDir + float3(0, horizonHeight, 0));
@@ -404,9 +386,7 @@ PSOutput main(VSOutput input)
         dayFactor *= 0.13; // 環境光と太陽の光を大幅に抑えて雲を黒くする
     }
     
-    // ==========================================
-    // 水平線
-    // ==========================================
+    // *水平線* //
     if (skyRayDir.y < 0.0)
     {
         float3 daySea = float3(0.05, 0.3, 0.6);
@@ -421,37 +401,35 @@ PSOutput main(VSOutput input)
         skyColor = lerp(seaColor, skyColor, smoothstep(-0.05, 0.0, skyRayDir.y));
     }
 
-    // ★ 地平線グロー（昼夜で変化）
+    // 地平線グロー（昼夜で変化）
     float horizonBand = smoothstep(0.15, 0.0, abs(skyRayDir.y));
 
-    // 1. 基本の水平線カラー（常に青～夜の色）
+    // 基本の水平線カラー（常に青～夜の色）
     float3 horizonDay = float3(0.4, 0.65, 1.0); // 綺麗な青色に調整
     float3 horizonNight = float3(0.02, 0.04, 0.12);
     // sunHeightを元に昼と夜の基本色をブレンド（夕焼け色は入れない）
     float3 baseHorizonColor = lerp(horizonNight, horizonDay, saturate(sunHeight * 4.0 + 0.5));
 
-    // 2. 夕焼け色（太陽の周りだけに使用）
+    // 夕焼け色（太陽の周りだけに使用）
     float3 horizonSunset = float3(1.0, 0.45, 0.1);
 
-    // 3. 視線と太陽方向の水平方向の一致度
+    // 視線と太陽方向の水平方向の一致度
     // （normalizeを追加して精度を安定させています）
     float sunAlignH = saturate(dot(normalize(float2(skyRayDir.x, skyRayDir.z)),
                                    normalize(float2(normalizedSunDir.x, normalizedSunDir.z))));
 
-    // 4. 夕焼けの発生条件を厳しくする
+    // 夕焼けの発生条件を厳しくする
     // 太陽が低い時（sunHeightが0付近） かつ 太陽のすぐ近く（sunAlignHを4乗して絞る）のみ
     float sunsetIntensity = smoothstep(0.3, 0.0, abs(sunHeight)) * pow(sunAlignH, 4.0);
 
-    // 5. 最終的な水平線の色
+    // 最終的な水平線の色
     float3 horizonColor = lerp(baseHorizonColor, horizonSunset, sunsetIntensity);
 
     // 太陽から離れてもベースの青いグローはしっかり出すために強さを調整
     float horizonGlow = saturate(horizonBand * 1.5);
     skyColor = lerp(skyColor, horizonColor, horizonGlow);
 
-    // ==========================================
-    // 2. 雲の交差判定
-    // ==========================================
+    // *雲の交差判定* //
     float3 color = float3(0, 0, 0);
     float transmittance = 1.0;
     bool hitClouds = true;
@@ -466,9 +444,7 @@ PSOutput main(VSOutput input)
     if (tEnd < 0 || tStart >= tEnd)
         hitClouds = false;
 
-    // ==========================================
-    // 3. レイマーチング
-    // ==========================================
+    // *レイマーチング* //
     if (hitClouds)
     {
         tStart = max(tStart, 0);
@@ -512,18 +488,18 @@ PSOutput main(VSOutput input)
                 float sunsetSpread = smoothstep(-1.0, 1.0, cosTheta);
                 float3 wideSunsetColor = float3(1.0, 0.35, 0.1) * sunsetSpread * sunsetTime;
 
-                // ★ 太陽色（昼→夕焼け→夜でブレンド）
+                // 太陽色（昼→夕焼け→夜でブレンド）
                 float3 daySunColor = float3(1.0, 0.92, 0.85);
                 float3 sunsetSunColor = float3(1.0, 0.45, 0.05);
                 float3 nightSunColor = float3(0.08, 0.10, 0.18); // 月明かり
                 float3 currentSunColor = lerp(daySunColor, sunsetSunColor, sunsetTime);
                 currentSunColor = lerp(nightSunColor, currentSunColor, dayFactor);
 
-                // ★ 太陽光強度（夜は大幅減）
+                // 太陽光強度（夜は大幅減）
                 float sunIntensity = lerp(0.2, 7.0, dayFactor);
                 float3 sunIllumination = currentSunColor * sunIntensity * lightScattering;
 
-                // ★ 環境光（夜は暗い紺）
+                // 環境光（夜は暗い紺）
                 float3 nightAmbient = float3(0.015, 0.02, 0.05);
                 float skyLuma = dot(cloudAmbientSkyColor, float3(0.299, 0.587, 0.114));
                 float3 desaturatedSky = lerp(float3(skyLuma, skyLuma, skyLuma),
@@ -538,7 +514,7 @@ PSOutput main(VSOutput input)
                 if (isAnimeLight)
                     light = AnimeLightCloud(pos);
 
-                // ★ ライト関数の結果も昼夜でスケール
+                // ライト関数の結果も昼夜でスケール
                 light = light * lerp(0.05, 1.0, dayFactor);
 
                 light += sunIllumination + cloudAmbient;
@@ -561,12 +537,10 @@ PSOutput main(VSOutput input)
         }
     }
 
-    // ==========================================
-    // 4. 最終合成
-    // ==========================================
+    // *最終合成* //
     float3 finalColor = color + skyColor * transmittance;
 
-    // ★ 夜はexposureを下げて全体を暗く
+    // 夜はexposureを下げて全体を暗く
     float exposure = lerp(0.6, 1.5, dayFactor);
     finalColor = 1.0 - exp(-finalColor * exposure);
     // NaN（黒い点）対策の安全装置：マイナス値を0にカットする
@@ -580,17 +554,15 @@ PSOutput main(VSOutput input)
     float luminance = dot(finalColor, float3(0.299, 0.587, 0.114));
     finalColor = lerp(float3(luminance, luminance, luminance), finalColor, saturation);
 
-   // ==========================================
-    // 5. 太陽ディスク（HDR）の描画（角度による動的な色変化）
-    // ==========================================
+    // *太陽ディスク（HDR）の描画（角度による動的な色変化）* //
     
-    // 1. 各時間帯の太陽の色を定義（HDRなので大きな値を入れる）
+    // 各時間帯の太陽の色を定義（HDRなので大きな値を入れる）
     float3 colDay = float3(60.0, 55.0, 45.0); // 真昼：白に近い黄色
     float3 colGolden = float3(80.0, 45.0, 5.0); // 夕方手前：強い黄金色
     float3 colSunset = float3(100.0, 15.0, 2.0); // 日没直前：燃えるような赤橙
     float3 colMoon = float3(0.5, 0.8, 2.0); // 夜：淡い月光（青白い）
 
-    // 2. 太陽の高さ（sunHeight）に基づいて色をブレンド
+    // 太陽の高さ（sunHeight）に基づいて色をブレンド
     float3 dynamicSunColor;
     if (sunHeight > 0.2)
     {
@@ -608,11 +580,11 @@ PSOutput main(VSOutput input)
         dynamicSunColor = lerp(colMoon, colSunset, smoothstep(-0.1, 0.0, sunHeight));
     }
 
-    // 3. 太陽の円（ディスク）の計算
+    // 太陽の円（ディスク）の計算
     float sunDot = dot(rayDir, normalizedSunDir);
     float sunDisc = smoothstep(0.9998f, 0.99995f, sunDot);
 
-    // 4. 最終合成
+    // 最終合成
     // 夜間（sunHeight < 0）は太陽を少し小さく、暗くすると月らしくなります
     float sunAlpha = (sunHeight > 0.0) ? 1.0 : 0.2;
     
@@ -622,23 +594,19 @@ PSOutput main(VSOutput input)
     
     finalColor += dynamicSunColor * sunDisc * transmittance * sunAlpha;
 
-   // ==========================================
-    // ★ 追加: Velocityの計算と出力
-    // ==========================================
-    
     PSOutput output;
     
-    // モーションブラー
+    // *モーションブラー* //
     if (isMotionBlur)
     {
-    // 前フレームのクリップ空間座標を計算（背景は無限遠として扱うため、算出したworld座標をそのまま使う）
+        // 前フレームのクリップ空間座標を計算（背景は無限遠として扱うため、算出したworld座標をそのまま使う）
         float4 prevClip = mul(prevViewProj, float4(world.xyz, 1.0));
         prevClip.xyz /= prevClip.w;
 
-    // 前フレームのUV座標に変換
+        // 前フレームのUV座標に変換
         float2 prevUV = prevClip.xy * float2(0.5, -0.5) + float2(0.5, 0.5);
 
-    // Velocity = 現在のUV - 過去のUV
+        // Velocity = 現在のUV - 過去のUV
         float2 velocity = input.uv - prevUV;
         
         // 倍率

@@ -18,49 +18,49 @@ struct PSInput
 
 struct EffectData
 {
-    int isInversion; // B0
-    int isGrayscale;
-    int isRadialBlur;
-    int isDistanceFog;
+    int isInversion; // 色反転
+    int isGrayscale; // グレースケール
+    int isRadialBlur; // 放射状ブラー
+    int isDistanceFog; // ディスタンスフォグ
 
-    int isDOF; // B1
-    int isHeightFog;
-    float intensity;
+    int isDOF; // 被写界深度
+    int isHeightFog; // ハイトフォグ
+    float intensity; // 全体のエフェクト強度
     float pad0;
 
-    float2 blurCenter; // B2
-    float blurWidth;
-    int blurSamples;
+    float2 blurCenter; // 放射状ブラーの中心 (0.0〜1.0)
+    float blurWidth; // 放射状ブラーの幅
+    int blurSamples; // 放射状ブラーのサンプル数
 
-    float3 distanceFogColor; // B3
-    float distanceFogStart;
+    float3 distanceFogColor; // ディスタンスフォグの色
+    float distanceFogStart; // ディスタンスフォグの開始距離
 
-    float distanceFogEnd; // B4
-    float zNear;
-    float zFar;
+    float distanceFogEnd; // ディスタンスフォグの終了距離
+    float zNear; // 深度の線形化に必要なカメラの近クリップ面
+    float zFar; // 深度の線形化に必要なカメラの遠クリップ面
     float pad1;
 
     // *ハイトフォグ* //
-    float3 heightFogColor; // B5
-    float heightFogTop;
+    float3 heightFogColor; // 色
+    float heightFogTop; // 高さ(最上値)
 
-    float heightFogBottom; // B6
-    float heightFogDensity;
+    float heightFogBottom; // 高さ(最下値)
+    float heightFogDensity; // ハイトフォグの密度（高さによる減衰の強さ）
     float2 pad2;
 
-    float4x4 matInverseViewProjection; // B7-10
+    float4x4 matInverseViewProjection; // ハイトフォグのワールド位置計算に必要な逆行列
 
     // *DoF* //
-    float focusDistance; // B11
-    float focusRange;
-    float bokehRadius;
+    float focusDistance; // ピントの距離
+    float focusRange; // ピントの範囲（この距離内は完全にピントが合う）
+    float bokehRadius; // ボケの半径（大きいほど大きくボケる）
     float pad3;
 
    // *ブルーム* //
     float bloomThreshold; // 光らせる明るさの閾値
     float bloomIntensity; // ブルームの強さ
-    float bloomBlurRadius; // ★新規追加：ブルームのぼかし半径（広がり具合）
-    float pad4; // パディングを1つに減らす
+    float bloomBlurRadius; // ブルームのぼかし半径（広がり具合）
+    float pad4;
     
    // *レンズフレア* //
     int isLensFlare; // レンズフレアのON/OFF
@@ -70,20 +70,20 @@ struct EffectData
     
     int isACES; // ACESトーンマッピングのON/OFF
     float caIntensity; // 色収差の強さ (0.001f とかが綺麗)
-    float2 pad5; // パディング
+    float2 pad5;
     
     // *モーションブラー* //
-    int isMotionBlur;
-    int motionBlurSamples;
-    float motionBlurScale;
+    int isMotionBlur; // モーションブラーのON/OFF
+    int motionBlurSamples; // モーションブラーのサンプル数
+    float motionBlurScale; // モーションブラーの強さ（速度に対するスケール）
     float pad6;
     
     // 色収差
     int isFullScreenCA; // 画面全体の色収差ON/OFF
     float fullScreenCAIntensity; // 画面全体の色収差の強さ
     // ビネット
-    int isVignette;
-    float vignetteIntensity;
+    int isVignette; // ビネットのON/OFF
+    float vignetteIntensity; // ビネットの強さ
     
     // スピードディストーション
     int isSpeedDistortion; // スピードディストーションのON/OFF
@@ -101,18 +101,18 @@ struct EffectData
     float time;
     
     // ピンチエフェクト
-    int isPinch; // 16byte境界の開始
+    int isPinch; // ON/OFF
     float pinchStrength; // 歪みの強さ（正の値で吸い込み、負の値で膨張）
     float2 pinchCenter; // 歪みの中心 (通常 0.5, 0.5)
 
     float pinchRadius; // 歪みが影響する半径
-    float3 pad8; // 16byteアライメント調整
+    float3 pad8;
     
     // モノクロ
-    int isTwoColor;
+    int isTwoColor; // 二値化
     float threshold; // 白と黒の境界値 (0.0~1.0)
     float contrast; // コントラストの強さ
-    float pad9; // パディング
+    float pad9;
     
     
 };
@@ -120,7 +120,7 @@ ConstantBuffer<EffectData> gEffectData : register(b0);
 
 cbuffer RootConstants : register(b1)
 {
-    int gPassId; // C++から直接パス番号がねじ込まれる！
+    int gPassId; // パス番号
 };
 
 struct SunAndCloudParam
@@ -139,10 +139,7 @@ struct SunAndCloudParam
 };
 ConstantBuffer<SunAndCloudParam> gSunCloudData : register(b2);
 
-// -----------------------------------------------------------
-// 魔法の道具箱（簡易的なガウスぼかし関数と、虹色を作るスペクトル関数）
-// -----------------------------------------------------------
-// テクスチャをそのままサンプリングする代わりに、この関数を使うと滑らか（円形）になる
+// 簡易的なガウスぼかし関数と、虹色を作るスペクトル関数
 float3 SampleGaussian(Texture2D<float4> tex, SamplerState samp, float2 uv, float2 texelSize, float blurSigma)
 {
     float3 result = 0;
@@ -173,7 +170,7 @@ float3 Spectrum(float t)
     return color;
 }
 
-// ACESトーンマッピング関数（簡易版：Narkowicz ACES）
+// ACESトーンマッピング関数
 float3 ACESFitted(float3 x)
 {
     float a = 2.51f;
@@ -184,8 +181,7 @@ float3 ACESFitted(float3 x)
     return saturate((x * (a * x + b)) / (x * (c * x + d) + e));
 }
 
-// ★ 非線形・距離依存の色収差サンプリング
-//    中心から離れるほど RGB ズレが広がる（実レンズの分散特性）
+// 非線形・距離依存の色収差サンプリング
 float3 SampleWithCA(Texture2D<float4> tex, SamplerState samp,
                     float2 uv, float2 toCenter, float caIntensity)
 {
@@ -203,37 +199,30 @@ float4 main(VSOutput input) : SV_TARGET
 {
     float4 color = gCurrentTexture.Sample(gSampler, input.uv);
     
-    // ==========================================
     // パス1：高輝度抽出
-    // ==========================================
-    if (gPassId == 1) // ★ gPassId に変更
+    if (gPassId == 1)
     {
         float brightness = dot(color.rgb, float3(0.2126f, 0.7152f, 0.0722f));
         
-        // ★ C++から送られてくる bloomThreshold を使う！
         if (brightness > gEffectData.bloomThreshold)
         {
-            // ★ 赤ではなく、元の綺麗な色をそのまま抽出する！
             return color;
         }
         else
         {
-            // 閾値以下の暗い部分は黒にする（光らせない）
+            // 閾値以下は黒
             return float4(0.0f, 0.0f, 0.0f, 1.0f);
         }
     }
 
-    // ==========================================
     // パス2＆3：ガウスぼかし（X方向 / Y方向）
-    // ==========================================
-    if (gPassId == 2 || gPassId == 3) // ★ gPassId に変更
+    if (gPassId == 2 || gPassId == 3)
     {
         uint width, height;
-      // 【修正後】一番ぼけているBloom3からサイズを取得する
+        // 一番ぼけているBloom3からサイズを取得する
         gBloom3Texture.GetDimensions(width, height);
         float2 texelSize = (width > 0 && height > 0) ? (1.0f / float2(width, height)) : float2(0.001f, 0.001f);
-       
-        // ★ 修正：ここも gPassId を使うように変更
+    
         float2 direction = (gPassId == 2) ? float2(1.0f, 0.0f) : float2(0.0f, 1.0f);
 
         // バイリニアサンプリングを利用した効率的なウェイト
@@ -243,9 +232,9 @@ float4 main(VSOutput input) : SV_TARGET
         float3 result = gCurrentTexture.Sample(gSampler, input.uv).rgb * weight[0];
         for (int i = 1; i < 3; i++)
         {
-            // ★ gEffectData.bloomBlurRadius をオフセットに掛け合わせる！
+            // gEffectData.bloomBlurRadius をオフセットに掛け合わせる
             float2 uvOffset = direction * texelSize * offset[i] * gEffectData.bloomBlurRadius;
-            // ★ ここを修正：サンプリング位置を 0.0f〜1.0f の範囲にクランプする
+            // サンプリング位置を 0.0f〜1.0f の範囲にクランプする
             float2 uvSample1 = saturate(input.uv + uvOffset);
             float2 uvSample2 = saturate(input.uv - uvOffset);
             
@@ -258,41 +247,33 @@ float4 main(VSOutput input) : SV_TARGET
     // レンズフレア
     if (gPassId == 4)
     {
-        // --- 1. 共通の変数定義 ---
-        float2 uv = input.uv; // ★エラー対策: texcoord ではなく元の uv に戻す
+        // 共通の変数定義
+        float2 uv = input.uv;
         float2 toCenter = float2(0.5f, 0.5f) - uv;
 
         uint width, height;
         gCurrentTexture.GetDimensions(width, height);
         float2 texelSize = (width > 0 && height > 0) ? (1.0f / float2(width, height)) : float2(0.001f, 0.001f);
 
-        // ★エラー対策: ヘイロー（光の輪）用の uvAspect の計算を復活させる
+        // ヘイロー用の uvAspect の計算
         float aspectRatio = (float) width / (float) height;
         float2 uvAspect = float2((uv.x - 0.5f) * aspectRatio, uv.y - 0.5f);
 
         float3 result = float3(0.0f, 0.0f, 0.0f);
 
-        // ==========================================
-        // ★表現力の強化（CAとサイズの動的制御）
-        // ==========================================
-        // C++から送られてくる dispersal をそのまま使う
         float dynamicDispersal = gEffectData.lensFlareGhostDispersal;
 
         // ブレンド用の係数 (lerpFactor) を計算
         float lerpFactor = saturate((dynamicDispersal - 0.2f) / (0.8f - 0.2f));
 
-        // ★エラー対策: 動的CAの変数名を元の caIntensity にする
         float baseCAIntensity = gEffectData.caIntensity;
         float caIntensity = baseCAIntensity * lerp(1.0f, 2.0f, lerpFactor);
         
-        // -----------------------------------------------------------
-        // 2. ゴーストの生成（サイズとCAを動的に変化）
-        // -----------------------------------------------------------
+        // ゴーストの生成
         int numGhosts = gEffectData.lensFlareGhostCount;
         
         if (numGhosts > 0)
         {
-           // ★修正1： i=0 は「光源そのものに重なる巨大な塊」になるため、 i=1 から開始する！
             for (int i = 1; i < numGhosts; ++i)
             {
                 float2 offset = uv + toCenter * dynamicDispersal * (float) i;
@@ -308,12 +289,11 @@ float4 main(VSOutput input) : SV_TARGET
                 
                 float weight = pow(1.0f - (float(i) / max(1.0f, float(numGhosts))), 3.0f);
                 
-                // ★修正2：画面の端（光源の外側）に発生する不自然なゴーストを暗くして消す（Vignetteマスク）
-                // 画面中央付近(0.2以下)で 1.0(表示)、画面端(0.6以上)で 0.0(非表示) に滑らかにフェードアウトさせます
+                // 画面の端に発生する不自然なゴーストを暗くして消す
                 float distFromCenter = length(toCenter);
                 float vignette = 1.0f - smoothstep(0.2f, 0.6f, distFromCenter);
                 
-                // ★元のウェイトに vignette を掛け合わせて出力を抑える
+                // 元のウェイトに vignette を掛け合わせて出力を抑える
                 result += float3(r, g, b) * weight * vignette * 0.3f;
             }
         }
@@ -342,7 +322,7 @@ float4 main(VSOutput input) : SV_TARGET
             float3 haloColor = SampleWithCA(gCurrentTexture, gSampler,
                                             haloSampleUV, toCenter, caIntensity * 0.5f);
 
-            // ★ 改良スペクトル（内側:青紫 → 外側:赤橙）
+            // 改良スペクトル（内側:青紫 → 外側:赤橙）
             float ringT = saturate((distToCenter - innerEdge) / max(0.0001f, outerEdge - innerEdge));
             float3 haloSpectrum = Spectrum(ringT);
 
@@ -356,7 +336,7 @@ float4 main(VSOutput input) : SV_TARGET
     if (gPassId == 0)
     {
         
-        // ★ 新規追加：スピードディストーション（画面中心からの空間の歪み）
+        // スピードディストーション
         if (gEffectData.isSpeedDistortion)
         {
             // 画面中心(0.5, 0.5)からのベクトルを計算
@@ -366,8 +346,6 @@ float4 main(VSOutput input) : SV_TARGET
             float distSq = dot(toCenter, toCenter);
             
             // 歪み係数の計算 
-            // ※ strengthに「マイナスの値（例: -0.3など）」を入れると、周囲が伸びて奥に吸い込まれるワープ感が出ます
-            // ※ プラスの値を入れると手前に迫るような魚眼レンズ風になります
             float warpFactor = 1.0f + (gEffectData.speedDistortionStrength * distSq);
             
             // UV座標を上書きして歪ませる
@@ -432,63 +410,62 @@ float4 main(VSOutput input) : SV_TARGET
         // モーションブラー処理
         if (gEffectData.isMotionBlur)
         {
-        // 現在のピクセルの速度ベクトルを取得 (RG16Fなどを想定)
+            // 現在のピクセルの速度ベクトルを取得 (RG16Fなどを想定)
             float2 velocity = gVelocityTexture.Sample(gSampler, input.uv).rg;
         
-        // 速度のスケール調整（強すぎる場合はここで抑える）
+            // 速度のスケール調整（強すぎる場合はここで抑える）
             velocity *= gEffectData.motionBlurScale;
 
-        // 速度が極端に小さい場合は処理をスキップ（軽量化）
+            // 速度が極端に小さい場合は処理をスキップ（軽量化）
             if (length(velocity) > 0.0001f)
             {
-            // サンプル1回あたりの移動量
+                // サンプル1回あたりの移動量
                 float2 texelStep = velocity / (float) gEffectData.motionBlurSamples;
             
                 float4 accumColor = color;
                 float2 currentUV = input.uv;
 
-            // 速度ベクトルの方向に向かって複数回サンプリング
+                // 速度ベクトルの方向に向かって複数回サンプリング
                 for (int i = 1; i < gEffectData.motionBlurSamples; ++i)
                 {
                     currentUV -= texelStep;
                 
-                // 画面外のサンプリングを防ぐためのクランプ
+                    // 画面外のサンプリングを防ぐためのクランプ
                     currentUV = saturate(currentUV);
                 
                     accumColor += gCurrentTexture.Sample(gSampler, currentUV);
                 }
             
-            // 平均化
+                // 平均化
                 color = accumColor / (float) gEffectData.motionBlurSamples;
             }
         }
         
-        // ★ 吸い込み（ピンチ）エフェクトの計算
+        // ピンチエフェクト
         if (gEffectData.isPinch)
         {
-        // 中心からの方向と距離を計算
+            // 中心からの方向と距離を計算
             float2 toCenter = input.uv - gEffectData.pinchCenter;
             float dist = length(toCenter);
 
-        // 中心に近いほど強く歪ませる計算
+            // 中心に近いほど強く歪ませる計算
             if (dist < gEffectData.pinchRadius)
             {
-            // 歪みの減衰（半径の端にいくほど 0 になるように）
+                // 歪みの減衰（半径の端にいくほど 0 になるように）
                 float percent = dist / gEffectData.pinchRadius; // 0.0 ~ 1.0
             
-            // 指数関数を使って「中心ほど吸い込まれる」ように補間
-            // pinchStrength が大きいほど中心に収束する
+                // 指数関数を使って「中心ほど吸い込まれる」ように補間
+                // pinchStrength が大きいほど中心に収束する
                 float weight = pow(percent, gEffectData.pinchStrength);
             
-            // 新しいUVを再構成
+                // 新しいUVを再構成
                 input.uv = gEffectData.pinchCenter + normalize(toCenter) * weight * gEffectData.pinchRadius;
             }
             
-            // ★ この「uv」を使ってテクスチャをサンプリングする
             color = gCurrentTexture.Sample(gSampler, input.uv);
         }
         
-        // ★ フルスクリーン色収差（被ダメージ時などの画面全体エフェクト）
+        // フルスクリーン色収差
         if (gEffectData.isFullScreenCA)
         {
             float2 toCenter = float2(0.5f, 0.5f) - input.uv;
@@ -496,45 +473,41 @@ float4 main(VSOutput input) : SV_TARGET
             color.rgb = SampleWithCA(gCurrentTexture, gSampler, input.uv, toCenter, gEffectData.fullScreenCAIntensity);
         }
         
-         // ★ 集中線の実装
+         // 集中線の実装
         if (gEffectData.isConcentrationLines)
         {
             float2 toCenter = input.uv - gEffectData.concentrationLineCenter;
             float dist = length(toCenter);
             float angle = (atan2(toCenter.y, toCenter.x) + 3.14159f) / (2.0f * 3.14159f);
 
-        // --- ランダムロジック ---
-        // 角度を分割して「線のID」を作る
+            // ランダムロジック
+            // 角度を分割して「線のID」を作る
             float lineId = floor(angle * gEffectData.concentrationLineDensity);
         
-        // 時間でシードを変化させて動かす (floorを使うとカチカチと切り替わる)
+            // 時間でシードを変化させて動かす (floorを使うとカチカチと切り替わる)
             float timeSeed = floor(gEffectData.time * gEffectData.concentrationLineSpeed);
         
-        // 3種類のノイズを生成（シード値をずらして計算）
+            // 3種類のノイズを生成（シード値をずらして計算）
             float n_exists = frac(sin(lineId * 12.9898f + timeSeed) * 43758.5453f); // 出現判定
             float n_length = frac(sin(lineId * 39.1231f + timeSeed) * 753.5453f); // 長さのバラツキ
             float n_weight = frac(sin(lineId * 71.3521f + timeSeed) * 921.5453f); // 濃さのバラツキ
 
-        // --- 線の描画判定 ---
-        // step(0.5, n_exists) で約半分の角度にだけ線が引かれるようにする
+            // 線の描画判定
             float lineMask = step(0.5f, n_exists);
 
-        // --- 長さのバラツキ設定 ---
-        // 基本の長さ(Length)に、ランダムなオフセットを加える
-        // 内側への食い込み具合を 0.2 程度の幅でランダム化
+            // 長さのバラツキ設定
             float randomStart = gEffectData.concentrationLineLength + (n_length * 0.2f);
             float distMask = smoothstep(randomStart, randomStart + 0.1f, dist);
 
-        // --- 最終的な合成 ---
-        // n_weight を使って1本ずつの濃さを変える
+            // 最終的な合成
             float finalAlpha = lineMask * distMask * gEffectData.concentrationLineIntensity * n_weight;
 
-        // 背景色を維持しつつ、黒い線を乗せる (lerpを使用)
+            // 背景色を維持しつつ、黒い線を乗せる (lerpを使用)
             float3 lineColor = float3(1, 1, 1);
             color.rgb = lerp(color.rgb, lineColor, finalAlpha);
         }
         
-        // ★ 2. ビネット（被ダメージ時の画面端の赤み）
+        // ビネット
         if (gEffectData.isVignette)
         {
             // 画面中心からの距離を計算 (中心0.0 ～ 四隅約0.707)
@@ -552,8 +525,6 @@ float4 main(VSOutput input) : SV_TARGET
             // 元の色とダメージ色を、vignetteWeightの強さで合成
             color.rgb = lerp(color.rgb, damageColor, vignetteWeight);
 
-            // ※もし普通の「黒いビネット」にしたい場合は、上のlerpを消して以下を有効にしてください。
-            // color.rgb *= (1.0f - vignetteWeight);
         }
 
         // ディスタンスフォグ
@@ -580,7 +551,7 @@ float4 main(VSOutput input) : SV_TARGET
             color.rgb = lerp(color.rgb, gEffectData.heightFogColor, heightFactor);
         }
         
-    // 1. ブルームの加算（3つのサイズをすべて重ね合わせる）
+        // ブルームの加算
         float3 b1 = gBloom1Texture.Sample(gSampler, input.uv).rgb * 1.0f;
         float3 b2 = gBloom2Texture.Sample(gSampler, input.uv).rgb * 0.4f;
         float3 b3 = gBloom3Texture.Sample(gSampler, input.uv).rgb * 0.2f;
@@ -588,15 +559,12 @@ float4 main(VSOutput input) : SV_TARGET
         float3 totalBloom = b1 + b2 + b3;
 
       
-    // ブルーム強度を掛けて加算
+        // ブルーム強度を掛けて加算
         color.rgb += totalBloom * gEffectData.bloomIntensity;
-
-    // =======================================================
-    // ★★★ ここを追加！ レンズフレアを最終カラーに加算 ★★★
-    // =======================================================
+    
+        // *レンズフレアを最終カラーに加算* //
         if (gEffectData.isLensFlare)
         {
-           // ★ if文の中に移動する！
             float3 lensFlare = gLensFlareTexture.Sample(gSampler, input.uv).rgb;
             color.rgb += lensFlare;
         }
@@ -608,13 +576,10 @@ float4 main(VSOutput input) : SV_TARGET
             if (gEffectData.isTwoColor)
             {
             
-            // A. コントラスト調整 (0.5を中心に色の差を広げる)
-            // (gray - 0.5) * contrast + 0.5
+                // コントラスト調整
                 gray = saturate((gray - 0.5f) * gEffectData.contrast + 0.5f);
 
-            // B. 二値化 (閾値より上なら1、下なら0)
-            // 単なる step(gEffectData.threshold, gray) だとジャギーがひどいので
-            // 少しだけ smoothstep を使うとエッジが綺麗になります
+                // 二値化
                 gray = smoothstep(gEffectData.threshold - 0.01f, gEffectData.threshold + 0.01f, gray);
             }
             color.rgb = float3(gray, gray, gray);
@@ -628,14 +593,14 @@ float4 main(VSOutput input) : SV_TARGET
 
         color.rgb *= gEffectData.intensity;
 
-    // --- 3. ACESトーンマッピングへ ---
+        // ACESトーンマッピング
         if (gEffectData.isACES)
         {
             color.rgb = ACESFitted(color.rgb);
         }
         else
         {
-        // Reinhard (指数トーンマッピング)
+            // Reinhard (指数トーンマッピング)
             float exposure = 1.0f;
             color.rgb = 1.0f - exp(-color.rgb * exposure);
         }

@@ -112,15 +112,15 @@ void BookUiCommon::CreateRootSignature() {
 
 void BookUiCommon::CreateGraphicsPipeline() {
 	// BlendStateの設定
-	// 1. ブレンドを有効にする
+	// ブレンドを有効にする
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
 
-	// 2. 基本的なアルファブレンドの設定（ Src * SrcAlpha + Dest * (1 - SrcAlpha) ）
+	// 基本的なアルファブレンドの設定（ Src * SrcAlpha + Dest * (1 - SrcAlpha) ）
 	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;           // ソースの色の倍率
 	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;      // 背景の色の倍率
 	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;               // 加算
 
-	// 3. アルファ値自体の計算設定（通常はソースの値を維持）
+	// アルファ値自体の計算設定
 	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
@@ -128,8 +128,6 @@ void BookUiCommon::CreateGraphicsPipeline() {
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	// RasiterzerStateの設定
-	// 裏面（時計回り）を表示しない
-	//rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;]
 	// カリングしない（裏面も表示させる）
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
 	// 三角形の中を塗りつぶす

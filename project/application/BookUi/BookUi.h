@@ -20,7 +20,7 @@ struct PageCurlData{
 	Vector3 padding;
 };
 
-// 座標変換用の定数バッファ (C++側でのRootSignatureに合わせてレジスタを変更してください)
+// 座標変換用の定数バッファ
 struct TransformMatrix {
 	Matrix4x4 WorldViewProjectionMatrix;
 };
@@ -48,10 +48,10 @@ public:
 	void UpdatePageTurn();
 
 	// ページめくりの開始
-	void StartOpenPageR();
-	void StartClosePageR();
-	void StartOpenPageL();
-	void StartClosePageL();
+	void StartOpenPageR(); // 右側を開く
+	void StartClosePageR(); // 右側を閉じる
+	void StartOpenPageL(); // 左側を開く
+	void StartClosePageL(); // 左側を閉じる
 
 	// テクスチャ変更
 	void ChangeTexture(const std::string& textureFilePath);

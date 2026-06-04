@@ -22,19 +22,13 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	// シザリング矩形の初期化
 	InitializeScissorRect();
 
-	// ==========================================
-	// ★修正1： Allocate(3) を Allocate(1) に変更！
-	// ==========================================
 	srvIndex_ = srvManager_->Allocate(1);               // メイン画像(t0)用
 	uint32_t emptySrvIndex = srvManager_->Allocate(1);  // 空っぽの画像(t1)用
-	depthSrvIndex_ = srvManager_->Allocate(1);          // 深度バッファ(t2)用 ★メンバ変数に保存！
+	depthSrvIndex_ = srvManager_->Allocate(1);          // 深度バッファ(t2)用
 
-	// ▼▼▼ ここに深度バッファのSRV作成を追加 ▼▼▼
+	// 深度バッファのSRV作成
 	D3D12_SHADER_RESOURCE_VIEW_DESC depthSrvDesc{};
-	// ⚠️ ここはDirectXCommonで作ったDepthStencilリソースのフォーマットに合わせる必要があります
-	// 一般的には D32_FLOAT で作っているなら R32_FLOAT、
-	// D24_UNORM_S8_UINT なら R24_UNORM_X8_TYPELESS になります。
-	depthSrvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS; // ★もしエラーが出たらここを確認！
+	depthSrvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	depthSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	depthSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	depthSrvDesc.Texture2D.MipLevels = 1;
@@ -43,9 +37,9 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	D3D12_CPU_DESCRIPTOR_HANDLE depthSrvCpuHandle = dxCommon_->GetSrvHeap()->GetCPUDescriptorHandleForHeapStart();
 	depthSrvCpuHandle.ptr += depthSrvIndex_ * dxCommon_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-	// SRVを生成！
+	// SRVを生成
 	dxCommon_->GetDevice()->CreateShaderResourceView(
-		dxCommon_->GetDepthStencilResource(), // DirectXCommonから深度バッファをもらう
+		dxCommon_->GetDepthStencilResource(),
 		&depthSrvDesc,
 		depthSrvCpuHandle
 	);
@@ -64,7 +58,7 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 			srvIndex_
 		);
 
-	// --- ここから変更：ブルーム用の縮小レンダーターゲット作成（マルチパス化） ---
+	// ブルーム用の縮小レンダーターゲット作成
 	// RTVインデックスは既存と被らない値（4からスタート）
 	uint32_t currentRtvIndex = 4;
 
@@ -74,7 +68,7 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 		uint32_t width = (uint32_t)(windowAPI_->kClientWidth / divisor);
 		uint32_t height = (uint32_t)(windowAPI_->kClientHeight / divisor);
 
-		// ① 高輝度抽出用
+		// 高輝度抽出用
 		bloomBuffers_[i].lumSrvIndex = srvManager_->Allocate(1);
 		bloomBuffers_[i].lumRenderTarget = CreateRenderTarget(
 			dxCommon_->GetDevice(), width, height,
@@ -82,7 +76,7 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 			dxCommon_->GetRtvHeap(), currentRtvIndex++, dxCommon_->GetSrvHeap(), bloomBuffers_[i].lumSrvIndex
 		);
 
-		// ② ぼかし用 1 (X方向)
+		// ぼかし用 1 (X方向)
 		bloomBuffers_[i].blurSrvIndex[0] = srvManager_->Allocate(1);
 		bloomBuffers_[i].blurRenderTarget[0] = CreateRenderTarget(
 			dxCommon_->GetDevice(), width, height,
@@ -90,7 +84,7 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 			dxCommon_->GetRtvHeap(), currentRtvIndex++, dxCommon_->GetSrvHeap(), bloomBuffers_[i].blurSrvIndex[0]
 		);
 
-		// ③ ぼかし用 2 (Y方向)
+		// ぼかし用 2 (Y方向)
 		bloomBuffers_[i].blurSrvIndex[1] = srvManager_->Allocate(1);
 		bloomBuffers_[i].blurRenderTarget[1] = CreateRenderTarget(
 			dxCommon_->GetDevice(), width, height,
@@ -100,7 +94,6 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	}
 
 	// レンズフレア
-	// ブルームの最初のパス(1/2サイズ)と同じ解像度で作成する
 	uint32_t lfWidth = (uint32_t)(windowAPI_->kClientWidth / 2.0f);
 	uint32_t lfHeight = (uint32_t)(windowAPI_->kClientHeight / 2.0f);
 
@@ -138,7 +131,7 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	effectData->isInversion = false;
 	// グレースケール
 	effectData->isGrayscale = false;
-	effectData->isTwoColor = false;
+	effectData->isTwoColor = false; // 二値化
 	effectData->threshold = 0.5f;
 	effectData->contrast = 1.0f;
 
@@ -147,9 +140,9 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	effectData->isHeightFog = false;
 	effectData->isDOF = true;
 	// 放射線ブラー用のパラメータ
-	effectData->blurCenter = { 0.5f,0.5f };
-	effectData->blurWidth = 0.01f;
-	effectData->blurSamples = 10;
+	effectData->blurCenter = { 0.5f,0.5f }; // ブラーの中心（通常は画面中央の0.5,0.5）
+	effectData->blurWidth = 0.01f; // ブラーの幅（中心からどれくらいの範囲をブラーするか）
+	effectData->blurSamples = 10; // ブラーのサンプル数（多いほど滑らかだが重くなる）
 	// ディスタンスフォグ用のパラメータ
 	effectData->distanceFogColor = { 0.5f,0.5f,0.5f };// フォグの色
 	effectData->distanceFogStart = 0.0f;  // フォグが始まる距離
@@ -166,9 +159,9 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	effectData->focusRange = 2.0f; // ピントが合う範囲（遊び）
 	effectData->bokehRadius = 5.0f; // ボケの最大半径
 	// ブルーム
-	effectData->bloomThreshold = 1.0f;
-	effectData->bloomIntensity = 1.0f;
-	effectData->bloomBlurRadius = 1.0f;
+	effectData->bloomThreshold = 1.0f; // 輝度の閾値
+	effectData->bloomIntensity = 1.0f; // ブルームの強さ
+	effectData->bloomBlurRadius = 1.0f; // ブルームのぼかし半径
 	// レンズフレア
 	effectData->isLensFlare = true;            // とりあえずONにしておく
 	effectData->lensFlareGhostCount = 8;       // ゴーストの数（4?8くらいが綺麗）
@@ -208,29 +201,26 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 }
 
 void PostEffect::Update(Camera* camera) {
-	// -----------------------------------------------------------
-	// ★★★ 動的ディスパーサル（Dynamic Dispersal）のC++実装 ★★★
-	// -----------------------------------------------------------
+	// 動的ディスパーサル
 
-	// 1. カメラの「注視点方向（前方向）」を取得
-	// Inverseを使わず、View行列から直接ワールド空間のZ軸（前方向）を抜き出します
+	// カメラの取得
 	Matrix4x4 viewMat = camera->GetViewMatrix();
 	Vector3 camForward = { viewMat.m[0][2], viewMat.m[1][2], viewMat.m[2][2] }; // ★縦方向から取得
 
-	// ★ Normalizeの計算結果をしっかり「代入」して上書きする
+	// Normalizeの計算結果をしっかり「代入」して上書きする
 	camForward = Normalize(camForward);
 
-	// 2. 太陽の方向（ワールド空間）を取得
+	// 太陽の方向（ワールド空間）を取得
 	Vector3 sunDir = RayMarching::GetInstance()->GetSunDir();
-	sunDir = Normalize(sunDir); // ★ここも念のため代入
+	sunDir = Normalize(sunDir);
 
-	// 3. カメラの向きと「太陽の逆方向」の内積をとる
+	// カメラの向きと「太陽の逆方向」の内積をとる
 	float dot = Dot(camForward, -sunDir);
 
-	// 4. 0.0 ～ 1.0 の係数に変換
+	// 0.0 ～ 1.0 の係数に変換
 	float lerpFactor = std::clamp((1.0f - dot) * 15.0f, 0.0f, 1.0f);
 
-	// 5. 最終的な dispersal を決定して代入
+	// 最終的な dispersal を決定して代入
 	float baseDist = 0.3f; // 太陽が中央のとき（密集）
 	float maxDist = 0.7f;  // 太陽が端のとき（拡散）
 	effectData->lensFlareGhostDispersal = baseDist + (maxDist - baseDist) * lerpFactor;
@@ -253,8 +243,7 @@ void PostEffect::Update(Camera* camera) {
 				SetFullScreenCA(true);
 				SetVignette(true);
 
-				// 進行度(0.0~1.0) × 「最大時の強さ」 を計算してHLSLへセット
-				// 色収差のMAXは0.1f、ビネットのMAXは0.8f と定義
+				// 進行度
 				SetFullScreenCAIntensity(damageEffectRatio_ * 0.1f);
 				SetVignetteIntensity(damageEffectRatio_ * 0.8f);
 			}
@@ -263,7 +252,7 @@ void PostEffect::Update(Camera* camera) {
 
 	// 集中線のアニメーション制御
 	if (effectData->isConcentrationLines) {
-		effectData->time += 1.0f / 60.0f; // フレームごとに時間を進める（例: 60FPSなら約0.016秒）
+		effectData->time += 1.0f / 60.0f;
 	}
 
 }
@@ -280,11 +269,8 @@ void PostEffect::Draw() {
 	ID3D12DescriptorHeap* heaps[] = { dxCommon_->GetSrvHeap() };
 	cmdList->SetDescriptorHeaps(1, heaps);
 
-	// ==========================================
-	// パス1：高輝度抽出 (1/2サイズに対して1回だけ行う)
-	// ==========================================
+	// *パス1：高輝度抽出* //
 	uint32_t passId = 1;
-	// ★ ルートシグネチャの拡張に伴い、パス番号のインデックスは「6」になります
 	cmdList->SetGraphicsRoot32BitConstants(6, 1, &passId, 0);
 
 	float halfWidth = (float)windowAPI_->kClientWidth / 2.0f;
@@ -311,9 +297,7 @@ void PostEffect::Draw() {
 
 	TransitionResource(bloomBuffers_[0].lumRenderTarget.resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	// ==========================================
-	// パス2＆3：各サイズごとにぼかしを連鎖させる（3回ループ）
-	// ==========================================
+	// *パス2＆3：各サイズごとにぼかし（3回ループ)* //
 	for (int i = 0; i < 3; ++i) { // ★ 3段階（1/2, 1/4, 1/8）のブルームを作るループ
 		float divisor = powf(2.0f, (float)(i + 1));
 		float currentWidth = (float)windowAPI_->kClientWidth / divisor;
@@ -323,16 +307,16 @@ void PostEffect::Draw() {
 		cmdList->RSSetViewports(1, &currentViewport);
 		cmdList->RSSetScissorRects(1, &currentScissor);
 
-		// ★ ぼかしを2回繰り返す（往復させる）
+		// ぼかしを繰り返す
 		for (int iter = 0; iter < 2; ++iter) {
-			// --- パス2：X方向ぼかし ---
+			// *パス2：X方向ぼかし* //
 			passId = 2;
 			cmdList->SetGraphicsRoot32BitConstants(6, 1, &passId, 0);
 
 			TransitionResource(bloomBuffers_[i].blurRenderTarget[0].resource.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 			cmdList->OMSetRenderTargets(1, &bloomBuffers_[i].blurRenderTarget[0].rtvHandle, FALSE, nullptr);
 
-			// 入力：1回目は前のバッファから、2回目以降は自分のYぼかし結果から
+			// 1回目は前のバッファから、2回目以降は自分のYぼかし結果から
 			D3D12_GPU_DESCRIPTOR_HANDLE inputSrvX;
 			if (iter == 0) {
 				inputSrvX = (i == 0) ? bloomBuffers_[0].lumRenderTarget.srvGpuHandle : bloomBuffers_[i - 1].blurRenderTarget[1].srvGpuHandle;
@@ -351,7 +335,7 @@ void PostEffect::Draw() {
 			cmdList->DrawInstanced(3, 1, 0, 0);
 			TransitionResource(bloomBuffers_[i].blurRenderTarget[0].resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-			// --- パス3：Y方向ぼかし ---
+			// *パス3：Y方向ぼかし* //
 			passId = 3;
 			cmdList->SetGraphicsRoot32BitConstants(6, 1, &passId, 0);
 			TransitionResource(bloomBuffers_[i].blurRenderTarget[1].resource.Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -372,9 +356,7 @@ void PostEffect::Draw() {
 		}
 	}
 
-	// ==========================================
-	// ★新規追加：パス4：レンズフレア（ゴースト）生成
-	// ==========================================
+	// *パス4：レンズフレア（ゴースト）生成* //
 	passId = 4; // レンズフレア用のパスID
 	cmdList->SetGraphicsRoot32BitConstants(6, 1, &passId, 0);
 
@@ -395,15 +377,12 @@ void PostEffect::Draw() {
 	float clearColorBlack[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	cmdList->ClearRenderTargetView(lensFlareRenderTarget_.rtvHandle, clearColorBlack, 0, nullptr);
 
-	// ★入力画像として「高輝度抽出したテクスチャ(ブルームの最初の画像)」を t0 に渡す
+	// 入力画像として「高輝度抽出したテクスチャ(ブルームの最初の画像)」を t0 に渡す
 	cmdList->SetGraphicsRootDescriptorTable(0, bloomBuffers_[0].lumRenderTarget.srvGpuHandle);
 
-	// ▼▼▼ ここを追加！ RayMarchingから太陽と雲のパラメータを渡す ▼▼▼
+	// RayMarchingから太陽と雲のパラメータを渡す
 	D3D12_GPU_VIRTUAL_ADDRESS cloudCbAddress = RayMarching::GetInstance()->GetCloudParamGPUVirtualAddress();
 
-	// 【??ポイント2：ルートパラメータのインデックス】
-	// 現在のDraw()を見ると、インデックス0～7まで使われています。
-	// b1 (SunAndCloudParam) 用に新しくルートパラメータを追加した場合、インデックスは「8」になるはずです。
 	cmdList->SetGraphicsRootConstantBufferView(8, cloudCbAddress);
 
 	cmdList->DrawInstanced(3, 1, 0, 0);
@@ -411,9 +390,7 @@ void PostEffect::Draw() {
 	// 読み込み状態に戻す
 	TransitionResource(lensFlareRenderTarget_.resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-	// ==========================================
-	// パス4：最終合成 (バックバッファへ描画)
-	// ==========================================
+	// *パス0：最終合成* //
 	passId = 0; // 最終合成は 0 のまま
 	cmdList->SetGraphicsRoot32BitConstants(6, 1, &passId, 0);
 	cmdList->SetPipelineState(graphicsPipelineStateFinal.Get());
@@ -425,7 +402,7 @@ void PostEffect::Draw() {
 	D3D12_CPU_DESCRIPTOR_HANDLE backBufferRtv = dxCommon_->GetBackBufferRTVHandle();
 	cmdList->OMSetRenderTargets(1, &backBufferRtv, FALSE, nullptr);
 
-	// ★ ここが超重要！完成した3枚のぼかし画像をすべてシェーダーに渡す！
+	// ぼかし画像をすべてシェーダーに渡す
 	cmdList->SetGraphicsRootDescriptorTable(0, renderTarget_.srvGpuHandle); // t0: メイン画像
 	cmdList->SetGraphicsRootDescriptorTable(2, bloomBuffers_[0].blurRenderTarget[1].srvGpuHandle); // t1: 1/2ぼかし
 	cmdList->SetGraphicsRootDescriptorTable(3, bloomBuffers_[1].blurRenderTarget[1].srvGpuHandle); // t2: 1/4ぼかし
@@ -725,20 +702,20 @@ void PostEffect::CreateRootSignature() {
 	rootParameters[6].Constants.Num32BitValues = 1;
 	rootParameters[6].Constants.RegisterSpace = 0;
 
-	// ▼▼▼ ここを追加 (レンズフレア画像 t5) = インデックス7 ▼▼▼
+	// レンズフレア画像
 	rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[7].DescriptorTable.pDescriptorRanges = range5;
 	rootParameters[7].DescriptorTable.NumDescriptorRanges = 1;
 
-	// 8番：b2:太陽と雲のパラメータ (定数バッファ)
+	// 太陽と雲のパラメータ
 	rootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV; // テーブルではなくCBVにする
 	rootParameters[8].Descriptor.ShaderRegister = 2;               // b2 レジスタ
 	rootParameters[8].Descriptor.RegisterSpace = 0;                // space0
 	rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 
-	// ▼▼▼ ベロシティマップ (t6) = インデックス8 ▼▼▼
+	// ベロシティマップ
 	rootParameters[9].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 	rootParameters[9].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 	rootParameters[9].DescriptorTable.pDescriptorRanges = range6; // ★作った range6 をセット！
@@ -788,14 +765,11 @@ void PostEffect::CreateGraphicsPipeline() {
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 
-	// ★修正1：深度テストを完全に無効化する
+	// 深度テストを完全に無効化する
 	psoDesc.DepthStencilState.DepthEnable = FALSE;
 	psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 	psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_NEVER;
 	psoDesc.DepthStencilState.StencilEnable = FALSE;
-
-	// ★修正2：DSVフォーマットを「使わない（UNKNOWN）」に設定する
-	// これが D24_... などになっていると、Draw時にDSVをセットしないと怒られます
 	psoDesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
 
 	psoDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
@@ -805,15 +779,13 @@ void PostEffect::CreateGraphicsPipeline() {
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	psoDesc.SampleDesc.Count = 1;
 
-	// ① パス1?3用（FLOAT）のPSO作成
+	// パス1,3用（FLOAT）のPSO作成
 	HRESULT hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(
 		&psoDesc, IID_PPV_ARGS(&graphicsPipelineState)
 	);
 	assert(SUCCEEDED(hr));
 
-	// ==========================================
-	// ★ 追加：パス4（バックバッファ最終合成）用のPSO作成
-	// ==========================================
+	// バックバッファ最終合成用のPSO作成
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // バックバッファのフォーマットに戻す！
 
 	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(

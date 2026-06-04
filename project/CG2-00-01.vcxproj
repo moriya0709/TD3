@@ -277,7 +277,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="application\railCamera\RailCamera.h" />
-    <ClInclude Include="application\BookUi\Blend.h" />
+    <ClInclude Include="engine\3d\Blend.h" />
     <ClInclude Include="application\Easing\Easing.h" />
     <ClInclude Include="application\BookUi\Book.h" />
     <ClInclude Include="application\BookUi\BookUi.h" />

@@ -174,7 +174,7 @@
     <ClInclude Include="game\enemy\Boss\type\banana.h" />
     <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="application\Easing\Easing.h" />
-    <ClInclude Include="application\BookUi\Blend.h" />
+    <ClInclude Include="engine\3d\Blend.h" />
     <ClInclude Include="application\BookUi\BookUi.h" />
     <ClInclude Include="application\BookUi\BookUiCommon.h" />
     <ClInclude Include="application\BookUi\Book.h" />

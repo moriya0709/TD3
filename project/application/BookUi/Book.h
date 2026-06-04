@@ -10,8 +10,8 @@ public:
     void Draw();
 
     // ページ操作（外部からはこれだけ呼ぶ）
-    void NextPage(); // 次へ（右ページを閉じる）
-    void PrevPage(); // 前へ（右ページを開く）
+    void NextPage(); // 次へ
+    void PrevPage(); // 前へ
 
     // 親の座標（これを変えると子も連動する）
     void SetPosition(Vector3 pos) { position_ = pos; }
@@ -23,7 +23,7 @@ public:
 private:
     // ページの集合
     std::vector<std::unique_ptr<BookUi>> pages_;
-    int currentPageIndex_ = 2; // 現在めくる対象のページ
+    int currentPageIndex_ = 2; // 現在のページ
     Vector3 position_ = { 960.0f, 540.0f, 0.0f };
 	Vector3 scale_ = { 1200.0f, 700.0f, 1.0f };
 
