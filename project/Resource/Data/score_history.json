@@ -545,6 +545,30 @@
             "score": 15100,
             "stageName": "2",
             "time": 0.0
+        },
+        {
+            "ModelName": "normal.obj",
+            "score": 600,
+            "stageName": "1",
+            "time": 0.0
+        },
+        {
+            "ModelName": "normal.obj",
+            "score": 100,
+            "stageName": "1",
+            "time": 0.0
+        },
+        {
+            "ModelName": "normal.obj",
+            "score": 0,
+            "stageName": "1",
+            "time": 0.0
+        },
+        {
+            "ModelName": "normal.obj",
+            "score": 4500,
+            "stageName": "1",
+            "time": 0.0
         }
     ]
 }

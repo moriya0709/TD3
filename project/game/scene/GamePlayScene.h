@@ -268,7 +268,7 @@ private:
 	std::unique_ptr<Sprite>  gameOverUi_[2] = {};
 	EasingSet gameOverEasing_[3];
 	const int kGameOverUi_ = 3;
-    Pause currentGameOverUI_ = Pause::kSelect;
+    Pause currentGameOverUI_ = Pause::kRetry;
 	bool isGameOver = false;
     
     // *ボス登場演出* //
@@ -303,17 +303,18 @@ private:
 	enum BossAppearsState { Grapes, Banana, };
 	BossAppearsState bossAppearsState_ = Grapes;
 
-
-
 	bool isWarning_ = false;
 	bool isBossAppears_ = false;
 
+
+    float bgmVolume_ = 1.0f; // BGMの音量 (0.0f〜1.0f)
+    float seVolume_ = 1.0f; // SEの音量 (0.0f〜1.0f)
+
+    // 操作説明Ui
+    std::unique_ptr<Sprite> description;
+
 	void WarningEffect();
 	void BossAppearsUpdate();
-
-
-	float bgmVolume_ = 1.0f; // BGMの音量 (0.0f〜1.0f)
-	float seVolume_ = 1.0f; // SEの音量 (0.0f〜1.0f)
 
     void SceneChangedEffect();
 

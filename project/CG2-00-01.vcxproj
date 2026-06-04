@@ -16,10 +16,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="application\railCamera\RailCamera.cpp" />
-    <ClCompile Include="application\Easing\Easing.cpp" />
-    <ClCompile Include="application\BookUi\Book.cpp" />
-    <ClCompile Include="application\BookUi\BookUi.cpp" />
-    <ClCompile Include="application\BookUi\BookUiCommon.cpp" />
+    <ClCompile Include="application\easing\Easing.cpp" />
+    <ClCompile Include="application\bookUi\Book.cpp" />
+    <ClCompile Include="application\bookUi\BookUi.cpp" />
+    <ClCompile Include="application\bookUi\BookUiCommon.cpp" />
     <ClCompile Include="game\camera\BananaCameraController.cpp" />
     <ClCompile Include="engine\base\AbstractSceneFactory.cpp" />
     <ClCompile Include="engine\base\BaseScene.cpp" />
@@ -64,9 +64,9 @@
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="engine\game\GamePlayScene.cpp" />
+    <ClCompile Include="game\scene\GamePlayScene.cpp" />
     <ClCompile Include="engine\base\M_Framework.cpp" />
-    <ClCompile Include="engine\game\Game.cpp" />
+    <ClCompile Include="game\scene\Game.cpp" />
     <ClCompile Include="engine\base\ImGuiManager.cpp" />
     <ClCompile Include="engine\io\Input.cpp" />
     <ClCompile Include="engine\base\Logger.cpp" />
@@ -92,7 +92,7 @@
     <ClCompile Include="engine\base\SrvManager.cpp" />
     <ClCompile Include="engine\math\StringUtility.cpp" />
     <ClCompile Include="engine\2d\TextureManager.cpp" />
-    <ClCompile Include="engine\game\TitleScene.cpp" />
+    <ClCompile Include="game\scene\TitleScene.cpp" />
     <ClCompile Include="engine\base\WindowAPI.cpp" />
     <ClCompile Include="application\postEffect\PostEffect.cpp" />
     <ClCompile Include="game\enemy\Normal\type\NormalEnemy.cpp" />
@@ -106,11 +106,11 @@
     <ClCompile Include="game\enemy\Normal\type\rushEnemy.cpp" />
     <ClCompile Include="game\enemy\Normal\Bullet\rushEnemyBullet.cpp" />
     <ClCompile Include="game\enemy\Normal\type\ShieldEnemy.cpp" />
-    <ClCompile Include="engine\game\StageSelect.cpp" />
+    <ClCompile Include="game\scene\StageSelect.cpp" />
     <ClCompile Include="application\radarChart\RadarChart.cpp" />
     <ClCompile Include="application\radarChart\RadarChartCommon.cpp" />
-    <ClCompile Include="engine\game\ResultScene.cpp" />
-    <ClCompile Include="ScoreManager.cpp" />
+    <ClCompile Include="game\scene\ResultScene.cpp" />
+    <ClCompile Include="game\score\ScoreManager.cpp" />
     <ClCompile Include="application\trailEffect\TrailEffect.cpp" />
     <ClCompile Include="application\trailEffect\TrailEffectManager.cpp" />
     <ClCompile Include="game\camera\StageCameraController.cpp" />
@@ -278,10 +278,10 @@
   <ItemGroup>
     <ClInclude Include="application\railCamera\RailCamera.h" />
     <ClInclude Include="engine\3d\Blend.h" />
-    <ClInclude Include="application\Easing\Easing.h" />
-    <ClInclude Include="application\BookUi\Book.h" />
-    <ClInclude Include="application\BookUi\BookUi.h" />
-    <ClInclude Include="application\BookUi\BookUiCommon.h" />
+    <ClInclude Include="application\easing\Easing.h" />
+    <ClInclude Include="application\bookUi\Book.h" />
+    <ClInclude Include="application\bookUi\BookUi.h" />
+    <ClInclude Include="application\bookUi\BookUiCommon.h" />
     <ClInclude Include="game\camera\BananaCameraController.h" />
     <ClInclude Include="game\collision\Collision.h" />
     <ClInclude Include="game\camera\CameraController.h" />
@@ -315,9 +315,9 @@
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="engine\math\Calc.h" />
-    <ClInclude Include="engine\game\GamePlayScene.h" />
+    <ClInclude Include="game\scene\GamePlayScene.h" />
     <ClInclude Include="engine\base\M_Framework.h" />
-    <ClInclude Include="engine\game\Game.h" />
+    <ClInclude Include="game\scene\Game.h" />
     <ClInclude Include="engine\base\ImGuiManager.h" />
     <ClInclude Include="engine\io\Input.h" />
     <ClInclude Include="engine\base\Logger.h" />
@@ -336,7 +336,7 @@
     <ClInclude Include="engine\base\SrvManager.h" />
     <ClInclude Include="engine\math\StringUtility.h" />
     <ClInclude Include="engine\2d\TextureManager.h" />
-    <ClInclude Include="engine\game\TitleScene.h" />
+    <ClInclude Include="game\scene\TitleScene.h" />
     <ClInclude Include="engine\base\WindowAPI.h" />
     <ClInclude Include="application\postEffect\PostEffect.h" />
     <ClInclude Include="externals\nlohmann\json.hpp" />
@@ -353,12 +353,12 @@
     <ClInclude Include="game\enemy\Normal\Bullet\rushEnemyBullet.h" />
     <ClInclude Include="game\enemy\Normal\type\ShieldEnemy.h" />
     <ClInclude Include="game\enemy\Boss\type\grapesBoss.h" />
-    <ClInclude Include="engine\game\StageSelect.h" />
+    <ClInclude Include="game\scene\StageSelect.h" />
     <ClInclude Include="game\camera\GrapeCameraController.h" />
     <ClInclude Include="application\radarChart\RadarChart.h" />
     <ClInclude Include="application\radarChart\RadarChartCommon.h" />
-    <ClInclude Include="engine\game\ResultScene.h" />
-    <ClInclude Include="ScoreManager.h" />
+    <ClInclude Include="game\scene\ResultScene.h" />
+    <ClInclude Include="game\score\ScoreManager.h" />
     <ClInclude Include="application\trailEffect\TrailEffect.h" />
     <ClInclude Include="application\trailEffect\TrailEffectManager.h" />
     <ClInclude Include="game\camera\StageCameraController.h" />
@@ -472,7 +472,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <AdditionalIncludeDirectories>C:\CG2-00-01\externals\DirectXTex;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\math;$(ProjectDir)engine\game;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)application\postEffect;$(ProjectDir)application\railCamera;$(ProjectDir)game\ememy;$(ProjectDir)game\player;$(ProjectDir)game\camera;$(ProjectDir)application\rayMarching;$(ProjectDir)application\trailEffect;$(ProjectDir)application\Easing;$(ProjectDir)externals\assimp\include;$(ProjectDir)application\BookUi;$(ProjectDir)application\radarChart</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\CG2-00-01\externals\DirectXTex;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\math;$(ProjectDir)engine\game;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)application\postEffect;$(ProjectDir)application\railCamera;$(ProjectDir)application\rayMarching;$(ProjectDir)application\trailEffect;$(ProjectDir)application\easing;$(ProjectDir)application\bookUi;$(ProjectDir)application\radarChart;$(ProjectDir)game\ememy;$(ProjectDir)game\player;$(ProjectDir)game\camera;$(ProjectDir)game\scene;$(ProjectDir)game\score;$(ProjectDir)externals\assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -499,7 +499,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>C:\CG2-00-01\externals\DirectXTex;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\math;$(ProjectDir)engine\game;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)application\postEffect;$(ProjectDir)application\railCamera;$(ProjectDir)game\ememy;$(ProjectDir)game\player;$(ProjectDir)game\camera;$(ProjectDir)application\rayMarching;$(ProjectDir)application\trailEffect;$(ProjectDir)application\Easing;$(ProjectDir)externals\assimp\include;$(ProjectDir)application\BookUi;$(ProjectDir)application\radarChart</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\CG2-00-01\externals\DirectXTex;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\math;$(ProjectDir)engine\game;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)application\postEffect;$(ProjectDir)application\railCamera;$(ProjectDir)application\rayMarching;$(ProjectDir)application\trailEffect;$(ProjectDir)application\easing;$(ProjectDir)application\bookUi;$(ProjectDir)application\radarChart;$(ProjectDir)game\ememy;$(ProjectDir)game\player;$(ProjectDir)game\camera;$(ProjectDir)game\scene;$(ProjectDir)game\score;$(ProjectDir)externals\assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -527,7 +527,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>C:\CG2-00-01\externals\DirectXTex;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\math;$(ProjectDir)engine\game;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)application\postEffect;$(ProjectDir)application\railCamera;$(ProjectDir)game\ememy;$(ProjectDir)game\player;$(ProjectDir)game\camera;$(ProjectDir)application\rayMarching;$(ProjectDir)application\trailEffect;$(ProjectDir)application\Easing;$(ProjectDir)externals\assimp\include;$(ProjectDir)application\BookUi;$(ProjectDir)application\radarChart</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\CG2-00-01\externals\DirectXTex;$(ProjectDir);$(ProjectDir)engine\2d;$(ProjectDir)engine\3d;$(ProjectDir)engine\audio;$(ProjectDir)engine\base;$(ProjectDir)engine\io;$(ProjectDir)engine\math;$(ProjectDir)engine\game;$(ProjectDir)engine\scene;$(ProjectDir)engine\camera;$(ProjectDir)application\postEffect;$(ProjectDir)application\railCamera;$(ProjectDir)application\rayMarching;$(ProjectDir)application\trailEffect;$(ProjectDir)application\easing;$(ProjectDir)application\bookUi;$(ProjectDir)application\radarChart;$(ProjectDir)game\ememy;$(ProjectDir)game\player;$(ProjectDir)game\camera;$(ProjectDir)game\scene;$(ProjectDir)game\score;$(ProjectDir)externals\assimp\include</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>

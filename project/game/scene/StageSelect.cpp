@@ -96,6 +96,17 @@ void StageSelect::Initialize() {
 	background->SetTranslate({ 0.0f, 0.0f, 10.0f });
 	background->SetScale({ 10.0f, 10.0f, 1.0f });
 	background->SetSunLight(false);
+
+	// 操作Ui
+	for (int i = 0; i < 2; i++) {
+		operation[i] = std::make_unique<Sprite>();
+	}
+	operation[0]->Initialize("Resource/UI/A.png");
+	operation[1]->Initialize("Resource/UI/D.png");
+	operation[0]->SetPosition({200.0f, 560.0f});
+	operation[1]->SetPosition({1780.0f, 560.0f});
+	operation[1]->SetSize({ 100.0f, 100.0f });
+	operation[0]->SetSize({ 100.0f, 100.0f });
 	
 	// 音声再生
 	SoundManager::GetInstance()->Play("select.mp3", true, bgmVolume_);
@@ -307,6 +318,11 @@ void StageSelect::Update() {
 	// 3. 全ての値が決まった後に、ループの外で 1回だけ呼び出す
 	radarChart->SetValues(radarValues);
 
+	// 操作Ui
+	for (int i = 0; i < 2; i++) {
+		operation[i]->Update();
+	}
+
 	// イージング
 	easing->Update();
 	easing->Draw();
@@ -317,14 +333,19 @@ void StageSelect::Draw2D() {
 	// 2Dオブジェクトの描画準備
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
-	if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
-	{
-		returnC_->Draw();
-		nextC_->Draw();
-	} else
-	{
-		returnM_->Draw();
-		nextM_->Draw();
+	if (!isTransition) {
+		if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad) {
+			returnC_->Draw();
+			nextC_->Draw();
+		} else {
+			returnM_->Draw();
+			nextM_->Draw();
+		}
+
+		// 操作Ui
+		for (int i = 0; i < 2; i++) {
+			operation[i]->Draw();
+		}
 	}
 
 	// if (switchCooltime <= 0.0f) {
