@@ -125,78 +125,78 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 
 	currentState_ = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 
-	// エフェクト
+	// *エフェクト* //
 	effectResource = dxCommon_->CreateBufferResource(sizeof(EffectData));
 	effectResource->Map(0, nullptr, reinterpret_cast<void**>(&effectData));
 	effectData->isInversion = false;
 	// グレースケール
-	effectData->isGrayscale = false;
-	effectData->isTwoColor = false; // 二値化
-	effectData->threshold = 0.5f;
-	effectData->contrast = 1.0f;
-
-	effectData->isRadialBlur = false;
-	effectData->isDistanceFog = false;
-	effectData->isHeightFog = false;
-	effectData->isDoF = true;
+	effectData->isGrayscale = false;	// ON/OFF
+	effectData->isTwoColor = false;		// 二値化
+	effectData->threshold = 0.5f;		// 白と黒の境界値
+	effectData->contrast = 1.0f;		// コントラスト
 	// 放射線ブラー用のパラメータ
-	effectData->blurCenter = { 0.5f,0.5f }; // ブラーの中心（通常は画面中央の0.5,0.5）
-	effectData->blurWidth = 0.01f; // ブラーの幅（中心からどれくらいの範囲をブラーするか）
-	effectData->blurSamples = 10; // ブラーのサンプル数（多いほど滑らかだが重くなる）
+	effectData->isRadialBlur = false;		// ON/OFF
+	effectData->blurCenter = { 0.5f,0.5f }; // 中心（画面中央0.5,0.5）
+	effectData->blurWidth = 0.01f;			// 幅
+	effectData->blurSamples = 10;			// サンプル数
 	// ディスタンスフォグ用のパラメータ
-	effectData->distanceFogColor = { 0.5f,0.5f,0.5f };// フォグの色
-	effectData->distanceFogStart = 0.0f;  // フォグが始まる距離
-	effectData->distanceFogEnd = 10.0f; // 完全にフォグに覆われる距離
-	effectData->zNear = 0.1f; // カメラのニアクリップ面
-	effectData->zFar = 1000.0f; // カメラのファークリップ面
+	effectData->isDistanceFog = false;					// ON/OFF
+	effectData->distanceFogColor = { 0.5f,0.5f,0.5f };	// 色
+	effectData->distanceFogStart = 0.0f;				// 始まる距離
+	effectData->distanceFogEnd = 10.0f;					// 完全に覆われる距離
+	effectData->zNear = 0.1f;							// カメラのニアクリップ面
+	effectData->zFar = 1000.0f;							// カメラのファークリップ面
 	// ハイトフォグ用のパラメータ
-	effectData->heightFogColor = { 0.5f,0.5f,0.5f }; // フォグの色
-	effectData->heightFogTop = 10.0f; // フォグが始まる高さ
-	effectData->heightFogBottom = 0.0f; // 完全にフォグに覆われる高さ
-	effectData->heightFogDensity = 1.0f;
+	effectData->isHeightFog = false;					// ON/OFF
+	effectData->heightFogColor = { 0.5f,0.5f,0.5f };	// 色
+	effectData->heightFogTop = 10.0f;					// 始まる高さ
+	effectData->heightFogBottom = 0.0f;					// 完全に覆われる高さ
+	effectData->heightFogDensity = 1.0f;				// 密度
 	// DoF用のパラメータ
-	effectData->focusDistance = 5.0f; // ピントが合う距離
-	effectData->focusRange = 2.0f; // ピントが合う範囲（遊び）
-	effectData->bokehRadius = 5.0f; // ボケの最大半径
+	effectData->isDoF = true;			// ON/OFF
+	effectData->focusDistance = 5.0f;	// ピントが合う距離
+	effectData->focusRange = 2.0f;		// ピントが合う範囲（遊び）
+	effectData->bokehRadius = 5.0f;		// ボケの最大半径
 	// ブルーム
-	effectData->bloomThreshold = 1.0f; // 輝度の閾値
-	effectData->bloomIntensity = 1.0f; // ブルームの強さ
-	effectData->bloomBlurRadius = 1.0f; // ブルームのぼかし半径
+	effectData->bloomThreshold = 1.0f;	// 輝度の閾値
+	effectData->bloomIntensity = 1.0f;	// 強さ
+	effectData->bloomBlurRadius = 1.0f;	// ぼかし半径
 	// レンズフレア
-	effectData->isLensFlare = true;            // とりあえずONにしておく
-	effectData->lensFlareGhostCount = 8;       // ゴーストの数（4?8くらいが綺麗）
-	effectData->lensFlareGhostDispersal = 0.3f; // ゴーストが広がる間隔
+	effectData->isLensFlare = true;				// ON/OFF
+	effectData->lensFlareGhostCount = 8;		// ゴーストの数
+	effectData->lensFlareGhostDispersal = 0.3f;	// ゴーストが広がる間隔
 	effectData->lensFlareHaloWidth = 0.4f;      // ヘイロー（光の輪）の大きさ
-	effectData->isACES = true;                 // ACESトーンマッピングをONにする
-	effectData->caIntensity = 0.003f;          // 色収差の強さ（最初は弱めに）
+	// ACESトーンマッピング
+	effectData->isACES = true;			// ON/OFF
+	effectData->caIntensity = 0.003f;	// 色収差の強さ
 	// モーションブラー
-	effectData->isMotionBlur = true;    // モーションブラーのON/OFF
-	effectData->motionBlurSamples = 8; // サンプル数（例：8〜16）
-	effectData->motionBlurScale = 1.0f;   // ブラーの強さ
+	effectData->isMotionBlur = true;	// ON/OFF
+	effectData->motionBlurSamples = 8;	// サンプル数
+	effectData->motionBlurScale = 1.0f;	// 強さ
 	// 色収差
-	effectData->isFullScreenCA = false; // 画面全体の色収差ON/OFF
-	effectData->fullScreenCAIntensity = 0.02f; // 画面全体の色収差の強さ
+	effectData->isFullScreenCA = false;			// ON/OFF
+	effectData->fullScreenCAIntensity = 0.02f;	// 強さ
 	// ビネット
-	effectData->isVignette = false; // ビネットON/OFF
-	effectData->vignetteIntensity = 0.0f; // ビネットの強さ
+	effectData->isVignette = false;			// ON/OFF
+	effectData->vignetteIntensity = 0.0f;	// 強さ
 	// スピードディストーション
-	effectData->isSpeedDistortion = false; // スピードディストーションのON/OFF
-	effectData->speedDistortionStrength = 0.5f; // 歪みの強さ
+	effectData->isSpeedDistortion = false;		// ON/OFF
+	effectData->speedDistortionStrength = 0.5f;	// 歪みの強さ
 	// 集中線
-	effectData->isConcentrationLines = false; // 集中線ON/OFF
-	effectData->concentrationLineIntensity = 1.0f; // 線の濃さ
-	effectData->concentrationLineCenter = { 0.5f, 0.5f }; // 線の中心
-	effectData->concentrationLineDensity = 10.0f; // 線の密度
-	effectData->concentrationLineLength = 0.5f; // 線の長さ
-	effectData->concentrationLineSpeed = 1.0f; // 線の速度
-	effectData->time = 0.0f; // アニメーション用の時間
+	effectData->isConcentrationLines = false;				// ON/OFF
+	effectData->concentrationLineIntensity = 1.0f;			// 線の濃さ
+	effectData->concentrationLineCenter = { 0.5f, 0.5f };	// 線の中心
+	effectData->concentrationLineDensity = 10.0f;			// 線の密度
+	effectData->concentrationLineLength = 0.5f;				// 線の長さ
+	effectData->concentrationLineSpeed = 1.0f;				// 線の速度
+	effectData->time = 0.0f;								// アニメーション用の時間
 	// ピンチエフェクト
-	effectData->isPinch = false; // ピンチエフェクトON/OFF
-	effectData->pinchStrength = 0.5f; // 歪みの強さ
-	effectData->pinchCenter = { 0.5f, 0.5f }; // 歪みの中心
-	effectData->pinchRadius = 0.5f; // 歪みの半径
+	effectData->isPinch = false;				// ON/OFF
+	effectData->pinchStrength = 0.5f;			// 歪みの強さ
+	effectData->pinchCenter = { 0.5f, 0.5f };	// 歪みの中心
+	effectData->pinchRadius = 0.5f;				// 歪みの半径
 
-	effectData->intensity = 1.0f;
+	effectData->intensity = 1.0f;	// ポストエフェクト全体の強さ
 
 }
 
