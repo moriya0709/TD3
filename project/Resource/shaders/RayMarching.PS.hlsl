@@ -581,7 +581,7 @@ PSOutput main(VSOutput input)
     }
 
     // 太陽の円（ディスク）の計算
-    float sunDot = dot(rayDir, normalizedSunDir);
+    float sunDot = dot(skyRayDir, normalizedSunDir);
     float sunDisc = smoothstep(0.9998f, 0.99995f, sunDot);
 
     // 最終合成

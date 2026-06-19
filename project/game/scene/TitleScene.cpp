@@ -130,9 +130,9 @@ void TitleScene::Update() {
 	CameraManager::GetInstance()->Update();
 
 	// カメラ更新
-	cameraTransform.translate.x += 0.05f;
-	cameraTransform.translate.z += 0.05f;
-	camera->SetTranslate(cameraTransform.translate);
+	//cameraTransform.translate.x += 0.05f;
+	//cameraTransform.translate.z += 0.05f;
+	//camera->SetTranslate(cameraTransform.translate);
 
 	// エフェクトの強さ減少
 	if (isTransition) {
@@ -560,7 +560,7 @@ void TitleScene::Update() {
 	PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
 	PostEffect::GetInstance()->HightFogUpdate(camera.get());
 	// DOF
-	PostEffect::GetInstance()->SetDOF(isDOF);
+	PostEffect::GetInstance()->SetDOF(isDoF);
 	PostEffect::GetInstance()->SetFocusDistance(focusDistance);
 	PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
 	PostEffect::GetInstance()->SetFocusRange(focusRange);
@@ -742,9 +742,9 @@ void TitleScene::Update() {
 	}
 	// DOF
 	if (ImGui::TreeNode("DOF")) {
-		ImGui::Checkbox("OnOff", &isDOF);
+		ImGui::Checkbox("OnOff", &isDoF);
 
-		if (isDOF) {
+		if (isDoF) {
 			ImGui::DragFloat("focusDistance", &focusDistance, 0.1f, 0.0f, 100.0f);
 			ImGui::DragFloat("bokehRadius", &bokehRadius, 0.1f, 0.0f, 100.0f);
 			ImGui::DragFloat("focusRange", &focusRange, 0.1f, 0.0f, 100.0f);
@@ -855,18 +855,18 @@ void TitleScene::Draw2D() {
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
 	// スプライト描画
-	for (auto& part : titleParts_)
-	{
-		//各スプライトが持つ
-		part.sprite->Draw();
-	}
-	if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
-	{
-		nextC_->Draw();
-	}
-	else {
-		nextM_->Draw();
-	}
+	//for (auto& part : titleParts_)
+	//{
+	//	//各スプライトが持つ
+	//	part.sprite->Draw();
+	//}
+	//if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
+	//{
+	//	nextC_->Draw();
+	//}
+	//else {
+	//	nextM_->Draw();
+	//}
 }
 void TitleScene::Draw3D() {
 	// 3Dオブジェクトの描画準備

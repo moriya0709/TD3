@@ -116,7 +116,7 @@ private:
 	float heightFogDensity = 1.0f;
 
 	// DOF
-	bool isDOF = false;
+	bool isDoF = false;
 	float focusDistance = 5.0f;
 	float focusRange = 5.0f;
 	float bokehRadius = 5.0f;
