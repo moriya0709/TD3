@@ -1,0 +1,16 @@
+{
+    "enemies": [
+        {
+            "popTime": 0.0,
+            "type": "grapesBoss",
+            "hp": 3500,
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 60.0
+            },
+            "movePattern": [
+            ]
+        }
+    ]
+}

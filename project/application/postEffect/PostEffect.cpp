@@ -138,7 +138,7 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	effectData->isRadialBlur = false;
 	effectData->isDistanceFog = false;
 	effectData->isHeightFog = false;
-	effectData->isDOF = true;
+	effectData->isDoF = true;
 	// 放射線ブラー用のパラメータ
 	effectData->blurCenter = { 0.5f,0.5f }; // ブラーの中心（通常は画面中央の0.5,0.5）
 	effectData->blurWidth = 0.01f; // ブラーの幅（中心からどれくらいの範囲をブラーするか）
@@ -154,7 +154,7 @@ void PostEffect::Initialize(DirectXCommon* dxCommon, WindowAPI* windowAPI, SrvMa
 	effectData->heightFogTop = 10.0f; // フォグが始まる高さ
 	effectData->heightFogBottom = 0.0f; // 完全にフォグに覆われる高さ
 	effectData->heightFogDensity = 1.0f;
-	// DOF用のパラメータ
+	// DoF用のパラメータ
 	effectData->focusDistance = 5.0f; // ピントが合う距離
 	effectData->focusRange = 2.0f; // ピントが合う範囲（遊び）
 	effectData->bokehRadius = 5.0f; // ボケの最大半径
@@ -750,10 +750,10 @@ void PostEffect::CreateRootSignature() {
 void PostEffect::CreateGraphicsPipeline() {
 
 	vertexShaderBlob = dxCommon_->CompileShader(
-		L"Resource/shaders/PostEffect.VS.hlsl", L"vs_6_0");
+		L"Resource/shaders/postEffect/PostEffect.VS.hlsl", L"vs_6_0");
 
 	pixelShaderBlob = dxCommon_->CompileShader(
-		L"Resource/shaders/PostEffect.PS.hlsl", L"ps_6_0");
+		L"Resource/shaders/postEffect/PostEffect.PS.hlsl", L"ps_6_0");
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
 	psoDesc.pRootSignature = rootSignature.Get();

@@ -1119,7 +1119,7 @@ void GamePlayScene::LithingEffect()
     PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
     PostEffect::GetInstance()->HightFogUpdate(camera.get());
     // DOF
-    PostEffect::GetInstance()->SetDOF(isDOF);
+    PostEffect::GetInstance()->SetDOF(isDoF);
     PostEffect::GetInstance()->SetFocusDistance(focusDistance);
     PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
     PostEffect::GetInstance()->SetFocusRange(focusRange);
@@ -1285,9 +1285,9 @@ void GamePlayScene::UpdateImGui()
     }
     // DOF
     if (ImGui::TreeNode("DOF")) {
-        ImGui::Checkbox("OnOff", &isDOF);
+        ImGui::Checkbox("OnOff", &isDoF);
 
-        if (isDOF) {
+        if (isDoF) {
             ImGui::DragFloat("focusDistance", &focusDistance, 0.1f, 0.0f, 100.0f);
             ImGui::DragFloat("bokehRadius", &bokehRadius, 0.1f, 0.0f, 100.0f);
             ImGui::DragFloat("focusRange", &focusRange, 0.1f, 0.0f, 100.0f);

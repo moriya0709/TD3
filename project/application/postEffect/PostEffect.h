@@ -28,7 +28,7 @@ struct EffectData {
 	int32_t isRadialBlur; // 放射線ブラー
 	int32_t isDistanceFog; // ディスタンスフォグ
 
-	int32_t isDOF; // 被写界深度
+	int32_t isDoF; // 被写界深度
 	int32_t isHeightFog; // ハイトフォグ
 	float intensity; // 効果の強さ（0.0~1.0）
 	float pad0;
@@ -171,7 +171,7 @@ public:
 	void HightFogUpdate(Camera* camera); // カメラの位置からハイトフォグ用の逆行列を計算してセットする関数
 
 	// DOF
-	void SetDOF(bool isDOF) { effectData->isDOF = isDOF; }
+	void SetDOF(bool isDoF) { effectData->isDoF = isDoF; }
 	void SetFocusDistance(float distance) { effectData->focusDistance = distance; }
 	void SetFocusRange(float range) { effectData->focusRange = range; }
 	void SetBokehRadius(float radius) { effectData->bokehRadius = radius; }

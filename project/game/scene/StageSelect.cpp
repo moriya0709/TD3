@@ -436,7 +436,7 @@ void StageSelect::LithingEffect() {
 	PostEffect::GetInstance()->SetHeightFogDensity(heightFogDensity);
 	PostEffect::GetInstance()->HightFogUpdate(camera_.get());
 	// DOF
-	PostEffect::GetInstance()->SetDOF(isDOF);
+	PostEffect::GetInstance()->SetDOF(isDoF);
 	PostEffect::GetInstance()->SetFocusDistance(focusDistance);
 	PostEffect::GetInstance()->SetBokehRadius(bokehRadius);
 	PostEffect::GetInstance()->SetFocusRange(focusRange);
