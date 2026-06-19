@@ -31,19 +31,19 @@ void RayMarching::Initialize(SrvManager* srvManager) {
 	cloudParamResource->Map(0, nullptr, reinterpret_cast<void**>(&cloudParam));
 	cloudParam->invViewProj;
 	cloudParam->cameraPos;
-	cloudParam->time = 0.0f; // 時間
-	cloudParam->sunDir = { 0.3f, 0.8f, 0.2f }; // 太陽方向
-	cloudParam->cloudCoverage = 0.5f; 	// 雲の量
-	cloudParam->cloudBottom = 50.0f; 	// 雲の下端
-	cloudParam->cloudTop = 300.0f; // 雲の上端
-	cloudParam->isRialLight = false; // リアル調ライティング
-	cloudParam->isAnimeLight = true; // アニメ調ライティング
-	cloudParam->isMotionBlur = false; // モーションブラー
-	cloudParam->cloudOpacity = 0.04f; // 不透明度
-	cloudParam->isStorm = false;
-	cloudParam->thunderFrequency = 0.3f;
-	cloudParam->thunderBrightness = 120.0f;
-	cloudParam->horizonHeight = 0.2f;
+	cloudParam->time = 0.0f;					// 時間
+	cloudParam->sunDir = { 0.3f, 0.8f, 0.2f };	// 太陽の位置
+	cloudParam->cloudCoverage = 0.5f; 			// 雲の密度
+	cloudParam->cloudBottom = 50.0f; 			// 雲の最低座標
+	cloudParam->cloudTop = 300.0f;				// 雲の最高座標
+	cloudParam->isRialLight = false;			// リアル調ライティング
+	cloudParam->isAnimeLight = true;			// アニメ調ライティング
+	cloudParam->isMotionBlur = false;			// モーションブラー
+	cloudParam->cloudOpacity = 0.04f;			// 雲の不透明度
+	cloudParam->isStorm = false;				// 雷雨
+	cloudParam->thunderFrequency = 0.3f;		// 雷の頻度
+	cloudParam->thunderBrightness = 120.0f;		// 雷の明るさ
+	cloudParam->horizonHeight = 0.2f;			// 水平線の高さ
 
 }
 
