@@ -21,28 +21,29 @@ cbuffer CloudParam : register(b0)
     float4x4 prevViewProj;
 
     float3 cameraPos;
-    float time;
+    float time; // 時間
 
-    float3 sunDir;
-    float cloudCoverage;
+    float3 sunDir; // 太陽の位置
+    float cloudCoverage; // 雲の密度
 
-    float cloudBottom;
-    float cloudTop;
-    int isRialLight;
-    int isAnimeLight;
+    float cloudBottom; // 雲の最低座標
+    float cloudTop; // 雲の最高座標
+    int isRialLight; // リアル調ライティング
+    int isAnimeLight; // アニメ調ライティング
     
-    float3 cloudOffset;
-    int isMotionBlur;
+    float3 cloudOffset; // uvアニメーション
+    int isMotionBlur; // モーションブラー
     
-    float cloudOpacity;
-    int isStorm;
-    float thunderFrequency;
-    float thunderBrightness;
+    float cloudOpacity; // 雲の不透明度
+    int isStorm; // 雷雨
+    float thunderFrequency; // 雷の頻度
+    float thunderBrightness; // 雷の明るさ
 
-    float horizonHeight;
+    float horizonHeight; // 水平線の高さ
     
 }
 
+// ハッシュ
 float hash(float3 p)
 {
     p = frac(p * 0.3183099 + .1);
@@ -50,6 +51,7 @@ float hash(float3 p)
     return frac(p.x * p.y * p.z * (p.x + p.y + p.z));
 }
 
+// ノイズ
 float noise(float3 p)
 {
     float3 i = floor(p);
@@ -71,22 +73,24 @@ float noise(float3 p)
     return n;
 }
 
+// 非整数ブラウン運動
 float fbm(float3 p)
 {
-    float f = 0;
-    float amp = 0.5;
+    float f = 0; // ノイズの合計値
+    float amp = 0.5; // 最初のノイズ
+    int octaves = 4; // 輪郭のディティール
+    float gain = 0.5f; // ノイズの振れ幅
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < octaves; i++)
     {
         f += amp * noise(p);
         p *= 2.0;
-        amp *= 0.5;
+        amp *= gain;
     }
 
     return f;
 }
 
-// ヘルパー関数をファイル上部に追加
 float Remap(float value, float oldMin, float oldMax, float newMin, float newMax)
 {
     return newMin + saturate((value - oldMin) / (oldMax - oldMin)) * (newMax - newMin);

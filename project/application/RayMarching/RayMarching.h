@@ -18,27 +18,28 @@ struct CloudParam {
 	Matrix4x4 prevViewProj;
 
 	Vector3 cameraPos;
-	float time;
+	float time;						// 時間
 
-	Vector3 sunDir;
-	float cloudCoverage;
+	Vector3 sunDir;					// 太陽の位置
+	float cloudCoverage;			// 雲の密度
 
-	float cloudBottom;
-	float cloudTop;
-	int isRialLight;
-	int isAnimeLight;
+	float cloudBottom;				// 雲の最低座標
+	float cloudTop;					// 雲の最高座標
+	int isRialLight;				// リアル調ライティング
+	int isAnimeLight;				// アニメ調ライティング
 
-	DirectX::XMFLOAT3 cloudOffset;
-	int isMotionBlur;
+	DirectX::XMFLOAT3 cloudOffset;	// uvアニメーション
+	int isMotionBlur;				// モーションブラー
 
-	float cloudOpacity;
-	int isStorm;
-	float thunderFrequency;
-	float thunderBrightness;
+	float cloudOpacity;				// 雲の不透明度
+	int isStorm;					// 雷雨
+	float thunderFrequency;			// 雷の頻度
+	float thunderBrightness;		// 雷の明るさ
 
-	float horizonHeight;
+	float horizonHeight;			// 地平線の高さ
 
 };
+
 
 class RayMarching {
 public:
