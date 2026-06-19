@@ -130,9 +130,9 @@ void TitleScene::Update() {
 	CameraManager::GetInstance()->Update();
 
 	// カメラ更新
-	//cameraTransform.translate.x += 0.05f;
-	//cameraTransform.translate.z += 0.05f;
-	//camera->SetTranslate(cameraTransform.translate);
+	cameraTransform.translate.x += 0.05f;
+	cameraTransform.translate.z += 0.05f;
+	camera->SetTranslate(cameraTransform.translate);
 
 	// エフェクトの強さ減少
 	if (isTransition) {
@@ -855,18 +855,18 @@ void TitleScene::Draw2D() {
 	SpriteCommon::GetInstance()->SetCommonPipelineState();
 
 	// スプライト描画
-	//for (auto& part : titleParts_)
-	//{
-	//	//各スプライトが持つ
-	//	part.sprite->Draw();
-	//}
-	//if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
-	//{
-	//	nextC_->Draw();
-	//}
-	//else {
-	//	nextM_->Draw();
-	//}
+	for (auto& part : titleParts_)
+	{
+		//各スプライトが持つ
+		part.sprite->Draw();
+	}
+	if (Input::GetInstance()->GetCurrentDevice() == InputDevice::Gamepad)
+	{
+		nextC_->Draw();
+	}
+	else {
+		nextM_->Draw();
+	}
 }
 void TitleScene::Draw3D() {
 	// 3Dオブジェクトの描画準備
@@ -878,11 +878,7 @@ void TitleScene::Draw3D() {
 		object[i]->Draw();
 	}
 
-	// 本型UIの描画準備
-	//BookUiCommon::GetInstance()->SetCommonPipelineState();
-
-	//book->Draw();
-
+	
 	//アニメーションモデル描画
 	ObjectCommon::GetInstance()->SetSkinningCommonDrawSetting();
 
@@ -893,14 +889,7 @@ void TitleScene::Draw3D() {
 		}
 	}
 
-	// アウトライン描画準備
-	//ObjectCommon::GetInstance()->SetOutlinePipelineState();
-	//
-	//// アウトライン描画
-	//for (int i = 0; i < 2; i++) {
-	//	object[i]->Draw();
-	//}
-
+	
 }
 
 void TitleScene::Finalize() {
